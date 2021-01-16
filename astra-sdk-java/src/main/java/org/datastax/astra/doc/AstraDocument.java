@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *      current object
  */
 @JsonIgnoreProperties
-public class Document<T> implements Serializable {
+public class AstraDocument<T> implements Serializable {
     
     /** Serial. */
     private static final long serialVersionUID = -9031206707641391885L;
@@ -37,12 +37,12 @@ public class Document<T> implements Serializable {
     protected T data;
    
     
-    public Document(T val, Class<T> typeParameterClass) {
+    public AstraDocument(T val, Class<T> typeParameterClass) {
         this.data = val;
         this.typeParameterClass = typeParameterClass;
     }
     
-    public Document(T val,  Class<T> typeParameterClass, String docid) {
+    public AstraDocument(T val,  Class<T> typeParameterClass, String docid) {
         this(val, typeParameterClass);
         this.documentId = docid;
     }

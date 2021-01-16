@@ -24,14 +24,12 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs. On top o
 - [Update a document](#)
 - [Delete a document](#)
 
-
 **[Rest API](#)**
 
 **[CQLSession](#)**
 
-5. [DevopsApi](#)
+**[DevopsApi](#)**
 
-6. More Resource
 
 ## 1. Getting Started
 
@@ -39,11 +37,33 @@ There are multiple ways to start working with SDK. We target versatility to be i
 
 You will work with a single object named `AstraClient` that could work both with managed service [Astra](astra.datastax.com) and Standalone [Stargate](stargate.io).
 
-*Sneak preview of what we discusss here*
+*Sneak preview*
 
 ```java
+// Single class to interact with ASTRA
 AstraClient astraClient = AstraClient.builder().build();
 
+// --------------
+//   DOCUMENT
+// --------------
+Person p = new Person("Cedrick", "Lunven");
+// Save
+String docPersonId = astraClient.namespace("namespace1") // immediately setup to doc API
+           			         .save(p);		    // create new doc in db
+// FindById
+Optional<Person> person2 = astraClient.namespace("namespace1").findById(docPersonId, Person.class);
+
+// Update
+AstraDocument wrapper = new AstraDocument<Person>(docPersonId, new Person("Cedric", "Lunven"));
+astraClient.namespace("namespace1").save(wrapper);
+
+// FindAll but with Paging ^^
+int pageSize = 10;
+ResultPageList<Person> personPage1 = astraClient.namespace("namespace1").findAll(pageSize, Person.class);
+ResultPageList<Person> personPage2 = astraClient.namespace("namespace1").findAll(pageSize, personPage1.getPagingState(), Person.class);
+
+// Delete
+astraClient.namespace("namespace1").delete(docPersonId, Person.class);
 ```
 
 ### ⚒️ Import SDK dependency in your project

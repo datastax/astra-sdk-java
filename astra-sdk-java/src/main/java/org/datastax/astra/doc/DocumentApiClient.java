@@ -249,7 +249,7 @@ public class DocumentApiClient {
      *          Dto class to allow dynamic mapping,
      * @return
      */
-    public <B extends Document<?>> Optional<B> findById(String collectionName, String docId, Class<B> clazz) {
+    public <B extends AstraDocument<?>> Optional<B> findById(String collectionName, String docId, Class<B> clazz) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(docId);
         Objects.requireNonNull(clazz);
