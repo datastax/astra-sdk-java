@@ -59,7 +59,10 @@ public class AstraClientSimpleTest {
     
     @Test
     public void testFindAllCollections() {
-        System.out.println(astraClient.namespace("namespace1").findAllCollections());
+       astraClient.namespace("namespace1")
+                  .findAllCollections()
+                  .stream()
+                  .forEach(System.out::println);;
     }
     
     @Test
