@@ -1,14 +1,14 @@
-## 🔥 Astra JAVA SDK 🔥 
+## 🧰 Astra JAVA SDK 🧰
 
-The SDK makes it easy to call Astra services using idiomatic Java APIs.
+The SDK makes it easy to call Astra services using idiomatic Java APIs. On top of the SDK the repository provide tool like a Spring Boot starter and another samples helping you starting code with ASTRA and JAVA.
 
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
  
-## Table of contents
+## 🏠 Table of contents
 
 **[Getting Started](#1-getting-started)**
 - [Import library in your project](#11---import-library-in-your-project)
-- [Configure client `AstraClient` with **Environement variables**](#11---import-library-in-your-project)
+- [Configure client `AstraClient` with **Environment variables**](#11---import-library-in-your-project)
 - [Configure client `AstraClient` with **Fluent API**](#11---import-library-in-your-project)
 - [Configure client `AstraClient` with **Constructor**](#11---import-library-in-your-project)
 - [Configure client `AstraClient` with **Spring**](#11---import-library-in-your-project)
@@ -33,12 +33,22 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs.
 
 6. More Resource
 
-
 ## 1. Getting Started
 
-### Import the SDK library in your project
+There are multiple ways to start working with SDK. We target versatility to be included in multiple form of java applications, standalone, Spring, Quarkus, Camel, batches...
 
-You can import the library with the following coordinate in Maven
+You will work with a single object named `AstraClient` that could work both with managed service [Astra](astra.datastax.com) and Standalone [Stargate](stargate.io).
+
+*Sneak preview of what we discusss here*
+
+```java
+AstraClient astraClient = AstraClient.builder().build();
+
+```
+
+### ⚒️ Import SDK dependency in your project
+
+You can import the library with the following coordinate in Maven.
 
 ```xml
 <dependency>
@@ -48,15 +58,13 @@ You can import the library with the following coordinate in Maven
 </dependency>
 ```
 
-### Configure client `AstraClient` with Environement variables
-
-There are multiple ways to start working with SDK. We target versatility to be included in multiple form of java applications, standalone, Spring, Quarkus, Camel, batches...
-
-You will work with a single object named `AstraClient` that could work both with managed service [Astra](astra.datastax.com) and Standalone [Stargate](stargate.io).
+### Configure client `AstraClient` with Environment variables
 
 **📘 Working with Astra**
 
-You rely on environment variables listed on the connect tab in ASTRA UI to initialize the client. We are here using an approach based on convention.
+You rely on environment variables listed on the connect tab in ASTRA UI to initialize the client. We are here using an approach based on convention with name of environment pre-defined.
+
+*Expected environment variables*
 
 ```bash
 export ASTRA_DB_ID=<youdbId>
@@ -69,7 +77,7 @@ You might noticed than the `ASTRA_DB_KEYSPACE` here is not specifed as the clien
 
 **📘 Working with Stargate**
 
-If you are NOT using ASTRA but simply StandAlone stargate those are the variables to define. (*if you define both Astra and Stargate keys priority will go to stargate.*)
+If you are NOT using ASTRA but a StandAlone stargate the variables to define are slightly different. (*if you define both Astra and Stargate keys - priority will go to Stargate.*)
 
 ```bash
  export USERNAME=<username>
@@ -94,7 +102,7 @@ With environment defined as before initialization is as simple as:
 AstraClient astraClient = AstraClient.builder().build();
 ```
 
-**Expected Output:**
+**🖥️ Expected Output:**
 ```
 - Initializing Client: BaseUrl=https://e92195f2-159f-492e-9777-3dadda3ff1a3-europe-west1.apps.astra.datastax.com/api/rest, username=todouser,passwordLenght=13
 - Successfully Authenticated, token will live for 300 second(s).
@@ -102,31 +110,31 @@ AstraClient astraClient = AstraClient.builder().build();
 
 ### Configure client `AstraClient` with Fluent API
 
-Modern java Apis use a fluent API approach with a [builder pattern](https://en.wikipedia.org/wiki/Builder_pattern) in order to generate an immutable client.
+Modern java applications use fluent API approachs with a [builder pattern](https://en.wikipedia.org/wiki/Builder_pattern) in order to generate an immutable client.
 
-To keep simply the `AstraClientBuilder` will work both for Astra and Stargate installations here are samples codes.
+To keep simply the `AstraClientBuilder` will work both for Astra and Stargate with different keys.
 
-**📘 Working with Astra**
+**📘 Setup with Astra**
 
 ```java
 AstraClient astraClient = AstraClient.builder()
                 .astraDatabaseId(<youdbId>")
                 .astraDatabaseRegion("<youdbregion>")
                 .username("<username>")
-                .password("<>password")
-                .tokenTtl(Duration.ofSeconds(300))
+                .password("<password>")
+                .tokenTtl(Duration.ofSeconds(300)) // optional default is 300s
                 .build()
 ```
 
-**📘 Working with Stargate**                
+**📘 Setup with Stargate**                
 
 ```                
 AstraClient stargateClient = AstraClient.builder()
                 .baseUrl("<stargate_url>")
                 .username("<username>")
-                .password("<>password")
-                .tokenTtl(Duration.ofSeconds(300))
-                .build()               
+                .password("<password>")
+                .tokenTtl(Duration.ofSeconds(300)) // optional default is 300s
+                .build();
 ```
 
 ### Configure client `AstraClient` with Constructor
@@ -145,9 +153,11 @@ AstraClient astraClient = new AstraClient("<baseUrl>", "<username>", "<password>
 AstraClient astraClient = new AstraClient("<baseUrl>", "<username>", "<password>", Duration.ofSeconds(300));          
 ```
 
-### Configure client `AstraClient` with Spring
+### Configure client `AstraClient` with Spring Framework
 
-As the `AstraClient` can be initialize with a full constructor you want to read value from configuration files like `application.properties` or `application.yaml` and inject them in the constructor. A Spring Boot starter will look for the following key to initiate the client for you (see SPRING BOOT START). You can even reuse the environment variables defined before
+As the `AstraClient` can be initialized with a constructor you want to read values from configuration files like `application.properties` or `application.yaml` and inject them in the constructor. 
+
+A Spring Boot starter will look for the following key to initiate the client for you (see [SPRING BOOT STARTER](#). You would also reuse environment variables defined before.
 
 ```yaml
 astra:
@@ -159,26 +169,37 @@ astra:
   tokenTtl: <tokenUrl>
 ```
 
+*Sample Configuration Class*
 ```java
 @Configuration
-public class AstraConfiguration() {
+public class AstraConfiguration {
 
-@Value("astra.username")
-private String atraUsername;
-//
+ @Value("${astra.username}")
+ private String atraUsername;
+ 
+ @Value("${astra.password}")
+ private String atraPassword;
+ 
+ @Value("${astra.dataBaseId}")
+ private String dataBaseId;
+ 
+ @Value("${astra.databaseRegion}")
+ private String databaseRegion;
 
-@Bean
-protected Astraclient astraClient() {
-	return new AstraClient(atraUsername, ....);
+ @Bean
+ protected Astraclient astraClient() {
+	return new AstraClient(dataBaseId, databaseRegion, atraUsername, atraPassword);
+ }
 }
 ```
 
-
 ## 2. Document API
 
-Astra and Stargate bring a great innovation by allowing Cassandra to store Document like a document oriented noSQL database. To cope with Cassandra data model constraints they implemented the [document shredding](https://stargate.io/2020/10/19/the-stargate-cassandra-documents-api.html).
+Astra and Stargate bring great innovation by allowing Apache Cassandra to store Documents like a document-oriented noSQL database. To cope with Cassandra data model constraints the [document shredding](https://stargate.io/2020/10/19/the-stargate-cassandra-documents-api.html) function has been used.
 
-As a Java developer you want to create object and let the SDK interact with the API to help you perform the operations you want *Create, Read, Update, Delete* and search.
+As a Java developer you want to work with objects (entities) and let the SDK interact with the API performing operations you need *Create, Read, Update, Delete and search*.
+
+ARCHITECTURE PICS
 
 ### Namespaces and Collection
 
