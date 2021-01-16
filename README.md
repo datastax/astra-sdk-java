@@ -6,7 +6,26 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs.
  
 ## Table of contents
 
-1. [Getting Started](#)
+1. [Getting Started](#1-getting-started)
+- 1.1 [Import library in your project](#11---import-library-in-your-project)
+- 1.2 [Configure the Client](#11---import-library-in-your-project)
+
+2. [DocumentAPI](#)
+- 2.1 [Working with Collections](#)
+- 2.2 [Create a Document](#)
+- 2.3 [Test document existence](#)
+- 2.4 [Read a document](#)
+
+
+3. [Rest Api](#)
+
+4. [CQLSession](#)
+
+5. [DevopsApi](#)
+
+6. More Resource
+
+
 
 ## 1. Getting Started
 
@@ -22,7 +41,7 @@ You can import the library with the following coordinate in Maven
 </dependency>
 ```
 
-### 1.2 - Initialize the SDK
+### 1.2 - Configure the client
 
 There are multiple ways to start working with SDK. We target versatility to be included in multiple form of java applications, standalone, Spring, Quarkus, Camel, batches...
 
