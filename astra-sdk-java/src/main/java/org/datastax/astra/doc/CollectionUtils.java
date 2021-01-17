@@ -1,10 +1,8 @@
-package org.datastax.astra.utils;
+package org.datastax.astra.doc;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import org.datastax.astra.doc.AstraCollection;
 
 
 /**
@@ -19,7 +17,7 @@ import org.datastax.astra.doc.AstraCollection;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class MappingUtils {
+public class CollectionUtils {
 
     /** Associate a collection to a className. */
     private static final Map<String, Class<?>> col2class = new HashMap<>();
@@ -30,7 +28,7 @@ public class MappingUtils {
     /**
      * Used if annotation has not been provided to marshall class.
      */
-    public static String mapToCollection(Class<?> clazz) {
+    public static String getCollectionName(Class<?> clazz) {
         if (!class2collec.containsKey(clazz)) {
             String collectioName = fromCamelCaseToSnakeCase(clazz.getName().replace(".", "_"));
             AstraCollection col  = clazz.getAnnotation(AstraCollection.class);

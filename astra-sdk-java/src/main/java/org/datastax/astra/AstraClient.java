@@ -1,5 +1,6 @@
 package org.datastax.astra;
 
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
@@ -10,14 +11,19 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import org.datastax.astra.doc.DocumentApiClient;
+import org.datastax.astra.doc.NamespaceClient;
+import org.datastax.astra.rest.KeyspaceClient;
+import org.datastax.astra.schemas.Keyspace;
 import org.datastax.astra.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,28 +37,35 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 public class AstraClient {
     
     /** Environment Variables names you can use to initiate values by convention. */
-    public static final String ASTRA_DB_ID       = "ASTRA_DB_ID";
-    public static final String ASTRA_DB_REGION   = "ASTRA_DB_REGION";
-    public static final String ASTRA_DB_USERNAME = "ASTRA_DB_USERNAME";
-    public static final String ASTRA_DB_PASSWORD = "ASTRA_DB_PASSWORD";
-    public static final String USERNAME          = "USERNAME";
-    public static final String PASSWORD          = "PASSWORD";
-    public static final String BASE_URL          = "BASE_URL";
-    public static final String TOKEN_TTL         = "TOKEN_TTL";
+    public static final String ASTRA_DB_ID            = "ASTRA_DB_ID";
+    public static final String ASTRA_DB_REGION        = "ASTRA_DB_REGION";
+    public static final String ASTRA_DB_USERNAME      = "ASTRA_DB_USERNAME";
+    public static final String ASTRA_DB_PASSWORD      = "ASTRA_DB_PASSWORD";
+    public static final String USERNAME               = "USERNAME";
+    public static final String PASSWORD               = "PASSWORD";
+    public static final String BASE_URL               = "BASE_URL";
+    public static final String TOKEN_TTL              = "TOKEN_TTL";
     
     /** Building Astra base URL. */
-    public static final String ASTRA_ENDPOINT_PREFIX = "https://";
-    public static final String ASTRA_ENDPOINT_SUFFIX = ".apps.astra.datastax.com/api/rest";
+    public static final String ASTRA_ENDPOINT_PREFIX  = "https://";
+    public static final String ASTRA_ENDPOINT_SUFFIX  = ".apps.astra.datastax.com/api/rest";
+   
+    public static final String PATH_SCHEMA            = "/v2/schemas";
+    public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
+    public static final String PATH_SCHEMA_KEYSPACES  = "/keyspaces";
+    
+    public static final Duration DEFAULT_TIMEOUT      = Duration.ofSeconds(20);
+    public static final String   DEFAULT_CONTENT_TYPE = "application/json";
     
     /** Header for authToken. */
-    public static final String HEADER_CASSANDRA    = "X-Cassandra-Token";
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HEADER_CASSANDRA       = "X-Cassandra-Token";
+    public static final String HEADER_CONTENT_TYPE    = "Content-Type";
     
     /** Set a timeout for Http requests. */
-    public static final Duration REQUEST_TIMOUT = Duration.ofSeconds(10);
+    public static final Duration REQUEST_TIMOUT       = Duration.ofSeconds(10);
     
     /** Retention period for authToken in seconds, default is 5 MIN */
-    public static final Duration DEFAULT_TTL    = Duration.ofSeconds(300);
+    public static final Duration DEFAULT_TTL          = Duration.ofSeconds(300);
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
@@ -131,7 +144,49 @@ public class AstraClient {
                         .append(ASTRA_ENDPOINT_SUFFIX)
                         .toString(), username, password, ttl);
     }
-
+    
+    public Stream<Keyspace> namespaces() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .timeout(DEFAULT_TIMEOUT)
+                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
+                    .header(AstraClient.HEADER_CASSANDRA, getAuthenticationToken())
+                    .uri(URI.create(getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES))
+                    .GET().build();
+            return getObjectMapper().readValue(
+                    getHttpClient().send(request, BodyHandlers.ofString()).body(), 
+                    new TypeReference<AstraResponse<List<Keyspace>>>(){}).getData().stream();
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot list namespaces", e);
+        }
+    }
+    
+    public Stream<String> namespaceNames() {
+        return namespaces().map(Keyspace::getName);
+    }
+    
+    public Stream<Keyspace> keyspaces() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .timeout(DEFAULT_TIMEOUT)
+                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
+                    .header(AstraClient.HEADER_CASSANDRA, getAuthenticationToken())
+                    .uri(URI.create(getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES))
+                    .GET().build();
+            return getObjectMapper().readValue(
+                    getHttpClient().send(request, BodyHandlers.ofString()).body(), 
+                    new TypeReference<AstraResponse<List<Keyspace>>>(){}).getData().stream();
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot list namespaces", e);
+        }
+    }
+    
+    public Stream<String> keyspaceNames() {
+        return keyspaces().map(Keyspace::getName);
+    }
+    
     /**
      * Generate or renew authentication token
      */
@@ -170,6 +225,26 @@ public class AstraClient {
         return authToken;
     }
     
+    public static void handleError(HttpResponse<String> res) {
+        
+        if (HttpURLConnection.HTTP_GATEWAY_TIMEOUT == res.statusCode()) {
+            System.out.println("TIMEOUT but result might be OK");
+        }
+        
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.statusCode()) {
+            throw new IllegalArgumentException("Target object has not been found:" + res.body() );
+        }
+        
+        if (HttpURLConnection.HTTP_CONFLICT == res.statusCode()) {
+            throw new IllegalArgumentException("Object alrerady exist" + res.body() );
+        }
+        
+        if (HttpURLConnection.HTTP_INTERNAL_ERROR == res.statusCode()) {
+              throw new IllegalArgumentException("Internal Error" + res.body());
+        }
+        
+    }
+    
     /**
      * In test or at initialization we want to test credentials
      */
@@ -177,15 +252,18 @@ public class AstraClient {
         return getAuthenticationToken().length() > 0;
     }
    
+    /**
+     * Move the document API (namespace client)
+     */
+    public NamespaceClient namespace(String namespace) {
+        return new NamespaceClient(this, namespace);
+    }
     
     /**
-     * Getter accessor for attribute 'documentRepository'.
-     *
-     * @return
-     *       current value of 'documentRepository'
+     * Move to the Rest API
      */
-    public DocumentApiClient namespace(String namespace) {
-        return new DocumentApiClient(this, namespace);
+    public KeyspaceClient keyspace(String keyspace) {
+        return new KeyspaceClient(this, keyspace);
     }
 
     /**

@@ -1,30 +1,21 @@
 package org.datastax.astra.doc;
 
+import static org.datastax.astra.AstraClient.DEFAULT_CONTENT_TYPE;
+import static org.datastax.astra.AstraClient.DEFAULT_TIMEOUT;
 import static org.datastax.astra.AstraClient.HEADER_CONTENT_TYPE;
 
 import java.io.Serializable;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.datastax.astra.AstraClient;
-import org.datastax.astra.doc.dto.ApiResponse;
-import org.datastax.astra.doc.dto.CollectionMetaData;
-import org.datastax.astra.utils.MappingUtils;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 /**
  * Client for the Stargate Document REST API.
  * 
@@ -38,18 +29,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class DocumentApiClient {
     
-    private static final String PATH_NAMESPACES = "/v2/namespaces/";
-    private static final String PATH_COLLECTIONS = "/collections/";
+    /** Constants. */
+    private static final String PATH_NAMESPACES  = "/v2/namespaces";
+    private static final String PATH_COLLECTIONS = "/collections";
     
     /** Astra Client. */
     private final AstraClient client;
     
     /** Namespace. */
     private final String namespace;
-    
-    /** Constants. */
-    private static final Duration DEFAULT_TIMEOUT      = Duration.ofSeconds(20);
-    private static final String   DEFAULT_CONTENT_TYPE =  "application/json";
     
     /**
      * Full constructor.
@@ -60,93 +48,14 @@ public class DocumentApiClient {
     }
     
     /**
-     * List collections in namespace.
-     * 
-     * GET /v2/namespaces/{namespace-id}/collections
-     */
-    public Set<String> findAllCollections() {
-        try {
-            // Create a GET REQUEST
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_NAMESPACES + namespace + PATH_COLLECTIONS))
-                    .GET().build();
-            
-            // Invoke
-            HttpResponse<String> response = 
-                    client.getHttpClient().send(request, BodyHandlers.ofString());
-            
-            // Marshalling as Object
-            ApiResponse<List<CollectionMetaData>> oResponse = 
-                    client.getObjectMapper().readValue(response.body(), 
-                            new TypeReference<ApiResponse<List<CollectionMetaData>>>(){});
-            
-            // Mapping to set
-            return oResponse.getData().stream()
-                         .map(CollectionMetaData::getName)
-                         .collect(Collectors.toSet());
-            
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot create a new collection", e);
-        }
-    } 
-    
-    public boolean existCollection(String collectionName) {
-        Objects.requireNonNull(collectionName);
-        return findAllCollections().contains(collectionName);
-    }
-    
-    public void createCollection(String collectionName) {
-        try {
-            
-            // Create a GET REQUEST
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_NAMESPACES + namespace + PATH_COLLECTIONS))
-                    .POST(BodyPublishers.ofString("{\"name\":\"" + collectionName + "\"}"))
-                    .build();
-            
-            // Invoke
-            HttpResponse<String> response = 
-                    client.getHttpClient().send(request, BodyHandlers.ofString());
-            
-            if (HttpURLConnection.HTTP_CONFLICT != response.statusCode()) {
-                throw new IllegalStateException("Collection already exists '" + response.statusCode() + "' :" + response.body());
-            }
-            
-            if (HttpURLConnection.HTTP_INTERNAL_ERROR != response.statusCode()) {
-                throw new IllegalStateException("An error occured: " + response.body()); 
-            }
-            
-            if (HttpURLConnection.HTTP_GATEWAY_TIMEOUT == response.statusCode()) {
-                System.out.println("Error but might be created already");
-            }
-            
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot create a new collection", e);
-        }
-    }
-    
-    /**
-     * Mapping from ClassName to doc.
-     */
-    public boolean existDocument(Class<?> bean, String docId) {
-        return existDocument(MappingUtils.mapToCollection(bean), docId);
-    }
-    
-    /**
      * Using current resource GET to evaluate if a document exists.
      *
      * - 200 means the document exists
      * - otherwise it does not. As of now, the API return 204 if not found (it should be 404)
      */
-    public boolean existDocument(String collectionName, String documentId) {
+    public boolean exist(String docId, String collectionName) {
         Objects.requireNonNull(collectionName);
-        Objects.requireNonNull(documentId);
+        Objects.requireNonNull(docId);
         try {
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
@@ -156,7 +65,7 @@ public class DocumentApiClient {
                     .uri(URI.create(client.getBaseUrl() 
                             + PATH_NAMESPACES + namespace 
                             + PATH_COLLECTIONS + collectionName
-                            + "/" + documentId))
+                            + "/" + docId))
                     .GET().build();
             return 200 == client.getHttpClient()
                                 .send(request, BodyHandlers.ofString())
@@ -166,74 +75,7 @@ public class DocumentApiClient {
         }
     }
     
-    /**
-     * Using PUT and POST to create document (not PATCH here)
-     * - PUT if a documentId is communicated
-     * - POST if not
-     * 
-     * One return 200 and the other 201, explain the OR statement.
-     * 
-     * @param <D>
-     *      serializable object to convert as JSON  
-     * @param authToken
-     *      authentication token required in headers
-     * @param doc
-     *      document to be serialized (using Jackson)
-     * @param docId
-     *      optional unique identifier for the document
-     * @param collectionName
-     *      collection name
-     * @return
-     *      return document Id (the one provided eventually)
-     */
-    
-    public <D extends Serializable> String create(D doc) {
-        return create(doc, MappingUtils.mapToCollection(doc.getClass()), Optional.empty());
-    }
-    public <D extends Serializable> String create(D doc, String docId) {
-        return create(doc, MappingUtils.mapToCollection(doc.getClass()), Optional.ofNullable(docId));
-    }
-    public <D extends Serializable> String create(D doc, String collectionName, Optional<String> docId) {
-        Objects.requireNonNull(doc);
-        try {
-            
-            String uri = client.getBaseUrl()
-                    + "/v2/namespaces/" + namespace 
-                    + "/collections/" + collectionName
-                    + "/";
-            if (docId.isPresent()) {
-                uri = uri + docId.get();
-            }
-            
-            // Creating Req
-            Builder reqBuilder = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(uri));
-
-            
-            String reqBody = client.getObjectMapper().writeValueAsString(doc);
-            
-            // PUT to create a new enforcing Id,POST to create a new with no id 
-            if (docId.isEmpty()) {
-                reqBuilder.POST(BodyPublishers.ofString(reqBody));
-            } else {
-                // An Id has been provided, we want to raise an error if already exist
-                reqBuilder.PUT(BodyPublishers.ofString(reqBody));
-            }
-            
-            // Call
-            HttpResponse<String> response = client.getHttpClient().send(reqBuilder.build(), BodyHandlers.ofString());
-            if (null !=response && (response.statusCode() == 201 || response.statusCode() == 200)) {
-                return (String) client.getObjectMapper().readValue(response.body(), Map.class).get("documentId");
-            } else {
-                throw new IllegalArgumentException(response.body());
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
-        }
-    }
+   
     
     
     /**
@@ -249,7 +91,7 @@ public class DocumentApiClient {
      *          Dto class to allow dynamic mapping,
      * @return
      */
-    public <B extends AstraDocument<?>> Optional<B> findById(String collectionName, String docId, Class<B> clazz) {
+    public <B extends Serializable> Optional<B> findById(String collectionName, String docId, Class<B> clazz) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(docId);
         Objects.requireNonNull(clazz);
@@ -290,9 +132,9 @@ public class DocumentApiClient {
      *          collectionName
      * @param docId
      *          documentId
-     */
-    public void delete(String collectionName, String docId) {
-        if (!exists(collectionName, docId)) {
+     *
+    public void delete(String docId, String collectionName) {
+        if (!exist(docId, collectionName)) {
             throw new IllegalArgumentException("Invalid collectionName/documentId, this object does not exist"); 
         }
         try {
@@ -312,7 +154,7 @@ public class DocumentApiClient {
      *      wrapper for Stargate
      * @return
      *      document id (the one provided in doc)
-     */
+     *
     public <D extends Serializable> String upsert(StargateDocument<D> doc) {
         Objects.requireNonNull(doc);
         if (doc.getDocumentId().isEmpty()) {
@@ -343,7 +185,7 @@ public class DocumentApiClient {
      *          property name of the document
      * @return
      *        set of ids
-     */
+     *
     public Set<String> findAllDocumentIds(String collectionName, String propertyName) {
         return findIds(uriFindAllIds(collectionName, propertyName));
     }
@@ -359,14 +201,14 @@ public class DocumentApiClient {
      *         expected value      
      * @return
      *        set of ids
-     */
+     *
     public Set<String> findDocumentsIdsFilterByPropertyValue(String collectionName, String propertyName, String propertyValue) {
         return findIds(uriFindByPropertyValue(collectionName, propertyName, propertyValue));
     }
     
     /**
      * Syntax sugar..
-     */
+     *
     @SuppressWarnings("unchecked")
     private Set<String> findIds(URI uri) {
         Objects.requireNonNull(uri);
@@ -386,7 +228,7 @@ public class DocumentApiClient {
     /**
      * Build URL to GET all ids with 'exists' OP.
      * Note that the query need to be ENCODE and all '{' '}' are escaped %2F..
-     */
+     *
     private URI uriFindAllIds(String colName, String key) {
         Objects.requireNonNull(colName);
         Objects.requireNonNull(key);
@@ -399,7 +241,7 @@ public class DocumentApiClient {
     /**
      * Build URL to GET all ids matching a criteria.
      * Note that the query need to be ENCODE and all '{' '}' are escaped %2F..
-     */
+     *
     private URI uriFindByPropertyValue(String colName, String propName, String propValue) {
         // Building search Query
         return UriComponentsBuilder.fromUriString(url

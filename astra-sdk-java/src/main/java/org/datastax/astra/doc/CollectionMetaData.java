@@ -1,4 +1,4 @@
-package org.datastax.astra.doc.dto;
+package org.datastax.astra.doc;
 
 import java.io.Serializable;
 

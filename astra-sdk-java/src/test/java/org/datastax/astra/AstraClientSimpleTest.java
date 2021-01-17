@@ -1,11 +1,15 @@
 package org.datastax.astra;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import org.datastax.astra.utils.MappingUtils;
+import org.datastax.astra.schemas.DataCenter;
+import org.datastax.astra.schemas.Keyspace;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class AstraClientSimpleTest {
@@ -25,6 +29,8 @@ public class AstraClientSimpleTest {
             .password(dbPasswd)
             .tokenTtl(Duration.ofSeconds(300))
             .build();
+    
+    // --- CONNECTIVITY ---
     
     @Test
     public void should_createClient_withBuilder() {
@@ -52,54 +58,111 @@ public class AstraClientSimpleTest {
         Assertions.assertTrue(AstraClient.builder().build().connect());
     }
     
+    // --- NAMESPACE ---
+    
     @Test
-    public void should_create_collection() {
-        astraClient.namespace(namespace).createCollection("org_datastax_astra__person");
+    public void should_list_namespace() {
+        astraClient.namespaces().forEach(System.out::println);
     }
+    
+    @Test
+    public void should_list_namespaceNames() {
+        astraClient.namespaceNames().forEach(System.out::println);
+    }
+    
+    @Test
+    public void should_exist_namespace() {
+        System.out.println(astraClient.namespace("namespace1").exist());
+    }
+    
+    @Test
+    public void should_create_namespace() {
+        astraClient.namespace("namespace2")
+                   .create(Arrays.asList(new DataCenter("dc-1", 1)));
+    }
+    
+    @Test
+    public void should_delete_namespace() {
+        astraClient.namespace("namespace2").delete();
+    }
+    
+    // --- COLLECTION
     
     @Test
     public void testFindAllCollections() {
        astraClient.namespace("namespace1")
-                  .findAllCollections()
-                  .stream()
+                  .collectionNames()
                   .forEach(System.out::println);;
     }
     
     @Test
-    public void should_create_document_genId() {
-        //astraClient.namespace(namespace).create(new Person("Doc", "doc"));
-        astraClient.namespace(namespace).create(new Person("Doc", "doc"), "MYID");
-        
+    public void should_create_collection() {
+        astraClient.namespace(namespace)
+                   .collection("lololo")
+                   .create();
     }
+    
+    @Test
+    public void should_exist_collection() {
+        System.out.println(astraClient.namespace(namespace)
+                   .collection("lololo")
+                   .exist());
+    }
+    
+    @Test
+    public void should_delete_collection() {
+        astraClient.namespace(namespace)
+                   .collection("lololo")
+                   .delete();
+    }
+    
+    // --- DOCUMENT
+    
+    @Test
+    public void should_create_document_genId() {
+        String docId = astraClient.namespace(namespace).collection("personi")
+                   .save(new Person("loulou", "looulou"));
+        System.out.println(docId);
+    }
+    
+    @Test
+    public void should_create_doc_withMyID() {
+        String myId = UUID.randomUUID().toString();
+        astraClient.namespace(namespace).collection("personi")
+                   .save(new Person(myId,myId), myId);
+;    }
+    
+    @Test
+    public void should_updateDoc() {
+        String previousId = "a7811b84-a4ab-4a9e-8fe2-45e13a8f8b19";
+        astraClient.namespace(namespace).collection("personi")
+                   .save(new Person("loulou", "lala"), previousId);
+    }
+    
+    @Test
+    public void should_existDocc() {
+        String previousId = "a7811b84-a4ab-4a9e-8fe2-45e13a8f8b19";
+        //System.out.println(astraClient.namespace(namespace).collection("personi")
+        //           .exist(previousId));
+        
+        Optional<Person> op = astraClient.namespace(namespace)
+                                         .collection("personi")
+                                         .findById("iddidi", Person.class);
+        System.out.println(op.isPresent());
+                
+                
+;    }
+    
+   
     
     @Test
     public void test() {
         
-        //System.out.println(astraClient.namespace("namespace1").existCollection("person"));
-        //astraClient.namespace("namespace1").createCollection("cedrick");
-        
-        
-     // Optional but testing parameters
-        //SimplePerson p = new SimplePerson("Cedrick", "Lunven");
-        //Document<SimplePerson> doc = new Document<SimplePerson>(p, SimplePerson.class);
-        
-        //doc.setCollectionName("person");
-        
-        //System.out.println(doc.getGenericName());
-        //System.out.println(astraClient.namespace("namespace1").create(doc));
-        
-        //System.out.println(astraClient.namespace("namespace1")
-        //           .existDocument("person", "1323b239-7192-459b-87d0-a8e994fb2218"));
-        
-        
-        Optional<DocumentPerson> doc = 
-                astraClient.namespace("namespace1").findById(
-                "person", "1323b239-7192-459b-87d0-a8e994fb2217", DocumentPerson.class);
-        System.out.println(doc.isEmpty());
-        System.out.println(doc.get().getData().getFirstName());
-        
-        
-        //astraClient.documentApi("namespace").create(new Document<>(val));
+       // Optional<DocumentPerson> doc = 
+       //         astraClient.namespace("namespace1").findById(
+        //        "person", "1323b239-7192-459b-87d0-a8e994fb2217", DocumentPerson.class);
+        //System.out.println(doc.isEmpty());
+        //System.out.println(doc.get().getData().getFirstName());
         
         //astraClient.restApi("keyspaceName");
         

@@ -13,6 +13,12 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs. On top o
 - [Configure client `AstraClient` with **Constructor**](#11---import-library-in-your-project)
 - [Configure client `AstraClient` with **Spring**](#11---import-library-in-your-project)
 
+**[Schema API](#)**
+- findAllNamespaces
+- findAllKeyspaces
+- findNamespaceById
+- findKeyspaceById
+
 
 **[Document API](#)**
 - [Working with Collections](#)
@@ -44,18 +50,19 @@ You will work with a single object named `AstraClient` that could work both with
 AstraClient astraClient = AstraClient.builder().build();
 
 // --------------
-//   DOCUMENT
+//  DOCUMENT API
 // --------------
+// Create, no id provided create one
 Person p = new Person("Cedrick", "Lunven");
-// Save
-String docPersonId = astraClient.namespace("namespace1") // immediately setup to doc API
-           			         .save(p);		    // create new doc in db
-// FindById
-Optional<Person> person2 = astraClient.namespace("namespace1").findById(docPersonId, Person.class);
+String docPersonId = astraClient.namespace("namespace1").save(p);
 
-// Update
-AstraDocument wrapper = new AstraDocument<Person>(docPersonId, new Person("Cedric", "Lunven"));
-astraClient.namespace("namespace1").save(wrapper);
+// FindById
+Optional<Person> person2 = 
+	astraClient.namespace("namespace1")
+	           .findById(docPersonId, Person.class);
+
+// Update as id already exist or create a new wit this id
+astraClient.namespace("namespace1").save(docPersonId, new Person("Cedric", "Lunven"));
 
 // FindAll but with Paging ^^
 int pageSize = 10;
