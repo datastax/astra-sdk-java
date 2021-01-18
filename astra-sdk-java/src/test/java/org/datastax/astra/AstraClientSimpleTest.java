@@ -1,16 +1,17 @@
 package org.datastax.astra;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.datastax.astra.doc.ResultListPage;
 import org.datastax.astra.schemas.DataCenter;
-import org.datastax.astra.schemas.Keyspace;
+import org.datastax.astra.schemas.QueryDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class AstraClientSimpleTest {
     
@@ -44,10 +45,13 @@ public class AstraClientSimpleTest {
     }
     
     @Test
+    public void should_createClient_standAloneStargate() {
+       Assertions.assertTrue(new AstraClient("http://localhost:8082", dbUser, dbPasswd).connect());
+    }
+    
+    @Test
     public void should_createClient_withConstructor() {
-       Assertions.assertTrue(
-               new AstraClient(dbId, dbRegion, dbUser, dbPasswd)
-                   .connect());
+       Assertions.assertTrue(new AstraClient(dbId, dbRegion, dbUser, dbPasswd).connect());
     }
     
     @Test
@@ -128,49 +132,66 @@ public class AstraClientSimpleTest {
     @Test
     public void should_create_doc_withMyID() {
         String myId = UUID.randomUUID().toString();
-        astraClient.namespace(namespace).collection("personi")
-                   .save(new Person(myId,myId), myId);
+        astraClient.namespace(namespace).collection("personi").document(myId)
+                   .save(new Person(myId,myId));
 ;    }
     
     @Test
     public void should_updateDoc() {
         String previousId = "a7811b84-a4ab-4a9e-8fe2-45e13a8f8b19";
-        astraClient.namespace(namespace).collection("personi")
-                   .save(new Person("loulou", "lala"), previousId);
+        astraClient.namespace(namespace).collection("personi").document(previousId)
+                   .save(new Person("loulou", "lala"));
+    }
+    
+    
+    @Test
+    public void should_exist_doc() {
+        String previousId = "1323b239-7192-459b-87d0-a8e994fb2217";
+        System.out.println(astraClient
+                .namespace(namespace)
+                .collection("person")
+                .document(previousId)
+                .exist());
+;    }
+    @Test
+    public void should_find_doc() throws JsonProcessingException {
+        String previousId = "fe5585cd-b2d8-455d-900b-12822b691a37";
+        Optional<Person> op = astraClient.namespace(namespace)
+                                         .collection("person")
+                                         .document(previousId)
+                                         .find(Person.class);
+        System.out.println(op.isPresent());
+        System.out.println(astraClient.getObjectMapper().writeValueAsString(op.get()));
     }
     
     @Test
-    public void should_existDocc() {
-        String previousId = "a7811b84-a4ab-4a9e-8fe2-45e13a8f8b19";
-        //System.out.println(astraClient.namespace(namespace).collection("personi")
-        //           .exist(previousId));
-        
-        Optional<Person> op = astraClient.namespace(namespace)
-                                         .collection("personi")
-                                         .findById("iddidi", Person.class);
-        System.out.println(op.isPresent());
-                
-                
-;    }
-    
-   
+    public void testFindAll() {
+        ResultListPage<Person> results = astraClient
+                .namespace(namespace)
+                .collection("person")
+                .findAll(Person.class);
+        for (AstraDocument<Person> person : results.getResults()) {
+            System.out.println(
+                    person.getDocumentId() + "=" + person.getDocument().getFirstname());
+        }
+    }
     
     @Test
-    public void test() {
+    public void testSearch() {
         
-       // Optional<DocumentPerson> doc = 
-       //         astraClient.namespace("namespace1").findById(
-        //        "person", "1323b239-7192-459b-87d0-a8e994fb2217", DocumentPerson.class);
-        //System.out.println(doc.isEmpty());
-        //System.out.println(doc.get().getData().getFirstName());
+        QueryDocument query = QueryDocument.builder()
+                     .where("age").isGreaterOrEqualsThan(40)
+                     .build();
         
-        //astraClient.restApi("keyspaceName");
+        ResultListPage<Person> results = astraClient
+                     .namespace(namespace)
+                     .collection("person")
+                     .search(query, Person.class);
         
-        //astraClient.devOpsApi();
-        
-        //astraClient.graphQLApi();
-        
-        //astraClient.getCqlSession();
+        for (AstraDocument<Person> person : results.getResults()) {
+            System.out.println(
+                    person.getDocumentId() + "=" + person.getDocument().getFirstname());
+        }
         
     }
     

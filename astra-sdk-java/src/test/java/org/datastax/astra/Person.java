@@ -1,21 +1,25 @@
 package org.datastax.astra;
 
 import java.io.Serializable;
-
-import org.datastax.astra.doc.AstraCollection;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties
-@AstraCollection("person")
 public class Person implements Serializable {
     
     /** Serial. */
     private static final long serialVersionUID = 2798538288964412234L;
 
-    private String firstName;
+    private String firstname;
     
-    private String lastName;
+    private String lastname;
+    
+    private int age;
+    
+    private List<String> contries;
+    
+    private Address address;
 
     /**
      * Defaut Constructor.
@@ -26,45 +30,142 @@ public class Person implements Serializable {
      * Defaut Constructor.
      */
     public Person(String first, String last) {
-        this.firstName = first;
-        this.lastName  = last;
+        this.firstname = first;
+        this.lastname  = last;
     }
     
+    public static class Address {
+        private String city;
+        private int zipCode;
+        /**
+         * Getter accessor for attribute 'city'.
+         *
+         * @return
+         *       current value of 'city'
+         */
+        public String getCity() {
+            return city;
+        }
+        /**
+         * Setter accessor for attribute 'city'.
+         * @param city
+         * 		new value for 'city '
+         */
+        public void setCity(String city) {
+            this.city = city;
+        }
+        /**
+         * Getter accessor for attribute 'zipCode'.
+         *
+         * @return
+         *       current value of 'zipCode'
+         */
+        public int getZipCode() {
+            return zipCode;
+        }
+        /**
+         * Setter accessor for attribute 'zipCode'.
+         * @param zipCode
+         * 		new value for 'zipCode '
+         */
+        public void setZipCode(int zipCode) {
+            this.zipCode = zipCode;
+        }
+    }
+
+
     /**
-     * Getter accessor for attribute 'firstName'.
+     * Getter accessor for attribute 'age'.
      *
      * @return
-     *       current value of 'firstName'
+     *       current value of 'age'
      */
-    public String getFirstName() {
-        return firstName;
+    public int getAge() {
+        return age;
     }
 
     /**
-     * Setter accessor for attribute 'firstName'.
-     * @param firstName
-     * 		new value for 'firstName '
+     * Setter accessor for attribute 'age'.
+     * @param age
+     * 		new value for 'age '
      */
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setAge(int age) {
+        this.age = age;
     }
 
     /**
-     * Getter accessor for attribute 'lastName'.
+     * Getter accessor for attribute 'address'.
      *
      * @return
-     *       current value of 'lastName'
+     *       current value of 'address'
      */
-    public String getLastName() {
-        return lastName;
+    public Address getAddress() {
+        return address;
     }
 
     /**
-     * Setter accessor for attribute 'lastName'.
-     * @param lastName
-     * 		new value for 'lastName '
+     * Setter accessor for attribute 'address'.
+     * @param address
+     * 		new value for 'address '
      */
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    /**
+     * Getter accessor for attribute 'firstname'.
+     *
+     * @return
+     *       current value of 'firstname'
+     */
+    public String getFirstname() {
+        return firstname;
+    }
+
+    /**
+     * Setter accessor for attribute 'firstname'.
+     * @param firstname
+     * 		new value for 'firstname '
+     */
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    /**
+     * Getter accessor for attribute 'lastname'.
+     *
+     * @return
+     *       current value of 'lastname'
+     */
+    public String getLastname() {
+        return lastname;
+    }
+
+    /**
+     * Setter accessor for attribute 'lastname'.
+     * @param lastname
+     * 		new value for 'lastname '
+     */
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    /**
+     * Getter accessor for attribute 'contries'.
+     *
+     * @return
+     *       current value of 'contries'
+     */
+    public List<String> getContries() {
+        return contries;
+    }
+
+    /**
+     * Setter accessor for attribute 'contries'.
+     * @param contries
+     * 		new value for 'contries '
+     */
+    public void setContries(List<String> contries) {
+        this.contries = contries;
     }
 }

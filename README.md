@@ -175,7 +175,7 @@ AstraClient astraClient = new AstraClient("<youdbId>", "<youdbregion>", "<userna
 
 **📘 Working with Stargate**                
 
-```                
+```java                
 AstraClient astraClient = new AstraClient("<baseUrl>", "<username>", "<password>");
 AstraClient astraClient = new AstraClient("<baseUrl>", "<username>", "<password>", Duration.ofSeconds(300));          
 ```
@@ -197,6 +197,7 @@ astra:
 ```
 
 *Sample Configuration Class*
+
 ```java
 @Configuration
 public class AstraConfiguration {

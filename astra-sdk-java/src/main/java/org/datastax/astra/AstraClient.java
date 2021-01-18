@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import org.datastax.astra.doc.NamespaceClient;
@@ -86,6 +87,8 @@ public class AstraClient {
     private final HttpClient httpClient = HttpClient.newBuilder()
                 .version(Version.HTTP_2)
                 .followRedirects(Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(10))
+                .executor(Executors.newFixedThreadPool(5))
                 .build();
     
     /** Object <=> Json marshaller as a Jackson Mapper. */

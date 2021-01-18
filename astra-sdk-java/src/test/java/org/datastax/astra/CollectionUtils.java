@@ -1,8 +1,7 @@
-package org.datastax.astra.doc;
+package org.datastax.astra;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 
 /**
@@ -20,14 +19,14 @@ import java.util.Objects;
 public class CollectionUtils {
 
     /** Associate a collection to a className. */
-    private static final Map<String, Class<?>> col2class = new HashMap<>();
+    public static final Map<String, Class<?>> col2class = new HashMap<>();
     
     /** Associate a collection to a className. */
-    private static final Map<Class<?>, String> class2collec = new HashMap<>();
+    public static final Map<Class<?>, String> class2collec = new HashMap<>();
     
     /**
      * Used if annotation has not been provided to marshall class.
-     */
+     *
     public static String getCollectionName(Class<?> clazz) {
         if (!class2collec.containsKey(clazz)) {
             String collectioName = fromCamelCaseToSnakeCase(clazz.getName().replace(".", "_"));
@@ -43,7 +42,7 @@ public class CollectionUtils {
     
     /**
      * Map String to className. 
-     */
+     *
     public static Class<?> mapCollectionToClass(String collectionName)
     throws ClassNotFoundException {
         Objects.requireNonNull(collectionName);
@@ -61,7 +60,7 @@ public class CollectionUtils {
     
     /**
      * Mapping from className to collection name (camelCase => snakeCase).
-     */
+     *
     private static String fromCamelCaseToSnakeCase(String str) {
         Objects.requireNonNull(str);
         String result = "";
@@ -105,6 +104,6 @@ public class CollectionUtils {
         // First Letter is a capital
         sb.replace(0, 1, String.valueOf(Character.toUpperCase(sb.charAt(0))));
         return sb.toString();
-    }
+    }*/
 
 }
