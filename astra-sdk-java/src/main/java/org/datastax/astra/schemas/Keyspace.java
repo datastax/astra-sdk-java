@@ -3,14 +3,17 @@ package org.datastax.astra.schemas;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represent a keyspace definition with its relevant MetaData.
+ */
 public class Keyspace {
     
-    String name;
+    protected String name;
     
-    List<DataCenter> datacenters = new ArrayList<>();
+    protected List<DataCenter> datacenters = new ArrayList<>();
 
     public Keyspace() {}
-    
+            
     public Keyspace(String name, List<DataCenter> datacenters) {
         super();
         this.name = name;

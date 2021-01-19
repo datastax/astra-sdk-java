@@ -9,7 +9,7 @@ import java.util.Map;
  * @author Cedrick Lunven (@clunven)
  */
 public class JsonUtils {
- 
+    
     private JsonUtils() {
     }
     

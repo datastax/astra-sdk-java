@@ -1,4 +1,4 @@
-package org.datastax.astra;
+package org.datastax.astra.doc;
 
 /**
  * Wrapper for an document retrieved from ASTRA caring a unique identifier.

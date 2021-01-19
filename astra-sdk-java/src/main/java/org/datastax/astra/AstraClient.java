@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
+import org.datastax.astra.devops.AstraDevopsClient;
 import org.datastax.astra.doc.NamespaceClient;
 import org.datastax.astra.rest.KeyspaceClient;
 import org.datastax.astra.schemas.Keyspace;
@@ -81,10 +82,10 @@ public class AstraClient {
     private final String password;
     
     /** Authentication token, time to live. */
-    private final Duration authTokenTtl;
+    protected final Duration authTokenTtl;
     
     /** Core Java 11 Http Client (limiting dependencies to third-party and ensure portability). **/
-    private final HttpClient httpClient = HttpClient.newBuilder()
+    public static final HttpClient httpClient = HttpClient.newBuilder()
                 .version(Version.HTTP_2)
                 .followRedirects(Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(10))
@@ -92,7 +93,7 @@ public class AstraClient {
                 .build();
     
     /** Object <=> Json marshaller as a Jackson Mapper. */
-    private final ObjectMapper objectMapper = new ObjectMapper()
+    public static final ObjectMapper objectMapper = new ObjectMapper()
                 .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
                 .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -188,6 +189,10 @@ public class AstraClient {
     
     public Stream<String> keyspaceNames() {
         return keyspaces().map(Keyspace::getName);
+    }
+    
+    public static AstraDevopsClient devops(String clientId, String clientname, String clientSecret) {
+        return new AstraDevopsClient(clientname, clientId, clientSecret);
     }
     
     /**

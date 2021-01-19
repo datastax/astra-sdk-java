@@ -4,7 +4,13 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+import org.datastax.astra.devops.AstraDevopsClient;
+import org.datastax.astra.devops.DatabaseFilter;
+import org.datastax.astra.devops.DatabaseFilter.Include;
+import org.datastax.astra.devops.DatabaseFilter.Provider;
+import org.datastax.astra.doc.AstraDocument;
 import org.datastax.astra.doc.ResultListPage;
 import org.datastax.astra.schemas.DataCenter;
 import org.datastax.astra.schemas.QueryDocument;
@@ -179,19 +185,48 @@ public class AstraClientSimpleTest {
     @Test
     public void testSearch() {
         
+        // Connectivity
+        AstraClient astraClient = AstraClient.builder()
+                .astraDatabaseId(dbId)
+                .astraDatabaseRegion(dbRegion)
+                .username(dbUser)
+                .password(dbPasswd)
+                .tokenTtl(Duration.ofSeconds(300))
+                .build();
+        
+        // Create a query
         QueryDocument query = QueryDocument.builder()
                      .where("age").isGreaterOrEqualsThan(40)
                      .build();
         
+        // Execute q query
         ResultListPage<Person> results = astraClient
                      .namespace(namespace)
                      .collection("person")
                      .search(query, Person.class);
         
         for (AstraDocument<Person> person : results.getResults()) {
-            System.out.println(
-                    person.getDocumentId() + "=" + person.getDocument().getFirstname());
+            System.out.println(person.getDocumentId() + "=" + person.getDocument().getFirstname());
         }
+        
+    }
+    
+    @Test
+    public void testCreateKeyspace() {
+        
+        AstraDevopsClient devopsApiClient = AstraClient.devops(
+                "149de2c7-9b07-41b3-91ad-9453dee4dc54", 
+                "cedrick.lunven@datastax.com", 
+                "0b6b54cb-a62d-48eb-a4a3-fddb95373s5b1");
+        
+        
+        devopsApiClient.databases(DatabaseFilter.builder()
+                .limit(20)
+                .provider(Provider.ALL)
+                .include(Include.NON_TERMINATED)
+                .build());
+        
+        
         
     }
     

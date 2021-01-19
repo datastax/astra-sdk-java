@@ -7,18 +7,18 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs. On top o
 ## 🏠 Table of contents
 
 **[Getting Started](#1-getting-started)**
-- [Import library in your project](#11---import-library-in-your-project)
-- [Configure client `AstraClient` with **Environment variables**](#11---import-library-in-your-project)
-- [Configure client `AstraClient` with **Fluent API**](#11---import-library-in-your-project)
-- [Configure client `AstraClient` with **Constructor**](#11---import-library-in-your-project)
-- [Configure client `AstraClient` with **Spring**](#11---import-library-in-your-project)
+- [Import library in your project](#import-sdk-dependency-in-your-project)
+- [Configure `AstraClient` with **Environment variables**](#configure-client-astraclient-with-environment-variables)
+- [Configure `AstraClient` with **Fluent API**](#configure-client-astraclient-with-fluent-api)
+- [Configure `AstraClient` with **Constructor**](#configure-client-astraclient-with-constructor)
+- [Configure `AstraClient` with **Spring**](#configure-client-astraclient-with-spring-framework)
+- [Test Connectivity(#test-connectivity)]
 
 **[Schema API](#)**
 - findAllNamespaces
 - findAllKeyspaces
 - findNamespaceById
 - findKeyspaceById
-
 
 **[Document API](#)**
 - [Working with Collections](#)
@@ -73,7 +73,7 @@ ResultPageList<Person> personPage2 = astraClient.namespace("namespace1").findAll
 astraClient.namespace("namespace1").delete(docPersonId, Person.class);
 ```
 
-### ⚒️ Import SDK dependency in your project
+### Import SDK dependency in your project
 
 You can import the library with the following coordinate in Maven.
 
@@ -220,8 +220,23 @@ public class AstraConfiguration {
  }
 }
 ```
+### Test connectivity
 
-## 2. Document API
+To interact with Astra and Stargate you need to create an `Authentication Token` and provides it in the header for each of you query using key `X-Cassandra-Token`. 
+The work is done for you at the SDK level but not only. It will store it a renew it after a time to leave you setup. Before every class to the API the SDK check
+the token. To create a token and as such validate your connection details you can do:
+
+```java
+boolean isConnectionEstablished = astraClient.connect();
+```
+
+## 2. Schema API
+
+As presented in the [Astra Reference Documentation](https://docs.astra.datastax.com/reference#auth-2) the Astra Document APIS is divided in 4 spaces: Authentications, Namespace, Keyspaces and Schemas.
+
+
+
+## 3. Document API
 
 Astra and Stargate bring great innovation by allowing Apache Cassandra to store Documents like a document-oriented noSQL database. To cope with Cassandra data model constraints the [document shredding](https://stargate.io/2020/10/19/the-stargate-cassandra-documents-api.html) function has been used.
 

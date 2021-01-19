@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.datastax.astra.AstraClient;
-import org.datastax.astra.AstraDocument;
 import org.datastax.astra.AstraResponse;
 import org.datastax.astra.schemas.QueryDocument;
 import org.datastax.astra.schemas.QueryDocument.QueryDocumentBuilder;

@@ -3,8 +3,6 @@ package org.datastax.astra.doc;
 import java.util.List;
 import java.util.Optional;
 
-import org.datastax.astra.AstraDocument;
-
 /**
  * Hold results for paging
  *
