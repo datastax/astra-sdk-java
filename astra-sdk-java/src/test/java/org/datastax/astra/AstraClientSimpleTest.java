@@ -1,20 +1,29 @@
 package org.datastax.astra;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import org.datastax.astra.devops.AstraDevopsClient;
-import org.datastax.astra.devops.DatabaseFilter;
-import org.datastax.astra.devops.DatabaseFilter.Include;
-import org.datastax.astra.devops.DatabaseFilter.Provider;
 import org.datastax.astra.doc.AstraDocument;
 import org.datastax.astra.doc.ResultListPage;
 import org.datastax.astra.schemas.DataCenter;
+import org.datastax.astra.schemas.Namespace;
 import org.datastax.astra.schemas.QueryDocument;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,25 +31,56 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class AstraClientSimpleTest {
     
     // Dataset
-    static String dbId     = "e92195f2-159f-492e-9777-3dadda3ff1a3";
-    static String dbRegion = "europe-west1";
-    static String dbUser   = "todouser";
-    static String dbPasswd = "todoPassword1";
+    private static String dbId;
+    private static String dbRegion;
+    private static String dbUser;
+    private static String dbPasswd;
     
-    static String namespace = "namespace1";
+    // TODO: You need to create this namespace in ASTRA FIRST (using devops API for instance)
+    public static final String WORKING_NAMESPACE = "namespace1";
     
-    static AstraClient astraClient = AstraClient.builder()
-            .astraDatabaseId(dbId)
-            .astraDatabaseRegion(dbRegion)
-            .username(dbUser)
-            .password(dbPasswd)
-            .tokenTtl(Duration.ofSeconds(300))
-            .build();
+    
+    /**
+     * Load properties values from an external file. 
+     * Easier than ENV VAR in eclipse and not commited
+     * in github, Keys names are just a sample
+     */
+    
+    @BeforeAll
+    public static void initAstraClient() throws FileNotFoundException, IOException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(new File("/tmp/credentials.properties")));
+        dbId     = properties.getProperty("id");
+        dbRegion = properties.getProperty("region");
+        dbUser   = properties.getProperty("user");
+        dbPasswd = properties.getProperty("password");
+    }
     
     // --- CONNECTIVITY ---
     
     @Test
-    public void should_createClient_withBuilder() {
+    @Disabled("Stargate not installed")
+    public void should_connect_to_stargate_with_builder() {
+        Assertions.assertTrue(AstraClient.builder()
+                .baseUrl("http://localhost:8082")
+                .username(dbUser)
+                .password(dbPasswd)
+                .tokenTtl(Duration.ofSeconds(300))
+                .build().connect());
+    }
+    
+    @Test
+    @Disabled("Not reproductible on CI/CD but works")
+    public void should_connect_to_astra_with_envvar() {
+        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_ID"));
+        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_REGION"));
+        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_USERNAME"));
+        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_PASSWORD"));
+        Assertions.assertTrue(AstraClient.builder().build().connect());
+    }
+    
+    @Test
+    public void should_connect_to_astra_with_builder() {
         Assertions.assertTrue(AstraClient.builder()
                 .astraDatabaseId(dbId)
                 .astraDatabaseRegion(dbRegion)
@@ -51,45 +91,57 @@ public class AstraClientSimpleTest {
     }
     
     @Test
-    public void should_createClient_standAloneStargate() {
-       Assertions.assertTrue(new AstraClient("http://localhost:8082", dbUser, dbPasswd).connect());
-    }
-    
-    @Test
-    public void should_createClient_withConstructor() {
-       Assertions.assertTrue(new AstraClient(dbId, dbRegion, dbUser, dbPasswd).connect());
-    }
-    
-    @Test
-    /**
-     * Reading... ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_USERNAME, ASTRA_DB_PASSWORD
-     */
-    public void should_createClient_withEnvVar() {
-        Assertions.assertTrue(AstraClient.builder().build().connect());
+    public void should_connect_to_astra_with_constructor() {
+       Assertions.assertTrue(
+               new AstraClient(dbId, dbRegion, dbUser, dbPasswd)
+                   .connect());
     }
     
     // --- NAMESPACE ---
     
     @Test
-    public void should_list_namespace() {
-        astraClient.namespaces().forEach(System.out::println);
+    public void namespace1_should_exist_inList() {
+        // Given
+        AstraClient client = new AstraClient(dbId, dbRegion, dbUser, dbPasswd);
+        // When
+        Set<String> namespaces = client.namespaceNames().collect(Collectors.toSet());
+        // Then
+        Assert.assertTrue(namespaces.contains(WORKING_NAMESPACE));
     }
     
     @Test
-    public void should_list_namespaceNames() {
-        astraClient.namespaceNames().forEach(System.out::println);
+    public void namespace1_should_have_datacenters() {
+        // Given
+        AstraClient client = new AstraClient(dbId, dbRegion, dbUser, dbPasswd);
+        // When
+        Map<String, Namespace> namespaces = client.namespaces().collect(
+                Collectors.toMap(Namespace::getName,  Function.identity()));
+        // Then
+        Assert.assertTrue(namespaces.containsKey(WORKING_NAMESPACE));
+        Assert.assertFalse(namespaces.get(WORKING_NAMESPACE).getDatacenters().isEmpty());
     }
     
     @Test
-    public void should_exist_namespace() {
-        System.out.println(astraClient.namespace("namespace1").exist());
+    public void namespace1_should_exist() {
+        // Given
+        AstraClient client = new AstraClient(dbId, dbRegion, dbUser, dbPasswd);
+        // Then
+        Assert.assertTrue(client.namespace(WORKING_NAMESPACE).exist());
     }
     
+   
     @Test
+    @Disabled("Api user does not have enough permissions")
     public void should_create_namespace() {
-        astraClient.namespace("namespace2")
-                   .create(Arrays.asList(new DataCenter("dc-1", 1)));
+        // Given
+        AstraClient client = new AstraClient(dbId, dbRegion, dbUser, dbPasswd);
+        // When
+        client.namespace("namespace2").create(Arrays.asList(new DataCenter("dc-1", 1)));
+        // Then
+        Assert.assertTrue(client.namespace("namespace2").exist());
     }
+    
+    /*
     
     @Test
     public void should_delete_namespace() {
@@ -209,27 +261,6 @@ public class AstraClientSimpleTest {
             System.out.println(person.getDocumentId() + "=" + person.getDocument().getFirstname());
         }
         
-    }
+    }*/
     
-    @Test
-    public void testCreateKeyspace() {
-        
-        AstraDevopsClient devopsApiClient = AstraClient.devops(
-                "149de2c7-9b07-41b3-91ad-9453dee4dc54", 
-                "cedrick.lunven@datastax.com", 
-                "0b6b54cb-a62d-48eb-a4a3-fddb95373s5b1");
-        
-        
-        devopsApiClient.databases(DatabaseFilter.builder()
-                .limit(20)
-                .provider(Provider.ALL)
-                .include(Include.NON_TERMINATED)
-                .build());
-        
-        
-        
-    }
-    
-    
-
 }

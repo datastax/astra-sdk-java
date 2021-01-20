@@ -20,6 +20,7 @@ import org.datastax.astra.devops.AstraDevopsClient;
 import org.datastax.astra.doc.NamespaceClient;
 import org.datastax.astra.rest.KeyspaceClient;
 import org.datastax.astra.schemas.Keyspace;
+import org.datastax.astra.schemas.Namespace;
 import org.datastax.astra.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +150,7 @@ public class AstraClient {
                         .toString(), username, password, ttl);
     }
     
-    public Stream<Keyspace> namespaces() {
+    public Stream<Namespace> namespaces() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .timeout(DEFAULT_TIMEOUT)
@@ -159,7 +160,7 @@ public class AstraClient {
                     .GET().build();
             return getObjectMapper().readValue(
                     getHttpClient().send(request, BodyHandlers.ofString()).body(), 
-                    new TypeReference<AstraResponse<List<Keyspace>>>(){}).getData().stream();
+                    new TypeReference<AstraResponse<List<Namespace>>>(){}).getData().stream();
             
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot list namespaces", e);
