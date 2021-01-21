@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.datastax.astra.AstraClient;
-import org.datastax.astra.AstraResponse;
+import org.datastax.astra.api.ApiResponse;
 import org.datastax.astra.schemas.QueryDocument;
 import org.datastax.astra.schemas.QueryDocument.QueryDocumentBuilder;
 import org.datastax.astra.utils.Assert;
@@ -227,9 +227,9 @@ public class CollectionClient {
              AstraClient.handleError(response);
              
              // Marshalling (using LinkedHashMap DOC was a bit to much Generics for Jackson here)
-             AstraResponse<Map<String, LinkedHashMap<?,?>>> result = 
+             ApiResponse<Map<String, LinkedHashMap<?,?>>> result = 
                      astraClient.getObjectMapper().readValue(
-                            response.body(), new TypeReference<AstraResponse<Map<String, LinkedHashMap<?,?>>>>(){});
+                            response.body(), new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){});
              
              // Mapping to ResultListPage
             return new ResultListPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()

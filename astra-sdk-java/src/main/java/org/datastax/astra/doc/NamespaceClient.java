@@ -6,6 +6,7 @@ import static org.datastax.astra.AstraClient.HEADER_CONTENT_TYPE;
 import static org.datastax.astra.AstraClient.PATH_SCHEMA;
 import static org.datastax.astra.AstraClient.PATH_SCHEMA_NAMESPACES;
 import static org.datastax.astra.AstraClient.handleError;
+import static org.datastax.astra.api.AbstractApiClient.*;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -19,13 +20,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.datastax.astra.AstraClient;
-import org.datastax.astra.AstraResponse;
+import org.datastax.astra.api.AbstractApiClient;
+import org.datastax.astra.api.ApiResponse;
 import org.datastax.astra.schemas.DataCenter;
 import org.datastax.astra.schemas.Keyspace;
 import org.datastax.astra.utils.Assert;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-
 /**
  * Client for API resource /v2/namespaces.
  *
@@ -38,7 +39,7 @@ public class NamespaceClient {
     public static final String PATH_COLLECTIONS = "/collections";
     
     /** Astra Client. */
-    private final AstraClient client;
+    private final ApiDocumentClient docClient;
     
     /** Namespace. */
     private final String namespace;
@@ -46,9 +47,9 @@ public class NamespaceClient {
     /**
      * Full constructor.
      */
-    public NamespaceClient(AstraClient astraClient, String namespace) {
-        this.client    = astraClient;
-        this.namespace = namespace;
+    public NamespaceClient(ApiDocumentClient docClient, String namespace) {
+        this.docClient    = docClient;
+        this.namespace    = namespace;
     }
     
     /**
@@ -59,21 +60,21 @@ public class NamespaceClient {
         try {
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES + "/" + namespace ))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl() + PATH_SCHEMA + ApiDocumentClient.PATH_SCHEMA_NAMESPACES + "/" + namespace ))
                     .GET().build();
-            HttpResponse<String> response = client.getHttpClient()
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(request, BodyHandlers.ofString());
             
             if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
                 return Optional.empty();
             }
             return Optional.ofNullable(
-                    client.getObjectMapper().readValue(
-                            client.getHttpClient().send(request, BodyHandlers.ofString()).body(), 
-                              new TypeReference<AstraResponse<Keyspace>>(){}).getData());
+                    ApiDocumentClient.getObjectMapper().readValue(
+                            ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString()).body(), 
+                              new TypeReference<ApiResponse<Keyspace>>(){}).getData());
             
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
@@ -96,15 +97,15 @@ public class NamespaceClient {
         Assert.isTrue(!datacenters.isEmpty(), "DataCenters are required");
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl() + PATH_SCHEMA + ApiDocumentClient.PATH_SCHEMA_NAMESPACES))
                     .POST(BodyPublishers.ofString(
-                            client.getObjectMapper().writeValueAsString(
+                            ApiDocumentClient.getObjectMapper().writeValueAsString(
                                     new Keyspace(namespace, datacenters))))
                     .build();
-            handleError(client.getHttpClient()
+            handleError(ApiDocumentClient.getHttpClient()
                     .send(request, BodyHandlers.ofString()));
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
@@ -153,9 +154,9 @@ public class NamespaceClient {
                     client.getHttpClient().send(request, BodyHandlers.ofString());
             
             // Marshalling as Object
-            AstraResponse<List<CollectionMetaData>> oResponse = 
+            ApiResponse<List<CollectionMetaData>> oResponse = 
                     client.getObjectMapper().readValue(response.body(), 
-                            new TypeReference<AstraResponse<List<CollectionMetaData>>>(){});
+                            new TypeReference<ApiResponse<List<CollectionMetaData>>>(){});
             
             // Mapping to set
             return oResponse.getData().stream()

@@ -5,13 +5,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.datastax.astra.AstraClient;
+import org.datastax.astra.api.AbstractApiClient;
 import org.datastax.astra.utils.Assert;
 import org.datastax.astra.utils.JsonUtils;
 import org.slf4j.Logger;
@@ -24,85 +24,66 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @author Cedrick LUNVEN (@clunven)
  *
  */
-public class AstraDevopsClient {
+public class ApiDevopsClient extends AbstractApiClient {
     
     /** Default Endpoint. */
     public static final String ASTRA_ENDPOINT_DEVOPS = "https://api.astra.datastax.com/v2/";
     
-    /** Retention period for authToken in seconds, default is 5 MIN */
-    public static final Duration DEFAULT_TTL          = Duration.ofSeconds(300);
-    
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
     
+    /** Service Account client Identifier. */
     private String clientId;
     
+    /** Service Account client name. */
     private String clientName;
     
+    /** Service Account client secret. */
     private String clientSecret;
-    
-    // ------------------------
-    //  Bearer Token
-    // ------------------------
-    
-    /** Storing an authentication token to speed up queries. */
-    private String bearerToken;
-    
-    /** Mark the token update. */
-    private long bearerTokenCreationDate = 0;
-    
-    /** Authentication token, time to live. */
-    protected final Duration bearerTokenTokenTtl = AstraClient.DEFAULT_TTL;
     
     /**
      * As immutable object use builder to initiate the object.
      */
-    public AstraDevopsClient(String clientName, String clientId, String clientSecret) {
+    public ApiDevopsClient(String clientName, String clientId, String clientSecret) {
        this.clientId     = clientId;
        this.clientName   = clientName;
        this.clientSecret = clientSecret;
+       Assert.hasLength(clientId, "clientId");
+       Assert.hasLength(clientName, "clientName");
+       Assert.hasLength(clientSecret, "clientSecret");
     }
     
-    /**
-     * Generate or renew authentication token
-     */
-    protected String getBearerToken() {
-        if ((System.currentTimeMillis() - bearerTokenCreationDate) > 1000 * bearerTokenTokenTtl.getSeconds()) {
+    /** {@inheritDoc} */
+    @Override
+    public String renewToken() {
+        try {
+            String authRequestBody = new StringBuilder("{")
+                .append("\"clientId\":")
+                .append(JsonUtils.valueAsJson(clientId))
+                .append(",\"clientName\":")
+                .append(JsonUtils.valueAsJson(clientName))
+                .append(",\"clientSecret\":")
+                .append(JsonUtils.valueAsJson(clientSecret))
+                .append("}").toString();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "authenticateServiceAccount"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .POST(BodyPublishers.ofString(authRequestBody)).build();
             
-            try {
-                // Escaping special chars and preventing JSON injection
-                String authRequestBody = new StringBuilder("{")
-                    .append("\"clientId\":")
-                    .append(JsonUtils.valueAsJson(clientId))
-                    .append(",\"clientName\":")
-                    .append(JsonUtils.valueAsJson(clientName))
-                    .append(",\"clientSecret\":")
-                    .append(JsonUtils.valueAsJson(clientSecret))
-                    .append("}").toString();
-                System.out.println(authRequestBody);
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "authenticateServiceAccount"))
-                        .timeout(AstraClient.REQUEST_TIMOUT)
-                        .header("Content-Type", "application/json")
-                        .header("Accept", "application/json")
-                        .POST(BodyPublishers.ofString(authRequestBody)).build();
-                
-                HttpResponse<String> response = AstraClient.httpClient.send(request, BodyHandlers.ofString());
-                
-                if (201 == response.statusCode() || 200 == response.statusCode()) {
-                   bearerToken = (String) AstraClient.objectMapper.readValue(response.body(), Map.class).get("token");
-                   bearerTokenCreationDate = System.currentTimeMillis();
-                   LOGGER.info("Success Authenticated, token will live for {} second(s).", bearerTokenTokenTtl.getSeconds());
-                } else {
-                    throw new IllegalStateException("Cannot generate authentication token HTTP_CODE=" 
-                                    + response.statusCode() + ", " + response.body());
-                }
-                
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Cannot generate authentication token", e);
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            
+            if (201 == response.statusCode() || 200 == response.statusCode()) {
+
+               LOGGER.info("Success Authenticated, token will live for {} second(s).", tokenttl.getSeconds());
+               return (String) objectMapper.readValue(response.body(), Map.class).get("token");
+            } else {
+                throw new IllegalStateException("Cannot generate authentication token " + response.body());
             }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot generate authentication token", e);
         }
-        return bearerToken;
     }
     
     public Stream<AstraDatabaseInfos> databases() {
@@ -122,15 +103,15 @@ public class AstraDevopsClient {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(sbURL.toString()))
-                    .timeout(AstraClient.REQUEST_TIMOUT)
+                    .timeout(REQUEST_TIMOUT)
                     .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + getBearerToken())
+                    .header("Authorization", "Bearer " + getToken())
                     .GET().build();
             
-            HttpResponse<String> response = AstraClient.httpClient.send(request, BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
             
             if (201 == response.statusCode() || 200 == response.statusCode()) {
-                List<AstraDatabaseInfos> dbs = AstraClient.objectMapper.readValue(response.body(),
+                List<AstraDatabaseInfos> dbs = objectMapper.readValue(response.body(),
                        new TypeReference<List<AstraDatabaseInfos>>(){});
                 LOGGER.info("{} database(s) have been retrieved ", dbs.size());
                 return dbs.stream();
@@ -157,7 +138,8 @@ public class AstraDevopsClient {
     public void downloadSecureConnectBundle(String dbId, String destination) {
         
     }
-    
+
+   
     
     
     

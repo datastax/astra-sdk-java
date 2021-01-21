@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.datastax.astra.devops.AstraDatabaseInfos;
-import org.datastax.astra.devops.AstraDevopsClient;
+import org.datastax.astra.devops.ApiDevopsClient;
 import org.datastax.astra.devops.DatabaseFilter;
 import org.datastax.astra.devops.DatabaseFilter.Include;
 import org.datastax.astra.devops.DatabaseFilter.Provider;
@@ -19,9 +19,7 @@ import org.junit.jupiter.api.Test;
 public class AstraDevopsApiTest {
     
     // Dataset
-    private static String clientId;
-    private static String clientName;
-    private static String clientSecret;
+   
     
     /**
      * Load properties values from an external file. 
@@ -40,7 +38,7 @@ public class AstraDevopsApiTest {
     @Test
     public void testListDatabases() {
         
-        AstraDevopsClient devopsApiClient = AstraClient.devops(clientId,clientName,clientSecret);
+        ApiDevopsClient devopsApiClient = AstraClient.devops(clientId,clientName,clientSecret);
         
         
         Stream<AstraDatabaseInfos> results = devopsApiClient.databases(DatabaseFilter.builder()
@@ -52,6 +50,11 @@ public class AstraDevopsApiTest {
             System.out.println(infos.getInfo().getRegion());
         }
         
+        AstraClient.builder()
+                   .clientId("").clientSecret("").clientName("")
+                   .build()
+                   .devopsAPI()
+                   .downloadSecureBundle("dbId");
     }
 
 }

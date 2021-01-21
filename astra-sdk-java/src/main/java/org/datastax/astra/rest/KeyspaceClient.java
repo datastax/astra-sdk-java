@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.datastax.astra.AstraClient;
-import org.datastax.astra.AstraResponse;
+import org.datastax.astra.api.ApiResponse;
 import org.datastax.astra.schemas.DataCenter;
 import org.datastax.astra.schemas.Keyspace;
 import org.datastax.astra.utils.Assert;
@@ -37,6 +37,9 @@ public class KeyspaceClient {
     
     /** Namespace. */
     private final String keyspace;
+    
+    
+
     
     /**
      * Full constructor.
@@ -66,7 +69,7 @@ public class KeyspaceClient {
             return Optional.ofNullable(
                     client.getObjectMapper().readValue(
                             client.getHttpClient().send(request, BodyHandlers.ofString()).body(), 
-                              new TypeReference<AstraResponse<Keyspace>>(){}).getData());
+                              new TypeReference<ApiResponse<Keyspace>>(){}).getData());
             
         } catch (Exception e) {
             throw new IllegalArgumentException(e);

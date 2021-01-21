@@ -14,21 +14,21 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs. On top o
 - [Configure `AstraClient` with **Spring**](#configure-client-astraclient-with-spring-framework)
 - [Test Connectivity(#test-connectivity)]
 
-**[Schema API](#)**
+**Schema API**
 - findAllNamespaces
 - findAllKeyspaces
 - findNamespaceById
 - findKeyspaceById
 
-**[Document API](#)**
-- [Working with Collections](#)
-- [Create a Document](#)
-- [Test document existence](#)
-- [Read a document](#)
-- [Search for documents](#)
-- [Paging](#)
-- [Update a document](#)
-- [Delete a document](#)
+**Document API**
+- [Working with Collections](#1-getting-started)
+- [Create a Document](#1-getting-started)
+- [Test document existence](#1-getting-started)
+- [Read a document](#1-getting-started)
+- [Search for documents](#1-getting-started)
+- [Paging](#1-getting-started)
+- [Update a document](#1-getting-started)
+- [Delete a document](#1-getting-started)
 
 **[Rest API](#)**
 

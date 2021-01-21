@@ -1,4 +1,4 @@
-package org.datastax.astra;
+package org.datastax.astra.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  *      returned data by astra
  */
 @JsonIgnoreProperties
-public class AstraResponse<DATA> {
+public class ApiResponse<DATA> {
     
     /**
      * Data field is always part of the response
@@ -26,12 +26,12 @@ public class AstraResponse<DATA> {
     /**
      * Default constructor.
      */
-    public AstraResponse() {}
+    public ApiResponse() {}
     
     /**
      * Default Constructor.
      */
-    public AstraResponse(DATA t) {
+    public ApiResponse(DATA t) {
         this.data = t;
     }
 

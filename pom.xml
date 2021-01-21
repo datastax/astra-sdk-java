@@ -44,22 +44,22 @@
       <dependency>
         <groupId>com.datastax.oss</groupId>
         <artifactId>java-driver-core</artifactId>
-        <version>${cassandra-java-driver.version}</version>
+        <version>${java-driver.version}</version>
       </dependency>
       <dependency>
         <groupId>com.datastax.oss</groupId>
         <artifactId>java-driver-query-builder</artifactId>
-        <version>${cassandra-java-driver.version}</version>
+        <version>${java-driver.version}</version>
       </dependency>
       <dependency>
         <groupId>com.datastax.oss</groupId>
         <artifactId>java-driver-mapper-runtime</artifactId>
-        <version>${cassandra-java-driver.version}</version>
+        <version>${java-driver.version}</version>
       </dependency>
       <dependency>
         <groupId>com.datastax.oss</groupId>
         <artifactId>java-driver-mapper-processor</artifactId>
-        <version>${cassandra-java-driver.version}</version>
+        <version>${java-driver.version}</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>

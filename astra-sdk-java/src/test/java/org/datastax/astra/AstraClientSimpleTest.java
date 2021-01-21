@@ -25,35 +25,51 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class AstraClientSimpleTest {
     
-    // Dataset
+    // Credentials Doc and Rest API
     private static String dbId;
     private static String dbRegion;
     private static String dbUser;
     private static String dbPasswd;
     
+    // Credentials Devops API
+    private static String clientId;
+    private static String clientName;
+    private static String clientSecret;
+    
     // TODO: You need to create this namespace in ASTRA FIRST (using devops API for instance)
     public static final String WORKING_NAMESPACE = "namespace1";
-    
     
     /**
      * Load properties values from an external file. 
      * Easier than ENV VAR in eclipse and not commited
      * in github, Keys names are just a sample
+     * 
+     * id=...
+     * region=...
+     * user=...
+     * password=...
+     * clientId=...
+     * clientName=...
+     * clientSecret=...
      */
     
     @BeforeAll
     public static void initAstraClient() throws FileNotFoundException, IOException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(new File("/tmp/credentials.properties")));
-        dbId     = properties.getProperty("id");
-        dbRegion = properties.getProperty("region");
-        dbUser   = properties.getProperty("user");
-        dbPasswd = properties.getProperty("password");
+        dbId          = properties.getProperty("id");
+        dbRegion      = properties.getProperty("region");
+        dbUser        = properties.getProperty("user");
+        dbPasswd      = properties.getProperty("password");
+        clientId      = properties.getProperty("clientId");
+        clientName    = properties.getProperty("clientName");
+        clientSecret  = properties.getProperty("clientSecret");
     }
     
     // --- CONNECTIVITY ---
@@ -61,7 +77,7 @@ public class AstraClientSimpleTest {
     @Test
     @Disabled("Stargate not installed")
     public void should_connect_to_stargate_with_builder() {
-        Assertions.assertTrue(AstraClient.builder()
+        assertTrue(AstraClient.builder()
                 .baseUrl("http://localhost:8082")
                 .username(dbUser)
                 .password(dbPasswd)
@@ -70,13 +86,23 @@ public class AstraClientSimpleTest {
     }
     
     @Test
+    public void should_not_parameters_be_empty() {
+        assertAll("Required parameters",
+                () -> assertThrows(IllegalArgumentException.class, () -> { AstraClient.builder(); }),
+                () -> assertTrue("Codingeek".endsWith("k")),
+                () -> assertEquals(9, "Codingeek".length())
+        );
+       
+    }
+    
+    @Test
     @Disabled("Not reproductible on CI/CD but works")
     public void should_connect_to_astra_with_envvar() {
-        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_ID"));
-        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_REGION"));
-        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_USERNAME"));
-        Assertions.assertTrue(System.getenv().containsKey("ASTRA_DB_PASSWORD"));
-        Assertions.assertTrue(AstraClient.builder().build().connect());
+        assertTrue(System.getenv().containsKey("ASTRA_DB_ID"));
+        assertTrue(System.getenv().containsKey("ASTRA_DB_REGION"));
+        assertTrue(System.getenv().containsKey("ASTRA_DB_USERNAME"));
+        assertTrue(System.getenv().containsKey("ASTRA_DB_PASSWORD"));
+        assertTrue(AstraClient.builder().build().connect());
     }
     
     @Test
@@ -98,6 +124,8 @@ public class AstraClientSimpleTest {
     }
     
     // --- NAMESPACE ---
+    
+    // Create namespace if not exist
     
     @Test
     public void namespace1_should_exist_inList() {
