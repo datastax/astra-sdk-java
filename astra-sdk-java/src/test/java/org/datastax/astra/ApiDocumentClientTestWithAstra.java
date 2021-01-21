@@ -32,7 +32,7 @@ public class ApiDocumentClientTestWithAstra extends ApiTester {
         initApiDocumentApiClient();
         // Create the namespace if not present
         if (!apiDocClient.namespace(WORKING_NAMESPACE).exist()) {
-            apiDevopsClient.createNamespace(dbId, WORKING_NAMESPACE);
+            apiDevopsClient.createKeyspace(dbId, WORKING_NAMESPACE);
             System.out.println("Creating Namespace " + WORKING_NAMESPACE);
             waitForSeconds(5);
         }

@@ -1,9 +1,10 @@
 package org.datastax.astra;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.datastax.astra.devops.ApiDevopsClient;
 import org.datastax.astra.devops.AstraDatabaseInfos;
@@ -33,8 +34,7 @@ public class ApiDevopsClientTest extends ApiTester {
     @Test
     public void should_find_databases() {
         Assert.assertNotNull(dbId);
-        Optional<AstraDatabaseInfos> astraDbInfo = apiDevopsClient.findDatabaseById(dbId);
-        Assert.assertTrue(astraDbInfo.isPresent());
+        Assert.assertTrue(apiDevopsClient.findDatabaseById(dbId).isPresent());
     }
     
     @Test
@@ -42,23 +42,44 @@ public class ApiDevopsClientTest extends ApiTester {
        Assert.assertFalse(apiDevopsClient.findDatabaseById("i-like-cheese").isPresent());
     }
     
-    
     @Test
-    public void should_list_running_databases() {
-        DatabaseFilter runningDb = DatabaseFilter.builder()
+    public void should_have_dbid_in_running_databases() {
+        DatabaseFilter runningDbQuery = DatabaseFilter.builder()
                 .limit(20).provider(Provider.ALL)
                 .include(Include.NON_TERMINATED)
                 .build();
-        Stream<AstraDatabaseInfos> streamResults = apiDevopsClient.databases(runningDb);
-        Assert.assertNotNull(streamResults);
-        List <AstraDatabaseInfos> listResults = streamResults.collect(Collectors.toList());
-        Assert.assertNotNull(listResults);
-        Assert.assertFalse(listResults.isEmpty());
-        System.out.println(listResults.get(0).getInfo().getKeyspaces());
+        Map<String, AstraDatabaseInfos> runningDb = apiDevopsClient
+                .databases(runningDbQuery)
+                .collect(Collectors.toMap(AstraDatabaseInfos::getId, Function.identity()));
+        Assert.assertTrue(runningDb.containsKey(dbId));
     }
     
+    @Test
     public void should_create_keyspace() {
-        apiDevopsClient.createNamespace(dbId, "toto");
+        // Given
+        String randomKeyspaceName = UUID.randomUUID().toString().replaceAll("-", "");
+        Assert.assertFalse(apiDevopsClient.findDatabaseById(dbId)
+                .get().getInfo().getKeyspaces()
+                .contains(randomKeyspaceName));
+        // When
+        apiDevopsClient.createKeyspace(dbId, randomKeyspaceName);
+        waitForSeconds(5);
+        Assert.assertTrue(apiDevopsClient.findDatabaseById(dbId)
+                .get().getInfo().getKeyspaces()
+                .contains(randomKeyspaceName));
+        
+    }
+    
+    @Test
+    public void should_download_zip() {
+        // Given
+        String randomFile = "/tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".zip";
+        Assert.assertFalse(new File(randomFile).exists());
+        // When
+        apiDevopsClient.downloadSecureConnectBundle(dbId, randomFile);
+        // Then
+        Assert.assertTrue(new File(randomFile).exists());
+        System.out.println(randomFile);
     }
 
     

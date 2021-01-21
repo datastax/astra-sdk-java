@@ -1,5 +1,6 @@
 package org.datastax.astra.devops;
 
+import java.io.File;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -14,6 +15,7 @@ import org.datastax.astra.AstraClient;
 import org.datastax.astra.api.AbstractApiClient;
 import org.datastax.astra.utils.Assert;
 import org.datastax.astra.utils.JsonUtils;
+import org.datastax.astra.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,6 +121,9 @@ public class ApiDevopsClient extends AbstractApiClient {
         return databases(DatabaseFilter.builder().build());
     }
     
+    /**
+     * Find Databases matching the provided filter.
+     */
     public Stream<AstraDatabaseInfos> databases(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
         try {
@@ -152,12 +157,15 @@ public class ApiDevopsClient extends AbstractApiClient {
         }
     }
     
-    public void createNamespace(String dbId, String namespace) {
+    /**
+     * Create a new keyspace in a DB
+     */
+    public void createKeyspace(String dbId, String keyspace) {
         Assert.hasLength(dbId, "Datatasbe id");
-        Assert.hasLength(namespace, "Namespace");
+        Assert.hasLength(keyspace, "Namespace");
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/keyspaces/" + namespace))
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/keyspaces/" + keyspace))
                     .timeout(REQUEST_TIMOUT)
                     .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
@@ -171,22 +179,42 @@ public class ApiDevopsClient extends AbstractApiClient {
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot generate authentication token", e);
         }
-        
     }
     
+    public void createDatabase() {}
     
-    public void createNewKeyspace(String dbId, String keyspaceName) {
-        // BEARER TOKEN
-        // POST
-        //https://api.astra.datastax.com/v2/databases/<dbId>/keyspaces/<keyspaceName>
-        // 201 created, 409 db not AV
-        
+    public void deleteKeyspace(String dbId, String keyspace) {
     }
     
+    /**
+     * Download SecureBundle.
+     */
     public void downloadSecureConnectBundle(String dbId, String destination) {
+        Assert.hasLength(dbId, "Database id");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/secureBundleURL"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (200 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot retrieve download URL " + response.body());
+            }
+            String downloadURL = (String) objectMapper.readValue(response.body(), Map.class).get("downloadURL");
+            Utils.downloadFile(downloadURL, destination);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
         
     }
 
+    
+    
+    
    
     
     
