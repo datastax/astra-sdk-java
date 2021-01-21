@@ -1,11 +1,11 @@
 package org.datastax.astra.devops;
 
-import java.io.File;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -118,13 +118,13 @@ public class ApiDevopsClient extends AbstractApiClient {
     }
     
     public Stream<AstraDatabaseInfos> databases() {
-        return databases(DatabaseFilter.builder().build());
+        return findDatabases(DatabaseFilter.builder().build());
     }
     
     /**
      * Find Databases matching the provided filter.
      */
-    public Stream<AstraDatabaseInfos> databases(DatabaseFilter filter) {
+    public Stream<AstraDatabaseInfos> findDatabases(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
         try {
             StringBuilder sbURL = new StringBuilder(ASTRA_ENDPOINT_DEVOPS + "databases?")
@@ -181,16 +181,12 @@ public class ApiDevopsClient extends AbstractApiClient {
         }
     }
     
-    public void createDatabase() {}
-    
-    public void deleteKeyspace(String dbId, String keyspace) {
-    }
-    
     /**
      * Download SecureBundle.
      */
     public void downloadSecureConnectBundle(String dbId, String destination) {
         Assert.hasLength(dbId, "Database id");
+        Assert.hasLength(destination, "destination");
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/secureBundleURL"))
@@ -209,9 +205,134 @@ public class ApiDevopsClient extends AbstractApiClient {
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
         }
-        
     }
-
+    
+    public void createDatabase(DatabaseCreationRequest dbCreationRequest) {
+        Assert.notNull(dbCreationRequest, "Database creation request");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.ofString(objectMapper.writeValueAsString(dbCreationRequest)))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (201 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot retrieve download URL " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
+    }
+    
+    public void parkDatabase(String dbId) {
+        Assert.hasLength(dbId, "Database id");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/park"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (202 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot parka  " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
+    }
+    
+    public void unparkDatabase(String dbId) {
+        Assert.hasLength(dbId, "Database id");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/unpark"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (202 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot terminate database " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
+    }
+    
+    public void terminateDatabase(String dbId) {
+        Assert.hasLength(dbId, "Database id");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/terminate"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (202 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot terminate database " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
+    }
+    
+    public void resizeDatase(String dbId, int capacityUnits) {
+        Assert.hasLength(dbId, "Database id");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/resize"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.ofString("{ \"capacityUnits\":" + capacityUnits + "}"))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (202 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot terminate database " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
+    }
+    
+    public void resetPassword(String dbId, String username, String password) {
+        Assert.hasLength(dbId, "Database id");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/resetPassword"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.ofString("{ "
+                            + "\"username\": \"" + username + " \", "
+                            + "\"password\": \"" + password + " \""
+                            + "}"))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (202 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot terminate database " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+        }
+    }
+    
+    public List<DatabaseAvailableRegion> listAvailableRegion() {
+        return new ArrayList<DatabaseAvailableRegion>();
+    }
     
     
     

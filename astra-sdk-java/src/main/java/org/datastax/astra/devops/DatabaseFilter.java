@@ -12,7 +12,7 @@ public class DatabaseFilter {
     
     private final Include include;
     
-    private final Provider provider;
+    private final CloudProvider provider;
     
     public DatabaseFilter() {
         DatabaseFilter f = DatabaseFilter.builder().build();
@@ -26,7 +26,7 @@ public class DatabaseFilter {
         this.provider          = f.getProvider();
     }
     
-    public DatabaseFilter(int limit, Include i, Provider p, String startingAfter) {
+    public DatabaseFilter(int limit, Include i, CloudProvider p, String startingAfter) {
         this.startingAfterDbId = startingAfter;
         this.limit             = limit;
         this.include           = i;
@@ -41,9 +41,6 @@ public class DatabaseFilter {
         RESIZING,ERROR,MAINTENANCE;
     }
     
-    public static enum Provider {
-        ALL,GCP,AZURE,AWS;
-    }
     
     public static DatabaseFilterBuilder builder() {
         return new DatabaseFilterBuilder();
@@ -52,7 +49,7 @@ public class DatabaseFilter {
     public static class DatabaseFilterBuilder {
         private int limit = DEFAULT_LIMIT;
         private String startingAfterDbId = null;
-        private Provider provider = Provider.ALL;
+        private CloudProvider provider = CloudProvider.ALL;
         private Include include  = Include.NON_TERMINATED;
         
         public DatabaseFilterBuilder() {}
@@ -65,7 +62,7 @@ public class DatabaseFilter {
             this.startingAfterDbId = dbId;
             return this;
         }
-        public DatabaseFilterBuilder provider(Provider p) {
+        public DatabaseFilterBuilder provider(CloudProvider p) {
             this.provider = p;
             return this;
         }
@@ -115,7 +112,7 @@ public class DatabaseFilter {
      * @return
      *       current value of 'provider'
      */
-    public Provider getProvider() {
+    public CloudProvider getProvider() {
         return provider;
     }
 
