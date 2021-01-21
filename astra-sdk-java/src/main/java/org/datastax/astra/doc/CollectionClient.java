@@ -39,7 +39,7 @@ public class CollectionClient {
     public static final String DOCUMENT_ID = "documentId";
     
     /** Astra Client. */
-    private final AstraClient astraClient;
+    private final ApiDocumentClient docClient;
     
     /** Namespace. */
     private final NamespaceClient namespaceClient;
@@ -53,8 +53,8 @@ public class CollectionClient {
     /**
      * Full constructor.
      */
-    public CollectionClient(AstraClient astraClient,  NamespaceClient namespaceClient, String namespaceName, String collectionName) {
-        this.astraClient     = astraClient;
+    public CollectionClient(ApiDocumentClient docClient,  NamespaceClient namespaceClient, String namespaceName, String collectionName) {
+        this.docClient     = docClient;
         this.namespaceClient = namespaceClient;
         this.namespaceName   = namespaceName;
         this.collectionName  = collectionName;
@@ -64,7 +64,7 @@ public class CollectionClient {
      * Move to document Resource
      */
     public DocumentClient document(String docId) {
-        return new DocumentClient(astraClient, namespaceName, collectionName, docId);
+        return new DocumentClient(docClient, namespaceName, collectionName, docId);
     }
     
     /**

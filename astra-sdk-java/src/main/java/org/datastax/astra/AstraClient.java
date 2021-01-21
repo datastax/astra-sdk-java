@@ -1,5 +1,6 @@
 package org.datastax.astra;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.datastax.astra.cql.ApiCqlClient;
 import org.datastax.astra.devops.ApiDevopsClient;
 import org.datastax.astra.doc.ApiDocumentClient;
 import org.datastax.astra.rest.ApiRestClient;
+import org.datastax.astra.utils.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,6 +220,7 @@ public class AstraClient {
             this.applicationConfigFile    = System.getenv(ASTRA_CONFIG_FILE);
             this.username                 = System.getenv(ASTRA_DB_USERNAME);
             this.password                 = System.getenv(ASTRA_DB_PASSWORD);
+            this.contactPoints            = new ArrayList<>();  
             // Overriding for a Stargate URL
             this.baseUrl                  = System.getenv(BASE_URL);
             if (null != System.getenv(CONTACT_POINTS)) {
@@ -232,43 +235,58 @@ public class AstraClient {
         }
         
         public AstraClientBuilder astraDatabaseId(String uid) {
+            Assert.hasLength(uid, "astraDatabaseId");
             this.astraDatabaseId = uid;
             return this;
         }
         public AstraClientBuilder astraDatabaseRegion(String region) {
+            Assert.hasLength(region, "astraDatabaseRegion");
             this.astraDatabaseRegion = region;
             return this;
         }
         public AstraClientBuilder username(String username) {
+            Assert.hasLength(username, "username");
             this.username = username;
             return this;
         }
         public AstraClientBuilder password(String password) {
+            Assert.hasLength(password, "password");
             this.password = password;
             return this;
         }
         public AstraClientBuilder baseUrl(String baseUrl) {
+            Assert.hasLength(baseUrl, "baseUrl");
             this.baseUrl = baseUrl;
             return this;
         }
         public AstraClientBuilder clientId(String clientId) {
+            Assert.hasLength(clientId, "clientId");
             this.clientId = clientId;
             return this;
         }
         public AstraClientBuilder clientName(String clientName) {
+            Assert.hasLength(clientName, "clientName");
             this.clientName = clientName;
             return this;
         }
         public AstraClientBuilder clientSecret(String clientSecret) {
+            Assert.hasLength(clientSecret, "clientSecret");
             this.clientSecret = clientSecret;
             return this;
         }
         public AstraClientBuilder secureConnectBundle(String secureConnectBundle) {
+            Assert.hasLength(secureConnectBundle, "secureConnectBundle");
             this.secureConnectBundle = secureConnectBundle;
             return this;
         }
         public AstraClientBuilder applicationConfigFile(String applicationConfigFile) {
+            Assert.hasLength(applicationConfigFile, "applicationConfigFile");
             this.applicationConfigFile = applicationConfigFile;
+            return this;
+        }
+        public AstraClientBuilder addContactPoint(String ip, int port) {
+            Assert.hasLength(ip, "ip");
+            this.contactPoints.add(ip + ":" + port);
             return this;
         }
         

@@ -25,6 +25,8 @@ public class ApiCqlClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiCqlClient.class);
     
+    private static final String SANITY_QUERY = "SELECT data_center from system.local";
+    
     /** Username - required all the time */
     private final String username;
     
@@ -140,6 +142,13 @@ public class ApiCqlClient {
                     + " is not a valid contactPoint expression: port invalid expecting ip:port");
         }
         return new InetSocketAddress(chunks[0], port);
+    }
+    
+    /**
+     * Can we perform query with CQL
+     */
+    public boolean testConnection() {
+        return (null != cqlSession().execute(SANITY_QUERY).one());
     }
 
     /**

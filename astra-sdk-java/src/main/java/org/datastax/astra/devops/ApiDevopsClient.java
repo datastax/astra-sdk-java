@@ -86,6 +86,35 @@ public class ApiDevopsClient extends AbstractApiClient {
         }
     }
     
+    public boolean databaseExist(String dbId) {
+        return findDatabaseById(dbId).isPresent();
+    }
+    
+    public Optional<AstraDatabaseInfos> findDatabaseById(String dbId) {
+        Assert.hasLength(dbId, "Datatasbe id");
+        try {
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .GET().build();
+            
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            Optional<AstraDatabaseInfos> result = Optional.empty();
+            if (404 != response.statusCode()) {
+                result = Optional.ofNullable(
+                        objectMapper.readValue(
+                                response.body(),AstraDatabaseInfos.class));
+            }
+            return result;
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot generate authentication token", e);
+        }
+    }
+    
     public Stream<AstraDatabaseInfos> databases() {
         return databases(DatabaseFilter.builder().build());
     }
@@ -123,9 +152,28 @@ public class ApiDevopsClient extends AbstractApiClient {
         }
     }
     
-    public Optional<AstraDatabaseInfos> findDatbaseById(String dbId) {
-        return null;
+    public void createNamespace(String dbId, String namespace) {
+        Assert.hasLength(dbId, "Datatasbe id");
+        Assert.hasLength(namespace, "Namespace");
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "databases/" + dbId + "/keyspaces/" + namespace))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
+                    .POST(BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (201 != response.statusCode()) {
+                throw new IllegalArgumentException("Cannot create namespace " + response.body());
+            }
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot generate authentication token", e);
+        }
+        
     }
+    
     
     public void createNewKeyspace(String dbId, String keyspaceName) {
         // BEARER TOKEN

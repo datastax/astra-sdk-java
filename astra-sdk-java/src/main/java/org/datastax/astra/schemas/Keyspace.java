@@ -3,10 +3,6 @@ package org.datastax.astra.schemas;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.datastax.astra.AstraClient;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 /**
  * Represent a keyspace definition with its relevant MetaData.
  */
@@ -60,16 +56,6 @@ public class Keyspace {
      */
     public void setDatacenters(List<DataCenter> datacenters) {
         this.datacenters = datacenters;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String toString() {
-        try {
-            return AstraClient.objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            return super.toString();
-        }
     }
     
 
