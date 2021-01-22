@@ -1,8 +1,9 @@
 package org.datastax.astra.doc;
 
-import static org.datastax.astra.AstraClient.DEFAULT_CONTENT_TYPE;
-import static org.datastax.astra.AstraClient.DEFAULT_TIMEOUT;
-import static org.datastax.astra.AstraClient.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.api.AbstractApiClient.CONTENT_TYPE_JSON;
+import static org.datastax.astra.api.AbstractApiClient.HEADER_CASSANDRA;
+import static org.datastax.astra.api.AbstractApiClient.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.api.AbstractApiClient.REQUEST_TIMOUT;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -14,19 +15,18 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
 
-import org.datastax.astra.AstraClient;
 import org.datastax.astra.utils.Assert;
 
 public class DocumentClient {
      
     /** Astra Client. */
-    private final AstraClient astraClient;
+    private final ApiDocumentClient docClient;
     
-    /** Collection name. */
-    private final String collectionName;
+    /** Namespace. */
+    private final NamespaceClient namespaceClient;
     
-    /** Namespace name. */
-    private final String namespaceName;
+    /** Namespace. */
+    private final CollectionClient collectionClient;
     
     /** Unique document identifer. */
     private final String docId;
@@ -34,10 +34,12 @@ public class DocumentClient {
     /**
      * Full constructor.
      */
-    public DocumentClient(AstraClient astraClient, String namespaceName, String collectionName, String docId) {
-        this.astraClient     = astraClient;
-        this.namespaceName   = namespaceName;
-        this.collectionName  = collectionName;
+    public DocumentClient(
+            ApiDocumentClient docClient, NamespaceClient namespaceClient, 
+            CollectionClient collectionClient, String docId) {
+        this.docClient     = docClient;
+        this.namespaceClient   = namespaceClient;
+        this.collectionClient  = collectionClient;
         this.docId           = docId;
     }
     
@@ -51,16 +53,17 @@ public class DocumentClient {
         Assert.hasLength(docId, "documentId");
         try {
             // Create a GET REQUEST
-            String uri = astraClient.getBaseUrl()
-                    + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
-                    + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName
+            String uri = docClient.getBaseUrl()
+                    + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
+                    + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
                     + "/" + docId;
             HttpRequest request = HttpRequest.newBuilder()
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
                     .uri(URI.create(uri))
                     .GET().build();
-           
-            HttpResponse<Void> ss = astraClient.getHttpClient()
+            HttpResponse<Void> ss = ApiDocumentClient.getHttpClient()
                     .send(request, BodyHandlers.discarding());
             
             return ss.statusCode() == 200;
@@ -77,22 +80,22 @@ public class DocumentClient {
         Assert.hasLength(docId, "Document identifier");
         try {
             Builder reqBuilder = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
-                    .uri(URI.create(astraClient.getBaseUrl()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl()
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
                             + "/" + docId))
                     .PUT(BodyPublishers.ofString(
-                            astraClient.getObjectMapper().writeValueAsString(doc)));
+                            ApiDocumentClient.getObjectMapper().writeValueAsString(doc)));
             
             // Call
-            HttpResponse<String> response = astraClient.getHttpClient()
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(reqBuilder.build(), BodyHandlers.ofString());
             
-            AstraClient.handleError(response);
-            return (String) astraClient.getObjectMapper().readValue(response.body(), Map.class)
+            docClient.handleError(response);
+            return (String) ApiDocumentClient.getObjectMapper().readValue(response.body(), Map.class)
                                        .get(CollectionClient.DOCUMENT_ID);
             
         } catch (Exception e) {
@@ -101,25 +104,24 @@ public class DocumentClient {
     }
     
     public <DOC extends Serializable> Optional<DOC> find(Class<DOC> clazz) {
-        Assert.hasLength(collectionName, "collectionName");
         Assert.hasLength(docId, "documentId");
         Assert.notNull(clazz, "className");
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
-                    .uri(URI.create(astraClient.getBaseUrl()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl()
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
                             + "/" + docId + "?raw=true"))
                     .GET().build();
                     
             // Call
-            HttpResponse<String> response = astraClient.getHttpClient().send(request, BodyHandlers.ofString());
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString());
             if (null !=response && response.statusCode() == 200) {
                 
-                return Optional.of(astraClient.getObjectMapper().readValue(response.body(), clazz));
+                return Optional.of(ApiDocumentClient.getObjectMapper().readValue(response.body(), clazz));
             } else if (204 == response.statusCode()) {
                 return Optional.empty();
             } else {
@@ -139,21 +141,20 @@ public class DocumentClient {
      *          documentId
      */
     public void delete() {
-        Assert.hasLength(collectionName, "collectionName");
         Assert.hasLength(docId, "documentId");
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
-                    .uri(URI.create(astraClient.getBaseUrl()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl()
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
                             + "/" + docId))
                     .DELETE().build();
                     
             // Call
-            HttpResponse<String> response = astraClient.getHttpClient().send(request, BodyHandlers.ofString());
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString());
             if (response.statusCode() != 204) {
                 throw new IllegalArgumentException("An error occured: " + response.body());
             }

@@ -5,7 +5,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -219,6 +218,7 @@ public class ApiDevopsClient extends AbstractApiClient {
                     .POST(BodyPublishers.ofString(objectMapper.writeValueAsString(dbCreationRequest)))
                     .build();
             HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            System.out.println(response.body());
             if (201 != response.statusCode()) {
                 throw new IllegalArgumentException("Cannot retrieve download URL " + response.body());
             }
@@ -243,7 +243,7 @@ public class ApiDevopsClient extends AbstractApiClient {
                 throw new IllegalArgumentException("Cannot parka  " + response.body());
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+            throw new IllegalArgumentException("Cannot PARK DB", e);
         }
     }
     
@@ -263,7 +263,7 @@ public class ApiDevopsClient extends AbstractApiClient {
                 throw new IllegalArgumentException("Cannot terminate database " + response.body());
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+            throw new IllegalArgumentException("Cannot unpark DB", e);
         }
     }
     
@@ -283,7 +283,7 @@ public class ApiDevopsClient extends AbstractApiClient {
                 throw new IllegalArgumentException("Cannot terminate database " + response.body());
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+            throw new IllegalArgumentException("Cannot terminate DB", e);
         }
     }
     
@@ -303,11 +303,11 @@ public class ApiDevopsClient extends AbstractApiClient {
                 throw new IllegalArgumentException("Cannot terminate database " + response.body());
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+            throw new IllegalArgumentException("Cannot Resize DB ", e);
         }
     }
     
-    public void resetPassword(String dbId, String username, String password) {
+    public void resetPassword(String dbId, String u, String p) {
         Assert.hasLength(dbId, "Database id");
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -317,28 +317,42 @@ public class ApiDevopsClient extends AbstractApiClient {
                     .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
                     .header(HEADER_AUTHORIZATION, "Bearer " + getToken())
                     .POST(BodyPublishers.ofString("{ "
-                            + "\"username\": \"" + username + " \", "
-                            + "\"password\": \"" + password + " \""
-                            + "}"))
+                            + "\"username\": \"" + u + "\", "
+                            + "\"password\": \"" + p + "\"  }"))
                     .build();
             HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
             if (202 != response.statusCode()) {
-                throw new IllegalArgumentException("Cannot terminate database " + response.body());
+                throw new IllegalArgumentException("Cannot reset password " + 
+                            response.body() + "" + response.statusCode());
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot download the secureConnectBundle", e);
+            throw new IllegalArgumentException("Cannot rerset password", e);
         }
     }
     
     public List<DatabaseAvailableRegion> listAvailableRegion() {
-        return new ArrayList<DatabaseAvailableRegion>();
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + "availableRegions"))
+                    .timeout(REQUEST_TIMOUT)
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + getToken())
+                    .GET().build();
+            
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            
+            if (201 == response.statusCode() || 200 == response.statusCode()) {
+                List<DatabaseAvailableRegion> dbs = objectMapper.readValue(response.body(),
+                       new TypeReference<List<DatabaseAvailableRegion>>(){});
+                LOGGER.info("{} region(s) have been retrieved ", dbs.size());
+                return dbs;
+            }
+            throw new IllegalArgumentException("Cannot list regions " + response.body());
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot list regions", e);
+        }
     }
-    
-    
-    
-   
-    
-    
     
 
 }

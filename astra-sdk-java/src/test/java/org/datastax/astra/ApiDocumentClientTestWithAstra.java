@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -81,11 +82,28 @@ public class ApiDocumentClientTestWithAstra extends ApiTester {
         if (apiDocClient.namespace("namespace2").exist() ) {
             apiDocClient.namespace("namespace2").delete();
             Assert.assertFalse(apiDocClient.namespace("namespace2").exist());
-            apiDocClient.namespace("namespace2").create(ASTRA_DC);
         }
+        // When
+        apiDocClient.namespace("namespace2").create(ASTRA_DC);
         // Then
         Assert.assertTrue(apiDocClient.namespace("namespace2").exist());
     }
+    
+    @Test
+    @Disabled("An Astra document Api does not have enough permissions, "
+            + "to create/delete namespaces you should use devops API.")
+    public void should_delete_namespace() {
+        // Given
+        if (!apiDocClient.namespace("namespace2").exist() ) {
+            apiDocClient.namespace("namespace2").create(ASTRA_DC);
+        }
+        Assert.assertTrue(apiDocClient.namespace("namespace2").exist());
+        // When
+        apiDocClient.namespace("namespace2").delete();
+        // Then
+        Assert.assertFalse(apiDocClient.namespace("namespace2").exist());
+    }
+    
     
     // ---- Using devops to create a namespace if not present (reproductability)
 
@@ -105,6 +123,25 @@ public class ApiDocumentClientTestWithAstra extends ApiTester {
         // Then
         Assert.assertTrue(namespaces.containsKey(WORKING_NAMESPACE));
         Assert.assertFalse(namespaces.get(WORKING_NAMESPACE).getDatacenters().isEmpty());
+    }
+    
+    @Test
+    public void testFindAllCollections() {
+        apiDocClient.namespace(WORKING_NAMESPACE)
+                  .collectionNames()
+                  .forEach(System.out::println);;
+    }
+    
+    @Test
+    public void should_create_collection() {
+        // Given
+        String randomCollection = UUID.randomUUID().toString().replaceAll("-", "");
+        Assert.assertFalse(apiDocClient.namespace(WORKING_NAMESPACE).collection(randomCollection).exist());
+        // When
+        apiDocClient.namespace(WORKING_NAMESPACE).collection(randomCollection).create();
+        waitForSeconds(5);
+        // Then
+        Assert.assertTrue(apiDocClient.namespace(WORKING_NAMESPACE).collection(randomCollection).exist());
     }
     
     

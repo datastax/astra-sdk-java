@@ -1,8 +1,9 @@
 package org.datastax.astra.doc;
 
-import static org.datastax.astra.AstraClient.DEFAULT_CONTENT_TYPE;
-import static org.datastax.astra.AstraClient.DEFAULT_TIMEOUT;
-import static org.datastax.astra.AstraClient.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.api.AbstractApiClient.CONTENT_TYPE_JSON;
+import static org.datastax.astra.api.AbstractApiClient.HEADER_CASSANDRA;
+import static org.datastax.astra.api.AbstractApiClient.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.api.AbstractApiClient.REQUEST_TIMOUT;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -19,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.datastax.astra.AstraClient;
 import org.datastax.astra.api.ApiResponse;
 import org.datastax.astra.schemas.QueryDocument;
 import org.datastax.astra.schemas.QueryDocument.QueryDocumentBuilder;
@@ -47,16 +47,12 @@ public class CollectionClient {
     /** Collection name. */
     private final String collectionName;
     
-    /** Namespace name. */
-    private final String namespaceName;
-    
     /**
      * Full constructor.
      */
-    public CollectionClient(ApiDocumentClient docClient,  NamespaceClient namespaceClient, String namespaceName, String collectionName) {
+    public CollectionClient(ApiDocumentClient docClient,  NamespaceClient namespaceClient,  String collectionName) {
         this.docClient     = docClient;
         this.namespaceClient = namespaceClient;
-        this.namespaceName   = namespaceName;
         this.collectionName  = collectionName;
     }
     
@@ -64,7 +60,7 @@ public class CollectionClient {
      * Move to document Resource
      */
     public DocumentClient document(String docId) {
-        return new DocumentClient(docClient, namespaceName, collectionName, docId);
+        return new DocumentClient(docClient, namespaceClient, this, docId);
     }
     
     /**
@@ -81,19 +77,20 @@ public class CollectionClient {
             
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
-                    .uri(URI.create(astraClient.getBaseUrl() 
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl() 
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() + "/"
                             + NamespaceClient.PATH_COLLECTIONS))
                     .POST(BodyPublishers.ofString("{\"name\":\"" + collectionName + "\"}"))
                     .build();
             
-            HttpResponse<String> response = astraClient.getHttpClient()
+            System.out.println(namespaceClient.getNamespace());
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(request, BodyHandlers.ofString());
             
-            AstraClient.handleError(response);
+            docClient.handleError(response);
             
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot create a new collection", e);
@@ -106,19 +103,19 @@ public class CollectionClient {
             
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
-                    .uri(URI.create(astraClient.getBaseUrl() 
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl() 
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
                             + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName))
                     .DELETE().build();
             
             // Invoke
-            HttpResponse<String> response = astraClient.getHttpClient()
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(request, BodyHandlers.ofString());
             
-            AstraClient.handleError(response);
+            docClient.handleError(response);
             
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot create a new collection", e);
@@ -136,22 +133,24 @@ public class CollectionClient {
         Objects.requireNonNull(doc);
         try {
             Builder reqBuilder = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
-                    .uri(URI.create(astraClient.getBaseUrl()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName 
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl() 
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
                             + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName))
                     .POST(BodyPublishers.ofString(
-                            astraClient.getObjectMapper().writeValueAsString(doc)));
+                            ApiDocumentClient.getObjectMapper().writeValueAsString(doc)));
             
             // Call
-            HttpResponse<String> response = astraClient.getHttpClient()
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(reqBuilder.build(), BodyHandlers.ofString());
             
-            AstraClient.handleError(response);
-            return (String) astraClient.getObjectMapper().readValue(response.body(), Map.class)
-                                       .get(DOCUMENT_ID);
+            docClient.handleError(response);
+            return (String) ApiDocumentClient
+                    .getObjectMapper()
+                    .readValue(response.body(), Map.class)
+                    .get(DOCUMENT_ID);
             
         } catch (Exception e) {
             throw new IllegalArgumentException("An error occured", e);
@@ -180,9 +179,9 @@ public class CollectionClient {
     
     private String buildQueryUrl(QueryDocument query) {
         try {
-            StringBuilder sbUrl = new StringBuilder(astraClient.getBaseUrl());
+            StringBuilder sbUrl = new StringBuilder(docClient.getBaseUrl());
             // Navigate to Namespace
-            sbUrl.append(NamespaceClient.PATH_NAMESPACES  + "/" + namespaceName); 
+            sbUrl.append(NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()); 
             // Navigate to collection
             sbUrl.append(NamespaceClient.PATH_COLLECTIONS + "/" + collectionName);
             // Add query Params
@@ -213,28 +212,28 @@ public class CollectionClient {
             System.out.println(buildQueryUrl(query));
             // Create Request
             HttpRequest req = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, astraClient.getAuthenticationToken())
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
                     .uri(URI.create(buildQueryUrl(query)))
                     .GET().build();
             
              // Invoke as JSON
-             HttpResponse<String> response = astraClient.getHttpClient()
+             HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(req, BodyHandlers.ofString());
              
              // Error Processing
-             AstraClient.handleError(response);
+             docClient.handleError(response);
              
              // Marshalling (using LinkedHashMap DOC was a bit to much Generics for Jackson here)
              ApiResponse<Map<String, LinkedHashMap<?,?>>> result = 
-                     astraClient.getObjectMapper().readValue(
+                     ApiDocumentClient.getObjectMapper().readValue(
                             response.body(), new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){});
              
              // Mapping to ResultListPage
             return new ResultListPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()
                     .entrySet().stream()
-                    .map(doc -> new AstraDocument<DOC>(doc.getKey(), astraClient
+                    .map(doc -> new AstraDocument<DOC>(doc.getKey(), ApiDocumentClient
                             .getObjectMapper().convertValue(doc.getValue(), clazz)))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
@@ -243,32 +242,14 @@ public class CollectionClient {
     }
 
     /**
-     * Those are first level fields you CANNOT use level1.level2 as fieldName.
-     * You do not marshall but get a map of fields only
+     * Getter accessor for attribute 'collectionName'.
      *
-    @SuppressWarnings("rawtypes")
-    public ResultListPage<Map> findAll(String...fieldsToRetrieve) {
-        return findAll(QueryDocument.DEFAULT_PAGING_SIZE, fieldsToRetrieve);
+     * @return
+     *       current value of 'collectionName'
+     */
+    public String getCollectionName() {
+        return collectionName;
     }
-    @SuppressWarnings("rawtypes")
-    public ResultListPage<Map> findAll(int pageSize, String...fieldsToRetrieve) {
-        return findAll(null, pageSize, fieldsToRetrieve);
-    }
-    @SuppressWarnings("rawtypes")
-    public ResultListPage<Map> findAll(String pageState, int pageSize, String...fieldsToRetrieve) {
-        return search(QueryDocument.builder()
-                    .withPageSize(pageSize)
-                    .withPageState(pageState)
-                    .withReturnedFields(fieldsToRetrieve)
-                    .build());
-    }
-    
-    @SuppressWarnings("rawtypes")
-    public ResultListPage<Map> search(QueryDocument query) {
-        Objects.requireNonNull(query);
-        return null;
-    }
-    */
     
     
 }

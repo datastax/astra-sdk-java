@@ -1,12 +1,12 @@
 package org.datastax.astra.rest;
 
-import static org.datastax.astra.AstraClient.DEFAULT_CONTENT_TYPE;
-import static org.datastax.astra.AstraClient.DEFAULT_TIMEOUT;
-import static org.datastax.astra.AstraClient.HEADER_CONTENT_TYPE;
-import static org.datastax.astra.AstraClient.PATH_SCHEMA;
-import static org.datastax.astra.AstraClient.PATH_SCHEMA_KEYSPACES;
 
-import static org.datastax.astra.AstraClient.handleError;
+import static org.datastax.astra.api.AbstractApiClient.CONTENT_TYPE_JSON;
+import static org.datastax.astra.api.AbstractApiClient.HEADER_CASSANDRA;
+import static org.datastax.astra.api.AbstractApiClient.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.api.AbstractApiClient.PATH_SCHEMA;
+import static org.datastax.astra.api.AbstractApiClient.REQUEST_TIMOUT;
+import static org.datastax.astra.rest.ApiRestClient.PATH_SCHEMA_KEYSPACES;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -17,7 +17,6 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 import java.util.Optional;
 
-import org.datastax.astra.AstraClient;
 import org.datastax.astra.api.ApiResponse;
 import org.datastax.astra.schemas.DataCenter;
 import org.datastax.astra.schemas.Keyspace;
@@ -33,19 +32,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class KeyspaceClient {
     
     /** Astra Client. */
-    private final AstraClient client;
+    private final ApiRestClient restclient;
     
     /** Namespace. */
     private final String keyspace;
     
     
-
-    
     /**
      * Full constructor.
      */
-    public KeyspaceClient(AstraClient astraClient, String keyspace) {
-        this.client    = astraClient;
+    public KeyspaceClient(ApiRestClient restclient, String keyspace) {
+        this.restclient    = restclient;
         this.keyspace = keyspace;
     }
     
@@ -54,21 +51,21 @@ public class KeyspaceClient {
         try {
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_SCHEMA 
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, restclient.getToken())
+                    .uri(URI.create(restclient.getBaseUrl() + PATH_SCHEMA 
                             + PATH_SCHEMA_KEYSPACES + "/" + keyspace ))
                     .GET().build();
-            HttpResponse<String> response = client.getHttpClient()
+            HttpResponse<String> response = ApiRestClient.getHttpClient()
                     .send(request, BodyHandlers.ofString());
             
             if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
                 return Optional.empty();
             }
             return Optional.ofNullable(
-                    client.getObjectMapper().readValue(
-                            client.getHttpClient().send(request, BodyHandlers.ofString()).body(), 
+                    ApiRestClient.getObjectMapper().readValue(
+                            ApiRestClient.getHttpClient().send(request, BodyHandlers.ofString()).body(), 
                               new TypeReference<ApiResponse<Keyspace>>(){}).getData());
             
         } catch (Exception e) {
@@ -92,15 +89,15 @@ public class KeyspaceClient {
         Assert.isTrue(!datacenters.isEmpty(), "DataCenters are required");
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, restclient.getToken())
+                    .uri(URI.create(restclient.getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES))
                     .POST(BodyPublishers.ofString(
-                            client.getObjectMapper().writeValueAsString(
+                            ApiRestClient.getObjectMapper().writeValueAsString(
                                     new Keyspace(keyspace, datacenters))))
                     .build();
-            handleError(client.getHttpClient()
+            restclient.handleError(ApiRestClient.getHttpClient()
                     .send(request, BodyHandlers.ofString()));
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
@@ -111,12 +108,12 @@ public class KeyspaceClient {
         try {
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header(HEADER_CONTENT_TYPE, DEFAULT_CONTENT_TYPE)
-                    .header(AstraClient.HEADER_CASSANDRA, client.getAuthenticationToken())
-                    .uri(URI.create(client.getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES + "/" + keyspace ))
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, restclient.getToken())
+                    .uri(URI.create(restclient.getBaseUrl() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES + "/" + keyspace ))
                     .DELETE().build();
-            handleError(client.getHttpClient()
+            restclient.handleError(ApiRestClient.getHttpClient()
                     .send(request, BodyHandlers.ofString()));
             
         } catch (Exception e) {

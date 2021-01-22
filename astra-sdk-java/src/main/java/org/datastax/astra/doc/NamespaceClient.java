@@ -169,7 +169,17 @@ public class NamespaceClient {
      * Move to the collection client
      */
     public CollectionClient collection(String collectionName) {
-        return new CollectionClient(docClient, this, namespace, collectionName);
+        return new CollectionClient(docClient, this, collectionName);
+    }
+
+    /**
+     * Getter accessor for attribute 'namespace'.
+     *
+     * @return
+     *       current value of 'namespace'
+     */
+    public String getNamespace() {
+        return namespace;
     }
     
 }

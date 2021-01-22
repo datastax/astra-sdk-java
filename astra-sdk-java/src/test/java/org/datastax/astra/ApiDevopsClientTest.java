@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.datastax.astra.devops.ApiDevopsClient;
 import org.datastax.astra.devops.AstraDatabaseInfos;
 import org.datastax.astra.devops.CloudProvider;
+import org.datastax.astra.devops.DatabaseAvailableRegion;
 import org.datastax.astra.devops.DatabaseCreationRequest;
 import org.datastax.astra.devops.DatabaseFilter;
 import org.datastax.astra.devops.DatabaseFilter.Include;
@@ -105,15 +106,31 @@ public class ApiDevopsClientTest extends ApiTester {
         apiDevopsClient.parkDatabase("dc27b2d9-2505-427a-b34d-f924483be9c2");
     }
     
+    @Test
+    public void should_unpark_db() {
+        apiDevopsClient.unparkDatabase("dc27b2d9-2505-427a-b34d-f924483be9c2");
+    }
     
-    public void test() {
-        ApiDevopsClient apiDevops = new ApiDevopsClient("cliendId", "clientName", "clientSecret");
-        apiDevops.createDatabase(new DatabaseCreationRequest());
-        apiDevops.createKeyspace(dbId, "keyspace");
-        apiDevops.databaseExist(dbId);
-        apiDevops.findDatabaseById(dbId);
-        apiDevops.findDatabases(new DatabaseFilter(25, Include.NON_TERMINATED, CloudProvider.ALL, null));
-        
+    @Test
+    public void should_resize_db() {
+        apiDevopsClient.resizeDatase("dc27b2d9-2505-427a-b34d-f924483be9c2", 2);
+    }
+    
+    @Test
+    public void should_terminate_db() {
+        apiDevopsClient.terminateDatabase("c091592b-84fc-4144-a10f-c135fc25bbeb");
+    }
+    
+    @Test
+    public void should_reset_password() {
+        apiDevopsClient.resetPassword(dbId, "astraUser", "astraPassword1");
+    }
+    
+    @Test
+    public void should_list_available_regions() {
+        apiDevopsClient.listAvailableRegion().stream()
+            .map(DatabaseAvailableRegion::getDescription)
+            .forEach(System.out::println);
     }
     
 

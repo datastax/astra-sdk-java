@@ -67,28 +67,12 @@ public class AstraClientSimpleTest {
     // --- NAMESPACE ---
     
     
-    /*
-    
-    @Test
-    public void should_delete_namespace() {
-        astraClient.namespace("namespace2").delete();
-    }
     
     // --- COLLECTION
     
-    @Test
-    public void testFindAllCollections() {
-       astraClient.namespace("namespace1")
-                  .collectionNames()
-                  .forEach(System.out::println);;
-    }
     
-    @Test
-    public void should_create_collection() {
-        astraClient.namespace(namespace)
-                   .collection("lololo")
-                   .create();
-    }
+    
+    /*
     
     @Test
     public void should_exist_collection() {

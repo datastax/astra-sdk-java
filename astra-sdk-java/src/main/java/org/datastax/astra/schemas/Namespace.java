@@ -10,6 +10,8 @@ import java.util.List;
  */
 public class Namespace extends Keyspace{
     
+    public Namespace() {}
+            
     public Namespace(String name, List<DataCenter> datacenters) {
         super(name,datacenters);
     }
