@@ -1,4 +1,4 @@
-package org.datastax.astra;
+package org.datastax.astra.dto;
 
 import java.io.Serializable;
 import java.util.List;

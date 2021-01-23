@@ -11,10 +11,11 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.datastax.astra.Person.Address;
 import org.datastax.astra.doc.AstraDocument;
 import org.datastax.astra.doc.CollectionClient;
 import org.datastax.astra.doc.ResultListPage;
+import org.datastax.astra.dto.Person;
+import org.datastax.astra.dto.Person.Address;
 import org.datastax.astra.schemas.DataCenter;
 import org.datastax.astra.schemas.Namespace;
 import org.datastax.astra.schemas.QueryDocument;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentClientTestWithAstra extends ApiTester {
+public class ApiDocumentTest extends AbstractApiTest {
     
     public static final String WORKING_NAMESPACE = "astra_sdk_namespace_test";
     public static final String COLLECTION_PERSON = "person";

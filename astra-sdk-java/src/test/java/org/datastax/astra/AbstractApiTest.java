@@ -11,7 +11,7 @@ import org.datastax.astra.doc.ApiDocumentClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 
-public class ApiTester {
+public class AbstractApiTest {
     
     
     // Credentials Doc and Rest API

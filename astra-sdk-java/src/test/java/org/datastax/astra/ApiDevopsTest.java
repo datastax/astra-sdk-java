@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class ApiDevopsClientTest extends ApiTester {
+public class ApiDevopsTest extends AbstractApiTest {
     
     protected static ApiDevopsClient apiDevopsClient;
 
