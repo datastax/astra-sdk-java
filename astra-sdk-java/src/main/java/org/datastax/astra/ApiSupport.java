@@ -1,4 +1,4 @@
-package org.datastax.astra.api;
+package org.datastax.astra;
 
 import java.net.HttpURLConnection;
 import java.net.http.HttpClient;
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public abstract class AbstractApiClient {
+public abstract class ApiSupport {
     
     /** Building Astra base URL. */
     public static final String ASTRA_ENDPOINT_PREFIX  = "https://";

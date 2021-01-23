@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.datastax.astra.api.AbstractApiClient;
-import org.datastax.astra.api.ApiResponse;
+import org.datastax.astra.ApiSupport;
+import org.datastax.astra.ApiResponse;
 import org.datastax.astra.schemas.Keyspace;
 import org.datastax.astra.schemas.Namespace;
 import org.datastax.astra.utils.JsonUtils;
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiRestClient extends AbstractApiClient {
+public class ApiRestClient extends ApiSupport {
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiRestClient.class);

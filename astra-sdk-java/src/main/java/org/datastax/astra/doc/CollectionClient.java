@@ -1,9 +1,9 @@
 package org.datastax.astra.doc;
 
-import static org.datastax.astra.api.AbstractApiClient.CONTENT_TYPE_JSON;
-import static org.datastax.astra.api.AbstractApiClient.HEADER_CASSANDRA;
-import static org.datastax.astra.api.AbstractApiClient.HEADER_CONTENT_TYPE;
-import static org.datastax.astra.api.AbstractApiClient.REQUEST_TIMOUT;
+import static org.datastax.astra.ApiSupport.CONTENT_TYPE_JSON;
+import static org.datastax.astra.ApiSupport.HEADER_CASSANDRA;
+import static org.datastax.astra.ApiSupport.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.ApiSupport.REQUEST_TIMOUT;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.datastax.astra.api.ApiResponse;
+import org.datastax.astra.ApiResponse;
 import org.datastax.astra.schemas.QueryDocument;
 import org.datastax.astra.schemas.QueryDocument.QueryDocumentBuilder;
 import org.datastax.astra.utils.Assert;

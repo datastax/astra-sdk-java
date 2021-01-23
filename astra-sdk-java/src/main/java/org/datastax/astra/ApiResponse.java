@@ -1,4 +1,4 @@
-package org.datastax.astra.api;
+package org.datastax.astra;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

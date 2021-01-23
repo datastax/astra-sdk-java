@@ -1,10 +1,10 @@
 package org.datastax.astra.doc;
 
-import static org.datastax.astra.api.AbstractApiClient.CONTENT_TYPE_JSON;
-import static org.datastax.astra.api.AbstractApiClient.HEADER_CASSANDRA;
-import static org.datastax.astra.api.AbstractApiClient.HEADER_CONTENT_TYPE;
-import static org.datastax.astra.api.AbstractApiClient.PATH_SCHEMA;
-import static org.datastax.astra.api.AbstractApiClient.REQUEST_TIMOUT;
+import static org.datastax.astra.ApiSupport.CONTENT_TYPE_JSON;
+import static org.datastax.astra.ApiSupport.HEADER_CASSANDRA;
+import static org.datastax.astra.ApiSupport.HEADER_CONTENT_TYPE;
+import static org.datastax.astra.ApiSupport.PATH_SCHEMA;
+import static org.datastax.astra.ApiSupport.REQUEST_TIMOUT;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.datastax.astra.api.ApiResponse;
+import org.datastax.astra.ApiResponse;
 import org.datastax.astra.schemas.DataCenter;
 import org.datastax.astra.schemas.Keyspace;
 import org.datastax.astra.schemas.Namespace;

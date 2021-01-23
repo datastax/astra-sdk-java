@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentTest extends AbstractApiTest {
+public class ApiDocumentTest extends ApiSupportTest {
     
     public static final String WORKING_NAMESPACE = "astra_sdk_namespace_test";
     public static final String COLLECTION_PERSON = "person";

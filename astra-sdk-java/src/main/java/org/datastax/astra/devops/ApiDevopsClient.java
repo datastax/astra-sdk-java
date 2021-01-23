@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.datastax.astra.ApiSupport;
 import org.datastax.astra.AstraClient;
-import org.datastax.astra.api.AbstractApiClient;
 import org.datastax.astra.utils.Assert;
 import org.datastax.astra.utils.JsonUtils;
 import org.datastax.astra.utils.Utils;
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @author Cedrick LUNVEN (@clunven)
  *
  */
-public class ApiDevopsClient extends AbstractApiClient {
+public class ApiDevopsClient extends ApiSupport {
     
     /** Default Endpoint. */
     public static final String ASTRA_ENDPOINT_DEVOPS = "https://api.astra.datastax.com/v2/";

@@ -4,9 +4,9 @@ import java.util.Optional;
 
 public class TableClient {
     
-    private ApiRestClient  restClient;
-    private KeyspaceClient ksClient;
-    private String         tableName;
+    //private ApiRestClient  restClient;
+    //private KeyspaceClient ksClient;
+    //private String         tableName;
     
     
     // Get a table
