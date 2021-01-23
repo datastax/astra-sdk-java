@@ -119,6 +119,10 @@ public class QueryDocument {
     
     /**
      * Helper to build a where clause in natural language (fluent API)
+     *
+     * TODO the WHERE CLAUSE CAN HAVE MULTIPLE CRITERIA FOR A FIELD
+     * where("field").greaterThan(40)
+     *               .lessThan(50);
      */
     public static class Where {
         

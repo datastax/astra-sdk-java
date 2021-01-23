@@ -74,14 +74,13 @@ public class CollectionClient {
     public void create() {
         Assert.hasLength(collectionName, "collectionName");
         try {
-            
             // Create a GET REQUEST
             HttpRequest request = HttpRequest.newBuilder()
                     .timeout(REQUEST_TIMOUT)
                     .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .header(HEADER_CASSANDRA, docClient.getToken())
                     .uri(URI.create(docClient.getBaseUrl() 
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() + "/"
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
                             + NamespaceClient.PATH_COLLECTIONS))
                     .POST(BodyPublishers.ofString("{\"name\":\"" + collectionName + "\"}"))
                     .build();
@@ -120,10 +119,6 @@ public class CollectionClient {
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot create a new collection", e);
         }
-    }
-    
-    public <DOC extends Serializable> String saveAsync(DOC doc) {
-        return null;
     }
     
     /**
@@ -205,6 +200,7 @@ public class CollectionClient {
         }
     }
     
+    //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
     public <DOC> ResultListPage<DOC> search(QueryDocument query, Class<DOC> clazz) {
         Objects.requireNonNull(clazz);
         try {
@@ -239,6 +235,12 @@ public class CollectionClient {
         } catch (Exception e) {
             throw new IllegalArgumentException("An error occured", e);
         }
+    }
+    
+    // RENAME ? TODO ASK QUESTION
+    //https://docs.astra.datastax.com/reference#put_api-rest-v2-schemas-namespaces-namespace-id-collections-collection-id-1
+    public void update() {
+        throw new UnsupportedOperationException("");
     }
 
     /**

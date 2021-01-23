@@ -73,7 +73,9 @@ public class DocumentClient {
     }
     
     /**
-     * Updating an existing document or enforce the id
+     * Updating an existing document or enforce the id.
+     * 
+     * Partial updates with documentPath 
      */
     public <DOC extends Serializable> String save(DOC doc) {
         Assert.notNull(doc, "document");

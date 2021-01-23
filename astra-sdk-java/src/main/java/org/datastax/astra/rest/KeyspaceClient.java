@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.datastax.astra.api.ApiResponse;
 import org.datastax.astra.schemas.DataCenter;
@@ -122,7 +123,18 @@ public class KeyspaceClient {
         
     }
 
+    // List tables
+    // https://docs.astra.datastax.com/reference#get_api-rest-v2-schemas-keyspaces-keyspace-id-tables-1
     
-    //TODO list Tables etc...
+    public Stream<TableDefinition> tables() {
+        // TODO
+        return null;
+    }
+    
+    // TOOD
+    public TableClient table(String tableName) {
+        return new TableClient();
+    }
+    
     
 }

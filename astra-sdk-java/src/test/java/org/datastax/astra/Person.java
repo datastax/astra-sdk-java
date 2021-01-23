@@ -17,7 +17,7 @@ public class Person implements Serializable {
     
     private int age;
     
-    private List<String> contries;
+    private List<String> countries;
     
     private Address address;
 
@@ -34,9 +34,28 @@ public class Person implements Serializable {
         this.lastname  = last;
     }
     
+    
+    /**
+     * Defaut Constructor.
+     */
+    public Person(String first, String last, int age, Address a) {
+        this.firstname = first;
+        this.lastname  = last;
+        this.age = age;
+        this.address = a;
+    }
+    
+    
+    
     public static class Address {
         private String city;
         private int zipCode;
+        public Address() {}
+        public Address(String city, int zip) {
+            this.city = city;
+            this.zipCode = zip;
+                    
+        }
         /**
          * Getter accessor for attribute 'city'.
          *
@@ -156,8 +175,8 @@ public class Person implements Serializable {
      * @return
      *       current value of 'contries'
      */
-    public List<String> getContries() {
-        return contries;
+    public List<String> getCountries() {
+        return countries;
     }
 
     /**
@@ -165,7 +184,7 @@ public class Person implements Serializable {
      * @param contries
      * 		new value for 'contries '
      */
-    public void setContries(List<String> contries) {
-        this.contries = contries;
+    public void setConutries(List<String> contries) {
+        this.countries = contries;
     }
 }
