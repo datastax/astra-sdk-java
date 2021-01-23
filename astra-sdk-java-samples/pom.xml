@@ -4,31 +4,10 @@
   <artifactId>astra-sdk-java-samples</artifactId>
   <name>+ astra-sdk-java-samples</name>
   <description>List of working samples with Astra SDK</description>
+  <packaging>pom</packaging>
   <parent>
     <groupId>com.datastax.astra</groupId>
     <artifactId>astra-sdk-java-parent</artifactId>
     <version>2021.1-SNAPSHOT</version>
   </parent>
-  <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-    </dependency>
-  </dependencies>
 </project>
