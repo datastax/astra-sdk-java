@@ -6,18 +6,19 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.datastax.astra.devops.ApiDevopsClient;
-import org.datastax.astra.devops.AstraDatabaseInfos;
-import org.datastax.astra.devops.CloudProvider;
-import org.datastax.astra.devops.DatabaseAvailableRegion;
-import org.datastax.astra.devops.DatabaseCreationRequest;
-import org.datastax.astra.devops.DatabaseFilter;
-import org.datastax.astra.devops.DatabaseFilter.Include;
-import org.datastax.astra.devops.DatabaseTier;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import com.dstx.astra.sdk.devops.ApiDevopsClient;
+import com.dstx.astra.sdk.devops.AstraDatabaseInfos;
+import com.dstx.astra.sdk.devops.CloudProvider;
+import com.dstx.astra.sdk.devops.DatabaseAvailableRegion;
+import com.dstx.astra.sdk.devops.DatabaseCreationRequest;
+import com.dstx.astra.sdk.devops.DatabaseFilter;
+import com.dstx.astra.sdk.devops.DatabaseTier;
+import com.dstx.astra.sdk.devops.DatabaseFilter.Include;
 
 public class ApiDevopsTest extends ApiSupportTest {
     

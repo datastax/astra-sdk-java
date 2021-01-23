@@ -11,18 +11,20 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.datastax.astra.doc.AstraDocument;
-import org.datastax.astra.doc.CollectionClient;
-import org.datastax.astra.doc.ResultListPage;
 import org.datastax.astra.dto.Person;
 import org.datastax.astra.dto.Person.Address;
-import org.datastax.astra.schemas.DataCenter;
-import org.datastax.astra.schemas.Namespace;
-import org.datastax.astra.schemas.QueryDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import com.dstx.astra.sdk.AstraClient;
+import com.dstx.astra.sdk.document.AstraDocument;
+import com.dstx.astra.sdk.document.CollectionClient;
+import com.dstx.astra.sdk.document.Namespace;
+import com.dstx.astra.sdk.document.QueryDocument;
+import com.dstx.astra.sdk.document.ResultListPage;
+import com.dstx.astra.sdk.rest.DataCenter;
 
 /**
  * Test operations for the Document API operation

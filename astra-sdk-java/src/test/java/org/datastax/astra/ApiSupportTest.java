@@ -6,10 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.datastax.astra.devops.ApiDevopsClient;
-import org.datastax.astra.doc.ApiDocumentClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
+
+import com.dstx.astra.sdk.devops.ApiDevopsClient;
+import com.dstx.astra.sdk.document.ApiDocumentClient;
 
 public class ApiSupportTest {
     
