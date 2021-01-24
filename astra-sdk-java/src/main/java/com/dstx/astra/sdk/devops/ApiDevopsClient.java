@@ -157,6 +157,13 @@ public class ApiDevopsClient extends ApiSupport {
     }
     
     /**
+     * Syntax sugar for doc API 
+     */
+    public void createNamespace(String dbId, String namespace) {
+        createKeyspace(dbId, namespace);
+    }
+    
+    /**
      * Create a new keyspace in a DB
      */
     public void createKeyspace(String dbId, String keyspace) {

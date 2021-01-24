@@ -165,6 +165,18 @@ public class DocumentClient {
         }
     }
     
+    public void updatePath(String path, Object newValue) {
+        
+    }
+    
+    public Optional<Object> findPath(String path) {
+        return null;
+    }
+    
+    public void deletePath(String path) {
+        
+    }
+    
     
     
 }

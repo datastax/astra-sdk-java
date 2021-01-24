@@ -162,6 +162,9 @@ public class CollectionClient {
     public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz, int pageSize) {
         return findAll(clazz, pageSize, null);
     }
+    public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz, String pageState) {
+        return findAll(clazz, QueryDocument.DEFAULT_PAGING_SIZE, pageState);
+    }
     public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz, int pageSize, String pageState) {
         QueryDocumentBuilder builder = QueryDocument.builder().withPageSize(pageSize);
         if (null != pageState) {

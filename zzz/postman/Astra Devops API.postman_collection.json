@@ -1,0 +1,474 @@
+{
+	"info": {
+		"_postman_id": "6972b91e-7553-4a7d-af0d-f3ed151160bd",
+		"name": "Astra Devops API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "[Devops] - Authenticate to get Bearer Token",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"connection": true,
+					"accept-encoding": true,
+					"accept": true,
+					"user-agent": true,
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"clientId\":\"{{clientId}}\",\n    \"clientName\":\"{{clientName}}\",\n    \"clientSecret\":\"{{clientSecret}}\"\n}\n"
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/authenticateServiceAccount",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"authenticateServiceAccount"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Returns a list of databases",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases?include=nonterminated&provider=ALL&limit=25",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases"
+					],
+					"query": [
+						{
+							"key": "include",
+							"value": "nonterminated"
+						},
+						{
+							"key": "provider",
+							"value": "ALL"
+						},
+						{
+							"key": "limit",
+							"value": "25"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Create a new Database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n     \"name\":\"db_created_with_postman\",\n     \"keyspace\": \"ks1\",\n     \"cloudProvider\": \"AWS\",\n     \"region\":\"us-east-1\",\n     \"tier\":\"A5\",\n     \"capacityUnits\":1,\n     \"user\":\"astraUser\",\n     \"password\":\"astraPassword1\"\n}"
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases"
+					]
+				},
+				"description": "https://docs.astra.datastax.com/reference#createdatabase-1"
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Find database by id",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"type": "text",
+						"value": "{{token}}",
+						"disabled": true
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}"
+					]
+				},
+				"description": "https://docs.astra.datastax.com/reference#getdatabase-1"
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Adds keyspace into database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/keyspaces/keyspace_added_with_postman",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"keyspaces",
+						"keyspace_added_with_postman"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Obtain zip for connecting to the database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/secureBundleURL",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"secureBundleURL"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Terminates a database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/terminate",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"terminate"
+					]
+				},
+				"description": "https://docs.astra.datastax.com/reference#terminatedatabase-1"
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Park a database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/park",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"park"
+					]
+				},
+				"description": "https://docs.astra.datastax.com/reference#parkdatabase-1"
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - UnPark a database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/unpark",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"unpark"
+					]
+				},
+				"description": "https://docs.astra.datastax.com/reference#unparkdatabase-1"
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Resizes a database",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"capacityUnits\":2\n}"
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/resize",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"resize"
+					]
+				},
+				"description": "https://docs.astra.datastax.com/reference#resizedatabase-1"
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Reset Password",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{bearerToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"astraUser\",\n    \"password\":\"astraPassword1\"\n}"
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/resetPassword",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"databases",
+						"{{targetDatabaseId}}",
+						"resetPassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[Devops] - Returns supported regions and availability for a given user",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{bearerToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.astra.datastax.com/v2/availableRegions",
+					"protocol": "https",
+					"host": [
+						"api",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"v2",
+						"availableRegions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

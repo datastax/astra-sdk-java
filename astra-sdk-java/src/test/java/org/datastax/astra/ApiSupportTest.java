@@ -27,8 +27,9 @@ public class ApiSupportTest {
     public static String clientSecret;
     
     public static ApiDocumentClient apiDocClient;
-    
     public static ApiDevopsClient   apiDevopsClient;
+    
+    
     
     public static void initApiDevopsClient() {
         Assert.assertNotNull(clientId);
