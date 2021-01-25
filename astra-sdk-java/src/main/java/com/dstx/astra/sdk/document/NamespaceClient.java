@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.dstx.astra.sdk.rest.DataCenter;
-import com.dstx.astra.sdk.rest.Keyspace;
 import com.dstx.astra.sdk.utils.ApiResponse;
 import com.dstx.astra.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -51,7 +50,7 @@ public class NamespaceClient {
     /**
      * Find a namespace and its metadata based on its id
      */
-    public Optional<Keyspace> find() {
+    public Optional<Namespace> find() {
         Assert.hasLength(namespace, "namespaceId");
         try {
             // Create a GET REQUEST
@@ -70,7 +69,7 @@ public class NamespaceClient {
             return Optional.ofNullable(
                     ApiDocumentClient.getObjectMapper().readValue(
                             ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString()).body(), 
-                              new TypeReference<ApiResponse<Keyspace>>(){}).getData());
+                              new TypeReference<ApiResponse<Namespace>>(){}).getData());
             
         } catch (Exception e) {
             throw new IllegalArgumentException(e);

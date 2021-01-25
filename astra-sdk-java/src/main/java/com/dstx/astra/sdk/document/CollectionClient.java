@@ -119,6 +119,30 @@ public class CollectionClient {
         }
     }
     
+    public void upgrade() {
+        try {
+            
+            // Create a POST REQUEST
+            HttpRequest request = HttpRequest.newBuilder()
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl() 
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionName + "/upgrade"))
+                    .POST(BodyPublishers.noBody()).build();
+            
+            // Invoke
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
+                    .send(request, BodyHandlers.ofString());
+            
+            docClient.handleError(response);
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot upgrade the collection", e);
+        }
+    }
+    
     /**
      * Create a new document from any serializable object
      */

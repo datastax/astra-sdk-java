@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -248,4 +249,38 @@ public class ApiDocumentTest extends ApiSupportTest {
         
     }
 
+    @Test
+    public void should_find_person_subdocument() {
+        // Given
+        Optional<Person> p = apiDocClient.namespace(WORKING_NAMESPACE)
+                .collection(COLLECTION_PERSON)
+                .document("person1").find(Person.class);
+        Assertions.assertTrue(p.isPresent());
+        
+        System.out.println("FirstName= "+ apiDocClient.namespace("ns1")
+                  .collection("person")
+                  .document("person1")
+                  .findSubDocument("firstname", String.class)
+                  .get());
+        
+        System.out.println("Countries= "+ apiDocClient.namespace("ns1")
+                .collection("person")
+                .document("person1")
+                .findSubDocument("countries", List.class)
+                .get());
+        
+        System.out.println("Address/City = "+ apiDocClient.namespace("ns1")
+                .collection("person")
+                .document("person1")
+                .findSubDocument("address", Address.class)
+                .get().getZipCode());
+        
+        
+        System.out.println("Address/City = "+ apiDocClient.namespace("ns1")
+                .collection("person")
+                .document("person1")
+                .findSubDocument("address/zipcode", Integer.class)
+                .get());
+        
+    }
 }

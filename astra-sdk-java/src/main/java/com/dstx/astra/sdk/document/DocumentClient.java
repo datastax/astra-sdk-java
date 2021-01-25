@@ -165,13 +165,44 @@ public class DocumentClient {
         }
     }
     
+    public <DATA> Optional<DATA> findSubDocument(String path, Class<DATA> expectedData) {
+        Assert.hasLength(docId, "documentId");
+        Assert.hasLength(path, "hasLength");
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl()
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
+                            + "/" + docId + path + "?raw=true"))
+                    .GET().build();
+                    
+            // Call
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString());
+            System.out.println(response.body());
+            if (null !=response && response.statusCode() == 200) {
+                
+                return Optional.of(ApiDocumentClient.getObjectMapper().readValue(response.body(), expectedData));
+            } else if (204 == response.statusCode()) {
+                return Optional.empty();
+            } else {
+                throw new IllegalArgumentException("An error occured: " + response.body());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("An error occured", e);
+        }
+    }
+    
+    
     public void updatePath(String path, Object newValue) {
         
     }
     
-    public Optional<Object> findPath(String path) {
-        return null;
-    }
     
     public void deletePath(String path) {
         

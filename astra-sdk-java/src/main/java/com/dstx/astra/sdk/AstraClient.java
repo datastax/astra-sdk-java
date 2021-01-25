@@ -30,20 +30,26 @@ public class AstraClient {
      * - Some keys prefix with 'ASTRA_' will sue the Saas
      * - Some keys are read wieh working with standAlone stargate
      **/
+    
+    //Rest,Doc,Grapql Apis
     public static final String ASTRA_DB_ID            = "ASTRA_DB_ID";
     public static final String ASTRA_DB_REGION        = "ASTRA_DB_REGION";
     public static final String ASTRA_DB_USERNAME      = "ASTRA_DB_USERNAME";
     public static final String ASTRA_DB_PASSWORD      = "ASTRA_DB_PASSWORD";
+
+    // Devops API
     public static final String ASTRA_CLIENT_ID        = "ASTRA_CLIENT_ID";
     public static final String ASTRA_CLIENT_NAME      = "ASTRA_CLIENT_NAME";
     public static final String ASTRA_CLIENT_SECRET    = "ASTRA_CLIENT_SECRET";
-    public static final String ASTRA_SECURE_BUNDLE    = "ASTRA_SECURE_BUNDLE";
-    public static final String ASTRA_CONFIG_FILE      = "ASTRA_CONFIG_FILE";
     
-    public static final String USERNAME       = "USERNAME";
-    public static final String PASSWORD       = "PASSWORD";
-    public static final String BASE_URL       = "BASE_URL";
-    public static final String CONTACT_POINTS = "CONTACT_POINTS";
+    // Cql API
+    public static final String ASTRA_SECURE_BUNDLE    = "ASTRA_SECURE_BUNDLE";
+    public static final String STARGATE_USERNAME      = "STARGATE_USERNAME";
+    public static final String STARGATE_PASSWORD      = "STARGATE_PASSWORD";
+
+    public static final String BASE_URL               = "BASE_URL";
+    public static final String DRIVER_CONFIG_FILE     = "DRIVER_CONFIG_FILE";
+    public static final String CONTACT_POINTS         = "CONTACT_POINTS";
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
@@ -117,7 +123,7 @@ public class AstraClient {
                 LOGGER.info("Cannot use devops Api, not enough info provided");
             }
             LOGGER.info("Initializing the Cql API with client");
-            apiCql = new ApiCqlClient(applicationConfigFile, username, password, 
+            apiCql = new ApiCqlClient(driverConfigFile, username, password, 
                     secureConnectBundlePath, contactPoints, myDevopsCLient, astraDatabaseId);
         }
         return apiCql;
@@ -165,7 +171,7 @@ public class AstraClient {
     private final String secureConnectBundlePath;
     
     /** setup Astra from an external file. */
-    private final String applicationConfigFile;
+    private final String driverConfigFile;
     
     /**
      * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link ApiDevopsClient}, {@link ApiCqlClient} with
@@ -181,7 +187,7 @@ public class AstraClient {
         this.clientName              = builder.clientName;
         this.clientSecret            = builder.clientSecret;
         this.secureConnectBundlePath = builder.secureConnectBundle;
-        this.applicationConfigFile   = builder.applicationConfigFile;
+        this.driverConfigFile       = builder.driverConfigFile;
         this.contactPoints           = builder.contactPoints;
     }
     
@@ -205,7 +211,7 @@ public class AstraClient {
         public String   clientName;
         public String   clientSecret;
         public String   secureConnectBundle;
-        public String   applicationConfigFile;
+        public String   driverConfigFile;
         public List<String> contactPoints;
           
         /**
@@ -218,21 +224,28 @@ public class AstraClient {
             this.clientName               = System.getenv(ASTRA_CLIENT_NAME);
             this.clientSecret             = System.getenv(ASTRA_CLIENT_SECRET);
             this.secureConnectBundle      = System.getenv(ASTRA_SECURE_BUNDLE);
-            this.applicationConfigFile    = System.getenv(ASTRA_CONFIG_FILE);
-            this.username                 = System.getenv(ASTRA_DB_USERNAME);
-            this.password                 = System.getenv(ASTRA_DB_PASSWORD);
+            this.driverConfigFile         = System.getenv(DRIVER_CONFIG_FILE);
             this.contactPoints            = new ArrayList<>();  
-            // Overriding for a Stargate URL
-            this.baseUrl                  = System.getenv(BASE_URL);
+            this.baseUrl = System.getenv(BASE_URL);
+            
+            if (null != System.getenv(STARGATE_USERNAME)) {
+                this.username = System.getenv(STARGATE_USERNAME);
+            }
+            if (null == this.username) {
+                this.username = System.getenv(ASTRA_DB_USERNAME);
+            }
+            // 
+            if (null != System.getenv(STARGATE_PASSWORD)) {
+                this.password = System.getenv(STARGATE_PASSWORD);
+            }
+            if (null == password) {
+                this.password  = System.getenv(ASTRA_DB_PASSWORD);
+            }
+            
             if (null != System.getenv(CONTACT_POINTS)) {
                 this.contactPoints = Arrays.asList(System.getenv(CONTACT_POINTS).split(","));
             }
-            if (null != System.getenv(USERNAME)) {
-                this.username = System.getenv(USERNAME);
-            }
-            if (null != System.getenv(PASSWORD)) {
-                this.password = System.getenv(PASSWORD);
-            }
+            
         }
         
         public AstraClientBuilder astraDatabaseId(String uid) {
@@ -280,9 +293,9 @@ public class AstraClient {
             this.secureConnectBundle = secureConnectBundle;
             return this;
         }
-        public AstraClientBuilder applicationConfigFile(String applicationConfigFile) {
+        public AstraClientBuilder driverConfigFile(String applicationConfigFile) {
             Assert.hasLength(applicationConfigFile, "applicationConfigFile");
-            this.applicationConfigFile = applicationConfigFile;
+            this.driverConfigFile = applicationConfigFile;
             return this;
         }
         public AstraClientBuilder addContactPoint(String ip, int port) {
