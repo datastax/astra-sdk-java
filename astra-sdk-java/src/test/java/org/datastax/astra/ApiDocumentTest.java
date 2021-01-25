@@ -283,4 +283,41 @@ public class ApiDocumentTest extends ApiSupportTest {
                 .get());
         
     }
+    
+    @Test
+    public void should_update_person_subdocument() {
+        // Given
+        Optional<Person> p = apiDocClient.namespace(WORKING_NAMESPACE)
+                .collection(COLLECTION_PERSON)
+                .document("person1").find(Person.class);
+        Assertions.assertTrue(p.isPresent());
+        
+        System.out.println("Zipcode= "+ apiDocClient.namespace("ns1")
+        .collection("person")
+        .document("person1")
+        .findSubDocument("address", Address.class)
+        .get().getZipCode());
+        
+        apiDocClient.namespace("ns1")
+        .collection("person")
+        .document("person1")
+        .updateSubDocument("address", new Address("city2", 8000));
+
+        System.out.println("Zipcode= "+ apiDocClient.namespace("ns1")
+        .collection("person")
+        .document("person1")
+        .findSubDocument("address", Address.class)
+        .get().getZipCode());
+        
+    }
+    
+    
+    @Test
+    public void should_delete_person_subdocument() {
+        apiDocClient.namespace("ns1")
+        .collection("person")
+        .document("person1")
+        .deleteSubDocument("address");
+    }
+        
 }

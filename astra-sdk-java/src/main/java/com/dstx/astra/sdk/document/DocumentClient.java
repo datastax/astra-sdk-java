@@ -165,7 +165,7 @@ public class DocumentClient {
         }
     }
     
-    public <DATA> Optional<DATA> findSubDocument(String path, Class<DATA> expectedData) {
+    public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> expectedData) {
         Assert.hasLength(docId, "documentId");
         Assert.hasLength(path, "hasLength");
         if (!path.startsWith("/")) {
@@ -199,12 +199,61 @@ public class DocumentClient {
     }
     
     
-    public void updatePath(String path, Object newValue) {
-        
+    /**
+     * Use UPSERT to update first level properties.
+     * Here update a sub part
+     */
+    public <SUBDOC> void updateSubDocument(String path, SUBDOC newValue) {
+        Assert.hasLength(path, "path");
+        Assert.notNull(newValue, "newValue");
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        try {
+            Builder reqBuilder = HttpRequest.newBuilder()
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl()
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
+                            + "/" + docId + path))
+                    .PUT(BodyPublishers.ofString(
+                            ApiDocumentClient.getObjectMapper().writeValueAsString(newValue)));
+            
+            // Call
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
+                    .send(reqBuilder.build(), BodyHandlers.ofString());
+            docClient.handleError(response);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("An error occured", e);
+        }
     }
     
     
-    public void deletePath(String path) {
+    public void deleteSubDocument(String path) {
+        Assert.hasLength(path, "path");
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        try {
+            Builder reqBuilder = HttpRequest.newBuilder()
+                    .timeout(REQUEST_TIMOUT)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .header(HEADER_CASSANDRA, docClient.getToken())
+                    .uri(URI.create(docClient.getBaseUrl()
+                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
+                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
+                            + "/" + docId + path))
+                    .DELETE();
+            
+            // Call
+            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
+                    .send(reqBuilder.build(), BodyHandlers.ofString());
+            docClient.handleError(response);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("An error occured", e);
+        }
         
     }
     
