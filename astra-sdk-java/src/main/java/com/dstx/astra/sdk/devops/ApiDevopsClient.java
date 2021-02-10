@@ -360,6 +360,36 @@ public class ApiDevopsClient extends ApiSupport {
             throw new IllegalArgumentException("Cannot list regions", e);
         }
     }
+
+    /**
+     * Getter accessor for attribute 'clientId'.
+     *
+     * @return
+     *       current value of 'clientId'
+     */
+    public String getClientId() {
+        return clientId;
+    }
+
+    /**
+     * Getter accessor for attribute 'clientName'.
+     *
+     * @return
+     *       current value of 'clientName'
+     */
+    public String getClientName() {
+        return clientName;
+    }
+
+    /**
+     * Getter accessor for attribute 'clientSecret'.
+     *
+     * @return
+     *       current value of 'clientSecret'
+     */
+    public String getClientSecret() {
+        return clientSecret;
+    }
     
 
 }

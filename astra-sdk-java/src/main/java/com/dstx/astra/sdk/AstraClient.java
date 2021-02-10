@@ -3,6 +3,7 @@ package com.dstx.astra.sdk;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import com.dstx.astra.sdk.devops.ApiDevopsClient;
 import com.dstx.astra.sdk.document.ApiDocumentClient;
 import com.dstx.astra.sdk.rest.ApiRestClient;
 import com.dstx.astra.sdk.utils.Assert;
+import com.dstx.astra.sdk.utils.AstraRc;
 
 /**
  * Public interface to interact with ASTRA API.
@@ -187,7 +189,7 @@ public class AstraClient {
         this.clientName              = builder.clientName;
         this.clientSecret            = builder.clientSecret;
         this.secureConnectBundlePath = builder.secureConnectBundle;
-        this.driverConfigFile       = builder.driverConfigFile;
+        this.driverConfigFile        = builder.driverConfigFile;
         this.contactPoints           = builder.contactPoints;
     }
     
@@ -225,16 +227,19 @@ public class AstraClient {
             this.clientSecret             = System.getenv(ASTRA_CLIENT_SECRET);
             this.secureConnectBundle      = System.getenv(ASTRA_SECURE_BUNDLE);
             this.driverConfigFile         = System.getenv(DRIVER_CONFIG_FILE);
+            this.baseUrl                  = System.getenv(BASE_URL);
             this.contactPoints            = new ArrayList<>();  
-            this.baseUrl = System.getenv(BASE_URL);
             
+            // note that Stargate has priority on ASTRA
             if (null != System.getenv(STARGATE_USERNAME)) {
                 this.username = System.getenv(STARGATE_USERNAME);
             }
+            // only is no stargate username
             if (null == this.username) {
                 this.username = System.getenv(ASTRA_DB_USERNAME);
             }
-            // 
+            
+            // only is no stargate password
             if (null != System.getenv(STARGATE_PASSWORD)) {
                 this.password = System.getenv(STARGATE_PASSWORD);
             }
@@ -246,6 +251,46 @@ public class AstraClient {
                 this.contactPoints = Arrays.asList(System.getenv(CONTACT_POINTS).split(","));
             }
             
+            // Load values from AstraRc if it exists
+            // Only after initialization from environment variables 
+            if (AstraRc.exists()) {
+                LOGGER.info("Loading configuration from AstraRc");
+                astraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
+            }
+        }
+        
+        public AstraClientBuilder astraRc(AstraRc arc, String sectionName) {
+            Map<String,String> section = arc.getSections().get(sectionName);
+            if (null != section) {
+                if (null == astraDatabaseId) {
+                    astraDatabaseId = section.get(ASTRA_DB_ID);
+                }
+                if (null == password) {
+                    password = section.get(STARGATE_PASSWORD);
+                }
+                if (null == password) {
+                    password = section.get(ASTRA_DB_PASSWORD);
+                }
+                if (null == username) {
+                    username = section.get(STARGATE_USERNAME);
+                }
+                if (null == username) {
+                    username = section.get(ASTRA_DB_USERNAME);
+                }
+                if (null == astraDatabaseRegion) {
+                    astraDatabaseRegion = section.get(ASTRA_DB_REGION);
+                }
+                if (null == clientId) {
+                    clientId = section.get(ASTRA_CLIENT_ID);
+                }
+                if (null == clientName) {
+                    clientName = section.get(ASTRA_CLIENT_NAME);
+                }
+                if (null == clientName) {
+                    clientSecret = section.get(ASTRA_CLIENT_SECRET);
+                }
+            }
+            return this;
         }
         
         public AstraClientBuilder astraDatabaseId(String uid) {

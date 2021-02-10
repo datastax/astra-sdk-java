@@ -50,7 +50,8 @@ public class ApiDevopsTest extends ApiSupportTest {
     @Test
     public void should_have_dbid_in_running_databases() {
         DatabaseFilter runningDbQuery = DatabaseFilter.builder()
-                .limit(20).provider(CloudProvider.ALL)
+                .limit(20)
+                .provider(CloudProvider.ALL)
                 .include(Include.NON_TERMINATED)
                 .build();
         Map<String, AstraDatabaseInfos> runningDb = apiDevopsClient
@@ -88,10 +89,10 @@ public class ApiDevopsTest extends ApiSupportTest {
     }
 
     @Test
-    @Disabled("Call is successfull but not free hehe")
+    //@Disabled("Call is successfull but not free hehe")
     public void should_create_database() {
         DatabaseCreationRequest dcr = new DatabaseCreationRequest();
-        dcr.setName("dbCreateApi");
+        dcr.setName("db_created_with_sdk");
         dcr.setTier(DatabaseTier.A5);
         dcr.setCloudProvider(CloudProvider.AWS);
         dcr.setRegion("us-east-1");
