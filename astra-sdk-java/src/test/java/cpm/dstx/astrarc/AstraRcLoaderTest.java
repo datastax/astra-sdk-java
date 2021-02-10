@@ -13,17 +13,29 @@ import com.dstx.astra.sdk.utils.AstraRc;
 public class AstraRcLoaderTest extends ApiSupportTest {
     
     @Test
-    public void generateAstraRc() {
-        AstraRc.upsert(new ApiDevopsClient(clientName, clientId, clientSecret));
-        AstraRc.upsert("default", AstraClient.ASTRA_DB_PASSWORD, "astraPassword1");
-        AstraRc.upsert("freetier", AstraClient.ASTRA_DB_PASSWORD, "astraPassword1");
-    }
-    
-    @Test
-    public void useClientWithRc() {
-        System.out.println(AstraClient.builder().build()
-                   .apiDocument().namespaceNames()
-                   .collect(Collectors.toList()));
+    public void should_work_with_astraRc() {
+        
+        /*
+         * 1. Create AstraRc based on devops API. You need to provide clientName
+         * clientId and clientSecret for this call, later they will be save in the
+         * file.
+         */
+        AstraRc.create(new ApiDevopsClient(clientName, clientId, clientSecret));
+        
+        /*
+         * 2. Provide password (cannot be retrieved from API
+         * 
+         * Congratulation you are all set.
+         */
+        AstraRc.save("default", AstraClient.ASTRA_DB_PASSWORD, "astraPassword1");
+        
+        /**
+         * 3. As .astrarc file exist setup will be done from it
+         */
+        AstraClient astraClient = AstraClient.builder().build();
+        System.out.println(astraClient
+                .apiDocument().namespaceNames()
+                .collect(Collectors.toList()));
     }
     
     @Test

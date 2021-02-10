@@ -29,7 +29,8 @@ import com.dstx.astra.sdk.devops.DatabaseFilter;
 import com.dstx.astra.sdk.devops.DatabaseFilter.Include;
 
 /**
- * Utility class to load/save interact with .astrarc file.
+ * Utility class to load/save .astrarc file. This file is used to store
+ * Astra configuration.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -49,15 +50,23 @@ public class AstraRc {
     /** Sections in the file. */
     private final Map <String, Map<String, String>> sections;
     
+    /**
+     * Load from ~/.astrarc
+     */
     public AstraRc() {
         this.sections = AstraRc.load().getSections();
     }
     
+    /**
+     * Load from specified file
+     */
     public AstraRc(String fileName) {
         this.sections = AstraRc.load(fileName).getSections();
     }
     
-    /** Hid epublic constructor. */
+    /**
+     * Load from a set of keys (sections / Key / Value)
+     */
     public AstraRc(Map <String, Map<String, String>> s) {
         this.sections = s;
     }
@@ -72,13 +81,18 @@ public class AstraRc {
         return sections;
     }
     
+    /**
+     * Helper to react a key in the file based on section name and key
+     */
     public String read(String sectionName, String key) {
         return (!sections.containsKey(sectionName)) ? 
                 null :sections.get(sectionName).get(key);
     }
     
+    // -- Static operations --
+    
     /**
-     * If file present a merge is done.
+     * Check if file ~/.astrac is present in the filesystem
      */
     public static boolean exists() {
         return new File(System.getProperty(ENV_USER_HOME) 
@@ -91,19 +105,19 @@ public class AstraRc {
      *
      * @param devopsClient
      */
-    public static void upsert(ApiDevopsClient devopsClient) {
-        upsert(extractDatabasesInfos(devopsClient));
+    public static void create(ApiDevopsClient devopsClient) {
+        save(extractDatabasesInfos(devopsClient));
     }
   
     /**
      * Update only one key.
      */
-    public static void upsert(String section, String key, String value) {
+    public static void save(String section, String key, String value) {
         Map <String, Map<String, String>> astraRc = new HashMap<>();
         Map<String, String> val = new HashMap<>();
         val.put(key, value);
         astraRc.put(section, val);
-        upsert(astraRc);
+        save(astraRc);
     }
     
     /**
@@ -113,7 +127,7 @@ public class AstraRc {
      *      update .astrarc file. 
      * @throws IOException 
      */
-    public static void upsert(Map <String, Map<String, String>> astraRc) {
+    public static void save(Map <String, Map<String, String>> astraRc) {
         LOGGER.info("Updating .astrarc file");
         // This map is empty if file does not exist
         Map <String, Map<String, String>> targetAstraRc = astraRc;
