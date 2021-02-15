@@ -2,16 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.datastax.astra</groupId>
-  <artifactId>astra-sdk-java-parent</artifactId>
+  <artifactId>astra-sdk-parent</artifactId>
   <version>2021.1-SNAPSHOT</version>
   <name>Astra Java SDK Parent POM</name>
   <packaging>pom</packaging>
   <inceptionYear>2021</inceptionYear>
-  <description>Group all dependencies in a single file. This approach is preferred to parent approach as it brings more flexibility</description>
+  
+  <description>Astra Sofware Development Kit. Tools and library to work with Astra.datastax.com</description>
+  
   <organization>
     <name>DataStax</name>
     <url>http://datastax.com</url>
   </organization>
+  
   <licenses>
     <license>
       <name>Apache 2</name>
@@ -19,14 +22,17 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+  
   <properties>
-    <java-driver.version>4.9.0</java-driver.version>
+  
+    <java-driver.version>4.10.0</java-driver.version>
     <spring.version>5.3.2</spring.version>
-    <spring-boot.version>2.4.1</spring-boot.version>
+    <spring-boot.version>2.4.2</spring-boot.version>
     <logback.version>1.2.3</logback.version>
     <jackson.version>2.12.1</jackson.version>
     <junit-platform.version>1.7.0</junit-platform.version>
     <junit-jupiter.version>5.7.0</junit-jupiter.version>
+    
     <maven-compiler-plugin.source>12</maven-compiler-plugin.source>
     <maven-compiler-plugin.target>12</maven-compiler-plugin.target>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -34,11 +40,16 @@
     <maven-fmt-maven-plugin>2.2.0</maven-fmt-maven-plugin>
     <maven-xml-format-maven-plugin>3.0.7</maven-xml-format-maven-plugin>
   </properties>
+  
   <modules>
-    <module>astra-sdk-java</module>
-    <module>astra-sdk-java-samples</module>
-    <module>spring-boot-starter-astra</module>
+    <module>astra-sdk</module>
+    <module>astra-sdk-samples</module>
+    <module>astra-spring-boot-autoconfigure</module>
+    <module>astra-spring-boot-starter</module>
+    <module>astra-spring-boot-sample-app</module>
+    <module>stargate-sdk</module>
   </modules>
+  
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -98,8 +109,26 @@
 		<version>${junit-platform.version}</version>
 		<scope>test</scope>
 	  </dependency>
+	  <!-- Creating a SpringBoot Starter -->
+	  <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-autoconfigure</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-autoconfigure-processor</artifactId>
+        <version>${spring-boot.version}</version>
+        <optional>true</optional>
+      </dependency>
     </dependencies>
   </dependencyManagement>
+  
   <build>
     <pluginManagement>
       <plugins>

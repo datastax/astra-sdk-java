@@ -1,0 +1,2 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.dstx.astra.boot.autoconfigure.AstraConfiguration
