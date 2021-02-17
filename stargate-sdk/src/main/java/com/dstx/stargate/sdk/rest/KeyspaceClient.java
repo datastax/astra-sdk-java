@@ -1,12 +1,12 @@
-package com.dstx.stargate.client.rest;
+package com.dstx.stargate.sdk.rest;
 
 
-import static com.dstx.stargate.client.rest.ApiRestClient.PATH_SCHEMA_KEYSPACES;
-import static com.dstx.stargate.client.utils.ApiSupport.CONTENT_TYPE_JSON;
-import static com.dstx.stargate.client.utils.ApiSupport.HEADER_CASSANDRA;
-import static com.dstx.stargate.client.utils.ApiSupport.HEADER_CONTENT_TYPE;
-import static com.dstx.stargate.client.utils.ApiSupport.PATH_SCHEMA;
-import static com.dstx.stargate.client.utils.ApiSupport.REQUEST_TIMOUT;
+import static com.dstx.stargate.sdk.rest.ApiRestClient.PATH_SCHEMA_KEYSPACES;
+import static com.dstx.stargate.sdk.utils.ApiSupport.CONTENT_TYPE_JSON;
+import static com.dstx.stargate.sdk.utils.ApiSupport.HEADER_CASSANDRA;
+import static com.dstx.stargate.sdk.utils.ApiSupport.HEADER_CONTENT_TYPE;
+import static com.dstx.stargate.sdk.utils.ApiSupport.PATH_SCHEMA;
+import static com.dstx.stargate.sdk.utils.ApiSupport.REQUEST_TIMOUT;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.dstx.stargate.client.utils.ApiResponse;
-import com.dstx.stargate.client.utils.Assert;
+import com.dstx.stargate.sdk.utils.ApiResponse;
+import com.dstx.stargate.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**

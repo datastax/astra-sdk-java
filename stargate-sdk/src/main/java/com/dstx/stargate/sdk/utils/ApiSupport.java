@@ -1,4 +1,4 @@
-package com.dstx.stargate.client.utils;
+package com.dstx.stargate.sdk.utils;
 
 import java.net.HttpURLConnection;
 import java.net.http.HttpClient;

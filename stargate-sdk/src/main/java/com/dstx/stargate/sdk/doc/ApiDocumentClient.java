@@ -1,6 +1,6 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
-import static com.dstx.stargate.client.utils.Assert.hasLength;
+import static com.dstx.stargate.sdk.utils.Assert.hasLength;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -14,10 +14,10 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dstx.stargate.client.rest.Keyspace;
-import com.dstx.stargate.client.utils.ApiResponse;
-import com.dstx.stargate.client.utils.ApiSupport;
-import com.dstx.stargate.client.utils.JsonUtils;
+import com.dstx.stargate.sdk.rest.Keyspace;
+import com.dstx.stargate.sdk.utils.ApiResponse;
+import com.dstx.stargate.sdk.utils.ApiSupport;
+import com.dstx.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -63,10 +63,7 @@ public class ApiDocumentClient extends ApiSupport {
         this.password               = password;
         this.endPointAuthentication = endPointAuthentication;
         this.endPointApiDocument    = endPointApiDocument;
-        LOGGER.debug("Initializing Client with: "
-                + "URL={}, "
-                + "username={},"
-                + "passwordLenght={}", endPointApiDocument, username, password.length());
+        LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
     }
     
     /** {@inheritDoc} */
@@ -89,7 +86,7 @@ public class ApiDocumentClient extends ApiSupport {
             
             // Parse result, extract token
             if (201 == response.statusCode() || 200 == response.statusCode()) {
-                LOGGER.info("Success Authenticated, token will live for {} second(s).", tokenttl.getSeconds());
+                LOGGER.info("Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
                 return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
             } else {
                 throw new IllegalStateException("Cannot generate authentication token " + response.body());

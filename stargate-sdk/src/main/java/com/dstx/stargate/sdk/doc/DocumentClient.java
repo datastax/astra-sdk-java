@@ -1,9 +1,9 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
-import static com.dstx.stargate.client.utils.ApiSupport.CONTENT_TYPE_JSON;
-import static com.dstx.stargate.client.utils.ApiSupport.HEADER_CASSANDRA;
-import static com.dstx.stargate.client.utils.ApiSupport.HEADER_CONTENT_TYPE;
-import static com.dstx.stargate.client.utils.ApiSupport.REQUEST_TIMOUT;
+import static com.dstx.stargate.sdk.utils.ApiSupport.CONTENT_TYPE_JSON;
+import static com.dstx.stargate.sdk.utils.ApiSupport.HEADER_CASSANDRA;
+import static com.dstx.stargate.sdk.utils.ApiSupport.HEADER_CONTENT_TYPE;
+import static com.dstx.stargate.sdk.utils.ApiSupport.REQUEST_TIMOUT;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -15,7 +15,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
 
-import com.dstx.stargate.client.utils.Assert;
+import com.dstx.stargate.sdk.utils.Assert;
 
 public class DocumentClient {
      

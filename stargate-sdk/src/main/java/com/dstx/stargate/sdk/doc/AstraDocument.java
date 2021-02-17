@@ -1,4 +1,4 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
 /**
  * Wrapper for an document retrieved from ASTRA caring a unique identifier.

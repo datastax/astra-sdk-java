@@ -33,8 +33,8 @@
     <junit-platform.version>1.7.0</junit-platform.version>
     <junit-jupiter.version>5.7.0</junit-jupiter.version>
     
-    <maven-compiler-plugin.source>12</maven-compiler-plugin.source>
-    <maven-compiler-plugin.target>12</maven-compiler-plugin.target>
+    <maven-compiler-plugin.source>11</maven-compiler-plugin.source>
+    <maven-compiler-plugin.target>11</maven-compiler-plugin.target>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <maven-fmt-maven-plugin>2.2.0</maven-fmt-maven-plugin>

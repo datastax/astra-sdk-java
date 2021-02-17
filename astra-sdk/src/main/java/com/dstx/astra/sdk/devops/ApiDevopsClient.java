@@ -13,11 +13,10 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dstx.astra.sdk.AstraClient;
-import com.dstx.astra.sdk.utils.Utils;
-import com.dstx.stargate.client.utils.ApiSupport;
-import com.dstx.stargate.client.utils.Assert;
-import com.dstx.stargate.client.utils.JsonUtils;
+import com.dstx.stargate.sdk.utils.ApiSupport;
+import com.dstx.stargate.sdk.utils.Assert;
+import com.dstx.stargate.sdk.utils.JsonUtils;
+import com.dstx.stargate.sdk.utils.Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -31,7 +30,7 @@ public class ApiDevopsClient extends ApiSupport {
     public static final String ASTRA_ENDPOINT_DEVOPS = "https://api.astra.datastax.com/v2/";
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsClient.class);
     
     /** Service Account client Identifier. */
     private String clientId;
@@ -76,8 +75,7 @@ public class ApiDevopsClient extends ApiSupport {
             HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
             
             if (201 == response.statusCode() || 200 == response.statusCode()) {
-
-               LOGGER.info("Success Authenticated, token will live for {} second(s).", tokenttl.getSeconds());
+               LOGGER.info("+ Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
                return (String) objectMapper.readValue(response.body(), Map.class).get("token");
             } else {
                 throw new IllegalStateException("Cannot generate authentication token " + response.body());

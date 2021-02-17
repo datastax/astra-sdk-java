@@ -1,4 +1,4 @@
-package com.dstx.astra.sdk.utils;
+package com.dstx.stargate.sdk.utils;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;

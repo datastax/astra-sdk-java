@@ -1,4 +1,4 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
 import java.util.List;
 import java.util.Optional;

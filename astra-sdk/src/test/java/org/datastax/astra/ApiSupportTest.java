@@ -10,7 +10,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.dstx.astra.sdk.devops.ApiDevopsClient;
-import com.dstx.stargate.client.doc.ApiDocumentClient;
+import com.dstx.stargate.sdk.doc.ApiDocumentClient;
 
 public class ApiSupportTest {
     

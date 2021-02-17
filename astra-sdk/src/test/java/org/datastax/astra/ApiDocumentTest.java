@@ -20,12 +20,12 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.dstx.astra.sdk.AstraClient;
-import com.dstx.stargate.client.doc.AstraDocument;
-import com.dstx.stargate.client.doc.CollectionClient;
-import com.dstx.stargate.client.doc.Namespace;
-import com.dstx.stargate.client.doc.QueryDocument;
-import com.dstx.stargate.client.doc.ResultListPage;
-import com.dstx.stargate.client.rest.DataCenter;
+import com.dstx.stargate.sdk.doc.AstraDocument;
+import com.dstx.stargate.sdk.doc.CollectionClient;
+import com.dstx.stargate.sdk.doc.Namespace;
+import com.dstx.stargate.sdk.doc.QueryDocument;
+import com.dstx.stargate.sdk.doc.ResultListPage;
+import com.dstx.stargate.sdk.rest.DataCenter;
 
 /**
  * Test operations for the Document API operation

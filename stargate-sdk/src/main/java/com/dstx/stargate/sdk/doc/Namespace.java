@@ -1,9 +1,9 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
 import java.util.List;
 
-import com.dstx.stargate.client.rest.DataCenter;
-import com.dstx.stargate.client.rest.Keyspace;
+import com.dstx.stargate.sdk.rest.DataCenter;
+import com.dstx.stargate.sdk.rest.Keyspace;
 
 /**
  * Class to TODO

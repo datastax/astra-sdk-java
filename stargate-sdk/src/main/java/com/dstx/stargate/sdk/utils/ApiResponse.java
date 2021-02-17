@@ -1,4 +1,4 @@
-package com.dstx.stargate.client.utils;
+package com.dstx.stargate.sdk.utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

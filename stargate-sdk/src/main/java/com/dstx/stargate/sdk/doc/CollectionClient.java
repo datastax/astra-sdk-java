@@ -1,9 +1,9 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
-import static com.dstx.stargate.client.utils.ApiSupport.CONTENT_TYPE_JSON;
-import static com.dstx.stargate.client.utils.ApiSupport.HEADER_CASSANDRA;
-import static com.dstx.stargate.client.utils.ApiSupport.HEADER_CONTENT_TYPE;
-import static com.dstx.stargate.client.utils.ApiSupport.REQUEST_TIMOUT;
+import static com.dstx.stargate.sdk.utils.ApiSupport.CONTENT_TYPE_JSON;
+import static com.dstx.stargate.sdk.utils.ApiSupport.HEADER_CASSANDRA;
+import static com.dstx.stargate.sdk.utils.ApiSupport.HEADER_CONTENT_TYPE;
+import static com.dstx.stargate.sdk.utils.ApiSupport.REQUEST_TIMOUT;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.dstx.stargate.client.doc.QueryDocument.QueryDocumentBuilder;
-import com.dstx.stargate.client.utils.ApiResponse;
-import com.dstx.stargate.client.utils.Assert;
-import com.dstx.stargate.client.utils.JsonUtils;
+import com.dstx.stargate.sdk.doc.QueryDocument.QueryDocumentBuilder;
+import com.dstx.stargate.sdk.utils.ApiResponse;
+import com.dstx.stargate.sdk.utils.Assert;
+import com.dstx.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**

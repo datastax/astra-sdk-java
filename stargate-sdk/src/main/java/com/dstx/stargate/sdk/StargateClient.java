@@ -1,6 +1,7 @@
-package com.dstx.stargate.client;
+package com.dstx.stargate.sdk;
 
 import java.net.InetSocketAddress;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -10,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dstx.stargate.client.doc.ApiDocumentClient;
-import com.dstx.stargate.client.rest.ApiRestClient;
-import com.dstx.stargate.client.utils.Assert;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.dstx.stargate.sdk.doc.ApiDocumentClient;
+import com.dstx.stargate.sdk.rest.ApiRestClient;
+import com.dstx.stargate.sdk.utils.Assert;
+import com.dstx.stargate.sdk.utils.Utils;
 
 /**
  * Public interface to interact with ASTRA API.
@@ -37,6 +40,8 @@ public class StargateClient {
     public static final String STARGATE_ENDPOINT_DOC   = "STARGATE_ENDPOINT_DOC";
     public static final String STARGATE_ENDPOINT_CQL   = "STARGATE_ENDPOINT_CQL";
     public static final String STARGATE_CQL_DC         = "STARGATE_CQL_DC";
+    public static final String STARGATE_KEYSPACE       = "STARGATE_KEYSPACE";
+    public static final String STARGATE_ENABLE_CQL     = "STARGATE_ENABLE_CQL";
     
     // -----------------------------------------------
     // Attributes to be populated by BUILDER
@@ -78,26 +83,61 @@ public class StargateClient {
      * a constructor. The full flegde constructor would took 12 pararms.
      */
     private StargateClient(StargateClientBuilder builder) {
-        LOGGER.info("Initializing the document API with base url {}", builder.endPointApiDocument);
+        LOGGER.info("Initializing [StargateClient]");
+        if (Utils.paramsProvided(builder.username, builder.password,  
+                builder.endPointAuthentication, builder.endPointApiDocument)) {
+            apiDoc = new ApiDocumentClient(builder.username, 
+                    builder.password, 
+                    builder.endPointAuthentication,
+                    builder.endPointApiDocument);
+        }
         
-        apiDoc = new ApiDocumentClient(builder.username, 
-                builder.password, 
-                builder.endPointAuthentication,
-                builder.endPointApiDocument);
-        
-        apiRest = new ApiRestClient(builder.username, 
+        if (Utils.paramsProvided(builder.username, builder.password,  
+                builder.endPointAuthentication, builder.endPointApiRest)) {
+            apiRest = new ApiRestClient(builder.username, 
                 builder.password, 
                 builder.endPointAuthentication,
                 builder.endPointApiRest);
-        
-        if (!builder.endPointCql.isEmpty()) {
-            cqlSession = CqlSession.builder()
-                    .withAuthCredentials(builder.username, builder.password)
-                    .withLocalDatacenter(builder.localDataCenter)
-                    .addContactPoints(builder.endPointCql.stream()
-                                             .map(this::mapContactPoint)
-                                             .collect(Collectors.toList())).build();
         }
+        
+        // For security reason you want to disable CQL
+        if (builder.enableCql) {
+            if (Utils.paramsProvided(builder.username, builder.password)) {
+                CqlSessionBuilder cqlSessionBuilder = CqlSession.builder()
+                        .withAuthCredentials(builder.username, builder.password);
+                if (Utils.paramsProvided(builder.keyspaceName)) {
+                    LOGGER.info("Using Keyspace {}", builder.keyspaceName);
+                    cqlSessionBuilder = cqlSessionBuilder.withKeyspace(builder.keyspaceName);
+                }
+                // Overriding contactPoints/LocalDataCenter when using ASTRA settings
+                if (Utils.paramsProvided(builder.astraCloudSecureBundle)) {
+                    cqlSessionBuilder.withCloudSecureConnectBundle(Paths.get(builder.astraCloudSecureBundle));
+                } else if (Utils.paramsProvided(builder.localDataCenter) &&
+                    !builder.endPointCql.isEmpty()) {
+                    cqlSessionBuilder = cqlSessionBuilder
+                            .withLocalDatacenter(builder.localDataCenter)
+                            .addContactPoints(builder.endPointCql.stream()
+                                                     .map(this::mapContactPoint)
+                                                     .collect(Collectors.toList()));
+                }
+                cqlSession = cqlSessionBuilder.build();
+                
+                // Sanity Check query
+                cqlSession.execute("SELECT data_center from SYSTEM.LOCAL");
+                LOGGER.info("+ Cql API: Enabled");
+                
+                // As we opened a cqlSession we may want to close it properly at application shutdown.
+                Runtime.getRuntime().addShutdownHook(new Thread() { 
+                    public void run() { 
+                        cqlSession.close();
+                        LOGGER.info("Closing CqlSession.");
+                      } 
+                });
+            }
+        } else {
+            LOGGER.info("+ Cql API: Disabled");
+        }
+        LOGGER.info("[StargateClient] has been initialized");
     }
     
     private InetSocketAddress mapContactPoint(String contactPoint) {
@@ -131,7 +171,6 @@ public class StargateClient {
      * Builder pattern
      */
     public static class StargateClientBuilder {
-        
         /** Username - required all the time */
         private String username = "cassandra";
         /** Password - required all the time */
@@ -142,10 +181,16 @@ public class StargateClient {
         private String endPointApiRest = "http://localhost:8082";
         /** This the endPoint to invoke to work with different API(s). */
         private String endPointApiDocument = "http://localhost:8082";
+        /** If this flag is disabled no CQL session will be created. */
+        private boolean enableCql = true;
         /** working with local Cassandra. */
         private List<String> endPointCql = Arrays.asList("localhost:9042");
         /** Local data center. */
         private String localDataCenter = "dc1";
+        /** Optional Keyspace to enable CqlSession. */
+        private String keyspaceName; 
+        /** SecureCloudBundle (ASTRA ONLY) overriding. */
+        private String astraCloudSecureBundle = null;
           
         /**
          * Load defaults from Emvironment variables
@@ -171,6 +216,12 @@ public class StargateClient {
             }
             if (null != System.getenv(STARGATE_CQL_DC)) {
                 this.localDataCenter = System.getenv(STARGATE_CQL_DC);
+            }
+            if (null != System.getenv(STARGATE_KEYSPACE)) {
+                this.keyspaceName = System.getenv(STARGATE_KEYSPACE);
+            }
+            if (null != System.getenv(STARGATE_ENABLE_CQL)) {
+                this.enableCql = Boolean.valueOf(System.getenv(STARGATE_ENABLE_CQL));
             }
         }
         
@@ -204,9 +255,23 @@ public class StargateClient {
             this.localDataCenter = localDc;
             return this;
         }
+        public StargateClientBuilder keypace(String keyspace) {
+            Assert.hasLength(keyspace, "keyspace");
+            this.keyspaceName = keyspace;
+            return this;
+        }
+        public StargateClientBuilder disableCQL() {
+            this.enableCql = false;
+            return this;
+        }
         public StargateClientBuilder addCqlContactPoint(String ip, int port) {
             Assert.hasLength(ip, "ip");
             this.endPointCql.add(ip + ":" + port);
+            return this;
+        }
+        public StargateClientBuilder astraCloudSecureBundle(String bundle) {
+            Assert.hasLength(bundle, "bundle");
+            this.astraCloudSecureBundle = bundle;
             return this;
         }
         

@@ -1,12 +1,12 @@
-package com.dstx.stargate.client.doc;
+package com.dstx.stargate.sdk.doc;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import com.dstx.stargate.client.utils.Assert;
-import com.dstx.stargate.client.utils.JsonUtils;
+import com.dstx.stargate.sdk.utils.Assert;
+import com.dstx.stargate.sdk.utils.JsonUtils;
 
 /**
  * Build a queyr with filter clause

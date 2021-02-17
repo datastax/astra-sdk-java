@@ -1,4 +1,4 @@
-package com.dstx.stargate.client.rest;
+package com.dstx.stargate.sdk.rest;
 
 import java.util.ArrayList;
 import java.util.List;

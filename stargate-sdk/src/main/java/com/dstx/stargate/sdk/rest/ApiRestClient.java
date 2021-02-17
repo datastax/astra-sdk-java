@@ -1,6 +1,6 @@
-package com.dstx.stargate.client.rest;
+package com.dstx.stargate.sdk.rest;
 
-import static com.dstx.stargate.client.utils.Assert.hasLength;
+import static com.dstx.stargate.sdk.utils.Assert.hasLength;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -14,10 +14,10 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dstx.stargate.client.doc.Namespace;
-import com.dstx.stargate.client.utils.ApiResponse;
-import com.dstx.stargate.client.utils.ApiSupport;
-import com.dstx.stargate.client.utils.JsonUtils;
+import com.dstx.stargate.sdk.doc.Namespace;
+import com.dstx.stargate.sdk.utils.ApiResponse;
+import com.dstx.stargate.sdk.utils.ApiSupport;
+import com.dstx.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -56,11 +56,8 @@ public class ApiRestClient extends ApiSupport {
         this.username               = username;
         this.password               = password;
         this.endPointAuthentication = endPointAuthentication;
-        this.endPointApiRest         = endPointApiRest;
-        LOGGER.debug("Initializing Client with: "
-                + "URL={}, "
-                + "username={},"
-                + "passwordLenght={}", endPointApiRest, username, password.length());
+        this.endPointApiRest        = endPointApiRest;
+        LOGGER.info("+ Res API: {}, ", endPointApiRest);
     }
    
     
