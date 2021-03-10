@@ -13,15 +13,13 @@ import com.dstx.astra.sdk.utils.AstraRc;
 
 public class AstraRcTest {
     
-    String token = "AstraCS:uLCRdtAqCzwfKsrMAcJinoTw:799922046340ef9bbeb1688ed2dc988f540807d402b1b64c188a393e590325d6";
-    
     @Test
     public void should_create_astraRc_File() {
         // Given
         new File(System.getProperty("user.home") + "/.astrarc").delete();
         Assert.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
         // When
-        AstraRc.create(new ApiDevopsClient(token));
+        AstraRc.create(new ApiDevopsClient(System.getenv("bearerToken")));
         // Then
         Assert.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());
         // Then we should be able to load the file
