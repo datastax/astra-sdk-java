@@ -1,4 +1,7 @@
-package com.dstx.astra.sdk.devops;
+package com.dstx.astra.sdk.devops.req;
+
+import com.dstx.astra.sdk.devops.CloudProviderType;
+import com.dstx.astra.sdk.devops.DatabaseTierType;
 
 /**
  * Database creation request
@@ -15,9 +18,9 @@ public class DatabaseCreationRequest {
     private String keyspace;
     
     /** CloudProvider where the database lives. */
-    private CloudProvider cloudProvider;
+    private CloudProviderType cloudProvider;
     
-    private DatabaseTier tier = DatabaseTier.developer;
+    private DatabaseTierType tier = DatabaseTierType.developer;
     
     /**
      * CapacityUnits is the amount of space available (horizontal scaling) 
@@ -34,6 +37,7 @@ public class DatabaseCreationRequest {
     
     public DatabaseCreationRequest() {}
 
+    
     /**
      * Getter accessor for attribute 'name'.
      *
@@ -78,7 +82,7 @@ public class DatabaseCreationRequest {
      * @return
      *       current value of 'cloudProvider'
      */
-    public CloudProvider getCloudProvider() {
+    public CloudProviderType getCloudProvider() {
         return cloudProvider;
     }
 
@@ -87,7 +91,7 @@ public class DatabaseCreationRequest {
      * @param cloudProvider
      * 		new value for 'cloudProvider '
      */
-    public void setCloudProvider(CloudProvider cloudProvider) {
+    public void setCloudProvider(CloudProviderType cloudProvider) {
         this.cloudProvider = cloudProvider;
     }
 
@@ -97,7 +101,7 @@ public class DatabaseCreationRequest {
      * @return
      *       current value of 'tier'
      */
-    public DatabaseTier getTier() {
+    public DatabaseTierType getTier() {
         return tier;
     }
 
@@ -106,7 +110,7 @@ public class DatabaseCreationRequest {
      * @param tier
      * 		new value for 'tier '
      */
-    public void setTier(DatabaseTier tier) {
+    public void setTier(DatabaseTierType tier) {
         this.tier = tier;
     }
 
@@ -184,6 +188,14 @@ public class DatabaseCreationRequest {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return "DatabaseCreationRequest [name=" + name + ", keyspace=" + keyspace + ", cloudProvider=" + cloudProvider + ", tier="
+                + tier + ", capacityUnits=" + capacityUnits + ", region=" + region + ", user=" + user + ", password=" + password
+                + "]";
     }
 
 }

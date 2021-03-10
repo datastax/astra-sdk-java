@@ -32,16 +32,11 @@ public class AstraClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
     
     /** Initialize parameters from Environment variables. */
-    public static final String ASTRA_DB_ID            = "ASTRA_DB_ID";
-    public static final String ASTRA_DB_REGION        = "ASTRA_DB_REGION";
-    public static final String ASTRA_DB_USERNAME      = "ASTRA_DB_USERNAME";
-    public static final String ASTRA_DB_PASSWORD      = "ASTRA_DB_PASSWORD";
-    
-    public static final String ASTRA_CLIENT_ID        = "ASTRA_CLIENT_ID";
-    public static final String ASTRA_CLIENT_NAME      = "ASTRA_CLIENT_NAME";
-    public static final String ASTRA_CLIENT_SECRET    = "ASTRA_CLIENT_SECRET";
-    public static final String ASTRA_SECURE_BUNDLE    = "ASTRA_SECURE_BUNDLE";
-    public static final String ASTRA_KEYSPACE         = "ASTRA_KEYSPACE";
+    public static final String ASTRA_DB_ID                = "ASTRA_DB_ID";
+    public static final String ASTRA_DB_REGION            = "ASTRA_DB_REGION";
+    public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
+    public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
+    public static final String ASTRA_DB_SECURE_BUNDLE     = "ASTRA_DB_SECURE_BUNDLE";
     
     /** Building Astra base URL. */
     public static final String ASTRA_ENDPOINT_PREFIX  = "https://";
@@ -66,11 +61,9 @@ public class AstraClient {
          * You must have provided clientId/clientName/clientSecrret
          * -----
          */
-        if (Utils.paramsProvided(b.clientName,  b.clientId , b.clientSecret)) {
-            apiDevops = new ApiDevopsClient(b.clientName, 
-                    b.clientId, 
-                    b.clientSecret);  
-            LOGGER.info("+ Devops API is enabled with clientName {}", b.clientName);
+        if (Utils.paramsProvided(b.appToken)) {
+            apiDevops = new ApiDevopsClient(b.appToken);  
+            LOGGER.info("+ Devops API is enabled.");
         }
         
         /*
@@ -97,7 +90,7 @@ public class AstraClient {
         // #3. Download zip if not present
         } else if (null != apiDevops && null != b.astraDatabaseId) {
             File folderAstra = new File(pathAstraFolder);
-                if (!folderAstra.exists()) {
+            if (!folderAstra.exists()) {
                     folderAstra.mkdir();
                     LOGGER.info("+ Creating folder .astra"); 
                 }
@@ -113,16 +106,21 @@ public class AstraClient {
          * You must have provided user/passwd/dbId/bbRegion
          * -----
          */
-        if (Utils.paramsProvided(b.astraDatabaseId, b.astraDatabaseRegion, b.username, b.password)) {
+        if (Utils.paramsProvided(b.astraDatabaseId, b.astraDatabaseRegion, b.appToken)) {
             String astraStargateEndpint = new StringBuilder(ASTRA_ENDPOINT_PREFIX)
                     .append(b.astraDatabaseId).append("-").append(b.astraDatabaseRegion)
                     .append(ASTRA_ENDPOINT_SUFFIX).toString();
+            /* 
+             * The Stargate in Astra is setup to use SSO. You generate a token from the
+             * user interface and use 'token' as username all the time
+             */
             StargateClientBuilder sBuilder = StargateClient.builder()
-                          .authenticationUrl(astraStargateEndpint)
                           .documentApiUrl(astraStargateEndpint)
                           .restApiUrl(astraStargateEndpint)
-                          .username(b.username)
-                          .password(b.password);
+                          // IAM v2, Not token refresh password is the token 
+                          .authenticationUrl(null)
+                          .username("token")
+                          .password(b.appToken);
             if (Utils.paramsProvided(b.keyspace)) {
                 sBuilder = sBuilder.keypace(b.keyspace);
             }
@@ -190,11 +188,7 @@ public class AstraClient {
     public static class AstraClientBuilder {
         public String  astraDatabaseId;
         public String  astraDatabaseRegion;
-        public String  username;
-        public String  password;
-        public String  clientId;
-        public String  clientName;
-        public String  clientSecret;
+        public String  appToken;
         public String  secureConnectBundle;
         public String  keyspace;
           
@@ -206,17 +200,10 @@ public class AstraClient {
             LOGGER.info("+ Load configuration from Environment Variables");
             this.astraDatabaseId          = System.getenv(ASTRA_DB_ID);
             this.astraDatabaseRegion      = System.getenv(ASTRA_DB_REGION);
-            this.clientId                 = System.getenv(ASTRA_CLIENT_ID);
-            this.clientName               = System.getenv(ASTRA_CLIENT_NAME);
-            this.clientSecret             = System.getenv(ASTRA_CLIENT_SECRET);
-            this.secureConnectBundle      = System.getenv(ASTRA_SECURE_BUNDLE);
-            this.keyspace                 = System.getenv(ASTRA_KEYSPACE);
-            if (null == this.username) {
-                this.username = System.getenv(ASTRA_DB_USERNAME);
-            }
-            if (null == password) {
-                this.password  = System.getenv(ASTRA_DB_PASSWORD);
-            }
+            this.appToken                 = System.getenv(ASTRA_DB_APPLICATION_TOKEN);
+            this.secureConnectBundle      = System.getenv(ASTRA_DB_SECURE_BUNDLE);
+            this.keyspace                 = System.getenv(ASTRA_DB_KEYSPACE);
+            
             // Load values from AstraRc if it exists
             // Only after initialization from environment variables 
             if (AstraRc.exists()) {
@@ -234,20 +221,14 @@ public class AstraClient {
                 if (null == astraDatabaseRegion) {
                     astraDatabaseRegion = section.get(ASTRA_DB_REGION);
                 }
-                if (null == password) {
-                    password = section.get(ASTRA_DB_PASSWORD);
+                if (null == appToken) {
+                    appToken = section.get(ASTRA_DB_APPLICATION_TOKEN);
                 }
-                if (null == username) {
-                    username = section.get(ASTRA_DB_USERNAME);
+                if (null == secureConnectBundle) {
+                    secureConnectBundle = section.get(ASTRA_DB_SECURE_BUNDLE);
                 }
-                if (null == clientId) {
-                    clientId = section.get(ASTRA_CLIENT_ID);
-                }
-                if (null == clientName) {
-                    clientName = section.get(ASTRA_CLIENT_NAME);
-                }
-                if (null == clientName) {
-                    clientSecret = section.get(ASTRA_CLIENT_SECRET);
+                if (null == secureConnectBundle) {
+                    secureConnectBundle = section.get(ASTRA_DB_SECURE_BUNDLE);
                 }
             }
             return this;
@@ -263,29 +244,9 @@ public class AstraClient {
             this.astraDatabaseRegion = region;
             return this;
         }
-        public AstraClientBuilder username(String username) {
-            Assert.hasLength(username, "username");
-            this.username = username;
-            return this;
-        }
-        public AstraClientBuilder password(String password) {
-            Assert.hasLength(password, "password");
-            this.password = password;
-            return this;
-        }
-        public AstraClientBuilder clientId(String clientId) {
-            Assert.hasLength(clientId, "clientId");
-            this.clientId = clientId;
-            return this;
-        }
-        public AstraClientBuilder clientName(String clientName) {
-            Assert.hasLength(clientName, "clientName");
-            this.clientName = clientName;
-            return this;
-        }
-        public AstraClientBuilder clientSecret(String clientSecret) {
-            Assert.hasLength(clientSecret, "clientSecret");
-            this.clientSecret = clientSecret;
+        public AstraClientBuilder appToken(String token) {
+            Assert.hasLength(token, "token");
+            this.appToken = token;
             return this;
         }
         public AstraClientBuilder secureConnectBundle(String secureConnectBundle) {

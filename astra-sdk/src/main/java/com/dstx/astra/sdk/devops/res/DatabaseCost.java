@@ -1,6 +1,7 @@
-package com.dstx.astra.sdk.devops;
+package com.dstx.astra.sdk.devops.res;
 
 public class DatabaseCost {
+    
     double costPerMinCents         = 0;
     double costPerHourCents        = 0;
     double costPerDayCents         = 0;

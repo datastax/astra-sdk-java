@@ -1,12 +1,9 @@
 package com.dstx.astra.sdk.utils;
 
-import static com.dstx.astra.sdk.AstraClient.ASTRA_CLIENT_ID;
-import static com.dstx.astra.sdk.AstraClient.ASTRA_CLIENT_NAME;
-import static com.dstx.astra.sdk.AstraClient.ASTRA_CLIENT_SECRET;
+import static com.dstx.astra.sdk.AstraClient.ASTRA_DB_APPLICATION_TOKEN;
 import static com.dstx.astra.sdk.AstraClient.ASTRA_DB_ID;
-import static com.dstx.astra.sdk.AstraClient.ASTRA_DB_PASSWORD;
+import static com.dstx.astra.sdk.AstraClient.ASTRA_DB_KEYSPACE;
 import static com.dstx.astra.sdk.AstraClient.ASTRA_DB_REGION;
-import static com.dstx.astra.sdk.AstraClient.ASTRA_DB_USERNAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,10 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dstx.astra.sdk.devops.ApiDevopsClient;
-import com.dstx.astra.sdk.devops.AstraDatabaseInfos;
-import com.dstx.astra.sdk.devops.CloudProvider;
-import com.dstx.astra.sdk.devops.DatabaseFilter;
-import com.dstx.astra.sdk.devops.DatabaseFilter.Include;
+import com.dstx.astra.sdk.devops.CloudProviderType;
+import com.dstx.astra.sdk.devops.req.DatabaseFilter;
+import com.dstx.astra.sdk.devops.req.DatabaseFilter.Include;
+import com.dstx.astra.sdk.devops.res.Database;
 
 /**
  * Utility class to load/save .astrarc file. This file is used to store
@@ -248,47 +245,31 @@ public class AstraRc {
      * Generate expecting key in the file
      */
     private static Map <String, Map<String, String>> extractDatabasesInfos(ApiDevopsClient devopsClient) {
-        // Look for db
-        List<AstraDatabaseInfos> dbs = devopsClient.findDatabases(DatabaseFilter.builder()
-                .limit(20)
-                .provider(CloudProvider.ALL)
+        // Look for 'all' (limit 100), non terminated DB
+        List<Database> dbs = devopsClient.findDatabases(DatabaseFilter.builder()
+                .limit(100)
+                .provider(CloudProviderType.ALL)
                 .include(Include.NON_TERMINATED)
                 .build()).collect(Collectors.toList());
         
         // [default]
         Map <String, Map<String, String>> result = new HashMap<>();
         result.put(ASTRARC_DEFAULT, new HashMap<>());
-        result.get(ASTRARC_DEFAULT).put(ASTRA_CLIENT_ID, devopsClient.getClientId());
-        result.get(ASTRARC_DEFAULT).put(ASTRA_CLIENT_NAME, devopsClient.getClientName());
-        result.get(ASTRARC_DEFAULT).put(ASTRA_CLIENT_SECRET, devopsClient.getClientSecret());
+        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getBearerAuthToken());
         if (dbs.size() > 0) {
-            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0)));
+            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getBearerAuthToken()));
         }
-        
         // Loop on each database
-        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db)));
-        
-        // If password value already exist in the file we do not want to override with 
-        // <ENTER_YOUR_PASSWORD>. It should be provided only if not exists.
-        if (exists()) {
-            load().getSections().entrySet().stream()
-                  // Make sure we update an existing section
-                  .filter(e -> result.containsKey(e.getKey()))
-                  // Make sure existing file does have the key
-                  .filter(e -> e.getValue().containsKey(ASTRA_DB_PASSWORD))
-                  // Remove key to avoid overriding
-                  .forEach(e -> result.get(e.getKey()).remove(ASTRA_DB_PASSWORD));
-        }
-        
+        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getBearerAuthToken())));
         return result;
     }
     
-    private static Map<String, String> dbKeys(AstraDatabaseInfos db) {
+    private static Map<String, String> dbKeys(Database db, String token) {
         Map<String, String> dbKeys = new HashMap<>();
         dbKeys.put(ASTRA_DB_ID, db.getId() );
         dbKeys.put(ASTRA_DB_REGION, db.getInfo().getRegion());
-        dbKeys.put(ASTRA_DB_USERNAME, db.getInfo().getUser());
-        dbKeys.put(ASTRA_DB_PASSWORD, "<ENTER_YOUR_PASSWORD>");
+        dbKeys.put(ASTRA_DB_KEYSPACE, db.getInfo().getKeyspace());
+        dbKeys.put(ASTRA_DB_APPLICATION_TOKEN, token);
         return dbKeys;
     }
 

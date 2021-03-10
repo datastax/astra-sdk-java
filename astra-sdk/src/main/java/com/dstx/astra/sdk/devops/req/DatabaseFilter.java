@@ -1,6 +1,8 @@
-package com.dstx.astra.sdk.devops;
+package com.dstx.astra.sdk.devops.req;
 
 import java.util.Optional;
+
+import com.dstx.astra.sdk.devops.CloudProviderType;
 
 public class DatabaseFilter {
     
@@ -12,7 +14,7 @@ public class DatabaseFilter {
     
     private final Include include;
     
-    private final CloudProvider provider;
+    private final CloudProviderType provider;
     
     public DatabaseFilter() {
         DatabaseFilter f = DatabaseFilter.builder().build();
@@ -26,11 +28,22 @@ public class DatabaseFilter {
         this.provider          = f.getProvider();
     }
     
-    public DatabaseFilter(int limit, Include i, CloudProvider p, String startingAfter) {
+    public DatabaseFilter(int limit, Include i, CloudProviderType p, String startingAfter) {
         this.startingAfterDbId = startingAfter;
         this.limit             = limit;
         this.include           = i;
         this.provider          = p;
+    }
+    
+    public String urlParams() {
+        StringBuilder sbURL = new StringBuilder("databases?")
+                .append("include=" + getInclude().name().toLowerCase())
+                .append("&provider=" + getProvider().name().toLowerCase())
+                .append("&limit=" + getLimit());
+        if (!getStartingAfterDbId().isEmpty()) {
+            sbURL.append("&starting_after=" + getStartingAfterDbId().get());
+        }
+        return sbURL.toString();
     }
     
     public static enum Include {
@@ -49,7 +62,7 @@ public class DatabaseFilter {
     public static class DatabaseFilterBuilder {
         private int limit = DEFAULT_LIMIT;
         private String startingAfterDbId = null;
-        private CloudProvider provider = CloudProvider.ALL;
+        private CloudProviderType provider = CloudProviderType.ALL;
         private Include include  = Include.NON_TERMINATED;
         
         public DatabaseFilterBuilder() {}
@@ -62,7 +75,7 @@ public class DatabaseFilter {
             this.startingAfterDbId = dbId;
             return this;
         }
-        public DatabaseFilterBuilder provider(CloudProvider p) {
+        public DatabaseFilterBuilder provider(CloudProviderType p) {
             this.provider = p;
             return this;
         }
@@ -112,7 +125,7 @@ public class DatabaseFilter {
      * @return
      *       current value of 'provider'
      */
-    public CloudProvider getProvider() {
+    public CloudProviderType getProvider() {
         return provider;
     }
 

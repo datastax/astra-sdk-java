@@ -1,12 +1,15 @@
-package com.dstx.astra.sdk.devops;
+package com.dstx.astra.sdk.devops.res;
+
+import com.dstx.astra.sdk.devops.CloudProviderType;
+import com.dstx.astra.sdk.devops.DatabaseTierType;
 
 public class DatabaseAvailableRegion {
 
-    private DatabaseTier tier = DatabaseTier.developer;
+    private DatabaseTierType tier = DatabaseTierType.developer;
     
     private String description;
     
-    private CloudProvider cloudProvider = CloudProvider.GCP;
+    private CloudProviderType cloudProvider = CloudProviderType.GCP;
     
     private String region;
     
@@ -35,7 +38,7 @@ public class DatabaseAvailableRegion {
      * @return
      *       current value of 'tier'
      */
-    public DatabaseTier getTier() {
+    public DatabaseTierType getTier() {
         return tier;
     }
 
@@ -44,7 +47,7 @@ public class DatabaseAvailableRegion {
      * @param tier
      * 		new value for 'tier '
      */
-    public void setTier(DatabaseTier tier) {
+    public void setTier(DatabaseTierType tier) {
         this.tier = tier;
     }
 
@@ -73,7 +76,7 @@ public class DatabaseAvailableRegion {
      * @return
      *       current value of 'cloudProvider'
      */
-    public CloudProvider getCloudProvider() {
+    public CloudProviderType getCloudProvider() {
         return cloudProvider;
     }
 
@@ -82,7 +85,7 @@ public class DatabaseAvailableRegion {
      * @param cloudProvider
      * 		new value for 'cloudProvider '
      */
-    public void setCloudProvider(CloudProvider cloudProvider) {
+    public void setCloudProvider(CloudProviderType cloudProvider) {
         this.cloudProvider = cloudProvider;
     }
 

@@ -44,7 +44,7 @@ public class ApiDocumentClient extends ApiSupport {
     
     /** Password - required all the time */
     private final String password;
-  
+    
     /** This the endPoint to invoke to work with different API(s). */
     private final String endPointAuthentication;
   
@@ -55,12 +55,12 @@ public class ApiDocumentClient extends ApiSupport {
      * Constructor for ASTRA.
      */
     public ApiDocumentClient(String username, String password, String endPointAuthentication, String endPointApiDocument) {
-        hasLength(endPointAuthentication, "endPointAuthentication");
         hasLength(endPointApiDocument, "endPointApiDocument");
         hasLength(username, "username");
         hasLength(password, "password");
         this.username               = username;
         this.password               = password;
+        // if the authentication endpoint is null token is not
         this.endPointAuthentication = endPointAuthentication;
         this.endPointApiDocument    = endPointApiDocument;
         LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
@@ -70,26 +70,30 @@ public class ApiDocumentClient extends ApiSupport {
     @Override
     public String renewToken() {
         try {
-            
-            // Auth request (https://docs.astra.datastax.com/reference#auth-2)
-            String authRequestBody = new StringBuilder("{")
-                .append("\"username\":").append(JsonUtils.valueAsJson(username))
-                .append(", \"password\":").append(JsonUtils.valueAsJson(password))
-                .append("}").toString();
-            
-            // Call with a POST
-            HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
-                    .uri(URI.create(endPointAuthentication + "/v1/auth/"))
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());
-            
-            // Parse result, extract token
-            if (201 == response.statusCode() || 200 == response.statusCode()) {
-                LOGGER.info("Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
-                return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
+            if (endPointAuthentication !=null) {
+                // Auth request (https://docs.astra.datastax.com/reference#auth-2)
+                String authRequestBody = new StringBuilder("{")
+                    .append("\"username\":").append(JsonUtils.valueAsJson(username))
+                    .append(", \"password\":").append(JsonUtils.valueAsJson(password))
+                    .append("}").toString();
+                
+                // Call with a POST
+                HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
+                        .uri(URI.create(endPointAuthentication + "/v1/auth/"))
+                        .timeout(REQUEST_TIMOUT)
+                        .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                        .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());
+                
+                // Parse result, extract token
+                if (201 == response.statusCode() || 200 == response.statusCode()) {
+                    LOGGER.info("Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
+                    return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
+                } else {
+                    throw new IllegalStateException("Cannot generate authentication token " + response.body());
+                }
             } else {
-                throw new IllegalStateException("Cannot generate authentication token " + response.body());
+                // the Password is the token to use in APIS in ASTRA
+                return password;
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot generate authentication token", e);

@@ -1,30 +1,5 @@
 package org.datastax.astra;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.datastax.astra.dto.Person;
-import org.datastax.astra.dto.Person.Address;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import com.dstx.astra.sdk.AstraClient;
-import com.dstx.stargate.sdk.doc.AstraDocument;
-import com.dstx.stargate.sdk.doc.CollectionClient;
-import com.dstx.stargate.sdk.doc.Namespace;
-import com.dstx.stargate.sdk.doc.QueryDocument;
-import com.dstx.stargate.sdk.doc.ResultListPage;
 import com.dstx.stargate.sdk.rest.DataCenter;
 
 /**
@@ -32,12 +7,13 @@ import com.dstx.stargate.sdk.rest.DataCenter;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentTest extends ApiSupportTest {
+public class ApiDocumentTest {
     
     public static final String WORKING_NAMESPACE = "astra_sdk_namespace_test";
     public static final String COLLECTION_PERSON = "person";
     public static final DataCenter ASTRA_DC      = new DataCenter("dc-1", 1);
     
+    /*
     @BeforeAll
     public static void should_init_reusable_api_client() {
         initApiDevopsClient();
@@ -319,5 +295,5 @@ public class ApiDocumentTest extends ApiSupportTest {
         .document("person1")
         .deleteSubDocument("address");
     }
-        
+        */
 }

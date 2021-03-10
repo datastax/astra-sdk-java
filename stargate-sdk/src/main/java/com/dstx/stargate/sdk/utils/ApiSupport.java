@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
@@ -51,15 +52,12 @@ public abstract class ApiSupport {
     protected static final ObjectMapper objectMapper = new ObjectMapper()
                 .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
                 .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+                .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
                 .setDateFormat(new SimpleDateFormat("dd/MM/yyyy"))
                 .setAnnotationIntrospector(new JacksonAnnotationIntrospector());
-    
-    // ----------------------------------
-    //  Token Management    
-    // ----------------------------------
     
     /** Storing an authentication token to speed up queries. */
     protected String token;
@@ -84,21 +82,9 @@ public abstract class ApiSupport {
     public abstract String renewToken();
     
     /**
-     * In test or at initialization we want to test credentials
-     */
-    public boolean testConnection() {
-        return getToken().length() > 0;
-    }
-    
-    /**
      * Utility to process error Requests.
      */
     public void handleError(HttpResponse<String> res) {
-        
-        if (HttpURLConnection.HTTP_GATEWAY_TIMEOUT == res.statusCode()) {
-            System.out.println("TIMEOUT but result might be OK");
-        }
-        
         if (HttpURLConnection.HTTP_NOT_FOUND == res.statusCode()) {
             throw new IllegalArgumentException("Target object has not been found:" + res.body() );
         }
@@ -108,7 +94,7 @@ public abstract class ApiSupport {
         }
         
         if (HttpURLConnection.HTTP_INTERNAL_ERROR == res.statusCode()) {
-              throw new IllegalArgumentException("Internal Error" + res.body());
+              throw new IllegalStateException("Internal Error" + res.body());
         }
         
     }

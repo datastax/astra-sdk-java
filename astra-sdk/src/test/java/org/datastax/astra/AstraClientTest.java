@@ -6,6 +6,7 @@ public class AstraClientTest {
     @Test
     public void testBuilder() {
         // Download AstraRC
+
         
         
         AstraClient astraClient = AstraClient.builder()
