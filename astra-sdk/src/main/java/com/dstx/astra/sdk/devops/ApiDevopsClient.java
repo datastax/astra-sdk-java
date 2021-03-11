@@ -499,7 +499,7 @@ public class ApiDevopsClient extends ApiSupport {
                     return new IllegalArgumentException("400:" + apiErr.getErrors().get(0).getMessage());
                 }
                 if (response.statusCode() == HttpURLConnection.HTTP_CONFLICT) {
-                    LOGGER.error("Http code 409: The entity you want to create probably already exist");
+                    LOGGER.error("Http code 409: Conflict either operation is not allowed or enities may already exists");
                     return new IllegalArgumentException("409:" + apiErr.getErrors().get(0).getMessage());
                 }
                 if (response.statusCode() == 422) {

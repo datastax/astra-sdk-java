@@ -55,6 +55,9 @@ public class AstraClient {
      * a constructor. The full flegde constructor would took 12 pararms.
      */
     private AstraClient(AstraClientBuilder b) {
+        
+        LOGGER.info("+ Load configuration from Builder parameters");
+        
         /*
          * -----
          * ENABLE DEVOPS API (if possible) 

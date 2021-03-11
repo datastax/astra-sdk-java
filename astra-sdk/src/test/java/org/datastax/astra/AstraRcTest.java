@@ -1,4 +1,4 @@
-package com.dstx.astrarc;
+package org.datastax.astra;
 
 import java.io.File;
 
@@ -27,9 +27,15 @@ public class AstraRcTest {
     }
     
     @Test
-    public void should_initAstraClien_from_File() {
+    public void should_init_AstraClient_from_File() {
         AstraClient astraClient = AstraClient.builder().build();
         Assertions.assertNotNull(astraClient);
+        // Can query with CQL !!
+        String dataCenterName = astraClient.cqlSession()
+                .execute("select data_center from system.local")
+                .one().getString("data_center");
+        System.out.println("Cql query result: datacenter=" + dataCenterName);
+        Assertions.assertNotNull(dataCenterName);
     }
     
     

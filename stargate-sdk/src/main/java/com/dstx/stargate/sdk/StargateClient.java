@@ -236,7 +236,6 @@ public class StargateClient {
             return this;
         }
         public StargateClientBuilder authenticationUrl(String authenticationUrl) {
-            Assert.hasLength(authenticationUrl, "authenticationUrl");
             this.endPointAuthentication = authenticationUrl;
             return this;
         }
