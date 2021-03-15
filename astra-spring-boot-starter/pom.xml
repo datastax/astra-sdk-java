@@ -12,11 +12,19 @@
  </parent>
 
  <dependencies>
-  <dependency>
-   <groupId>com.datastax.astra</groupId>
-    <artifactId>astra-spring-boot-autoconfigure</artifactId>
-    <version>${project.version}</version>
-  </dependency>
+ 
+	<dependency>
+      <groupId>com.datastax.astra</groupId>
+      <artifactId>astra-sdk</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.datastax.astra</groupId>
+      <artifactId>astra-spring-boot-autoconfigure</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
  </dependencies>
   
 </project>

@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "astra.databaseId",
+      "type": "java.lang.String",
+      "defaultValue": "1234566..."
+    },
+    {
+      "name": "astra.cloudRegion",
+      "type": "java.lang.String",
+      "defaultValue": "us-east-1"
+    },
+    {
+      "name": "astra.applicationToken",
+      "type": "java.lang.String",
+      "defaultValue": "AstraCS:..."
+    },
+    {
+      "name": "astra.secureConnectBundlePath",
+      "type": "java.lang.String",
+      "defaultValue": "spring_petclinic"
+    },
+    {
+      "name": "astra.keyspace",
+      "type": "java.lang.String",
+      "defaultValue": "keyspace"
+    }],
+  "hints": []
+}

@@ -43,7 +43,6 @@
   
   <modules>
     <module>astra-sdk</module>
-    <module>astra-sdk-samples</module>
     <module>astra-spring-boot-autoconfigure</module>
     <module>astra-spring-boot-starter</module>
     <module>astra-spring-boot-sample-app</module>
@@ -126,6 +125,17 @@
         <version>${spring-boot.version}</version>
         <optional>true</optional>
       </dependency>
+      <dependency>
+     	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-configuration-processor</artifactId>
+        <version>${spring-boot.version}</version>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter</artifactId>
+	    <version>${spring-boot.version}</version>
+	  </dependency> 
     </dependencies>
   </dependencyManagement>
   

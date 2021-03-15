@@ -23,15 +23,10 @@
 
 		<dependency>
 			<groupId>com.datastax.astra</groupId>
-			<artifactId>spring-boot-starter-astra</artifactId>
+			<artifactId>astra-spring-boot-starter</artifactId>
 			<version>2021.1-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
-
+	
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
