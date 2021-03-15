@@ -84,16 +84,18 @@ public class StargateClient {
      */
     private StargateClient(StargateClientBuilder builder) {
         LOGGER.info("Initializing [StargateClient]");
-        if (Utils.paramsProvided(builder.username, builder.password,  
-                builder.endPointAuthentication, builder.endPointApiDocument)) {
+        if (Utils.paramsProvided(builder.username, 
+                builder.password,
+                builder.endPointApiDocument)) {
             apiDoc = new ApiDocumentClient(builder.username, 
                     builder.password, 
                     builder.endPointAuthentication,
                     builder.endPointApiDocument);
         }
         
-        if (Utils.paramsProvided(builder.username, builder.password,  
-                builder.endPointAuthentication, builder.endPointApiRest)) {
+        if (Utils.paramsProvided(builder.username, 
+                builder.password, 
+                builder.endPointApiRest)) {
             apiRest = new ApiRestClient(builder.username, 
                 builder.password, 
                 builder.endPointAuthentication,

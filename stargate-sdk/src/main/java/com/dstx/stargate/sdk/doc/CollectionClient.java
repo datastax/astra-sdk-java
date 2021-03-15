@@ -82,8 +82,6 @@ public class CollectionClient {
                             + NamespaceClient.PATH_COLLECTIONS))
                     .POST(BodyPublishers.ofString("{\"name\":\"" + collectionName + "\"}"))
                     .build();
-            
-            System.out.println(namespaceClient.getNamespace());
             HttpResponse<String> response = ApiDocumentClient.getHttpClient()
                     .send(request, BodyHandlers.ofString());
             

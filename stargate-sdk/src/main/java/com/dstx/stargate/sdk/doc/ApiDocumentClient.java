@@ -60,7 +60,7 @@ public class ApiDocumentClient extends ApiSupport {
         hasLength(password, "password");
         this.username               = username;
         this.password               = password;
-        // if the authentication endpoint is null token is not
+        // if authentication endpoint is nullwe are using token
         this.endPointAuthentication = endPointAuthentication;
         this.endPointApiDocument    = endPointApiDocument;
         LOGGER.info("+ Document API:  {}, ", endPointApiDocument);

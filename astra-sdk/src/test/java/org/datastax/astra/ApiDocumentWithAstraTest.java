@@ -1,5 +1,10 @@
 package org.datastax.astra;
 
+import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Test;
+
+import com.dstx.astra.sdk.AstraClient;
 import com.dstx.stargate.sdk.rest.DataCenter;
 
 /**
@@ -7,17 +12,50 @@ import com.dstx.stargate.sdk.rest.DataCenter;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentTest {
+public class ApiDocumentWithAstraTest {
     
-    public static final String WORKING_NAMESPACE = "astra_sdk_namespace_test";
-    public static final String COLLECTION_PERSON = "person";
-    public static final DataCenter ASTRA_DC      = new DataCenter("dc-1", 1);
+    private static final String SERVERLESS_DB_NAME   = "sdk_serverless_docapi";
+    private static final String WORKING_NAMESPACE    = "astra_sdk_namespace_test";
+    private static final String COLLECTION_PERSON    = "person";
+    private static final DataCenter ASTRA_DC         = new DataCenter("dc-1", 1);
     
+    
+    @Test
+    public void testDocumentApiSuite() throws InterruptedException {
+        
+        String token = System.getProperty("bearerToken");
+        if (null == token || "".equals(token)) {
+            token = System.getenv("bearerToken");
+        }
+        
+        AstraClient client = AstraClient.builder()
+                .databaseId("9f92123e-6a06-4897-a0b5-35cebbbec533")
+                .cloudProviderRegion("europe-west1")
+                .appToken(token).build();
+        
+        System.out.println(client
+                .apiDocument()
+                .namespaceNames()
+                .collect(Collectors.toList())); 
+    }
+    
+    /*
+    private String createAServerlessDB(String token) {
+        DatabaseCreationRequest dcr = new DatabaseCreationRequest();
+        dcr.setName(SERVERLESS_DB_NAME);
+        dcr.setTier(DatabaseTierType.serverless);
+        dcr.setCloudProvider(CloudProviderType.AWS);
+        dcr.setRegion("us-east-1");
+        dcr.setCapacityUnits(1);
+        dcr.setKeyspace(WORKING_NAMESPACE);
+        dcr.setUser("cedrick");
+        dcr.setPassword("cedrick1");
+        
+    }*/
+   
     /*
     @BeforeAll
     public static void should_init_reusable_api_client() {
-        initApiDevopsClient();
-        initApiDocumentApiClient();
         
         // Create the namespace if not present
         if (!apiDocClient.namespace(WORKING_NAMESPACE).exist()) {

@@ -49,7 +49,6 @@ public class ApiRestClient extends ApiSupport {
      * Constructor for ASTRA.
      */
     public ApiRestClient(String username, String password, String endPointAuthentication, String endPointApiRest) {
-        hasLength(endPointAuthentication, "endPointAuthentication");
         hasLength(endPointApiRest, "endPointApiRest");
         hasLength(username, "username");
         hasLength(password, "password");
@@ -65,23 +64,30 @@ public class ApiRestClient extends ApiSupport {
     @Override
     public String renewToken() {
         try {
-            // Auth request (https://docs.astra.datastax.com/reference#auth-2)
-            String authRequestBody = new StringBuilder("{")
-                .append("\"username\":").append(JsonUtils.valueAsJson(username))
-                .append(", \"password\":").append(JsonUtils.valueAsJson(password))
-                .append("}").toString();
-            // Call with a POST
-            HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
-                    .uri(URI.create(endPointAuthentication + "/v1/auth/"))
-                    .timeout(REQUEST_TIMOUT)
-                    .header("Content-Type", "application/json")
-                    .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());
-            // Parse result, extract token
-            if (201 == response.statusCode() || 200 == response.statusCode()) {
-                LOGGER.info("Success Authenticated, token will live for {} second(s).", tokenttl.getSeconds());
-                return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
+            if (endPointAuthentication !=null) {
+                // Auth request (https://docs.astra.datastax.com/reference#auth-2)
+                String authRequestBody = new StringBuilder("{")
+                    .append("\"username\":").append(JsonUtils.valueAsJson(username))
+                    .append(", \"password\":").append(JsonUtils.valueAsJson(password))
+                    .append("}").toString();
+                
+                // Call with a POST
+                HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
+                        .uri(URI.create(endPointAuthentication + "/v1/auth/"))
+                        .timeout(REQUEST_TIMOUT)
+                        .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                        .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());
+                
+                // Parse result, extract token
+                if (201 == response.statusCode() || 200 == response.statusCode()) {
+                    LOGGER.info("Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
+                    return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
+                } else {
+                    throw new IllegalStateException("Cannot generate authentication token " + response.body());
+                }
             } else {
-                throw new IllegalStateException("Cannot generate authentication token " + response.body());
+                // the Password is the token to use in APIS in ASTRA
+                return password;
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot generate authentication token", e);

@@ -125,7 +125,7 @@ public class ApiDevopsClient extends ApiSupport {
      * @return
      *      value
      */
-    public Stream<Database> findDatabasesNonTerminated() {
+    public Stream<Database> findAllDatabasesNonTerminated() {
         return findDatabases(DatabaseFilter.builder().build());
     }
     
@@ -199,7 +199,7 @@ public class ApiDevopsClient extends ApiSupport {
      */
     public Stream<Database> findDatabasesNonTerminatedByName(String name) {
         Assert.hasLength(name, "Database name");
-        return findDatabasesNonTerminated().filter(db->name.equals(db.getInfo().getName()));
+        return findAllDatabasesNonTerminated().filter(db->name.equals(db.getInfo().getName()));
     }
     
     /**

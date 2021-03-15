@@ -175,7 +175,7 @@ public class ApiDevopsServerlessTest {
         Assert.assertFalse(cli.findDatabaseById("i-like-cheese").isPresent());
         
         
-        Assert.assertTrue(cli.findDatabasesNonTerminated().anyMatch(
+        Assert.assertTrue(cli.findAllDatabasesNonTerminated().anyMatch(
                 db -> SERVERLESS_DB_NAME.equals(db.getInfo().getName())));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - List retrieved and the new created DB is present");
         
@@ -218,15 +218,16 @@ public class ApiDevopsServerlessTest {
         Assert.assertFalse(cli.findDatabasesNonTerminatedByName(SERVERLESS_DB_NAME).collect(Collectors.toSet()).size()>0);
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Instance with name'" + SERVERLESS_DB_NAME + "' does not exist.");
         // When
-        DatabaseCreationRequest dcr = new DatabaseCreationRequest();
-        dcr.setName(SERVERLESS_DB_NAME);
-        dcr.setTier(DatabaseTierType.serverless);
-        dcr.setCloudProvider(CloudProviderType.AWS);
-        dcr.setRegion("us-east-1");
-        dcr.setCapacityUnits(1);
-        dcr.setKeyspace(SERVERLESS_KEYSPACE);
-        dcr.setUser("cedrick");
-        dcr.setPassword("cedrick1");
+        DatabaseCreationRequest dcr = new DatabaseCreationRequest()
+                .builder()
+                .name(SERVERLESS_DB_NAME)
+                .tier(DatabaseTierType.serverless)
+                .cloudProvider(CloudProviderType.AWS)
+                .cloudRegion("us-east-1")
+                .keyspace(SERVERLESS_KEYSPACE)
+                .username("cedrick")
+                .password("cedrick1")
+                .build();
         
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.createDatabase(null));
         

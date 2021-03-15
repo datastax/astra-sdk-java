@@ -9,6 +9,7 @@ public enum CloudProviderType {
     
     ALL("ALL"), 
     GCP("GCP"), 
+    GCP_MARKETPLACE("GCP_MARKETPLACE"), 
     AZURE("AZURE"), 
     AWS("AWS");
     

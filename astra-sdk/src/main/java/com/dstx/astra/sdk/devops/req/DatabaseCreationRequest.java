@@ -37,6 +37,20 @@ public class DatabaseCreationRequest {
     
     public DatabaseCreationRequest() {}
 
+    public DatabaseCreationRequest(DatabaseCreationBuilder builder) {
+        this.capacityUnits = builder.capacityUnits;
+        this.cloudProvider = builder.cloudProvider;
+        this.keyspace      = builder.keyspace;
+        this.name          = builder.name;
+        this.password      = builder.password;
+        this.region        = builder.region;
+        this.tier          = builder.tier;
+        this.user          = builder.user;
+    }
+    
+    public static DatabaseCreationBuilder builder() {
+        return new DatabaseCreationBuilder();
+    }
     
     /**
      * Getter accessor for attribute 'name'.
@@ -46,15 +60,6 @@ public class DatabaseCreationRequest {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Setter accessor for attribute 'name'.
-     * @param name
-     * 		new value for 'name '
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**
@@ -68,15 +73,6 @@ public class DatabaseCreationRequest {
     }
 
     /**
-     * Setter accessor for attribute 'keyspace'.
-     * @param keyspace
-     * 		new value for 'keyspace '
-     */
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    /**
      * Getter accessor for attribute 'cloudProvider'.
      *
      * @return
@@ -84,15 +80,6 @@ public class DatabaseCreationRequest {
      */
     public CloudProviderType getCloudProvider() {
         return cloudProvider;
-    }
-
-    /**
-     * Setter accessor for attribute 'cloudProvider'.
-     * @param cloudProvider
-     * 		new value for 'cloudProvider '
-     */
-    public void setCloudProvider(CloudProviderType cloudProvider) {
-        this.cloudProvider = cloudProvider;
     }
 
     /**
@@ -104,16 +91,7 @@ public class DatabaseCreationRequest {
     public DatabaseTierType getTier() {
         return tier;
     }
-
-    /**
-     * Setter accessor for attribute 'tier'.
-     * @param tier
-     * 		new value for 'tier '
-     */
-    public void setTier(DatabaseTierType tier) {
-        this.tier = tier;
-    }
-
+    
     /**
      * Getter accessor for attribute 'capacityUnits'.
      *
@@ -123,16 +101,7 @@ public class DatabaseCreationRequest {
     public int getCapacityUnits() {
         return capacityUnits;
     }
-
-    /**
-     * Setter accessor for attribute 'capacityUnits'.
-     * @param capacityUnits
-     * 		new value for 'capacityUnits '
-     */
-    public void setCapacityUnits(int capacityUnits) {
-        this.capacityUnits = capacityUnits;
-    }
-
+    
     /**
      * Getter accessor for attribute 'region'.
      *
@@ -144,15 +113,6 @@ public class DatabaseCreationRequest {
     }
 
     /**
-     * Setter accessor for attribute 'region'.
-     * @param region
-     * 		new value for 'region '
-     */
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
-    /**
      * Getter accessor for attribute 'user'.
      *
      * @return
@@ -161,16 +121,7 @@ public class DatabaseCreationRequest {
     public String getUser() {
         return user;
     }
-
-    /**
-     * Setter accessor for attribute 'user'.
-     * @param user
-     * 		new value for 'user '
-     */
-    public void setUser(String user) {
-        this.user = user;
-    }
-
+  
     /**
      * Getter accessor for attribute 'password'.
      *
@@ -179,15 +130,6 @@ public class DatabaseCreationRequest {
      */
     public String getPassword() {
         return password;
-    }
-
-    /**
-     * Setter accessor for attribute 'password'.
-     * @param password
-     * 		new value for 'password '
-     */
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     /** {@inheritDoc} */
