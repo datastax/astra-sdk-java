@@ -9,12 +9,13 @@ import org.slf4j.LoggerFactory;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.dstx.astra.sdk.devops.ApiDevopsClient;
 import com.dstx.astra.sdk.utils.AstraRc;
-import com.dstx.stargate.sdk.StargateClient;
-import com.dstx.stargate.sdk.StargateClient.StargateClientBuilder;
-import com.dstx.stargate.sdk.doc.ApiDocumentClient;
-import com.dstx.stargate.sdk.rest.ApiRestClient;
-import com.dstx.stargate.sdk.utils.Assert;
-import com.dstx.stargate.sdk.utils.Utils;
+
+import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.StargateClient.StargateClientBuilder;
+import io.stargate.sdk.doc.ApiDocumentClient;
+import io.stargate.sdk.rest.ApiRestClient;
+import io.stargate.sdk.utils.Assert;
+import io.stargate.sdk.utils.Utils;
 
 /**
  * Public interface to interact with ASTRA API.
@@ -36,6 +37,8 @@ public class AstraClient {
     public static final String ASTRA_DB_REGION            = "ASTRA_DB_REGION";
     public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
+    public static final String ASTRA_DB_CLIENT_ID         = "ASTRA_DB_CLIENT_ID";
+    public static final String ASTRA_DB_CLIENT_SECRET     = "ASTRA_DB_CLIENT_SECRET";
     public static final String ASTRA_DB_SECURE_BUNDLE     = "ASTRA_DB_SECURE_BUNDLE";
     
     /** Building Astra base URL. */
@@ -61,7 +64,7 @@ public class AstraClient {
         /*
          * -----
          * ENABLE DEVOPS API (if possible) 
-         * You must have provided clientId/clientName/clientSecrret
+         * You must have provided an Application Token with admin rights
          * -----
          */
         if (Utils.paramsProvided(b.appToken)) {
@@ -72,8 +75,14 @@ public class AstraClient {
         if (Utils.paramsProvided(b.astraDatabaseId)) {
             /*
              * -----
-             * ENABLE CQL API (through stargateif possible) 
-             * You must have provided username/password + (cloudSecureBundle or devopsApi + dbid) 
+             * ENABLE CQL API
+             *
+             * Stargate: 
+             *  - username/password
+             *  - contactPoints if neede
+             * Astra: 
+             *  - clientId/clientSecret or 'token'/appToken
+             *  - will download secure bundle if possible
              * -----
              */
             String cloudSecureBundle = null;
@@ -98,15 +107,15 @@ public class AstraClient {
                         folderAstra.mkdir();
                         LOGGER.info("+ Creating folder .astra"); 
                     }
-                    LOGGER.info("+ Downloading for secureBundle db '{}'", b.astraDatabaseId);
+                    LOGGER.info("+ Downloading secureBundle for db '{}'", b.astraDatabaseId);
                     apiDevops.downloadSecureConnectBundle(b.astraDatabaseId, pathAstraSecureBundle);
                     cloudSecureBundle = pathAstraSecureBundle;
             }
-            LOGGER.info("+ SecureBundle: {}", cloudSecureBundle);
+            LOGGER.info("+ SecureBundle Path used: {}", cloudSecureBundle);
         
             /*
              * -----
-             * ENABLE STARGATE CLIENT (if possible)
+             * ENABLE STARGATE APIS if possible (rest,graphql)
              * You must have provided user/passwd/dbId/bbRegion
              * -----
              */
@@ -114,6 +123,16 @@ public class AstraClient {
                 String astraStargateEndpint = new StringBuilder(ASTRA_ENDPOINT_PREFIX)
                         .append(b.astraDatabaseId).append("-").append(b.astraDatabaseRegion)
                         .append(ASTRA_ENDPOINT_SUFFIX).toString();
+                String username = "token";
+                String password = b.appToken;
+                if (Utils.paramsProvided(b.clientId, b.clientSecret)) {
+                    LOGGER.info("+ Using clientId/clientSecret for CqlSession");
+                    username = b.clientId;
+                    password = b.clientSecret;
+                } else {
+                    LOGGER.info("+ Using 'token'/appToken for CqlSession");
+                }
+                
                 /* 
                  * The Stargate in Astra is setup to use SSO. You generate a token from the
                  * user interface and use 'token' as username all the time
@@ -121,10 +140,11 @@ public class AstraClient {
                 StargateClientBuilder sBuilder = StargateClient.builder()
                               .documentApiUrl(astraStargateEndpint)
                               .restApiUrl(astraStargateEndpint)
-                              // IAM v2, Not token refresh password is the token 
-                              .authenticationUrl(null)
-                              .username("token")
-                              .password(b.appToken);
+                              // Used for CqlSession
+                              .username(username)
+                              .password(password)
+                              // Use for HTTP Calls, required for Astra.
+                              .appToken(b.appToken);
                 if (Utils.paramsProvided(b.keyspace)) {
                     sBuilder = sBuilder.keypace(b.keyspace);
                 }
@@ -196,26 +216,59 @@ public class AstraClient {
         public String  appToken;
         public String  secureConnectBundle;
         public String  keyspace;
+        public String  clientId;
+        public String  clientSecret;
           
         /**
          * Load defaults from Emvironment variables
          */
         protected AstraClientBuilder() {
             LOGGER.info("Initializing [AstraClient]");
-            LOGGER.info("+ Load configuration from Environment Variables");
-            this.astraDatabaseId          = System.getenv(ASTRA_DB_ID);
-            this.astraDatabaseRegion      = System.getenv(ASTRA_DB_REGION);
-            this.appToken                 = System.getenv(ASTRA_DB_APPLICATION_TOKEN);
-            this.secureConnectBundle      = System.getenv(ASTRA_DB_SECURE_BUNDLE);
-            this.keyspace                 = System.getenv(ASTRA_DB_KEYSPACE);
-           
-            // Load values from AstraRc if it exists
-            // Only after initialization from environment variables 
+            
+            // Configuration File
             if (AstraRc.exists()) {
-                LOGGER.info("+ Load configuration from AstraRc");
+                LOGGER.info("+ Load configuration from file ~/.astrarc");
                 astraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
             }
-        }
+            
+            // Environment Variables
+            LOGGER.info("+ Load configuration from Environment Variables/Property");
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_ID))) {
+                this.astraDatabaseId = System.getProperty(ASTRA_DB_ID);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_ID))) {
+                this.astraDatabaseId = System.getenv(ASTRA_DB_ID);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_REGION))) {
+                this.astraDatabaseRegion = System.getProperty(ASTRA_DB_REGION);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_REGION))) {
+                this.astraDatabaseRegion = System.getenv(ASTRA_DB_REGION);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_APPLICATION_TOKEN))) {
+                this.appToken = System.getProperty(ASTRA_DB_APPLICATION_TOKEN);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_APPLICATION_TOKEN))) {
+                this.appToken = System.getenv(ASTRA_DB_APPLICATION_TOKEN);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_SECURE_BUNDLE))) {
+                this.secureConnectBundle = System.getProperty(ASTRA_DB_SECURE_BUNDLE);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_SECURE_BUNDLE))) {
+                this.secureConnectBundle = System.getenv(ASTRA_DB_SECURE_BUNDLE);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_KEYSPACE))) {
+                this.keyspace = System.getProperty(ASTRA_DB_KEYSPACE);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_KEYSPACE))) {
+                this.keyspace = System.getenv(ASTRA_DB_KEYSPACE);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_CLIENT_ID))) {
+                this.clientId = System.getProperty(ASTRA_DB_CLIENT_ID);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_CLIENT_ID))) {
+                this.clientId = System.getenv(ASTRA_DB_CLIENT_ID);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_CLIENT_SECRET))) {
+                this.clientSecret = System.getProperty(ASTRA_DB_CLIENT_SECRET);
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_CLIENT_SECRET))) {
+                this.clientSecret = System.getenv(ASTRA_DB_CLIENT_SECRET);
+            }
+        }   
         
         public AstraClientBuilder astraRc(AstraRc arc, String sectionName) {
             Map<String,String> section = arc.getSections().get(sectionName);
@@ -226,14 +279,20 @@ public class AstraClient {
                 if (null == astraDatabaseRegion) {
                     astraDatabaseRegion = section.get(ASTRA_DB_REGION);
                 }
+                if (null == clientId) {
+                    astraDatabaseId = section.get(ASTRA_DB_CLIENT_ID);
+                }
+                if (null == clientSecret) {
+                    astraDatabaseId = section.get(ASTRA_DB_CLIENT_SECRET);
+                }
                 if (null == appToken) {
                     appToken = section.get(ASTRA_DB_APPLICATION_TOKEN);
                 }
                 if (null == secureConnectBundle) {
                     secureConnectBundle = section.get(ASTRA_DB_SECURE_BUNDLE);
                 }
-                if (null == secureConnectBundle) {
-                    secureConnectBundle = section.get(ASTRA_DB_SECURE_BUNDLE);
+                if (null == keyspace) {
+                    keyspace = section.get(ASTRA_DB_KEYSPACE);
                 }
             }
             return this;
@@ -262,6 +321,16 @@ public class AstraClient {
         public AstraClientBuilder keyspace(String keyspace) {
             Assert.hasLength(keyspace, "keyspace");
             this.keyspace = keyspace;
+            return this;
+        }
+        public AstraClientBuilder clientId(String clientId) {
+            Assert.hasLength(clientId, "clientId");
+            this.clientId = clientId;
+            return this;
+        }
+        public AstraClientBuilder clientSecret(String clientSecret) {
+            Assert.hasLength(clientSecret, "clientSecret");
+            this.clientSecret = clientSecret;
             return this;
         }
         

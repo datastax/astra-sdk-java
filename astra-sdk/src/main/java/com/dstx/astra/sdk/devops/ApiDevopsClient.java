@@ -22,10 +22,11 @@ import com.dstx.astra.sdk.devops.req.DatabaseFilter.Include;
 import com.dstx.astra.sdk.devops.res.ApiResponseError;
 import com.dstx.astra.sdk.devops.res.Database;
 import com.dstx.astra.sdk.devops.res.DatabaseAvailableRegion;
-import com.dstx.stargate.sdk.utils.ApiSupport;
-import com.dstx.stargate.sdk.utils.Assert;
-import com.dstx.stargate.sdk.utils.Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import io.stargate.sdk.utils.ApiSupport;
+import io.stargate.sdk.utils.Assert;
+import io.stargate.sdk.utils.Utils;
 
 /**
  * Client for the Astra Devops API.

@@ -218,7 +218,7 @@ public class ApiDevopsServerlessTest {
         Assert.assertFalse(cli.findDatabasesNonTerminatedByName(SERVERLESS_DB_NAME).collect(Collectors.toSet()).size()>0);
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Instance with name'" + SERVERLESS_DB_NAME + "' does not exist.");
         // When
-        DatabaseCreationRequest dcr = new DatabaseCreationRequest()
+        DatabaseCreationRequest dcr = DatabaseCreationRequest
                 .builder()
                 .name(SERVERLESS_DB_NAME)
                 .tier(DatabaseTierType.serverless)

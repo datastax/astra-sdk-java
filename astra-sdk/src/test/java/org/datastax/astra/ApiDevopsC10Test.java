@@ -162,7 +162,7 @@ public class ApiDevopsC10Test {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - File as been download in " + randomFile);
     }
     
-    private void workingWithKeyspaces(ApiDevopsClient cli, String dbId) {
+    public void workingWithKeyspaces(ApiDevopsClient cli, String dbId) {
         
         // Check Parameters
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.createNamespace(dbId, ""));
@@ -204,7 +204,7 @@ public class ApiDevopsC10Test {
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.createKeyspace(dbId, SECOND_KEYSPACE));
     }
     
-    private void testFindDatabases(ApiDevopsClient cli, String dbId) {
+    public void testFindDatabases(ApiDevopsClient cli, String dbId) {
         // Check Parameters
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.findDatabaseById(""));
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.findDatabaseById(null));
@@ -256,7 +256,7 @@ public class ApiDevopsC10Test {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Instance with name'" + C10_DB_NAME + "' does not exist.");
         // When
         
-        DatabaseCreationRequest dcr = new DatabaseCreationRequest()
+        DatabaseCreationRequest dcr = DatabaseCreationRequest
                 .builder()
                 .name(C10_DB_NAME)
                 .tier(DatabaseTierType.C10)

@@ -142,7 +142,7 @@ public class AstraClientTest {
         String documentId = astraClientFull.apiDocument()
                        .namespace(yourNamespace)
                        .collection("videos")
-                       .save(new Person("cedrick", "lunven"));
+                       .createNewDocument(new Person("cedrick", "lunven"));
         System.out.println("Document created:" + documentId);
         
         // Reading a document from its id
