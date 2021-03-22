@@ -1,23 +1,27 @@
 package io.stargate.sdk.doc;
 
-import static io.stargate.sdk.utils.ApiSupport.CONTENT_TYPE_JSON;
-import static io.stargate.sdk.utils.ApiSupport.HEADER_CASSANDRA;
-import static io.stargate.sdk.utils.ApiSupport.HEADER_CONTENT_TYPE;
-import static io.stargate.sdk.utils.ApiSupport.REQUEST_TIMOUT;
+import static io.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
+import static io.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
+import static io.stargate.sdk.utils.ApiSupport.getHttpClient;
+import static io.stargate.sdk.utils.ApiSupport.getObjectMapper;
+import static io.stargate.sdk.utils.ApiSupport.handleError;
+import static io.stargate.sdk.utils.ApiSupport.startRequest;
 
 import java.io.Serializable;
-import java.net.URI;
-import java.net.http.HttpRequest;
+import java.net.HttpURLConnection;
 import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
 
-import io.stargate.sdk.utils.ApiSupport;
 import io.stargate.sdk.utils.Assert;
 
+/**
+ * Part of the Document API in stargate wrapper for methods at the document level.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class DocumentClient {
      
     /** Astra Client. */
@@ -38,169 +42,241 @@ public class DocumentClient {
     public DocumentClient(
             ApiDocumentClient docClient, NamespaceClient namespaceClient, 
             CollectionClient collectionClient, String docId) {
-        this.docClient     = docClient;
+        this.docClient         = docClient;
         this.namespaceClient   = namespaceClient;
         this.collectionClient  = collectionClient;
-        this.docId           = docId;
+        this.docId             = docId;
+    }
+    
+    private String getCurrentDocEndpoint() {
+        return docClient.getEndPointApiDocument()
+                + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
+                + PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
+                + "/" + docId;
     }
     
     /**
-     * Using current resource GET to evaluate if a document exists.
-     *
-     * - 200 means the document exists
-     * - 204 means document does not exists
+     * Leverage find() to check existence without eventual formatting issues. 
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
      */
     public boolean exist() {
         Assert.hasLength(docId, "documentId");
         try {
-            // Create a GET REQUEST
-            String uri = docClient.getEndPointApiDocument()
-                    + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                    + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                    + "/" + docId;
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(uri))
-                    .GET().build();
-            HttpResponse<Void> ss = ApiDocumentClient.getHttpClient()
-                    .send(request, BodyHandlers.discarding());
-            
-            return ss.statusCode() == 200;
+            return HttpURLConnection.HTTP_OK == getHttpClient().send(
+                    startRequest(getCurrentDocEndpoint(), docClient.getToken())
+                      .GET().build(), BodyHandlers.discarding()).statusCode();
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("Cannot test document existence", e);
         }
     }
     
     /**
-     * Updating an existing document or enforce the id.
+     * Replace a document
      * 
-     * Partial updates with documentPath 
+     * @param <DOC>
+     *      working class
+     * @param clazz
+     *      working class
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceDoc
      */
-    public <DOC extends Serializable> String save(DOC doc) {
+    public <DOC extends Serializable> String upsert(DOC doc) {
         Assert.notNull(doc, "document");
         Assert.hasLength(docId, "Document identifier");
+        HttpResponse<String> response;
         try {
-            Builder reqBuilder = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(docClient.getEndPointApiDocument()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                            + "/" + docId))
-                    .PUT(BodyPublishers.ofString(
-                            ApiDocumentClient.getObjectMapper().writeValueAsString(doc)));
-            
-            // Call
-            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
-                    .send(reqBuilder.build(), BodyHandlers.ofString());
-            
-            docClient.handleError(response);
-            return (String) ApiDocumentClient.getObjectMapper().readValue(response.body(), Map.class)
-                                       .get(CollectionClient.DOCUMENT_ID);
-            
+            String reqBody = getObjectMapper().writeValueAsString(doc);
+           response = getHttpClient().send(
+                   startRequest(getCurrentDocEndpoint(), docClient.getToken())
+                   .PUT(BodyPublishers.ofString(reqBody)).build(),
+                   BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("Cannot save document:", e);
+        }    
+        
+        handleError(response);
+        
+        try {
+            return (String) getObjectMapper()
+                    .readValue(response.body(), Map.class)
+                    .get(CollectionClient.DOCUMENT_ID);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot retrieve document id when saving doc:", e);
         }
     }
     
+    /**
+     * Update part of a document
+     * 
+     * @param <DOC>
+     *      working class
+     * @param clazz
+     *      working class
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfDoc
+     */
+    public <DOC extends Serializable> String update(DOC doc) {
+        Assert.notNull(doc, "document");
+        Assert.hasLength(docId, "Document identifier");
+        HttpResponse<String> response;
+        try {
+            String reqBody = getObjectMapper().writeValueAsString(doc);
+           response = getHttpClient().send(
+                   startRequest(getCurrentDocEndpoint(), docClient.getToken()).method("PATCH", BodyPublishers.ofString(reqBody)).build(),
+                   BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot save document:", e);
+        }    
+        
+        handleError(response);
+        
+        try {
+            return (String) getObjectMapper()
+                    .readValue(response.body(), Map.class)
+                    .get(CollectionClient.DOCUMENT_ID);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot retrieve document id when saving doc:", e);
+        }
+    }
+    
+    /**
+     * Get a document by {document-id}.
+     *
+     * @param <DOC>
+     *      working class
+     * @param clazz
+     *      working class
+     * @return
+     *      a document if exist
+     *      
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
+     */
     public <DOC extends Serializable> Optional<DOC> find(Class<DOC> clazz) {
         Assert.hasLength(docId, "documentId");
         Assert.notNull(clazz, "className");
+        HttpResponse<String> response;
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(docClient.getEndPointApiDocument()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                            + "/" + docId + "?raw=true"))
-                    .GET().build();
-                    
-            // Call
-            HttpResponse<String> response = ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString());
-            if (null !=response && response.statusCode() == 200) {
-                
-                return Optional.of(ApiDocumentClient.getObjectMapper().readValue(response.body(), clazz));
-            } else if (204 == response.statusCode()) {
-                return Optional.empty();
-            } else {
-                throw new IllegalArgumentException("An error occured: " + response.body());
-            }
+            response = getHttpClient().send(
+                    startRequest(getCurrentDocEndpoint() + "?raw=true", docClient.getToken())
+                        .GET().build(), BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("Cannot invoke API to find document:", e);
         }
+        
+        handleError(response);
+        
+        try {
+            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
+                return Optional.of(getObjectMapper().readValue(response.body(), clazz));
+           } else if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
+               return Optional.empty();
+           }
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall response", e);
+        }
+        
+        throw new RuntimeException("Cannot marshall responsecannot find doc, invalid response " + response);
     }
 
     /**
-     * Leveraging resources DELETE to remove a document, it must exists.
-     *
-     * @param collectionName
-     *          collectionName
-     * @param docId
-     *          documentId
+     * Delete a document.
+     *          
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteDoc
      */
     public void delete() {
         Assert.hasLength(docId, "documentId");
+        HttpResponse<String> response;
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(docClient.getEndPointApiDocument()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                            + "/" + docId))
-                    .DELETE().build();
-                    
-            // Call
-            HttpResponse<String> response = ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString());
-            if (response.statusCode() != 204) {
-                throw new IllegalArgumentException("An error occured: " + response.body());
-            }
+            response = getHttpClient().send(
+                    startRequest(getCurrentDocEndpoint(), docClient.getToken())
+                     .DELETE().build(), BodyHandlers.ofString());
+            
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("Cannot invoke API to delete a document:", e);
+        }
+        handleError(response);
+        if (HttpURLConnection.HTTP_NO_CONTENT  != response.statusCode()) {
+            throw new IllegalArgumentException("Invalid response from the API " + response.body());
         }
     }
     
-    public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> expectedData) {
+    /**
+     * Get a sub document by {document-path}.
+     *
+     * @param <SUBDOC>
+     *      working class
+     * @param className
+     *      working class
+     * @param path
+     *      subpath in the doc/ 
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/GetSubDocByPath
+     * @return
+     */
+    public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> className) {
         Assert.hasLength(docId, "documentId");
         Assert.hasLength(path, "hasLength");
+        Assert.notNull(className, "expectedClass");
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
+        HttpResponse<String> response;
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(docClient.getEndPointApiDocument()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                            + "/" + docId + path + "?raw=true"))
-                    .GET().build();
-                    
-            // Call
-            HttpResponse<String> response = ApiDocumentClient.getHttpClient().send(request, BodyHandlers.ofString());
-            if (null !=response && response.statusCode() == 200) {
-                return Optional.of(ApiDocumentClient.getObjectMapper().readValue(response.body(), expectedData));
-            } else if (204 == response.statusCode()) {
-                return Optional.empty();
-            } else {
-                return Optional.empty();
-            }
+           response = getHttpClient().send(startRequest(getCurrentDocEndpoint() + path + "?raw=true", docClient.getToken())
+                    .GET().build(), BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("Cannot invoke API to find sub document:", e);
+        }
+        handleError(response);
+        try {
+            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
+                return Optional.of(getObjectMapper().readValue(response.body(), className));
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            throw new RuntimeException("An error occured", e);
         }
     }
     
     
     /**
-     * Use UPSERT to update first level properties.
-     * Here update a sub part
+     * Replace a subpart of the document.
+     * 
+     * @param <SUBDOC>
+     *      working class
+     * @param newValue
+     *      object for the new value
+     *      
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceSubDoc
+     */
+    public <SUBDOC> void replaceSubDocument(String path, SUBDOC newValue) {
+        Assert.hasLength(path, "path");
+        Assert.notNull(newValue, "newValue");
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        HttpResponse<String> response;
+        try {
+            response = getHttpClient().send(
+                    startRequest(getCurrentDocEndpoint() + path, docClient.getToken())
+                     .PUT(BodyPublishers.ofString(getObjectMapper().writeValueAsString(newValue))).build(), 
+                    BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("An error occured when updating sub documents", e);
+        }
+        handleError(response);
+    }
+    
+    /**
+     * Update part of a sub document
+     * 
+     * @param <SUBDOC>
+     *      working class
+     * @param newValue
+     *      object for the new value
+     *
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfSubDoc
      */
     public <SUBDOC> void updateSubDocument(String path, SUBDOC newValue) {
         Assert.hasLength(path, "path");
@@ -208,52 +284,42 @@ public class DocumentClient {
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
+        HttpResponse<String> response;
         try {
-            Builder reqBuilder = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(docClient.getEndPointApiDocument()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                            + "/" + docId + path))
-                    .PUT(BodyPublishers.ofString(
-                            ApiDocumentClient.getObjectMapper().writeValueAsString(newValue)));
-            
-            // Call
-            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
-                    .send(reqBuilder.build(), BodyHandlers.ofString());
-            docClient.handleError(response);
+            response = getHttpClient().send(
+                    startRequest(getCurrentDocEndpoint() + path + "?raw=true", docClient.getToken())
+                     .method("PATCH", BodyPublishers.ofString(getObjectMapper().writeValueAsString(newValue))).build(), 
+                    BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("An error occured when updating sub documents", e);
         }
+        handleError(response);
     }
     
     
+    /**
+     * Delete a sub document.
+     * 
+     * @param path
+     *      sub document path
+     *      
+     * @path https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteSubDoc
+     */
     public void deleteSubDocument(String path) {
         Assert.hasLength(path, "path");
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
+        HttpResponse<String> response;
         try {
-            Builder reqBuilder = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, docClient.getToken())
-                    .uri(URI.create(docClient.getEndPointApiDocument()
-                            + NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                            + NamespaceClient.PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                            + "/" + docId + path))
-                    .DELETE();
+            response = getHttpClient().send(
+                        startRequest(getCurrentDocEndpoint() + path + "?raw=true", docClient.getToken())
+                            .DELETE().build(), BodyHandlers.ofString());
             
-            // Call
-            HttpResponse<String> response = ApiDocumentClient.getHttpClient()
-                    .send(reqBuilder.build(), BodyHandlers.ofString());
-            docClient.handleError(response);
         } catch (Exception e) {
-            throw new IllegalArgumentException("An error occured", e);
+            throw new RuntimeException("An error occured when deleting sub documents", e);
         }
-        
+        handleError(response);
     }
     
     

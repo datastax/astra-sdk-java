@@ -61,22 +61,44 @@ public class ApiDocumentWithAstraTest {
     
     @Test
     public void testSuite() throws InterruptedException {
+        
+        System.out.println(ANSI_YELLOW + "\n[] Checking required parameters " + ANSI_RESET);
         builderParams_should_not_be_empty();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Tests passed.");
         
         // Operations on namespaces
+        System.out.println(ANSI_YELLOW + "\n[POST] Create namespace if needed" + ANSI_RESET);
         should_create_namespace();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace exists.");
+        
+        System.out.println(ANSI_YELLOW + "\n[GET] Created namespace is in available list" + ANSI_RESET);
         working_namespace_should_exist();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace founds.");
         working_namespace_should_have_dc();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace datacenters are populated.");
         
         // Operations on collections
+        System.out.println(ANSI_YELLOW + "\n[POST] Create a collection" + ANSI_RESET);
         should_create_collection();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection exist");
+        
+        System.out.println(ANSI_YELLOW + "\n[POST] Collection should now be available" + ANSI_RESET);
         shoudl_find_collection();
+        
+        System.out.println(ANSI_YELLOW + "\n[DELETE] Delete a collection" + ANSI_RESET);
         should_delete_collection();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection has been deleted");
+        
+        System.out.println(ANSI_YELLOW + "\n[PUT] Create a new document" + ANSI_RESET);
         should_create_newDocument();
         
         // Operation on documents
+        System.out.println(ANSI_YELLOW + "\n[PUT] Upsert new document" + ANSI_RESET);
         should_upsert_document();
+        
+        System.out.println(ANSI_YELLOW + "\n[POST] update a new document" + ANSI_RESET);
         should_update_document();
+
         should_find_all_person();
         should_search_withQuery();
 
@@ -88,7 +110,6 @@ public class ApiDocumentWithAstraTest {
     
     public void should_create_namespace() 
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n[POST] Create namespace if needed" + ANSI_RESET);
         if (!clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
             clientApiDoc.namespace(WORKING_NAMESPACE)
                         .create(new DataCenter(cloudRegion, 3));
@@ -100,7 +121,6 @@ public class ApiDocumentWithAstraTest {
             }
         }
         Assertions.assertTrue(clientApiDoc.namespace(WORKING_NAMESPACE).exist());
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace exists");
     }
    
     
@@ -156,7 +176,6 @@ public class ApiDocumentWithAstraTest {
               .namespace(WORKING_NAMESPACE)
               .collection(COLLECTION_PERSON)
               .exist());
-      System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection exist");
     }
     
     public void shoudl_find_collection() {
@@ -212,7 +231,7 @@ public class ApiDocumentWithAstraTest {
         Assertions.assertTrue(collectionPerson.exist());
         // When
         collectionPerson.document("myId")
-                        .save(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+                        .upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
         Assertions.assertTrue(collectionPerson
                         .document("myId")
@@ -224,8 +243,8 @@ public class ApiDocumentWithAstraTest {
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
         // When
-        collectionPerson.document("123").save(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
-        collectionPerson.document("123").save(new Person("loulou", "looulou", 20, new Address("Paris", 75015)));
+        collectionPerson.document("123").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPerson.document("123").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75015)));
         // Then
         Optional<Person> loulou = collectionPerson.document("123").find(Person.class);
         Assertions.assertTrue(loulou.isPresent());
@@ -252,11 +271,11 @@ public class ApiDocumentWithAstraTest {
         Assertions.assertTrue(collectionPerson.exist());
         
         collectionPerson.document("person1")
-                        .save(new Person("person1", "person1", 20, new Address("Paris", 75000)));
+                        .upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
         collectionPerson.document("person2")
-                        .save(new Person("person2", "person2", 30, new Address("Paris", 75000)));
+                        .upsert(new Person("person2", "person2", 30, new Address("Paris", 75000)));
         collectionPerson.document("person3")
-                        .save(new Person("person3", "person3", 40, new Address("Melun", 75000)));
+                        .upsert(new Person("person3", "person3", 40, new Address("Melun", 75000)));
         Assertions.assertTrue(collectionPerson.document("person1").exist());
         Assertions.assertTrue(collectionPerson.document("person2").exist());
         Assertions.assertTrue(collectionPerson.document("person3").exist());
@@ -286,7 +305,7 @@ public class ApiDocumentWithAstraTest {
         
         // Create doc
         DocumentClient p1 = cc.document("person1");
-        p1.save(new Person("person1", "person1", 20, new Address("Paris", 75000)));
+        p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
         Assertions.assertTrue(p1.find(Person.class).isPresent());
 
         // When
@@ -320,11 +339,11 @@ public class ApiDocumentWithAstraTest {
         Assertions.assertTrue(cc.exist());
         
         DocumentClient p1 = cc.document("person1");
-        p1.save(new Person("person1", "person1", 20, new Address("Paris", 75000)));
+        p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
         Assertions.assertTrue(p1.find(Person.class).isPresent());
         
         // When
-        p1.updateSubDocument("address", new Address("city2", 8000));
+        p1.replaceSubDocument("address", new Address("city2", 8000));
         // Then
         Address updated = p1.findSubDocument("address", Address.class).get();
         Assertions.assertEquals(8000, updated.getZipCode());
@@ -338,7 +357,7 @@ public class ApiDocumentWithAstraTest {
                 .collection(COLLECTION_PERSON);
         Assertions.assertTrue(cc.exist());
         DocumentClient p1 = cc.document("person1");
-        p1.save(new Person("person1", "person1", 20, new Address("Paris", 75000)));
+        p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
         Assertions.assertTrue(p1.find(Person.class).isPresent());
         Assertions.assertFalse(p1.findSubDocument("address", Address.class).isEmpty());
         // When
