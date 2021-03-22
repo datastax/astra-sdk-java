@@ -121,7 +121,7 @@ public class DocumentClient {
         Assert.hasLength(docId, "Document identifier");
         HttpResponse<String> response;
         try {
-            String reqBody = getObjectMapper().writeValueAsString(doc);
+           String reqBody = getObjectMapper().writeValueAsString(doc);
            response = getHttpClient().send(
                    startRequest(getCurrentDocEndpoint(), docClient.getToken()).method("PATCH", BodyPublishers.ofString(reqBody)).build(),
                    BodyHandlers.ofString());

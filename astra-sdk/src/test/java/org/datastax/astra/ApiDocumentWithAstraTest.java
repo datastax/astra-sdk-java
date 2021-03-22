@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.datastax.astra.dto.Person;
 import org.datastax.astra.dto.Person.Address;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -91,21 +92,42 @@ public class ApiDocumentWithAstraTest {
         
         System.out.println(ANSI_YELLOW + "\n[PUT] Create a new document" + ANSI_RESET);
         should_create_newDocument();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document has been created");
         
         // Operation on documents
         System.out.println(ANSI_YELLOW + "\n[PUT] Upsert new document" + ANSI_RESET);
-        should_upsert_document();
+        should_upsert_document_create();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document has been created with upsert");
         
-        System.out.println(ANSI_YELLOW + "\n[POST] update a new document" + ANSI_RESET);
-        should_update_document();
+        System.out.println(ANSI_YELLOW + "\n[POST] replace a document" + ANSI_RESET);
+        should_upsert_document_update();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " -  Document has been updated with upsert");
 
+        System.out.println(ANSI_YELLOW + "\n[POST] update a document" + ANSI_RESET);
+        should_update_document();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " -  Document has been updated with update (PATCH)");
+        
+        System.out.println(ANSI_YELLOW + "\n[GET] Should findAll" + ANSI_RESET);
         should_find_all_person();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Expected docs retrieved");
+        
+        System.out.println(ANSI_YELLOW + "\n[GET] Should find with Where clause" + ANSI_RESET);
         should_search_withQuery();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Expected docs retrieved");
 
         // Operations on subdocuments
+        System.out.println(ANSI_YELLOW + "\n[GET] Should find a sub doc" + ANSI_RESET);
         should_find_subdocument();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Doc found");
+
+        System.out.println(ANSI_YELLOW + "\n[PUT] Should update a sub doc" + ANSI_RESET);
         should_update_subdocument();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Doc updated");
+
+        System.out.println(ANSI_YELLOW + "\n[DELETE] Should DELETE a sub doc" + ANSI_RESET);
         should_delete_subdocument();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Doc deleted");
+
     }
     
     public void should_create_namespace() 
@@ -160,28 +182,35 @@ public class ApiDocumentWithAstraTest {
    
     public void should_create_collection() 
     throws InterruptedException {
-      System.out.println(ANSI_YELLOW + "\n[POST] Create/Delete collections" + ANSI_RESET);
       // Create working collection is not present
       if (clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).exist()) {
           clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).delete();
-          System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Delete request sent");
+          System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Delete collection request sent");
+          Thread.sleep(500);
       }
       // Given
       Assertions.assertFalse(clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).exist());
+      System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection does not exist");
       // When
       clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).create();
       System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
+      Thread.sleep(1000);
       // Then
       Assertions.assertTrue(clientApiDoc
               .namespace(WORKING_NAMESPACE)
               .collection(COLLECTION_PERSON)
               .exist());
+      System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection now exist");
     }
     
-    public void shoudl_find_collection() {
+    public void shoudl_find_collection()
+    throws InterruptedException {
+        Thread.sleep(1000);
         Assertions.assertTrue(clientApiDoc
                   .namespace(WORKING_NAMESPACE)
-                  .collectionNames().anyMatch(s -> COLLECTION_PERSON.equals(s)));
+                  .collectionNames()
+                  .anyMatch(s -> COLLECTION_PERSON.equals(s)));
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection is available in list");
     }
    
     public void should_delete_collection() 
@@ -195,7 +224,7 @@ public class ApiDocumentWithAstraTest {
         clientApiDoc.namespace(WORKING_NAMESPACE)
                     .collection(randomCollection)
                     .create();
-        Thread.sleep(2000);
+        Thread.sleep(500);
         // Then
         Assertions.assertTrue(clientApiDoc
                 .namespace(WORKING_NAMESPACE)
@@ -205,6 +234,7 @@ public class ApiDocumentWithAstraTest {
         clientApiDoc.namespace(WORKING_NAMESPACE)
                     .collection(randomCollection)
                     .delete();
+        Thread.sleep(500);
         // Then
         Assertions.assertFalse(clientApiDoc
                     .namespace(WORKING_NAMESPACE)
@@ -212,7 +242,7 @@ public class ApiDocumentWithAstraTest {
                     .exist());
     }
     
-    public void should_create_newDocument() {
+    public void should_create_newDocument() throws InterruptedException {
         // Given
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
@@ -220,10 +250,12 @@ public class ApiDocumentWithAstraTest {
         String docId = collectionPerson.createNewDocument(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
         Assertions.assertNotNull(docId);
+        Thread.sleep(500);
         Assertions.assertTrue(collectionPerson.document(docId).exist());
     }
     
-    public void should_upsert_document() {
+    public void should_upsert_document_create()
+    throws InterruptedException {
         // Given
         CollectionClient collectionPerson = clientApiDoc
                 .namespace(WORKING_NAMESPACE)
@@ -232,13 +264,15 @@ public class ApiDocumentWithAstraTest {
         // When
         collectionPerson.document("myId")
                         .upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        
+        Thread.sleep(500);
         // Then
         Assertions.assertTrue(collectionPerson
                         .document("myId")
                         .exist());
     }
     
-    public void should_update_document() {
+    public void should_upsert_document_update() {
         // Given
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
@@ -251,6 +285,23 @@ public class ApiDocumentWithAstraTest {
         Assertions.assertEquals(75015, loulou.get().getAddress().getZipCode());
     }
     
+    
+    public void should_update_document() {
+        // Given
+        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPerson.exist());
+        // When
+        collectionPerson.document("AAA").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPerson.document("AAA").update(new Person("a", "b"));
+        // Then
+        Optional<Person> loulou = collectionPerson.document("AAA").find(Person.class);
+        Assertions.assertTrue(loulou.isPresent());
+        // Then sub fields are still there
+        Assertions.assertEquals(75000, loulou.get().getAddress().getZipCode());
+    }
+    
+    
+    
     public void should_find_all_person() {
         // Given
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
@@ -258,8 +309,9 @@ public class ApiDocumentWithAstraTest {
         // When
         ResultListPage<Person> results = collectionPerson.findAll(Person.class);
         // Then
+        Assert.assertNotNull(results);
         for (AstraDocument<Person> person : results.getResults()) {
-            System.out.println(person.getDocumentId() + "=" + person.getDocument().getFirstname());
+            Assert.assertNotNull(person);
         }
     }
 
@@ -289,11 +341,10 @@ public class ApiDocumentWithAstraTest {
         
         // Execute q query
         ResultListPage<Person> results = collectionPerson.search(query, Person.class);
-        
+        Assert.assertNotNull(results);
         for (AstraDocument<Person> person : results.getResults()) {
-            System.out.println(person.getDocumentId() + "=" + person.getDocument().getAge());
+            Assert.assertNotNull(person);
         }
-        
     }
     
     public void should_find_subdocument() {
@@ -329,7 +380,6 @@ public class ApiDocumentWithAstraTest {
         Assertions.assertEquals(75000, oz.get());  
     }
     
-    @Test
     public void should_update_subdocument() {
         
         // Given

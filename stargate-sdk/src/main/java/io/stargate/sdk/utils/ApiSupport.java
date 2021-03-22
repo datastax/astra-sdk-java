@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -61,6 +62,8 @@ public abstract class ApiSupport {
                 .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
                 .setDateFormat(new SimpleDateFormat("dd/MM/yyyy"))
+                // Specially for partial updates do not put null values
+                .setSerializationInclusion(Include.NON_NULL)
                 .setAnnotationIntrospector(new JacksonAnnotationIntrospector());
     
     /** Storing an authentication token to speed up queries. */
