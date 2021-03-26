@@ -5,7 +5,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties
-public class CollectionMetaData implements Serializable {
+public class CollectionDefinition implements Serializable {
     
     /** Serial. */
     private static final long serialVersionUID = 8579135728885849205L;
@@ -22,7 +22,7 @@ public class CollectionMetaData implements Serializable {
     /**
      * Default constructor.
      */
-    public CollectionMetaData() {
+    public CollectionDefinition() {
         super();
     }
 

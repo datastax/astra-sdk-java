@@ -47,21 +47,22 @@ public class NamespaceClient {
         this.namespace    = namespace;
     }
     
+    private String getEndPointSchemaNamespace() {
+        return docClient.getEndPointApiDocument() 
+                + PATH_SCHEMA 
+                + PATH_SCHEMA_NAMESPACES 
+                + "/" + namespace;
+    }
     /**
      * Find a namespace and its metadata based on its id
      */
     public Optional<Namespace> find() {
         Assert.hasLength(namespace, "namespaceId");
-        
         // Invoke Http Endpoint
-        String endpoint = docClient.getEndPointApiDocument() 
-                + PATH_SCHEMA 
-                + PATH_SCHEMA_NAMESPACES 
-                + "/" + namespace;
         HttpResponse<String> response;
         try {
              response = getHttpClient().send(
-                     startRequest(endpoint, docClient.getToken()).GET().build(), 
+                     startRequest(getEndPointSchemaNamespace(), docClient.getToken()).GET().build(), 
                      BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot find namespace " + namespace, e);
@@ -89,7 +90,7 @@ public class NamespaceClient {
     }
     
     /**
-     * Create a namespace. (not allowed on ASTRA yet)
+     * Create a namespace.
      */
     public void create(DataCenter... datacenters) {
         Assert.notNull(namespace, "namespace");
@@ -113,7 +114,7 @@ public class NamespaceClient {
     }
     
     /**
-     * Delete a namespace. (not allowed on ASTRA yet)
+     * Delete a namespace.
      */
     public void delete() {
         String delEndPoint = docClient.getEndPointApiDocument() 
@@ -156,9 +157,9 @@ public class NamespaceClient {
         try {
             // Mapping to set
             return getObjectMapper().readValue(
-                    response.body(), new TypeReference<ApiResponse<List<CollectionMetaData>>>(){})
+                    response.body(), new TypeReference<ApiResponse<List<CollectionDefinition>>>(){})
                                     .getData().stream()
-                                    .map(CollectionMetaData::getName)
+                                    .map(CollectionDefinition::getName)
                                     .collect(Collectors.toSet()).stream();
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall collection list", e);

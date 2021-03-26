@@ -36,6 +36,7 @@ public class ApiDocumentWithAstraTest {
     private static final String ANSI_GREEN           = "\u001B[32m";
     private static final String ANSI_YELLOW          = "\u001B[33m";
     
+    // Update those values to ease unit tests wuhen debug
     private static String cliendID     = "ZykcSMWLUDktHMZsYCKWtNQa";
     private static String clientSecret = "uk4ZjvBMyZA075P1jQozwLtNwtb5mELx.bi5n1PDhxZ+U2p+SJAQkg,G9Nf6d_C0cGjt-lub9a2an.agFWnliRc70Kk,+H8wZc_FT4f3K.cUHQH30A1ZMJagC7sunzd.";
     private static String appToken     = "AstraCS:ZykcSMWLUDktHMZsYCKWtNQa:7f95412e3c5014d952febbf5bd4223c74afa95f1f9b205327804c8cac1597e2b";
@@ -50,6 +51,52 @@ public class ApiDocumentWithAstraTest {
 
     @BeforeAll
     public static void initClient() {
+        // =====================================================
+        // LOAD PARAMETER VALUES FROM COMMANDS (IF AVAILABLE)
+        // =====================================================
+        if (null != System.getenv(AstraClient.ASTRA_DB_REGION) && 
+                !"".equals(System.getenv(AstraClient.ASTRA_DB_REGION))) {
+            cloudRegion = System.getenv(AstraClient.ASTRA_DB_REGION);
+        }
+        if (null != System.getProperty(AstraClient.ASTRA_DB_REGION) && 
+                !"".equals(System.getProperty(AstraClient.ASTRA_DB_REGION))) {
+            cloudRegion = System.getProperty(AstraClient.ASTRA_DB_REGION);
+        } 
+        if (null != System.getenv(AstraClient.ASTRA_DB_ID) && 
+                !"".equals(System.getenv(AstraClient.ASTRA_DB_ID))) {
+            dbId = System.getenv(AstraClient.ASTRA_DB_ID);
+        }
+        if (null != System.getProperty(AstraClient.ASTRA_DB_ID) && 
+                !"".equals(System.getProperty(AstraClient.ASTRA_DB_ID))) {
+            dbId = System.getProperty(AstraClient.ASTRA_DB_ID);
+        }
+        if (null != System.getenv(AstraClient.ASTRA_DB_CLIENT_ID) && 
+           !"".equals(System.getenv(AstraClient.ASTRA_DB_CLIENT_ID))) {
+          cliendID = System.getenv(AstraClient.ASTRA_DB_CLIENT_ID);
+        }
+        if (null != System.getProperty(AstraClient.ASTRA_DB_CLIENT_ID) && 
+                !"".equals(System.getProperty(AstraClient.ASTRA_DB_CLIENT_ID))) {
+          cliendID = System.getProperty(AstraClient.ASTRA_DB_CLIENT_ID);
+        }
+        if (null != System.getenv(AstraClient.ASTRA_DB_CLIENT_SECRET) && 
+                !"".equals(System.getenv(AstraClient.ASTRA_DB_CLIENT_SECRET))) {
+          clientSecret = System.getenv(AstraClient.ASTRA_DB_CLIENT_SECRET);
+        }
+        if (null != System.getProperty(AstraClient.ASTRA_DB_CLIENT_SECRET) && 
+                !"".equals(System.getProperty(AstraClient.ASTRA_DB_CLIENT_SECRET))) {
+          clientSecret = System.getProperty(AstraClient.ASTRA_DB_CLIENT_SECRET);
+        }
+        if (null != System.getenv(AstraClient.ASTRA_DB_APPLICATION_TOKEN) && 
+                !"".equals(System.getenv(AstraClient.ASTRA_DB_APPLICATION_TOKEN))) {
+            appToken = System.getenv(AstraClient.ASTRA_DB_APPLICATION_TOKEN);
+        }
+        if (null != System.getProperty(AstraClient.ASTRA_DB_APPLICATION_TOKEN) && 
+                !"".equals(System.getProperty(AstraClient.ASTRA_DB_APPLICATION_TOKEN))) {
+            appToken = System.getProperty(AstraClient.ASTRA_DB_APPLICATION_TOKEN);
+        }
+        // =====================================================
+        
+        
         client = AstraClient.builder()
                 .databaseId(dbId)
                 .cloudProviderRegion(cloudRegion)

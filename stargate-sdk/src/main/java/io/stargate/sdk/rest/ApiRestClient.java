@@ -2,13 +2,11 @@ package io.stargate.sdk.rest;
 
 import static io.stargate.sdk.utils.Assert.hasLength;
 
-import java.net.URI;
+import java.net.HttpURLConnection;
 import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -19,7 +17,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.stargate.sdk.doc.Namespace;
 import io.stargate.sdk.utils.ApiResponse;
 import io.stargate.sdk.utils.ApiSupport;
-import io.stargate.sdk.utils.JsonUtils;
 
 /**
  * Working with REST API and part of schemas with tables and keyspaces;
@@ -33,18 +30,6 @@ public class ApiRestClient extends ApiSupport {
     
     /** Schenma sub level. */
     public static final String PATH_SCHEMA_KEYSPACES  = "/keyspaces";
-    
-    /** Username - required all the time */
-    private final String username;
-    
-    /** Password - required all the time */
-    private final String password;
-    
-    /** Password - required all the time */
-    private final String appToken;
-  
-    /** This the endPoint to invoke to work with different API(s). */
-    private final String endPointAuthentication;
   
     /** This the endPoint to invoke to work with different API(s). */
     private final String endPointApiRest;
@@ -63,64 +48,36 @@ public class ApiRestClient extends ApiSupport {
         this.appToken               = appToken;
         LOGGER.info("+ Rest API: {}, ", endPointApiRest);
     }
-   
-    
-    /** {@inheritDoc} */
-    @Override
-    public String renewToken() {
-        try {
-            if (appToken == null) {
-                if (null == endPointAuthentication) {
-                    throw new IllegalStateException("No application token provided, please provide authentication endpoint");
-                }
-                // Auth request (https://docs.astra.datastax.com/reference#auth-2)
-                String authRequestBody = new StringBuilder("{")
-                    .append("\"username\":").append(JsonUtils.valueAsJson(username))
-                    .append(", \"password\":").append(JsonUtils.valueAsJson(password))
-                    .append("}").toString();
-                
-                // Call with a POST
-                HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
-                        .uri(URI.create(endPointAuthentication + "/v1/auth/"))
-                        .timeout(REQUEST_TIMOUT)
-                        .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                        .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());
-                
-                // Parse result, extract token
-                if (201 == response.statusCode() || 200 == response.statusCode()) {
-                    LOGGER.info("Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
-                    return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
-                } else {
-                    throw new IllegalStateException("Cannot generate authentication token " + response.body());
-                }
-            } else {
-                // the Password is the token to use in APIS in ASTRA
-                return appToken;
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot generate authentication token", e);
-        }
-    }
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
      */
     public Stream<Keyspace> keyspaces() {
+        
+        HttpResponse<String> res;
         try {
-            // Build GET request
-            HttpRequest request = HttpRequest.newBuilder()
-                    .timeout(REQUEST_TIMOUT)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .header(HEADER_CASSANDRA, getToken())
-                    .uri(URI.create(endPointApiRest + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES))
-                    .GET().build();
-            
-            // Map as a stream of namespaces
-            return objectMapper.readValue(httpClient.send(request, BodyHandlers.ofString()).body(), 
-                    new TypeReference<ApiResponse<List<Keyspace>>>(){}).getData().stream();
-            
+           String      url = endPointApiRest + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES;
+           HttpRequest req = startRequest(url, getToken()).GET().build();
+           res             = httpClient.send(req, BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot list namespaces", e);
+            throw new RuntimeException("Cannot list keyspaces", e);
+        }
+        
+        // Http Call maybe successfull returning error code
+        if (HttpURLConnection.HTTP_OK != res.statusCode()) {
+            LOGGER.error("Error in 'keyspaces()' code={}", res.statusCode());
+            handleError(res);
+        } 
+        
+        // Response is 200, marshalling
+        try {
+            TypeReference<ApiResponse<List<Keyspace>>> expectedType = new TypeReference<>(){};
+            return objectMapper.readValue(res.body(), expectedType)
+                               .getData().stream();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot Marshall output in 'keyspaces()' body=" + res.body(), e);
         }
     }
     
@@ -139,7 +96,6 @@ public class ApiRestClient extends ApiSupport {
     public KeyspaceClient keyspace(String keyspace) {
         return new KeyspaceClient(this, keyspace);
     }
-
 
     /**
      * Getter accessor for attribute 'endPointApiRest'.

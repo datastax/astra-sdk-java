@@ -6,10 +6,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser;
@@ -27,6 +33,9 @@ import io.stargate.sdk.exception.AuthenticationException;
  * @author Cedrick LUNVEN (@clunven)
  */
 public abstract class ApiSupport {
+    
+    /** Logger for our Client. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiSupport.class);
     
     public static final String HEADER_ACCEPT          = "Accept";
     public static final String HEADER_CASSANDRA       = "X-Cassandra-Token";
@@ -75,18 +84,63 @@ public abstract class ApiSupport {
     /** Authentication token, time to live. */
     protected Duration tokenttl = TOKEN_TTL;
     
+    /** Username - required all the time */
+    protected  String username;
+    
+    /** Password - required all the time */
+    protected  String password;
+    
+    /** Password - required all the time */
+    protected  String appToken;
+    
+    /** This the endPoint to invoke to work with different API(s). */
+    protected  String endPointAuthentication;
+    
     /**
      * Generate or renew authentication token
      */
     public String getToken() {
         if ((System.currentTimeMillis() - tokenCreatedtime) > 1000 * tokenttl.getSeconds()) {
-            token            = renewToken();
+            token = renewToken();
             tokenCreatedtime = System.currentTimeMillis();
         }
         return token;
     }
             
-    public abstract String renewToken();
+    public String renewToken() {
+        try {
+            if (appToken == null) {
+                if (null == endPointAuthentication) {
+                    throw new IllegalStateException("No application token provided, please provide authentication endpoint");
+                }
+                // Auth request (https://docs.astra.datastax.com/reference#auth-2)
+                String authRequestBody = new StringBuilder("{")
+                    .append("\"username\":").append(JsonUtils.valueAsJson(username))
+                    .append(", \"password\":").append(JsonUtils.valueAsJson(password))
+                    .append("}").toString();
+                
+                // Call with a POST
+                HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
+                        .uri(URI.create(endPointAuthentication + "/v1/auth/"))
+                        .timeout(REQUEST_TIMOUT)
+                        .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                        .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());
+                
+                // Parse result, extract token
+                if (201 == response.statusCode() || 200 == response.statusCode()) {
+                    LOGGER.info("Successfully authenticated, token ttl {} s.", tokenttl.getSeconds());
+                    return (String) objectMapper.readValue(response.body(), Map.class).get("authToken");
+                } else {
+                    throw new IllegalStateException("Cannot generate authentication token " + response.body());
+                }
+            } else {
+                // Use token no new to renew it
+                return appToken;
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot generate authentication token", e);
+        }
+    }
     
     /**
      * Utility to process error Requests.

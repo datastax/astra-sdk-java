@@ -2,12 +2,33 @@ package io.stargate.sdk.rest;
 
 import java.util.Optional;
 
+import io.stargate.sdk.doc.ApiDocumentClient;
+import io.stargate.sdk.doc.NamespaceClient;
+
+/**
+ * Operate on Tables in Cassandra.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class TableClient {
     
-    //private ApiRestClient  restClient;
-    //private KeyspaceClient ksClient;
-    //private String         tableName;
+    /** Astra Client. */
+    private final ApiRestClient restClient;
     
+    /** Namespace. */
+    private final KeyspaceClient keyspaceClient;
+    
+    /** Collection name. */
+    private final String tableName;
+    
+    /**
+     * Full constructor.
+     */
+    public TableClient(ApiRestClient restClient,  KeyspaceClient keyspaceClient,  String tableName) {
+        this.restClient     = restClient;
+        this.keyspaceClient = keyspaceClient;
+        this.tableName      = tableName;
+    }
     
     // Get a table
     // https://docs.astra.datastax.com/reference#get_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
