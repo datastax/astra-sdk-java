@@ -2,7 +2,7 @@ package org.datastax.astra;
 
 import java.util.Optional;
 
-import org.datastax.astra.dto.Person;
+import org.datastax.astra.dto.PersonAstra;
 import org.junit.jupiter.api.Test;
 
 import com.dstx.astra.sdk.AstraClient;
@@ -142,14 +142,14 @@ public class AstraClientTest {
         String documentId = astraClientFull.apiDocument()
                        .namespace(yourNamespace)
                        .collection("videos")
-                       .createNewDocument(new Person("cedrick", "lunven"));
+                       .createNewDocument(new PersonAstra("cedrick", "lunven"));
         System.out.println("Document created:" + documentId);
         
         // Reading a document from its id
-        Optional<Person> p = astraClientFull.apiDocument()
+        Optional<PersonAstra> p = astraClientFull.apiDocument()
                         .namespace(yourNamespace)
                         .collection("videos")
-                        .document(documentId).find(Person.class);
+                        .document(documentId).find(PersonAstra.class);
         System.out.println(p.get().getFirstname());
     }
     

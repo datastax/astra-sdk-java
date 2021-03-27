@@ -1,6 +1,5 @@
 package io.stargate.sdk.rest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,9 +7,14 @@ import java.util.List;
  */
 public class Keyspace {
     
+    /** Unique identifier for the keyspace. */
     protected String name;
     
-    protected List<DataCenter> datacenters = new ArrayList<>();
+    /** This property is used for local deployments. (SimpleStrategy) */
+    protected Integer replicas;
+    
+    /** This property is used for distributed deployment (NetworkTopologyStrategy). */
+    protected List<DataCenter> datacenters;
 
     public Keyspace() {}
             
@@ -18,6 +22,12 @@ public class Keyspace {
         super();
         this.name = name;
         this.datacenters = datacenters;
+    }
+    
+    public Keyspace(String name, int replicas) {
+        super();
+        this.name = name;
+        this.replicas = replicas;
     }
 
     /**
@@ -56,6 +66,25 @@ public class Keyspace {
      */
     public void setDatacenters(List<DataCenter> datacenters) {
         this.datacenters = datacenters;
+    }
+
+    /**
+     * Getter accessor for attribute 'replicas'.
+     *
+     * @return
+     *       current value of 'replicas'
+     */
+    public Integer getReplicas() {
+        return replicas;
+    }
+
+    /**
+     * Setter accessor for attribute 'replicas'.
+     * @param replicas
+     * 		new value for 'replicas '
+     */
+    public void setReplicas(Integer replicas) {
+        this.replicas = replicas;
     }
     
 

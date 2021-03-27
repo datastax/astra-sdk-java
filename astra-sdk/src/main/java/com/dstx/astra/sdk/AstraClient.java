@@ -164,7 +164,7 @@ public class AstraClient {
             throw new IllegalStateException("Api Document is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
         }
-        return stargateClient.getApiDocument();
+        return stargateClient.apiDocument();
     }
     
     /** 
@@ -175,7 +175,7 @@ public class AstraClient {
             throw new IllegalStateException("Api Rest is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
         }
-        return stargateClient.getApiRest();
+        return stargateClient.apiRest();
     }
     
     /**
@@ -193,11 +193,11 @@ public class AstraClient {
      *  CQL API
      */
     public CqlSession cqlSession() {
-        if (stargateClient == null || stargateClient.getCqlSession().isEmpty()) {
+        if (stargateClient == null || stargateClient.cqlSession().isEmpty()) {
             throw new IllegalStateException("CQL not available  Rest is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
         }
-        return stargateClient.getCqlSession().get();
+        return stargateClient.cqlSession().get();
     }
     
     /**

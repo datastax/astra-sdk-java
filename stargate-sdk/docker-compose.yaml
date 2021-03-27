@@ -1,0 +1,69 @@
+version: '2'
+
+services:
+  backend-1:
+    image: cassandra:3.11.8
+    container_name: backend-1
+    networks:
+      - backend
+    ports:
+      - 9044:9042
+    mem_limit: 2G
+    environment:
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=1024M
+      - CASSANDRA_SEEDS=backend-1
+      - CASSANDRA_CLUSTER_NAME=backend
+  backend-2:
+    image: cassandra:3.11.8
+    container_name: backend-2
+    networks:
+      - backend
+    mem_limit: 2G
+    depends_on:
+      - backend-1
+    environment:
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=1024M
+      - CASSANDRA_SEEDS=backend-1
+      - CASSANDRA_CLUSTER_NAME=backend
+  backend-3:
+    image: cassandra:3.11.8
+    container_name: backend-3
+    networks:
+      - backend
+    mem_limit: 2G
+    depends_on:
+      - backend-2
+    environment:
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=1024M
+      - CASSANDRA_SEEDS=backend-1
+      - CASSANDRA_CLUSTER_NAME=backend
+  stargate:
+    image: stargateio/stargate-3_11:v0.0.8
+    container_name: stargate
+    depends_on: 
+      - backend-1
+    networks:
+      - backend
+    ports:
+      # CQL Service
+      - 9045:9042
+      # GraphQL interface for CRUD
+      - 8080:8080
+      # Rest authorization (token)
+      - 8081:8081
+      # REST for CRUD localhost:8082/swagger-ui
+      - 8082:8082
+    mem_limit: 2G
+    environment:
+      - JAVA_OPTS="-Xmx2G"
+      - CLUSTER_NAME=backend
+      - CLUSTER_VERSION=3.11
+      - SEED=backend-1
+      - RACK_NAME=rack1
+      - DATACENTER_NAME=dc1
+      - DEVELOPER_MODE=true
+networks:
+  backend:

@@ -6,10 +6,9 @@ import io.stargate.sdk.rest.DataCenter;
 import io.stargate.sdk.rest.Keyspace;
 
 /**
- * Class to TODO
+ * Object abstraction for document api.
  *
  * @author Cedrick LUNVEN (@clunven)
- *
  */
 public class Namespace extends Keyspace{
     
@@ -17,6 +16,10 @@ public class Namespace extends Keyspace{
             
     public Namespace(String name, List<DataCenter> datacenters) {
         super(name,datacenters);
+    }
+    
+    public Namespace(String name, int replicas) {
+        super(name, replicas);
     }
     
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties
-public class Person implements Serializable {
+public class PersonAstra implements Serializable {
     
     /** Serial. */
     private static final long serialVersionUID = 2798538288964412234L;
@@ -24,12 +24,12 @@ public class Person implements Serializable {
     /**
      * Defaut Constructor.
      */
-    public Person() {}
+    public PersonAstra() {}
     
     /**
      * Defaut Constructor.
      */
-    public Person(String first, String last) {
+    public PersonAstra(String first, String last) {
         this.firstname = first;
         this.lastname  = last;
     }
@@ -38,7 +38,7 @@ public class Person implements Serializable {
     /**
      * Defaut Constructor.
      */
-    public Person(String first, String last, int age, Address a) {
+    public PersonAstra(String first, String last, int age, Address a) {
         this.firstname = first;
         this.lastname  = last;
         this.age = age;

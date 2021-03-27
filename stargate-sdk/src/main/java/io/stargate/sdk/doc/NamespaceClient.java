@@ -68,6 +68,10 @@ public class NamespaceClient {
             throw new RuntimeException("Cannot find namespace " + namespace, e);
         }
         
+        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+            return Optional.empty();
+        }
+        
         handleError(response);
         
         if (HttpURLConnection.HTTP_OK == response.statusCode()) {
@@ -112,6 +116,31 @@ public class NamespaceClient {
         }
         handleError(response);
     }
+    
+    /**
+     * Create a namespace.
+     */
+    public void createSimple(int replicas) {
+        Assert.notNull(namespace, "namespace");
+        Assert.isTrue(replicas>0, "Replica number should be bigger than 0");
+        String endpoint = docClient.getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
+        HttpResponse<String> response;
+        try {
+            
+            String reqBody = getObjectMapper().writeValueAsString(
+                    new Namespace(namespace, replicas));
+            System.out.println(reqBody);
+            
+            response = getHttpClient().send(
+                  startRequest(endpoint, docClient.getToken())
+                  .POST(BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot find namespace " + namespace, e);
+        }
+        handleError(response);
+    }
+    
     
     /**
      * Delete a namespace.
