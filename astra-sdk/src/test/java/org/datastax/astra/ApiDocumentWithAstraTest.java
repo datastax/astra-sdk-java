@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import com.dstx.astra.sdk.AstraClient;
 
 import io.stargate.sdk.doc.ApiDocumentClient;
-import io.stargate.sdk.doc.AstraDocument;
+import io.stargate.sdk.doc.ApiDocument;
 import io.stargate.sdk.doc.CollectionClient;
 import io.stargate.sdk.doc.DocumentClient;
 import io.stargate.sdk.doc.Namespace;
@@ -356,7 +356,7 @@ public class ApiDocumentWithAstraTest {
         ResultListPage<PersonAstra> results = collectionPerson.findAll(PersonAstra.class);
         // Then
         Assert.assertNotNull(results);
-        for (AstraDocument<PersonAstra> person : results.getResults()) {
+        for (ApiDocument<PersonAstra> person : results.getResults()) {
             Assert.assertNotNull(person);
         }
     }
@@ -388,7 +388,7 @@ public class ApiDocumentWithAstraTest {
         // Execute q query
         ResultListPage<PersonAstra> results = collectionPerson.search(query, PersonAstra.class);
         Assert.assertNotNull(results);
-        for (AstraDocument<PersonAstra> person : results.getResults()) {
+        for (ApiDocument<PersonAstra> person : results.getResults()) {
             Assert.assertNotNull(person);
         }
     }

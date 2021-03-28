@@ -1,5 +1,7 @@
 package io.stargate.sdk.test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -12,11 +14,13 @@ import org.junit.jupiter.api.Test;
 
 import io.stargate.sdk.StargateClient;
 import io.stargate.sdk.doc.ApiDocumentClient;
-import io.stargate.sdk.doc.AstraDocument;
+import io.stargate.sdk.doc.ApiDocument;
 import io.stargate.sdk.doc.CollectionClient;
 import io.stargate.sdk.doc.DocumentClient;
+import io.stargate.sdk.doc.NamespaceClient;
 import io.stargate.sdk.doc.QueryDocument;
 import io.stargate.sdk.doc.ResultListPage;
+import io.stargate.sdk.rest.DataCenter;
 import io.stargate.sdk.test.dto.Person;
 import io.stargate.sdk.test.dto.Person.Address;
 /**
@@ -24,7 +28,7 @@ import io.stargate.sdk.test.dto.Person.Address;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class DocumentApiTestIT extends AsbtractStargateTestIt {
+public class DocumentApiTest extends AsbtractStargateTestIt {
     
     public static final String WORKING_NAMESPACE    = "astra_sdk_namespace_test";
     public static final String COLLECTION_PERSON    = "person";
@@ -36,6 +40,66 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
         AsbtractStargateTestIt.init();
         clientApiDoc = client.apiDocument();
         Assertions.assertNotNull(clientApiDoc);
+    }
+    
+    @Test
+    public void testInvalid() {
+        Assertions.assertAll("Required parameters",
+                () -> Assertions.assertThrows(RuntimeException.class,  
+                        () -> {  StargateClient.builder().disableCQL().build()
+                                                .apiDocument().namespace("?AA???").collectionNames(); })
+                );
+        
+        
+    }
+    
+    @Test
+    public void testInvalidNamespace() {
+        NamespaceClient dc = StargateClient.builder()
+                .disableCQL().build()
+                .apiDocument()
+                .namespace("???df.??");
+        Assertions.assertAll("Required parameters",
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.exist(); }),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.delete(); }),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.find(); }),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.createSimple(1); }),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.create(new DataCenter(localDc, 1)); })
+        );
+    }
+        
+    @Test
+    public void testInvalidDoc() {
+        DocumentClient dc = StargateClient.builder().disableCQL().build()
+        .apiDocument()
+        .namespace("n")
+        .collection("c")
+        .document("??a=&invalid??");
+        
+        Assertions.assertAll("Required parameters",
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.exist(); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.delete(); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.upsert("X"); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.update("X"); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.find(String.class); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.findSubDocument("a",String.class); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.replaceSubDocument("a",String.class); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.updateSubDocument("a",String.class); }),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.deleteSubDocument("a"); })
+        );
+        
+        Assertions.assertThrows(InvocationTargetException.class, () -> {  
+            Method method = DocumentClient.class.getDeclaredMethod("marshallDocumentId", String.class);
+            method.setAccessible(true);
+            method.invoke(dc, "invalid_body");
+        });
+        
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {  
+            Method method = DocumentClient.class.getDeclaredMethod("marshallDocument", String.class, Class.class);
+            method.setAccessible(true);
+            method.invoke(dc, "invalid_body");
+        });
+        
     }
     
     /**
@@ -59,6 +123,8 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
         // Operations on namespaces
         System.out.println(ANSI_YELLOW + "\n#04 Working with Namespaces" + ANSI_RESET);
         System.out.println(ANSI_GREEN + "[POST] Create namespace if needed" + ANSI_RESET);
+        should_create_tmp_namespace();
+        should_create_tmp_namespace2();
         should_create_namespace();
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace exists.");
         System.out.println(ANSI_GREEN + "[GET] Created namespace is in available list" + ANSI_RESET);
@@ -80,6 +146,8 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
         System.out.println(ANSI_YELLOW + "\n#06 Working with Documents" + ANSI_RESET);
         System.out.println(ANSI_GREEN + "[PUT] Create a new document" + ANSI_RESET);
         should_create_newDocument();
+        System.out.println(ANSI_GREEN + "[DELETE] Delete a new document" + ANSI_RESET);
+        should_delete_document();
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document has been created");
         System.out.println(ANSI_GREEN + "[PUT] Upsert new document" + ANSI_RESET);
         should_upsert_document_create();
@@ -146,9 +214,64 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
         );
     }
    
-    public void should_create_namespace() 
+    public void should_create_tmp_namespace() 
     throws InterruptedException {
-        if (!clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
+        // TMP KEYSPACE
+        if (clientApiDoc.namespace("tmp_namespace").exist()) {
+            clientApiDoc.namespace("tmp_namespace").delete();
+            int wait = 0;
+            while (wait++ < 5 && clientApiDoc.namespace("tmp_namespace").exist()) {
+                Thread.sleep(1000);
+                System.out.println("+ ");
+            }
+        }
+        clientApiDoc.namespace("tmp_namespace").createSimple(1);
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
+        int wait = 0;
+        while (wait++ < 5 && !clientApiDoc.namespace("tmp_namespace").exist()) {
+            Thread.sleep(1000);
+            System.out.println("+ ");
+        }
+        
+        clientApiDoc.namespace("tmp_namespace").delete();
+        wait = 0;
+        while (wait++ < 5 && clientApiDoc.namespace("tmp_namespace").exist()) {
+            Thread.sleep(1000);
+            System.out.println("+ ");
+        }
+    }
+    
+    public void should_create_tmp_namespace2() 
+            throws InterruptedException {
+                // TMP KEYSPACE
+                if (clientApiDoc.namespace("tmp_namespace2").exist()) {
+                    clientApiDoc.namespace("tmp_namespace2").delete();
+                    int wait = 0;
+                    while (wait++ < 5 && clientApiDoc.namespace("tmp_namespace2").exist()) {
+                        Thread.sleep(1000);
+                        System.out.println("+ ");
+                    }
+                }
+                clientApiDoc.namespace("tmp_namespace2").create(new DataCenter(localDc, 1));
+                System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
+                int wait = 0;
+                while (wait++ < 5 && !clientApiDoc.namespace("tmp_namespace2").exist()) {
+                    Thread.sleep(1000);
+                    System.out.println("+ ");
+                }
+                
+                clientApiDoc.namespace("tmp_namespace2").delete();
+                wait = 0;
+                while (wait++ < 5 && clientApiDoc.namespace("tmp_namespace2").exist()) {
+                    Thread.sleep(1000);
+                    System.out.println("+ ");
+                }
+            }
+        
+        
+    public void should_create_namespace() 
+            throws InterruptedException {    
+        if (clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
             clientApiDoc.namespace(WORKING_NAMESPACE).createSimple(1);
             System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
             int wait = 0;
@@ -260,17 +383,36 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
                         .exist());
     }
     
-    public void should_upsert_document_update() {
+    public void should_upsert_document_update() throws InterruptedException {
         // Given
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
+        String uid = UUID.randomUUID().toString();
+        Assertions.assertFalse(collectionPerson.document(uid).exist());
         // When
-        collectionPerson.document("123").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
-        collectionPerson.document("123").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75015)));
+        collectionPerson.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPerson.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75015)));
         // Then
-        Optional<Person> loulou = collectionPerson.document("123").find(Person.class);
+        Optional<Person> loulou = collectionPerson.document(uid).find(Person.class);
         Assertions.assertTrue(loulou.isPresent());
         Assertions.assertEquals(75015, loulou.get().getAddress().getZipCode());
+    }
+    
+    @Test
+    public void should_delete_document() throws InterruptedException {
+        // Given
+        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        String uid = UUID.randomUUID().toString();
+        Assertions.assertFalse(collectionPerson.document(uid).exist());
+        // When
+        collectionPerson.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        // Then
+        Assertions.assertTrue(collectionPerson.document(uid).exist());
+        collectionPerson.document(uid).delete();
+        Thread.sleep(1000);
+        Assertions.assertFalse(collectionPerson.document(uid).exist());
+        Assertions.assertTrue(collectionPerson.document(uid).find(String.class).isEmpty());
+        Assertions.assertThrows(RuntimeException.class, () -> {  collectionPerson.document(uid).delete(); });
     }
     
     
@@ -298,7 +440,7 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
         ResultListPage<Person> results = collectionPerson.findAll(Person.class);
         // Then
         Assert.assertNotNull(results);
-        for (AstraDocument<Person> person : results.getResults()) {
+        for (ApiDocument<Person> person : results.getResults()) {
             Assert.assertNotNull(person);
         }
     }
@@ -330,7 +472,7 @@ public class DocumentApiTestIT extends AsbtractStargateTestIt {
         // Execute q query
         ResultListPage<Person> results = collectionPerson.search(query, Person.class);
         Assert.assertNotNull(results);
-        for (AstraDocument<Person> person : results.getResults()) {
+        for (ApiDocument<Person> person : results.getResults()) {
             Assert.assertNotNull(person);
         }
     }

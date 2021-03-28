@@ -170,7 +170,6 @@ public class NamespaceClient {
                 + PATH_NAMESPACES 
                 + "/" + namespace 
                 + PATH_COLLECTIONS;
-        
         HttpResponse<String> response;
         try {
             // Invoke
@@ -180,7 +179,6 @@ public class NamespaceClient {
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve collection list", e);
         }
-        
         handleError(response);
         
         try {

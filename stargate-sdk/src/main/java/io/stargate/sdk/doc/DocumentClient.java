@@ -48,7 +48,10 @@ public class DocumentClient {
         this.docId             = docId;
     }
     
-    private String getCurrentDocEndpoint() {
+    /**
+     * Build endpoint of the resource
+     */
+    private String getEndpoint() {
         return docClient.getEndPointApiDocument()
                 + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
                 + PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
@@ -64,7 +67,7 @@ public class DocumentClient {
         Assert.hasLength(docId, "documentId");
         try {
             return HttpURLConnection.HTTP_OK == getHttpClient().send(
-                    startRequest(getCurrentDocEndpoint(), docClient.getToken())
+                    startRequest(getEndpoint(), docClient.getToken())
                       .GET().build(), BodyHandlers.discarding()).statusCode();
         } catch (Exception e) {
             throw new RuntimeException("Cannot test document existence", e);
@@ -88,7 +91,7 @@ public class DocumentClient {
         try {
             String reqBody = getObjectMapper().writeValueAsString(doc);
            response = getHttpClient().send(
-                   startRequest(getCurrentDocEndpoint(), docClient.getToken())
+                   startRequest(getEndpoint(), docClient.getToken())
                    .PUT(BodyPublishers.ofString(reqBody)).build(),
                    BodyHandlers.ofString());
         } catch (Exception e) {
@@ -96,16 +99,9 @@ public class DocumentClient {
         }    
         
         handleError(response);
-        
-        try {
-            return (String) getObjectMapper()
-                    .readValue(response.body(), Map.class)
-                    .get(CollectionClient.DOCUMENT_ID);
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot retrieve document id when saving doc:", e);
-        }
+        return marshallDocumentId(response.body());
     }
-    
+  
     /**
      * Update part of a document
      * 
@@ -123,22 +119,16 @@ public class DocumentClient {
         try {
            String reqBody = getObjectMapper().writeValueAsString(doc);
            response = getHttpClient().send(
-                   startRequest(getCurrentDocEndpoint(), docClient.getToken()).method("PATCH", BodyPublishers.ofString(reqBody)).build(),
+                   startRequest(getEndpoint(), docClient.getToken()).method("PATCH", BodyPublishers.ofString(reqBody)).build(),
                    BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot save document:", e);
-        }    
-        
-        handleError(response);
-        
-        try {
-            return (String) getObjectMapper()
-                    .readValue(response.body(), Map.class)
-                    .get(CollectionClient.DOCUMENT_ID);
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot retrieve document id when saving doc:", e);
         }
+        handleError(response);
+        return marshallDocumentId(response.body());
     }
+    
+    
     
     /**
      * Get a document by {document-id}.
@@ -158,25 +148,16 @@ public class DocumentClient {
         HttpResponse<String> response;
         try {
             response = getHttpClient().send(
-                    startRequest(getCurrentDocEndpoint() + "?raw=true", docClient.getToken())
+                    startRequest(getEndpoint() + "?raw=true", docClient.getToken())
                         .GET().build(), BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot invoke API to find document:", e);
         }
-        
         handleError(response);
-        
-        try {
-            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-                return Optional.of(getObjectMapper().readValue(response.body(), clazz));
-           } else if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
-               return Optional.empty();
-           }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot marshall response", e);
+        if (HttpURLConnection.HTTP_OK == response.statusCode()) {
+           return Optional.of(marshallDocument(response.body(), clazz));
         }
-        
-        throw new RuntimeException("Cannot marshall responsecannot find doc, invalid response " + response);
+        return Optional.empty();
     }
 
     /**
@@ -186,19 +167,21 @@ public class DocumentClient {
      */
     public void delete() {
         Assert.hasLength(docId, "documentId");
+        if (!exist()) {
+            throw new RuntimeException("Document '"+ docId + "' has not been found");
+        }
         HttpResponse<String> response;
         try {
             response = getHttpClient().send(
-                    startRequest(getCurrentDocEndpoint(), docClient.getToken())
+                    startRequest(getEndpoint(), docClient.getToken())
                      .DELETE().build(), BodyHandlers.ofString());
-            
+            if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
+                return;
+            }
         } catch (Exception e) {
             throw new RuntimeException("Cannot invoke API to delete a document:", e);
         }
         handleError(response);
-        if (HttpURLConnection.HTTP_NO_CONTENT  != response.statusCode()) {
-            throw new IllegalArgumentException("Invalid response from the API " + response.body());
-        }
     }
     
     /**
@@ -223,20 +206,16 @@ public class DocumentClient {
         }
         HttpResponse<String> response;
         try {
-           response = getHttpClient().send(startRequest(getCurrentDocEndpoint() + path + "?raw=true", docClient.getToken())
+           response = getHttpClient().send(startRequest(getEndpoint() + path + "?raw=true", docClient.getToken())
                     .GET().build(), BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot invoke API to find sub document:", e);
         }
         handleError(response);
-        try {
-            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-                return Optional.of(getObjectMapper().readValue(response.body(), className));
-            }
-            return Optional.empty();
-        } catch (Exception e) {
-            throw new RuntimeException("An error occured", e);
+        if (HttpURLConnection.HTTP_OK == response.statusCode()) {
+            return Optional.of(marshallDocument(response.body(), className));
         }
+        return Optional.empty();
     }
     
     
@@ -259,7 +238,7 @@ public class DocumentClient {
         HttpResponse<String> response;
         try {
             response = getHttpClient().send(
-                    startRequest(getCurrentDocEndpoint() + path, docClient.getToken())
+                    startRequest(getEndpoint() + path, docClient.getToken())
                      .PUT(BodyPublishers.ofString(getObjectMapper().writeValueAsString(newValue))).build(), 
                     BodyHandlers.ofString());
         } catch (Exception e) {
@@ -287,7 +266,7 @@ public class DocumentClient {
         HttpResponse<String> response;
         try {
             response = getHttpClient().send(
-                    startRequest(getCurrentDocEndpoint() + path + "?raw=true", docClient.getToken())
+                    startRequest(getEndpoint() + path + "?raw=true", docClient.getToken())
                      .method("PATCH", BodyPublishers.ofString(getObjectMapper().writeValueAsString(newValue))).build(), 
                     BodyHandlers.ofString());
         } catch (Exception e) {
@@ -313,7 +292,7 @@ public class DocumentClient {
         HttpResponse<String> response;
         try {
             response = getHttpClient().send(
-                        startRequest(getCurrentDocEndpoint() + path + "?raw=true", docClient.getToken())
+                        startRequest(getEndpoint() + path + "?raw=true", docClient.getToken())
                             .DELETE().build(), BodyHandlers.ofString());
             
         } catch (Exception e) {
@@ -322,6 +301,23 @@ public class DocumentClient {
         handleError(response);
     }
     
+    private String marshallDocumentId(String body) {
+        try {
+            return (String) getObjectMapper()
+                    .readValue(body, Map.class)
+                    .get(CollectionClient.DOCUMENT_ID);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall document after 'upsert'", e);
+        }
+    }
+    
+    private  <DOC> DOC marshallDocument(String body,  Class<DOC> clazz) {
+        try {
+            return getObjectMapper().readValue(body, clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshal output '" + body + "' into class '"+ clazz +"'", e);
+        }
+    }
     
     
 }

@@ -20,7 +20,7 @@ public class ResultListPage< DOC > {
     private final String pageState;
     
     /** list of results matchin the request. */
-    private final List< AstraDocument<DOC>> results;
+    private final List< ApiDocument<DOC>> results;
     
     public ResultListPage() {
         this.pageSize  = 0;
@@ -30,7 +30,7 @@ public class ResultListPage< DOC > {
     /**
      * Default constructor.
      */
-    public ResultListPage(int pageSize, String pageState, List<AstraDocument<DOC>> results) {
+    public ResultListPage(int pageSize, String pageState, List<ApiDocument<DOC>> results) {
         this.pageSize  = pageSize;
         this.pageState = pageState;
         this.results   = results;
@@ -62,7 +62,7 @@ public class ResultListPage< DOC > {
      * @return
      *       current value of 'results'
      */
-    public List<AstraDocument<DOC>> getResults() {
+    public List<ApiDocument<DOC>> getResults() {
         return results;
     }
 }

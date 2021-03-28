@@ -8,23 +8,18 @@ package io.stargate.sdk.doc;
  * @param <BEAN>
  *      target bean to store in ASTRA / STARGATE
  */
-public class AstraDocument<BEAN> {
+public class ApiDocument<BEAN> {
     
     /** Unique identifier. */
-    private String documentId;
+    private final String documentId;
     
     /** Marshalled Object. */
-    private BEAN document;
-    
-    /**
-     * Default constructor
-     */
-    public AstraDocument() {}
+    private final BEAN document;
     
     /**
      * Constructor with Params
      */
-    public AstraDocument(String docId, BEAN doc) {
+    public ApiDocument(String docId, BEAN doc) {
         this.documentId = docId;
         this.document = doc;
     }
@@ -40,15 +35,6 @@ public class AstraDocument<BEAN> {
     }
 
     /**
-     * Setter accessor for attribute 'documentId'.
-     * @param documentId
-     * 		new value for 'documentId '
-     */
-    public void setDocumentId(String documentId) {
-        this.documentId = documentId;
-    }
-
-    /**
      * Getter accessor for attribute 'document'.
      *
      * @return
@@ -57,15 +43,5 @@ public class AstraDocument<BEAN> {
     public BEAN getDocument() {
         return document;
     }
-
-    /**
-     * Setter accessor for attribute 'document'.
-     * @param document
-     * 		new value for 'document '
-     */
-    public void setDocument(BEAN document) {
-        this.document = document;
-    }
-    
 
 }

@@ -206,7 +206,7 @@ public class CollectionClient {
              
             return new ResultListPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()
                     .entrySet().stream()
-                    .map(doc -> new AstraDocument<DOC>(doc.getKey(), getObjectMapper().convertValue(doc.getValue(), clazz)))
+                    .map(doc -> new ApiDocument<DOC>(doc.getKey(), getObjectMapper().convertValue(doc.getValue(), clazz)))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
