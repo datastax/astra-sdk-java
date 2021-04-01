@@ -4,9 +4,9 @@
 
 The SDK makes it easy to call Astra services using idiomatic Java APIs. On top of the SDK the repository provide tool like a Spring Boot starter and another samples helping you starting code with ASTRA and JAVA.
 
- Documentation is now available in the [WIKI PAGES](https://github.com/clun/astra-sdk-java/wiki)
+ Documentation is now available in the [WIKI PAGES](https://github.com/datastax/astra-sdk-java/wiki)
 
-![](https://github.com/clun/astra-sdk-java/blob/main/zzz/img/astra-api.png?raw/true)
+![](https://github.com/datastax/astra-sdk-java/blob/main/zzz/img/astra-api.png?raw/true)
 
 
 
