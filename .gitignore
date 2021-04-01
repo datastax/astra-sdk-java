@@ -1,3 +1,8 @@
+astra-sdk-java.wiki/
+.env
+.astrarc
+sec
+
 # eclipse conf file
 .settings
 .classpath
