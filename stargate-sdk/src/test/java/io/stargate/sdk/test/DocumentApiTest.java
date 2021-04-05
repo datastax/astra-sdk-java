@@ -60,11 +60,11 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
                 .apiDocument()
                 .namespace("???df.??");
         Assertions.assertAll("Required parameters",
-                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.exist(); }),
-                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.delete(); }),
-                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.find(); }),
-                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.createSimple(1); }),
-                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.create(new DataCenter(localDc, 1)); })
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.exist(); }, "dc.exist"),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.delete(); }, "dc.delete"),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.find(); }, "dc.find"),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.createSimple(1); }, "dc.createSimple"),
+                () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.create(new DataCenter(localDc, 1)); }, "dc.create")
         );
     }
         
@@ -77,15 +77,15 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         .document("??a=&invalid??");
         
         Assertions.assertAll("Required parameters",
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.exist(); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.delete(); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.upsert("X"); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.update("X"); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.find(String.class); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.findSubDocument("a",String.class); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.replaceSubDocument("a",String.class); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.updateSubDocument("a",String.class); }),
-          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.deleteSubDocument("a"); })
+          () -> Assertions.assertFalse(dc.exist(), "dc.exists"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.delete(); }, "dc.delete"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.upsert("X"); }, "dc.upsert"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.update("X"); }, "dc.update"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.find(String.class); }, "dc.find"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.findSubDocument("a",String.class); }, "dc.findSubDocument"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.replaceSubDocument("a",String.class); }, "dc.replaceSubDocument"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.updateSubDocument("a",String.class); }, "dc.updateSubDocument"),
+          () -> Assertions.assertThrows(RuntimeException.class, () -> {  dc.deleteSubDocument("a"); }, "dc.deleteSubDocument")
         );
         
         Assertions.assertThrows(InvocationTargetException.class, () -> {  
@@ -271,7 +271,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         
     public void should_create_namespace() 
             throws InterruptedException {    
-        if (clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
+        if (!clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
             clientApiDoc.namespace(WORKING_NAMESPACE).createSimple(1);
             System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
             int wait = 0;
