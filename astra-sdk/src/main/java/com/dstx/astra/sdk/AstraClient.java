@@ -36,9 +36,9 @@ public class AstraClient {
     public static final String ASTRA_DB_ID                = "ASTRA_DB_ID";
     public static final String ASTRA_DB_REGION            = "ASTRA_DB_REGION";
     public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
-    public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
     public static final String ASTRA_DB_CLIENT_ID         = "ASTRA_DB_CLIENT_ID";
     public static final String ASTRA_DB_CLIENT_SECRET     = "ASTRA_DB_CLIENT_SECRET";
+    public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
     public static final String ASTRA_DB_SECURE_BUNDLE     = "ASTRA_DB_SECURE_BUNDLE";
     
     /** Building Astra base URL. */
@@ -120,6 +120,7 @@ public class AstraClient {
              * -----
              */
             if (Utils.paramsProvided(b.astraDatabaseId, b.astraDatabaseRegion, b.appToken)) {
+                
                 String astraStargateEndpint = new StringBuilder(ASTRA_ENDPOINT_PREFIX)
                         .append(b.astraDatabaseId).append("-").append(b.astraDatabaseRegion)
                         .append(ASTRA_ENDPOINT_SUFFIX).toString();
@@ -211,13 +212,16 @@ public class AstraClient {
      * Builder pattern
      */
     public static class AstraClientBuilder {
+        
         public String  astraDatabaseId;
         public String  astraDatabaseRegion;
+        
+        public String  clientId;
+        public String  clientSecret;
+        
         public String  appToken;
         public String  secureConnectBundle;
         public String  keyspace;
-        public String  clientId;
-        public String  clientSecret;
           
         /**
          * Load defaults from Emvironment variables
@@ -280,10 +284,10 @@ public class AstraClient {
                     astraDatabaseRegion = section.get(ASTRA_DB_REGION);
                 }
                 if (null == clientId) {
-                    astraDatabaseId = section.get(ASTRA_DB_CLIENT_ID);
+                    clientId = section.get(ASTRA_DB_CLIENT_ID);
                 }
                 if (null == clientSecret) {
-                    astraDatabaseId = section.get(ASTRA_DB_CLIENT_SECRET);
+                    clientSecret = section.get(ASTRA_DB_CLIENT_SECRET);
                 }
                 if (null == appToken) {
                     appToken = section.get(ASTRA_DB_APPLICATION_TOKEN);
@@ -325,6 +329,7 @@ public class AstraClient {
         }
         public AstraClientBuilder clientId(String clientId) {
             Assert.hasLength(clientId, "clientId");
+            System.out.println("UPDATING ID " + clientId);
             this.clientId = clientId;
             return this;
         }

@@ -1,4 +1,4 @@
-package org.datastax.astra;
+package com.dstx.astra.sdk;
 
 import java.util.Map;
 import java.util.Optional;

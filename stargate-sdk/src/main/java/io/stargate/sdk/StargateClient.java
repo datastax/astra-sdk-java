@@ -105,9 +105,12 @@ public class StargateClient {
                 builder.endPointApiRest);
         }
         
+        System.out.println("username:" + builder.username);
+        System.out.println("password" + builder.password);
         // For security reason you want to disable CQL
         if (builder.enableCql) {
             if (Utils.paramsProvided(builder.username, builder.password)) {
+               
                 CqlSessionBuilder cqlSessionBuilder = CqlSession.builder()
                         .withAuthCredentials(builder.username, builder.password);
                 

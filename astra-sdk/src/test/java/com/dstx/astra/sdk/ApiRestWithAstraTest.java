@@ -1,4 +1,4 @@
-package org.datastax.astra;
+package com.dstx.astra.sdk;
 
 import java.util.stream.Collectors;
 
