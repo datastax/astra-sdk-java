@@ -136,8 +136,10 @@ public class StargateClient implements Closeable {
                 // As we opened a cqlSession we may want to close it properly at application shutdown.
                 Runtime.getRuntime().addShutdownHook(new Thread() { 
                     public void run() { 
-                        cqlSession.close();
-                        LOGGER.info("Closing CqlSession.");
+                        if (!cqlSession.isClosed()) {
+                            cqlSession.close();
+                            LOGGER.info("Closing CqlSession.");
+                        }
                       } 
                 });
             }
@@ -306,12 +308,13 @@ public class StargateClient implements Closeable {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         if (null != cqlSession && !cqlSession.isClosed()) {
             cqlSession.close();
+            LOGGER.info("Closing CqlSession.");
         }
-    }  
-     
+    }
 
 }

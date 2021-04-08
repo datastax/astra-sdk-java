@@ -11,10 +11,11 @@ import org.junit.jupiter.api.Test;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class Test01_Connectivity extends AbstractAstraIntegrationTest {
+public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTest {
     
     @BeforeAll
     public static void config() {
+        System.out.println(ANSI_YELLOW + "[T01_Connectivity]" + ANSI_RESET);
      /*
        
       client = AstraClient.builder()
@@ -105,13 +106,9 @@ public class Test01_Connectivity extends AbstractAstraIntegrationTest {
     @Test
     public void should_enable_devops_withToken() {
         // Given
-        Assertions.assertTrue(dbId.isPresent());
-        Assertions.assertTrue(cloudRegion.isPresent());
         Assertions.assertTrue(appToken.isPresent());
         // When
         try(AstraClient cli = AstraClient.builder()
-                .databaseId(dbId.get())
-                .cloudProviderRegion(cloudRegion.get())
                 .appToken(appToken.get())
                 .build()) {
             // Then

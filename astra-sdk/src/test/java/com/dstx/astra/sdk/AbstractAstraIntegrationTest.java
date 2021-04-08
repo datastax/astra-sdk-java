@@ -15,8 +15,9 @@ import com.dstx.astra.sdk.AstraClient.AstraClientBuilder;
  */
 public abstract class AbstractAstraIntegrationTest {
     
-    private static final String ANSI_RESET           = "\u001B[0m";
-    private static final String ANSI_GREEN           = "\u001B[32m";
+    public static final String ANSI_RESET           = "\u001B[0m";
+    public static final String ANSI_GREEN           = "\u001B[32m";
+    public static final String ANSI_YELLOW          = "\u001B[33m";
     
     // Client initialized based on environment variables
     public static AstraClient client;
@@ -58,6 +59,10 @@ public abstract class AbstractAstraIntegrationTest {
             value = System.getProperty(varname);
         }
         return Optional.ofNullable(value);
+    }
+    
+    protected static void waitForSeconds(int s) {
+        try {Thread.sleep(s * 1000);} catch (InterruptedException e) {}
     }
 
 }
