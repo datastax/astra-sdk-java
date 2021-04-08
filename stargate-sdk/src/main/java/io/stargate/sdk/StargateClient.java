@@ -1,5 +1,6 @@
 package io.stargate.sdk;
 
+import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import io.stargate.sdk.utils.Utils;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StargateClient {
+public class StargateClient implements Closeable {
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(StargateClient.class);
@@ -96,7 +97,6 @@ public class StargateClient {
         }
         
         if (Utils.paramsProvided(builder.username, 
-                builder.password, 
                 builder.endPointApiRest)) {
             apiRest = new ApiRestClient(builder.username, 
                 builder.password, 
@@ -104,9 +104,6 @@ public class StargateClient {
                 builder.appToken,
                 builder.endPointApiRest);
         }
-        
-        System.out.println("username:" + builder.username);
-        System.out.println("password" + builder.password);
         // For security reason you want to disable CQL
         if (builder.enableCql) {
             if (Utils.paramsProvided(builder.username, builder.password)) {
@@ -306,6 +303,13 @@ public class StargateClient {
          */
         public StargateClient build() {
             return new StargateClient(this);
+        }
+    }
+
+    @Override
+    public void close() {
+        if (null != cqlSession && !cqlSession.isClosed()) {
+            cqlSession.close();
         }
     }  
      

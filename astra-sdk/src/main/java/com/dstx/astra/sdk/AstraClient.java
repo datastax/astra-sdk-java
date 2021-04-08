@@ -1,5 +1,6 @@
 package com.dstx.astra.sdk;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ import io.stargate.sdk.utils.Utils;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class AstraClient {
+public class AstraClient implements Closeable {
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
@@ -329,7 +330,6 @@ public class AstraClient {
         }
         public AstraClientBuilder clientId(String clientId) {
             Assert.hasLength(clientId, "clientId");
-            System.out.println("UPDATING ID " + clientId);
             this.clientId = clientId;
             return this;
         }
@@ -345,7 +345,14 @@ public class AstraClient {
         public AstraClient build() {
             return new AstraClient(this);
         }
-    }  
-     
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void close() {
+       if (null != stargateClient) {
+           stargateClient.close();
+       }
+    }
 
 }
