@@ -19,6 +19,12 @@ public class AstraClientProperties {
     
     /** setup Astra from an external file. */
     private String keyspace;
+    
+    /** used as username for cqlSession. */
+    private String clientId;
+    
+    /** used as password for cqlSession. */
+    private String clientSecret;
 
     /**
      * Getter accessor for attribute 'databaseId'.
@@ -113,6 +119,44 @@ public class AstraClientProperties {
      */
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
+    }
+
+    /**
+     * Getter accessor for attribute 'clientId'.
+     *
+     * @return
+     *       current value of 'clientId'
+     */
+    public String getClientId() {
+        return clientId;
+    }
+
+    /**
+     * Setter accessor for attribute 'clientId'.
+     * @param clientId
+     * 		new value for 'clientId '
+     */
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    /**
+     * Getter accessor for attribute 'clientSecret'.
+     *
+     * @return
+     *       current value of 'clientSecret'
+     */
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    /**
+     * Setter accessor for attribute 'clientSecret'.
+     * @param clientSecret
+     * 		new value for 'clientSecret '
+     */
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
     }
     
 

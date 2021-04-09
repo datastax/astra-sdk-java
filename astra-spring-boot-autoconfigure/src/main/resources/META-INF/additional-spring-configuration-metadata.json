@@ -11,6 +11,16 @@
       "defaultValue": "us-east-1"
     },
     {
+      "name": "astra.clientId",
+      "type": "java.lang.String",
+      "defaultValue": "us-east-1"
+    },
+    {
+      "name": "astra.clientSecret",
+      "type": "java.lang.String",
+      "defaultValue": "us-east-1"
+    },
+    {
       "name": "astra.applicationToken",
       "type": "java.lang.String",
       "defaultValue": "AstraCS:..."
