@@ -1,4 +1,4 @@
-package io.stargate.sdk.test;
+package com.dstx.astra.sdk;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.datastax.astra.dto.PersonAstra;
+import org.datastax.astra.dto.PersonAstra.Address;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,9 +27,6 @@ import io.stargate.sdk.doc.NamespaceClient;
 import io.stargate.sdk.doc.QueryDocument;
 import io.stargate.sdk.doc.ResultListPage;
 import io.stargate.sdk.rest.DataCenter;
-import io.stargate.sdk.test.dto.Person;
-import io.stargate.sdk.test.dto.Person.Address;
-
 
 /**
  * Test operations for the Document API operation
@@ -35,75 +34,47 @@ import io.stargate.sdk.test.dto.Person.Address;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class DocumentApiTest extends AsbtractStargateTestIt {
-
-    public static final String WORKING_NAMESPACE = "astra_sdk_namespace_test";
-    public static final String COLLECTION_PERSON = "person";
-
-    public static ApiDocumentClient clientApiDoc;
-
+public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTest {
+    
+    private static final String WORKING_NAMESPACE    = "astra_sdk_namespace_test";
+    private static final String COLLECTION_PERSON    = "person";
+    
+    private static ApiDocumentClient clientApiDoc;
+    
     @BeforeAll
-    public static void initDocumentAPI() {
-        AsbtractStargateTestIt.init();
+    public static void config() {
+        System.out.println(ANSI_YELLOW + "[T04_DocumentApi_IntegrationTest]" + ANSI_RESET);
         clientApiDoc = client.apiDocument();
-        Assertions.assertNotNull(clientApiDoc);
     }
-
+    
     @Test
     @Order(1)
-    @DisplayName("Parameters Validation (builder)")
-    public void builder_should_fail_if_empty_params() {
-        System.out.println(ANSI_YELLOW + "\n#02 Parameters Validation (builder) " + ANSI_RESET);
-        Assertions.assertAll("Required parameters", () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().cqlContactPoint(null, 0);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().cqlContactPoint("", 0);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().addCqlContactPoint(null, 0);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().addCqlContactPoint("", 0);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().username("");
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().username(null);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().password("");
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().password(null);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().localDc("");
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().localDc(null);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().authenticationUrl("");
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().documentApiUrl("");
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().documentApiUrl(null);
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().restApiUrl("");
-        }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().restApiUrl(null);
-        }));
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Tests passed.");
+    @DisplayName("Parameter validations should through IllegalArgumentException(s)")
+    public void builderParams_should_not_be_empty() {
+        System.out.println(ANSI_YELLOW + "\n#01Checking required parameters " + ANSI_RESET);
+        Assertions.assertAll("Required parameters",
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().databaseId(null); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().databaseId(""); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().cloudProviderRegion(""); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().cloudProviderRegion(null); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().appToken(""); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().appToken(null); })
+        );
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
     }
-
+    
     @Test
     @Order(2)
-    @DisplayName("Get authentication token")
-    public void token_should_not_be_null() {
-        System.out.println(ANSI_YELLOW + "\n#03 Authentication Token" + ANSI_RESET);
-        String token = client.apiDocument().getToken();
-        Assertions.assertNotNull(token);
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Token retrieved." + token);
-    }
-
-    @Test
-    @Order(3)
     @DisplayName("Create and delete namespace with replicas")
     public void should_create_tmp_namespace()
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#04 Working with Namespaces" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#02 Working with Namespaces" + ANSI_RESET);
         if (clientApiDoc.namespace("tmp_namespace").exist()) {
             clientApiDoc.namespace("tmp_namespace").delete();
             int wait = 0;
@@ -117,30 +88,29 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         int wait = 0;
         while (wait++ < 5 && !clientApiDoc.namespace("tmp_namespace").exist()) {
             Thread.sleep(1000);
-            System.out.println("+ ");
         }
         clientApiDoc.namespace("tmp_namespace").delete();
         wait = 0;
         while (wait++ < 5 && clientApiDoc.namespace("tmp_namespace").exist()) {
             Thread.sleep(1000);
-            System.out.println("+ ");
         }
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace craeted");
     }
-
+    
     @Test
-    @Order(4)
+    @Order(3)
     @DisplayName("Create and delete namespace with datacenter")
     public void should_create_tmp_namespace2() throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#03 Working with Namespaces 2" + ANSI_RESET);
         // TMP KEYSPACE
         if (clientApiDoc.namespace("tmp_namespace2").exist()) {
             clientApiDoc.namespace("tmp_namespace2").delete();
             int wait = 0;
             while (wait++ < 5 && clientApiDoc.namespace("tmp_namespace2").exist()) {
                 Thread.sleep(1000);
-                System.out.println("+ ");
             }
         }
-        clientApiDoc.namespace("tmp_namespace2").create(new DataCenter(localDc, 1));
+        clientApiDoc.namespace("tmp_namespace2").create(new DataCenter(cloudRegion.get(), 1));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
         int wait = 0;
         while (wait++ < 5 && !clientApiDoc.namespace("tmp_namespace2").exist()) {
@@ -154,13 +124,16 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
             Thread.sleep(1000);
             System.out.println("+ ");
         }
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespaces created");
     }
 
     @Test
-    @Order(5)
+    @Order(4)
     @DisplayName("Create working namespace and check list")
     public void should_create_working_namespace() throws InterruptedException {
-        if (clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
+        System.out.println(ANSI_YELLOW + "\n#04 Create working namespaces" + ANSI_RESET);
+        
+        if (!clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
             clientApiDoc.namespace(WORKING_NAMESPACE).createSimple(1);
             System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
             int wait = 0;
@@ -171,18 +144,18 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         }
         Assertions.assertTrue(clientApiDoc.namespace(WORKING_NAMESPACE).exist());
         Assertions.assertFalse(clientApiDoc.namespace("invalid").exist());
-        System.out.println(ANSI_GREEN + "[POST] Create namespace if needed" + ANSI_RESET);
-        
         // When
         Set<String> namespaces = clientApiDoc.namespaceNames().collect(Collectors.toSet());
         // Then
         Assertions.assertTrue(namespaces.contains(WORKING_NAMESPACE));
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespaces created");
     }
     
     @Test
-    @Order(6)
+    @Order(5)
     @DisplayName("Create working namespace and check list")
     public void should_fail_on_invalid_namespace_params() {
+        System.out.println(ANSI_YELLOW + "\n#05 Fail on invalid namespaces" + ANSI_RESET);
         NamespaceClient dc = StargateClient.builder().disableCQL().build().apiDocument().namespace("???df.??");
         Assertions.assertAll("Required parameters", () -> Assertions.assertThrows(RuntimeException.class, () -> {
             StargateClient.builder().disableCQL().build().apiDocument().namespace("?AA???").collectionNames();
@@ -199,7 +172,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
             dc.createSimple(1);
         }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.create(new DataCenter(localDc, 1));
+            dc.create(new DataCenter(cloudRegion.get(), 1));
         }));
         
         Assertions.assertThrows(InvocationTargetException.class, () -> {
@@ -213,14 +186,15 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
             method.setAccessible(true);
             method.invoke(dc,  (String)null);
         });
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
     }
     
     @Test
-    @Order(7)
+    @Order(6)
     @DisplayName("Create collection")
     public void should_create_collection() throws InterruptedException {
         // Operations on collections
-        System.out.println(ANSI_YELLOW + "\n#05 Working with Collections" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#06 Create Collection" + ANSI_RESET);
         System.out.println(ANSI_GREEN + "[POST] Create a collection" + ANSI_RESET);
         // Create working collection is not present
         if (clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).exist()) {
@@ -241,167 +215,189 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
     }
 
     @Test
-    @Order(8)
+    @Order(7)
     @DisplayName("Find Collection")
     public void shoudl_find_collection() throws InterruptedException {
-        Thread.sleep(1000);
-        Assertions.assertTrue(
-                clientApiDoc.namespace(WORKING_NAMESPACE).collectionNames().anyMatch(s -> COLLECTION_PERSON.equals(s)));
+        System.out.println(ANSI_YELLOW + "\n#07 Find Collection" + ANSI_RESET);
+        Assertions.assertTrue(clientApiDoc
+                .namespace(WORKING_NAMESPACE)
+                .collectionNames().anyMatch(s -> COLLECTION_PERSON.equals(s)));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection is available in list");
     }
     
     @Test
-    @Order(9)
+    @Order(8)
     @DisplayName("Delete collection")
     public void should_delete_collection() throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#08 Delete Collection" + ANSI_RESET);
+        
         // Given
         String randomCollection = UUID.randomUUID().toString().replaceAll("-", "");
         Assertions.assertFalse(clientApiDoc.namespace(WORKING_NAMESPACE).collection(randomCollection).exist());
         // When
         clientApiDoc.namespace(WORKING_NAMESPACE).collection(randomCollection).create();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         // Then
         Assertions.assertTrue(clientApiDoc.namespace(WORKING_NAMESPACE).collection(randomCollection).exist());
         // When
         clientApiDoc.namespace(WORKING_NAMESPACE).collection(randomCollection).delete();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         // Then
         Assertions.assertFalse(clientApiDoc.namespace(WORKING_NAMESPACE).collection(randomCollection).exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Collection deleted");
     }
 
     @Test
-    @Order(10)
+    @Order(9)
     @DisplayName("Create document")
     public void should_create_newDocument() throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#09 Create document" + ANSI_RESET);
         // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(collectionPerson.exist());
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        String docId = collectionPerson.createNewDocument(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        String docId = collectionPersonAstra.createNewDocument(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
         Assertions.assertNotNull(docId);
-        Thread.sleep(500);
-        Assertions.assertTrue(collectionPerson.document(docId).exist());
+        Thread.sleep(1000);
+        Assertions.assertTrue(collectionPersonAstra.document(docId).exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document created");
     }
     
     @Test
-    @Order(11)
+    @Order(10)
     @DisplayName("Order document")
     public void should_upsert_document_create() throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#10 Upsert document with" + ANSI_RESET);
         // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(collectionPerson.exist());
+        // Given
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        collectionPerson.document("myId").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPersonAstra.document("myId").upsert(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
 
         Thread.sleep(500);
         // Then
-        Assertions.assertTrue(collectionPerson.document("myId").exist());
+        Assertions.assertTrue(collectionPersonAstra.document("myId").exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document created");
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("Update document")
+    public void should_upsert_document_update() throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#11 Upsert document update" + ANSI_RESET);
+        // Given
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPersonAstra.exist());
+        String uid = UUID.randomUUID().toString();
+        Assertions.assertFalse(collectionPersonAstra.document(uid).exist());
+        // When
+        collectionPersonAstra.document(uid).upsert(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPersonAstra.document(uid).upsert(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75015)));
+        // Then
+        Optional<PersonAstra> loulou = collectionPersonAstra.document(uid).find(PersonAstra.class);
+        Assertions.assertTrue(loulou.isPresent());
+        Assertions.assertEquals(75015, loulou.get().getAddress().getZipCode());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document updated");
     }
 
     @Test
     @Order(12)
-    @DisplayName("Update document")
-    public void should_upsert_document_update() throws InterruptedException {
+    @DisplayName("Delete document")
+    public void should_delete_document() throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#12 delete a document" + ANSI_RESET);
         // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(collectionPerson.exist());
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         String uid = UUID.randomUUID().toString();
-        Assertions.assertFalse(collectionPerson.document(uid).exist());
+        Assertions.assertFalse(collectionPersonAstra.document(uid).exist());
         // When
-        collectionPerson.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
-        collectionPerson.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75015)));
+        collectionPersonAstra.document(uid).upsert(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
-        Optional<Person> loulou = collectionPerson.document(uid).find(Person.class);
-        Assertions.assertTrue(loulou.isPresent());
-        Assertions.assertEquals(75015, loulou.get().getAddress().getZipCode());
+        Assertions.assertTrue(collectionPersonAstra.document(uid).exist());
+        collectionPersonAstra.document(uid).delete();
+        Thread.sleep(1000);
+        Assertions.assertFalse(collectionPersonAstra.document(uid).exist());
+        Assertions.assertTrue(collectionPersonAstra.document(uid).find(String.class).isEmpty());
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            collectionPersonAstra.document(uid).delete();
+        });
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document deleted");
     }
 
     @Test
     @Order(13)
-    @DisplayName("Delete document")
-    public void should_delete_document() throws InterruptedException {
+    @DisplayName("Update document")
+    public void should_update_document() {
+        System.out.println(ANSI_YELLOW + "\n#13 Update a document" + ANSI_RESET);
         // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        String uid = UUID.randomUUID().toString();
-        Assertions.assertFalse(collectionPerson.document(uid).exist());
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        collectionPerson.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPersonAstra.document("AAA").upsert(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
+        collectionPersonAstra.document("AAA").update(new PersonAstra("a", "b"));
         // Then
-        Assertions.assertTrue(collectionPerson.document(uid).exist());
-        collectionPerson.document(uid).delete();
-        Thread.sleep(1000);
-        Assertions.assertFalse(collectionPerson.document(uid).exist());
-        Assertions.assertTrue(collectionPerson.document(uid).find(String.class).isEmpty());
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            collectionPerson.document(uid).delete();
-        });
+        Optional<PersonAstra> loulou = collectionPersonAstra.document("AAA").find(PersonAstra.class);
+        Assertions.assertTrue(loulou.isPresent());
+        // Then sub fields are still there
+        Assertions.assertEquals(75000, loulou.get().getAddress().getZipCode());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document updated");
     }
 
     @Test
     @Order(14)
-    @DisplayName("Update document")
-    public void should_update_document() {
+    @DisplayName("Find All PersonAstra")
+    public void should_find_all_PersonAstra() {
+        System.out.println(ANSI_YELLOW + "\n#14 FindAll" + ANSI_RESET);
         // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(collectionPerson.exist());
+        CollectionClient collectionPersonAstra = clientApiDoc
+                .namespace(WORKING_NAMESPACE)
+                .collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        collectionPerson.document("AAA").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
-        collectionPerson.document("AAA").update(new Person("a", "b"));
+        ResultListPage<PersonAstra> results = collectionPersonAstra.findAll(PersonAstra.class);
         // Then
-        Optional<Person> loulou = collectionPerson.document("AAA").find(Person.class);
-        Assertions.assertTrue(loulou.isPresent());
-        // Then sub fields are still there
-        Assertions.assertEquals(75000, loulou.get().getAddress().getZipCode());
+        Assert.assertNotNull(results);
+        for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
+            Assert.assertNotNull(PersonAstra);
+        }
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document list found");
     }
 
     @Test
     @Order(15)
-    @DisplayName("Find All person")
-    public void should_find_all_person() {
-        // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(collectionPerson.exist());
-        // When
-        ResultListPage<Person> results = collectionPerson.findAll(Person.class);
-        // Then
-        Assert.assertNotNull(results);
-        for (ApiDocument<Person> person : results.getResults()) {
-            Assert.assertNotNull(person);
-        }
-    }
-
-    @Test
-    @Order(16)
     @DisplayName("Search Query")
     public void should_search_withQuery() {
+        System.out.println(ANSI_YELLOW + "\n#15 Find with where clause" + ANSI_RESET);
         // Given
-        CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(collectionPerson.exist());
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(collectionPersonAstra.exist());
 
-        collectionPerson.document("person1").upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
-        collectionPerson.document("person2").upsert(new Person("person2", "person2", 30, new Address("Paris", 75000)));
-        collectionPerson.document("person3").upsert(new Person("person3", "person3", 40, new Address("Melun", 75000)));
-        Assertions.assertTrue(collectionPerson.document("person1").exist());
-        Assertions.assertTrue(collectionPerson.document("person2").exist());
-        Assertions.assertTrue(collectionPerson.document("person3").exist());
+        collectionPersonAstra.document("PersonAstra1").upsert(new PersonAstra("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        collectionPersonAstra.document("PersonAstra2").upsert(new PersonAstra("PersonAstra2", "PersonAstra2", 30, new Address("Paris", 75000)));
+        collectionPersonAstra.document("PersonAstra3").upsert(new PersonAstra("PersonAstra3", "PersonAstra3", 40, new Address("Melun", 75000)));
+        Assertions.assertTrue(collectionPersonAstra.document("PersonAstra1").exist());
+        Assertions.assertTrue(collectionPersonAstra.document("PersonAstra2").exist());
+        Assertions.assertTrue(collectionPersonAstra.document("PersonAstra3").exist());
 
         // Create a query
         QueryDocument query = QueryDocument.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
-        ResultListPage<Person> results = collectionPerson.search(query, Person.class);
+        ResultListPage<PersonAstra> results = collectionPersonAstra.search(query, PersonAstra.class);
         Assert.assertNotNull(results);
-        for (ApiDocument<Person> person : results.getResults()) {
-            Assert.assertNotNull(person);
+        for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
+            Assert.assertNotNull(PersonAstra);
         }
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document list found");
     }
     
 
     @Test
-    @Order(17)
+    @Order(16)
     @DisplayName("Invalid parameters")
     public void testInvalidDoc() {
+        System.out.println(ANSI_YELLOW + "\n#16 Parameter validation when working with documents" + ANSI_RESET);
         DocumentClient dc = StargateClient.builder().disableCQL().build().apiDocument().namespace("n").collection("c")
                 .document("??a=&invalid??");
 
@@ -436,21 +432,22 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
             method.setAccessible(true);
             method.invoke(dc, "invalid_body");
         });
-       
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
     }
 
     @Test
-    @Order(18)
+    @Order(17)
     @DisplayName("Find sub doc")
     public void should_find_subdocument() {
+        System.out.println(ANSI_YELLOW + "\n#17 Find a sub document" + ANSI_RESET);
         // Given, Collection exist, Document Exist
         CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(cc.exist());
 
         // Create doc
-        DocumentClient p1 = cc.document("person1");
-        p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
-        Assertions.assertTrue(p1.find(Person.class).isPresent());
+        DocumentClient p1 = cc.document("PersonAstra1");
+        p1.upsert(new PersonAstra("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        Assertions.assertTrue(p1.find(PersonAstra.class).isPresent());
 
         // When
         Optional<String> os = p1.findSubDocument("firstname", String.class);
@@ -471,20 +468,21 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         Optional<Integer> oz = p1.findSubDocument("address/zipCode", Integer.class);
         Assertions.assertTrue(oz.isPresent());
         Assertions.assertEquals(75000, oz.get());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document retrieved");
     }
 
     @Test
-    @Order(19)
+    @Order(18)
     @DisplayName("Update sub doc")
     public void should_update_subdocument() {
-
+        System.out.println(ANSI_YELLOW + "\n#18 Update a sub document" + ANSI_RESET);
         // Given
         CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(cc.exist());
 
-        DocumentClient p1 = cc.document("person1");
-        p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
-        Assertions.assertTrue(p1.find(Person.class).isPresent());
+        DocumentClient p1 = cc.document("PersonAstra1");
+        p1.upsert(new PersonAstra("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        Assertions.assertTrue(p1.find(PersonAstra.class).isPresent());
 
         // When
         p1.replaceSubDocument("address", new Address("city2", 8000));
@@ -492,22 +490,25 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         Address updated = p1.findSubDocument("address", Address.class).get();
         Assertions.assertEquals(8000, updated.getZipCode());
         Assertions.assertEquals("city2", updated.getCity());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document updated");
     }
 
     @Test
-    @Order(20)
+    @Order(19)
     @DisplayName("Delete sub doc")
     public void should_delete_subdocument() {
+        System.out.println(ANSI_YELLOW + "\n#19 Delete a sub document" + ANSI_RESET);
         // Given
         CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(cc.exist());
-        DocumentClient p1 = cc.document("person1");
-        p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
-        Assertions.assertTrue(p1.find(Person.class).isPresent());
+        DocumentClient p1 = cc.document("PersonAstra1");
+        p1.upsert(new PersonAstra("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        Assertions.assertTrue(p1.find(PersonAstra.class).isPresent());
         Assertions.assertFalse(p1.findSubDocument("address", Address.class).isEmpty());
         // When
         p1.deleteSubDocument("address");
         // Then
         Assertions.assertTrue(p1.findSubDocument("address", Address.class).isEmpty());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document deleted");
     }
 }

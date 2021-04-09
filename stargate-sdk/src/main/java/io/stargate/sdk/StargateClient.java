@@ -1,5 +1,6 @@
 package io.stargate.sdk;
 
+import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import io.stargate.sdk.utils.Utils;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StargateClient {
+public class StargateClient implements Closeable {
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(StargateClient.class);
@@ -96,7 +97,6 @@ public class StargateClient {
         }
         
         if (Utils.paramsProvided(builder.username, 
-                builder.password, 
                 builder.endPointApiRest)) {
             apiRest = new ApiRestClient(builder.username, 
                 builder.password, 
@@ -104,10 +104,10 @@ public class StargateClient {
                 builder.appToken,
                 builder.endPointApiRest);
         }
-        
         // For security reason you want to disable CQL
         if (builder.enableCql) {
             if (Utils.paramsProvided(builder.username, builder.password)) {
+               
                 CqlSessionBuilder cqlSessionBuilder = CqlSession.builder()
                         .withAuthCredentials(builder.username, builder.password);
                 
@@ -136,8 +136,10 @@ public class StargateClient {
                 // As we opened a cqlSession we may want to close it properly at application shutdown.
                 Runtime.getRuntime().addShutdownHook(new Thread() { 
                     public void run() { 
-                        cqlSession.close();
-                        LOGGER.info("Closing CqlSession.");
+                        if (!cqlSession.isClosed()) {
+                            cqlSession.close();
+                            LOGGER.info("Closing CqlSession.");
+                        }
                       } 
                 });
             }
@@ -304,7 +306,15 @@ public class StargateClient {
         public StargateClient build() {
             return new StargateClient(this);
         }
-    }  
-     
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void close() {
+        if (null != cqlSession && !cqlSession.isClosed()) {
+            cqlSession.close();
+            LOGGER.info("Closing CqlSession.");
+        }
+    }
 
 }

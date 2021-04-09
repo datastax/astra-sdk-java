@@ -17,13 +17,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.stargate.sdk.rest.DataCenter;
 import io.stargate.sdk.utils.ApiResponse;
 import io.stargate.sdk.utils.Assert;
+
 /**
- * Client for API resource /v2/namespaces.
+ * Client for Document API 'Namespace' resource /v2/namespaces
  *
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -74,16 +77,11 @@ public class NamespaceClient {
         
         handleError(response);
         
-        if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-            try {
-                return Optional.ofNullable(getObjectMapper().readValue(response.body(), 
-                        new TypeReference<ApiResponse<Namespace>>(){}).getData());
-            } catch (Exception e) {
-                throw new RuntimeException("Cannot Marshall output in 'find namespace()' body=" + response.body(), e);
-            }
+        try {
+            return Optional.of(marshallApiResponseNamespace(response.body()).getData());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot Marshall output in 'find namespace()' body=" + response.body(), e);
         }
-        
-        return Optional.empty();
     }
     
     /**
@@ -126,15 +124,11 @@ public class NamespaceClient {
         String endpoint = docClient.getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
         HttpResponse<String> response;
         try {
-            
             String reqBody = getObjectMapper().writeValueAsString(
                     new Namespace(namespace, replicas));
-            System.out.println(reqBody);
-            
             response = getHttpClient().send(
                   startRequest(endpoint, docClient.getToken())
                   .POST(BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
-            
         } catch (Exception e) {
             throw new RuntimeException("Cannot find namespace " + namespace, e);
         }
@@ -180,17 +174,28 @@ public class NamespaceClient {
             throw new RuntimeException("Cannot retrieve collection list", e);
         }
         handleError(response);
-        
         try {
-            // Mapping to set
-            return getObjectMapper().readValue(
-                    response.body(), new TypeReference<ApiResponse<List<CollectionDefinition>>>(){})
-                                    .getData().stream()
-                                    .map(CollectionDefinition::getName)
-                                    .collect(Collectors.toSet()).stream();
+            return marshallApiResponseCollections(response.body())
+                    .getData().stream()
+                    .map(CollectionDefinition::getName)
+                    .collect(Collectors.toSet()).stream();
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall collection list", e);
         }
+    }
+    
+    private ApiResponse<Namespace> marshallApiResponseNamespace(String body)
+    throws Exception {
+       return getObjectMapper()
+                 .readValue(body, 
+                         new TypeReference<ApiResponse<Namespace>>(){});
+    }
+    
+    private ApiResponse<List<CollectionDefinition>> marshallApiResponseCollections(String body)
+    throws JsonMappingException, JsonProcessingException {
+        return getObjectMapper()
+                .readValue(body, 
+                        new TypeReference<ApiResponse<List<CollectionDefinition>>>(){});
     }
     
     /**
