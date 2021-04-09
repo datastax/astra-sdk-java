@@ -25,7 +25,7 @@ import com.dstx.astra.sdk.devops.res.Database;
 import com.dstx.astra.sdk.devops.res.DatabaseAvailableRegion;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class T03_Devops_C10IntegrationTest extends AbstractAstraIntegrationTest {
+public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrationTest {
     
     private static final String SERVERLESS_DB_NAME   = "sdk_serverless";
     private static final String SERVERLESS_KEYSPACE  = "sdk_ks1";
@@ -296,7 +296,7 @@ public class T03_Devops_C10IntegrationTest extends AbstractAstraIntegrationTest 
     
     @Test
     @Order(14)
-    public void should_not_terminate_db() {
+    public void should_terminate_db() {
         System.out.println(ANSI_YELLOW + "\n#14 - [POST] Terminating an instance" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());

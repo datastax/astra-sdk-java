@@ -11,7 +11,7 @@ import com.dstx.astra.sdk.AstraClient;
 import io.stargate.sdk.rest.ApiRestClient;
 import io.stargate.sdk.rest.DataCenter;
 
-public class ApiRestWithAstraTest {
+public class T05_RestApi_IntegrationTest {
     
     private static final String ANSI_RESET           = "\u001B[0m";
     private static final String ANSI_GREEN           = "\u001B[32m";

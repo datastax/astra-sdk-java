@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,6 +29,7 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
     }
     
     @Test
+    @DisplayName("Connect Cassandra with CqlSession using clientId/ClientSecret")
     public void should_enable_cqlSession_with_clientId_clientSecret() {
         // Given
         Assertions.assertTrue(dbId.isPresent());
@@ -50,6 +52,7 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
     }
     
     @Test
+    @DisplayName("Connect Cassandra with CqlSession using token/appToken")
     public void should_enable_cqlSession_with_token() {
         // Given
         Assertions.assertTrue(dbId.isPresent());
@@ -70,6 +73,7 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
     }
     
     @Test
+    @DisplayName("Invoke Document Api providing dbId,cloudRegion,appToken")
     public void should_enable_documentApi_withToken() {
         // Given
         Assertions.assertTrue(dbId.isPresent());
@@ -82,11 +86,12 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
                 .appToken(appToken.get())
                 .build()) {
                 // Then
-                Assertions.assertNotNull(cli.apiDocument().getToken());
+                Assertions.assertTrue(cli.apiDocument().namespaceNames().count() > 0);
          }
     }
     
     @Test
+    @DisplayName("Invoke REST Api providing dbId,cloudRegion,appToken")
     public void should_enable_restApi_withToken() {
         // Given
         Assertions.assertTrue(dbId.isPresent());
@@ -99,11 +104,12 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
                 .appToken(appToken.get())
                 .build()) {
                 // Then
-                Assertions.assertNotNull(cli.apiRest().getToken());
-         }
+            Assertions.assertTrue(cli.apiRest().keyspaceNames().count() > 0);
+        }
     }
     
     @Test
+    @DisplayName("Invoke DEVOPS Api providing dbId,cloudRegion,appToken")
     public void should_enable_devops_withToken() {
         // Given
         Assertions.assertTrue(appToken.isPresent());
@@ -117,9 +123,6 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
                     .findAllDatabases()
                     .collect(Collectors.toList()));
          }
-       
     }
-    
-    
 
 }

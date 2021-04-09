@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.datastax.oss.driver.shaded.guava.common.base.Strings;
-import com.dstx.astra.sdk.AstraClient;
 import com.dstx.astra.sdk.AstraClient.AstraClientBuilder;
 
 /**
@@ -50,7 +49,7 @@ public abstract class AbstractAstraIntegrationTest {
         client = clientBuilder.build();
     }
     
-    private static Optional<String> getPropertyFromEnv(String varname) {
+    protected static Optional<String> getPropertyFromEnv(String varname) {
         String value = null;
         if (!Strings.isNullOrEmpty(System.getenv(varname))) {
             value = System.getenv(varname);
@@ -61,6 +60,10 @@ public abstract class AbstractAstraIntegrationTest {
         return Optional.ofNullable(value);
     }
     
+    /**
+     * Multiple operations are async and 
+     * we need to wait until a condition is reached.
+     */
     protected static void waitForSeconds(int s) {
         try {Thread.sleep(s * 1000);} catch (InterruptedException e) {}
     }
