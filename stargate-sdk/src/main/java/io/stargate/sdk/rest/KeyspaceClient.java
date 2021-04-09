@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import io.stargate.sdk.doc.Namespace;
 import io.stargate.sdk.utils.ApiResponse;
 import io.stargate.sdk.utils.Assert;
 
@@ -110,6 +111,26 @@ public class KeyspaceClient {
             
         } catch (Exception e) {
             throw new RuntimeException("Cannot create keyspace " + keyspace, e);
+        }
+        handleError(response);
+    }
+    
+    /**
+     * Create a namespace.
+     */
+    public void createSimple(int replicas) {
+        Assert.notNull(keyspace, "namespace");
+        Assert.isTrue(replicas>0, "Replica number should be bigger than 0");
+        String endpoint = restclient.getEndPointApiRest() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES;
+        HttpResponse<String> response;
+        try {
+            String reqBody = getObjectMapper().writeValueAsString(
+                    new Namespace(keyspace, replicas));
+            response = getHttpClient().send(
+                  startRequest(endpoint, restclient.getToken())
+                  .POST(BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot find namespace " + keyspace, e);
         }
         handleError(response);
     }

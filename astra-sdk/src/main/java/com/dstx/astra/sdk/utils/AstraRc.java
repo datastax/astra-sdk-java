@@ -44,7 +44,7 @@ public class AstraRc {
     public static final String ENV_USER_HOME      = "user.home";
     public static final String ENV_LINE_SEPERATOR = "line.separator";
     
-    /** Sections in the file. */
+    /** Sections in the file. [sectionName] key/Value. */
     private final Map <String, Map<String, String>> sections;
     
     /**
@@ -78,6 +78,9 @@ public class AstraRc {
         return sections;
     }
     
+    /**
+     * Display output in the console
+     */
     public void print() {
         System.out.println(generateFileContent(getSections()));
     }

@@ -160,7 +160,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
     @Order(5)
     @DisplayName("Create working namespace and check list")
     public void should_create_working_namespace() throws InterruptedException {
-        if (clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
+        if (!clientApiDoc.namespace(WORKING_NAMESPACE).exist()) {
             clientApiDoc.namespace(WORKING_NAMESPACE).createSimple(1);
             System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creation request sent");
             int wait = 0;
