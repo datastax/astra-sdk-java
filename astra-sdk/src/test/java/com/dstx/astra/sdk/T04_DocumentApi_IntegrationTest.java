@@ -19,14 +19,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.doc.ApiDocument;
 import io.stargate.sdk.doc.ApiDocumentClient;
 import io.stargate.sdk.doc.CollectionClient;
 import io.stargate.sdk.doc.DocumentClient;
 import io.stargate.sdk.doc.NamespaceClient;
-import io.stargate.sdk.doc.QueryDocument;
-import io.stargate.sdk.doc.ResultListPage;
-import io.stargate.sdk.rest.DataCenter;
+import io.stargate.sdk.doc.domain.DocumentResultPage;
+import io.stargate.sdk.doc.domain.QueryDocument;
 
 /**
  * Test operations for the Document API operation
@@ -355,7 +355,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
                 .collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        ResultListPage<PersonAstra> results = collectionPersonAstra.findAll(PersonAstra.class);
+        DocumentResultPage<PersonAstra> results = collectionPersonAstra.findAll(PersonAstra.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
@@ -384,7 +384,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         QueryDocument query = QueryDocument.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
-        ResultListPage<PersonAstra> results = collectionPersonAstra.search(query, PersonAstra.class);
+        DocumentResultPage<PersonAstra> results = collectionPersonAstra.search(query, PersonAstra.class);
         Assert.assertNotNull(results);
         for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
             Assert.assertNotNull(PersonAstra);

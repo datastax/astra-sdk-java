@@ -1,4 +1,4 @@
-package io.stargate.sdk.rest;
+package io.stargate.sdk.rest.domain;
 
 public enum ClusteringOrder { 
     asc,

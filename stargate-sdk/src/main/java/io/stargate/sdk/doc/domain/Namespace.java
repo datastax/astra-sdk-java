@@ -1,9 +1,9 @@
-package io.stargate.sdk.doc;
+package io.stargate.sdk.doc.domain;
 
 import java.util.List;
 
-import io.stargate.sdk.rest.DataCenter;
-import io.stargate.sdk.rest.Keyspace;
+import io.stargate.sdk.core.DataCenter;
+import io.stargate.sdk.rest.domain.Keyspace;
 
 /**
  * Object abstraction for document api.

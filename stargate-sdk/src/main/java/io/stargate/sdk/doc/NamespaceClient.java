@@ -1,11 +1,11 @@
 package io.stargate.sdk.doc;
 
+import static io.stargate.sdk.core.ApiSupport.PATH_SCHEMA;
+import static io.stargate.sdk.core.ApiSupport.getHttpClient;
+import static io.stargate.sdk.core.ApiSupport.getObjectMapper;
+import static io.stargate.sdk.core.ApiSupport.handleError;
+import static io.stargate.sdk.core.ApiSupport.startRequest;
 import static io.stargate.sdk.doc.ApiDocumentClient.PATH_SCHEMA_NAMESPACES;
-import static io.stargate.sdk.utils.ApiSupport.PATH_SCHEMA;
-import static io.stargate.sdk.utils.ApiSupport.getHttpClient;
-import static io.stargate.sdk.utils.ApiSupport.getObjectMapper;
-import static io.stargate.sdk.utils.ApiSupport.handleError;
-import static io.stargate.sdk.utils.ApiSupport.startRequest;
 
 import java.net.HttpURLConnection;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -21,8 +21,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-import io.stargate.sdk.rest.DataCenter;
-import io.stargate.sdk.utils.ApiResponse;
+import io.stargate.sdk.core.ApiResponse;
+import io.stargate.sdk.core.DataCenter;
+import io.stargate.sdk.doc.domain.CollectionDefinition;
+import io.stargate.sdk.doc.domain.Namespace;
 import io.stargate.sdk.utils.Assert;
 
 /**
@@ -153,13 +155,13 @@ public class NamespaceClient {
         }
         handleError(response);
     }
-
+   
     /**
      * List collections in namespace.
      * 
      * GET /v2/namespaces/{namespace-id}/collections
      */
-    public Stream<String> collectionNames() {
+    public Stream<CollectionDefinition> collections() {
         String listcolEndpoint = docClient.getEndPointApiDocument() 
                 + PATH_NAMESPACES 
                 + "/" + namespace 
@@ -177,11 +179,19 @@ public class NamespaceClient {
         try {
             return marshallApiResponseCollections(response.body())
                     .getData().stream()
-                    .map(CollectionDefinition::getName)
                     .collect(Collectors.toSet()).stream();
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall collection list", e);
         }
+    }
+    
+    /**
+     * List collections in namespace.
+     * 
+     * GET /v2/namespaces/{namespace-id}/collections
+     */
+    public Stream<String> collectionNames() {
+        return collections().map(CollectionDefinition::getName);
     }
     
     private ApiResponse<Namespace> marshallApiResponseNamespace(String body)

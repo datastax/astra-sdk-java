@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.dstx.astra.sdk.AstraClient;
 
-import io.stargate.sdk.rest.DataCenter;
+import io.stargate.sdk.core.DataCenter;
 
 @Repository
 public class AstraApplicationConfiguration implements InitializingBean {

@@ -17,14 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.doc.ApiDocument;
 import io.stargate.sdk.doc.ApiDocumentClient;
 import io.stargate.sdk.doc.CollectionClient;
 import io.stargate.sdk.doc.DocumentClient;
 import io.stargate.sdk.doc.NamespaceClient;
-import io.stargate.sdk.doc.QueryDocument;
-import io.stargate.sdk.doc.ResultListPage;
-import io.stargate.sdk.rest.DataCenter;
+import io.stargate.sdk.doc.domain.DocumentResultPage;
+import io.stargate.sdk.doc.domain.QueryDocument;
 import io.stargate.sdk.test.dto.Person;
 import io.stargate.sdk.test.dto.Person.Address;
 
@@ -363,7 +363,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
         // When
-        ResultListPage<Person> results = collectionPerson.findAll(Person.class);
+        DocumentResultPage<Person> results = collectionPerson.findAll(Person.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<Person> person : results.getResults()) {
@@ -390,7 +390,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         QueryDocument query = QueryDocument.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
-        ResultListPage<Person> results = collectionPerson.search(query, Person.class);
+        DocumentResultPage<Person> results = collectionPerson.search(query, Person.class);
         Assert.assertNotNull(results);
         for (ApiDocument<Person> person : results.getResults()) {
             Assert.assertNotNull(person);

@@ -1,4 +1,4 @@
-package io.stargate.sdk.doc;
+package io.stargate.sdk.doc.domain;
 
 import java.io.Serializable;
 

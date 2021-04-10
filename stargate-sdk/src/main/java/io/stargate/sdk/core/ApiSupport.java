@@ -1,4 +1,4 @@
-package io.stargate.sdk.utils;
+package io.stargate.sdk.core;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 import io.stargate.sdk.exception.AuthenticationException;
+import io.stargate.sdk.utils.JsonUtils;
 
 /**
  * Mutualization of operations for doc,rest.devops API when possible.
@@ -148,7 +149,7 @@ public abstract class ApiSupport {
     public static void handleError(HttpResponse<String> res) {
         if (res.statusCode() >=300) {
             try {
-               StargateApiError apiErr = objectMapper.readValue(res.body(), StargateApiError.class);
+               ApiError apiErr = objectMapper.readValue(res.body(), ApiError.class);
                if (res.statusCode() == HttpURLConnection.HTTP_FORBIDDEN || 
                    res.statusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                    throw new AuthenticationException(apiErr.getCode() + ":" + apiErr.getDescription());

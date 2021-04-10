@@ -1,4 +1,4 @@
-package io.stargate.sdk.rest;
+package io.stargate.sdk.rest.domain;
 
 import java.io.Serializable;
 

@@ -1,9 +1,34 @@
 package io.stargate.sdk.rest;
 
-import java.util.Optional;
+import static io.stargate.sdk.core.ApiSupport.getHttpClient;
+import static io.stargate.sdk.core.ApiSupport.getObjectMapper;
+import static io.stargate.sdk.core.ApiSupport.handleError;
+import static io.stargate.sdk.core.ApiSupport.startRequest;
 
-import io.stargate.sdk.doc.ApiDocumentClient;
-import io.stargate.sdk.doc.NamespaceClient;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import io.stargate.sdk.core.ApiResponse;
+import io.stargate.sdk.core.ResultPage;
+import io.stargate.sdk.doc.ApiDocument;
+import io.stargate.sdk.doc.DocumentClient;
+import io.stargate.sdk.doc.domain.DocumentResultPage;
+import io.stargate.sdk.doc.domain.QueryDocument;
+import io.stargate.sdk.doc.domain.QueryDocument.QueryDocumentBuilder;
+import io.stargate.sdk.rest.domain.ColumnDefinition;
+import io.stargate.sdk.rest.domain.RowMapper;
+import io.stargate.sdk.rest.domain.RowResultPage;
+import io.stargate.sdk.rest.domain.TableCreationRequest;
+import io.stargate.sdk.rest.domain.TableDefinition;
 
 /**
  * Operate on Tables in Cassandra.
@@ -29,40 +54,102 @@ public class TableClient {
         this.keyspaceClient = keyspaceClient;
         this.tableName      = tableName;
     }
-    
-    // Get a table
-    // https://docs.astra.datastax.com/reference#get_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
-    Optional<TableDefinition> find() {
-        return null;
+  
+    /**
+     * Get metadata of the collection. There is no dedicated resources we
+     * use the list and filter with what we need.
+     *
+     * @return
+     *      metadata of the collection if its exist or empty
+     */
+    public Optional<TableDefinition> find() {
+        return keyspaceClient.tables()
+                .filter(t -> tableName.equalsIgnoreCase(t.getName()))
+                .findFirst();
     }
     
-    boolean exist() { 
-        return false;
+    /**
+     * Check if the table exist.
+     */
+    public boolean exist() { 
+        return keyspaceClient.tableNames().anyMatch(tableName::equals);
     }
     
-    // create a table
-    //https://docs.astra.datastax.com/reference#post_api-rest-v2-schemas-keyspaces-keyspace-id-tables-1
-    void create(TableCreationRequest tcr) {
-        
+    /**
+     * Syntax sugar
+     */
+    public String getEndPointCurrentTable() {
+        return keyspaceClient.getEndPointSchemaKeyspace() + "/tables/" + tableName;
     }
     
-    //replace a table definition
-    //https://docs.astra.datastax.com/reference#put_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
-    void replaceTableDefinition() {}
+    /**
+     * Retrieve All columns.
+     *
+     * @return
+     *      Sream of {@link ColumnDefinition} to describe a table
+     */
+    public Stream<ColumnDefinition> columns() {
+        HttpResponse<String> response;
+        try {
+            // Invoke
+            response = getHttpClient().send(
+                    startRequest(getEndPointCurrentTable() + "/columns", restClient.getToken())
+                    .GET().build(), BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot retrieve table list", e);
+        }
+        handleError(response);
+        try {
+            TypeReference<ApiResponse<List<ColumnDefinition>>> expectedType = new TypeReference<>(){};
+            return getObjectMapper().readValue(response.body(), expectedType)
+                                    .getData().stream()
+                                    .collect(Collectors.toSet()).stream();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall collection list", e);
+        }
+    }
+    
+    /**
+     * Retrieve All column names.
+     * 
+     * @return
+     *      a list of columns names;
+     */
+    public  Stream<String> columnNames() {
+        return columns().map(ColumnDefinition::getName);
+    }
+    
+   /**
+    * Create a table 
+    * @param table creation request
+    * 
+    * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
+    */
+    public void create(TableCreationRequest tcr) {
+    }
+    
+    public void update(TableCreationRequest tcr) {
+    }
     
     
     //Delete a table
     //https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
-    void delete() {}
+    public void delete() {}
     
-    // https://docs.astra.datastax.com/reference#get_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-columns-1
-    void listColumns() {}
+    public RowResultPage search(Object query) {
+        return null;
+    }
     
-    //https://docs.astra.datastax.com/reference#post_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-columns-1
-    void createColum() {}
+    public <BEAN> ResultPage<BEAN> search(Object query, RowMapper<BEAN> rowMapper) {
+        return null;
+    }
     
-    
-    
+    /**
+     * Move to columns client
+     */
+    public ColumnsClient column(String columnId) {
+        return new ColumnsClient(restClient, keyspaceClient, this, columnId);
+    }
     
 
 }

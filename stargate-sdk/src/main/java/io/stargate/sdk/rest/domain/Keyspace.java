@@ -1,6 +1,8 @@
-package io.stargate.sdk.rest;
+package io.stargate.sdk.rest.domain;
 
 import java.util.List;
+
+import io.stargate.sdk.core.DataCenter;
 
 /**
  * Represent a keyspace definition with its relevant MetaData.

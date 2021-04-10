@@ -1,4 +1,4 @@
-package io.stargate.sdk.exception;
+package io.stargate.sdk.doc.exception;
 
 /**
  * Specialized Error.

@@ -5,7 +5,7 @@ import static io.stargate.sdk.utils.Assert.hasLength;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.stargate.sdk.utils.ApiSupport;
+import io.stargate.sdk.core.ApiSupport;
 
 /**
  * Superclass to work with graphQL.

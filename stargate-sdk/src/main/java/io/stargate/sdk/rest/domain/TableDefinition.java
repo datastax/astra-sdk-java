@@ -1,31 +1,34 @@
-package io.stargate.sdk.rest;
+package io.stargate.sdk.rest.domain;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
-
 /**
- * Creation request of a table.
- *
+ * Represent a table definition when working with Rest API.
+ * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class TableCreationRequest implements Serializable {
+public class TableDefinition implements Serializable {
     
     /** Serial. */
-    private static final long serialVersionUID = -163637535414120053L;
+    private static final long serialVersionUID = 455851052070910341L;
 
     private String name;
- 
-    private TablePrimaryKey primaryKey = new TablePrimaryKey();
     
-    private List<ColumnDefinitions> columnDefinitions = new ArrayList<>();
+    private String keyspace;
     
-    boolean ifNotExists = false;
+    private List<ColumnDefinition> columnDefinitions;
     
-    TableOptions tableOptions = new TableOptions();
+    private TablePrimaryKey primaryKey;
+    
+    private TableOptions tableOptions;
 
+    /**
+     * Default constructor.
+     */
+    public TableDefinition() {
+    }
+    
     /**
      * Getter accessor for attribute 'name'.
      *
@@ -43,6 +46,44 @@ public class TableCreationRequest implements Serializable {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Getter accessor for attribute 'keyspace'.
+     *
+     * @return
+     *       current value of 'keyspace'
+     */
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    /**
+     * Setter accessor for attribute 'keyspace'.
+     * @param keyspace
+     * 		new value for 'keyspace '
+     */
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }
+
+    /**
+     * Getter accessor for attribute 'columnDefinitions'.
+     *
+     * @return
+     *       current value of 'columnDefinitions'
+     */
+    public List<ColumnDefinition> getColumnDefinitions() {
+        return columnDefinitions;
+    }
+
+    /**
+     * Setter accessor for attribute 'columnDefinitions'.
+     * @param columnDefinitions
+     * 		new value for 'columnDefinitions '
+     */
+    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
     }
 
     /**
@@ -65,44 +106,6 @@ public class TableCreationRequest implements Serializable {
     }
 
     /**
-     * Getter accessor for attribute 'columnDefinitions'.
-     *
-     * @return
-     *       current value of 'columnDefinitions'
-     */
-    public List<ColumnDefinitions> getColumnDefinitions() {
-        return columnDefinitions;
-    }
-
-    /**
-     * Setter accessor for attribute 'columnDefinitions'.
-     * @param columnDefinitions
-     * 		new value for 'columnDefinitions '
-     */
-    public void setColumnDefinitions(List<ColumnDefinitions> columnDefinitions) {
-        this.columnDefinitions = columnDefinitions;
-    }
-
-    /**
-     * Getter accessor for attribute 'ifNotExists'.
-     *
-     * @return
-     *       current value of 'ifNotExists'
-     */
-    public boolean isIfNotExists() {
-        return ifNotExists;
-    }
-
-    /**
-     * Setter accessor for attribute 'ifNotExists'.
-     * @param ifNotExists
-     * 		new value for 'ifNotExists '
-     */
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
-    /**
      * Getter accessor for attribute 'tableOptions'.
      *
      * @return
@@ -122,5 +125,5 @@ public class TableCreationRequest implements Serializable {
     }
     
     
-
+    
 }
