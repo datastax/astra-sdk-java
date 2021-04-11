@@ -36,7 +36,7 @@ public class ColumnDefinition implements Serializable {
      * @param isStatic
      *      static columns
      */
-    public ColumnDefinition(String name, String type, boolean isStatic) {
+    public ColumnDefinition(String name, String type, Boolean isStatic) {
         this(name, type);
         this.isStatic = isStatic;
     }

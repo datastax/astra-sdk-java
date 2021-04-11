@@ -13,7 +13,9 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,6 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.stargate.sdk.core.ApiResponse;
 import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.doc.domain.Namespace;
+import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.Keyspace;
 import io.stargate.sdk.rest.domain.TableDefinition;
 import io.stargate.sdk.utils.Assert;
@@ -39,6 +42,9 @@ public class KeyspaceClient {
     
     /** Namespace. */
     private final String keyspace;
+    
+    /** Hold a reference to client to keep singletons.*/
+    private Map <String, TableClient> tablesClient = new HashMap<>();
     
     /**
      * Full constructor.
@@ -200,7 +206,18 @@ public class KeyspaceClient {
      * Move to the Table client
      */
     public TableClient table(String tableName) {
-        return new TableClient(restclient, this, tableName);
+        Assert.hasLength(tableName, "tableName");
+        if (!tablesClient.containsKey(tableName)) {
+            tablesClient.put(tableName, new TableClient(restclient, this, tableName));
+        }
+        return tablesClient.get(tableName);
+    }
+    
+    /**
+     * Syntax sugar more easier to understand in a fluent API.
+     */
+    public void createTable(String tableName, CreateTable ct) {
+        table(tableName).create(ct);
     }
     
     /**

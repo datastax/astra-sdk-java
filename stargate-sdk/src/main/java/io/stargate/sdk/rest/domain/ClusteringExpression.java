@@ -16,6 +16,12 @@ public class ClusteringExpression implements Serializable {
     
     private String column;
     
+    /**
+     * Default Constructor
+     */
+    public ClusteringExpression() {
+    }
+    
     public ClusteringExpression(String column, ClusteringOrder order) {
         super();
         this.order = order;

@@ -5,12 +5,11 @@ import static io.stargate.sdk.core.ApiSupport.getObjectMapper;
 import static io.stargate.sdk.core.ApiSupport.handleError;
 import static io.stargate.sdk.core.ApiSupport.startRequest;
 
+import java.net.HttpURLConnection;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,16 +18,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.stargate.sdk.core.ApiResponse;
 import io.stargate.sdk.core.ResultPage;
-import io.stargate.sdk.doc.ApiDocument;
-import io.stargate.sdk.doc.DocumentClient;
-import io.stargate.sdk.doc.domain.DocumentResultPage;
-import io.stargate.sdk.doc.domain.QueryDocument;
-import io.stargate.sdk.doc.domain.QueryDocument.QueryDocumentBuilder;
 import io.stargate.sdk.rest.domain.ColumnDefinition;
 import io.stargate.sdk.rest.domain.RowMapper;
 import io.stargate.sdk.rest.domain.RowResultPage;
-import io.stargate.sdk.rest.domain.TableCreationRequest;
+import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.TableDefinition;
+import io.stargate.sdk.rest.exception.TableNotFoundException;
+import io.stargate.sdk.utils.Assert;
 
 /**
  * Operate on Tables in Cassandra.
@@ -72,13 +68,14 @@ public class TableClient {
      * Check if the table exist.
      */
     public boolean exist() { 
-        return keyspaceClient.tableNames().anyMatch(tableName::equals);
+        return keyspaceClient.tableNames()
+                .anyMatch(tableName::equals);
     }
     
     /**
      * Syntax sugar
      */
-    public String getEndPointCurrentTable() {
+    public String getEndPointSchemaCurrentTable() {
         return keyspaceClient.getEndPointSchemaKeyspace() + "/tables/" + tableName;
     }
     
@@ -93,7 +90,7 @@ public class TableClient {
         try {
             // Invoke
             response = getHttpClient().send(
-                    startRequest(getEndPointCurrentTable() + "/columns", restClient.getToken())
+                    startRequest(getEndPointSchemaCurrentTable() + "/columns", restClient.getToken())
                     .GET().build(), BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve table list", e);
@@ -125,16 +122,55 @@ public class TableClient {
     * 
     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
     */
-    public void create(TableCreationRequest tcr) {
+    public void create(CreateTable tcr) {
+        Assert.notNull(tcr, "TableCreationRequest");
+        tcr.setName(this.tableName);
+        HttpResponse<String> response;
+        try {
+            String reqBody = getObjectMapper().writeValueAsString(tcr);
+           response = getHttpClient().send(
+                   startRequest(keyspaceClient.getEndPointSchemaKeyspace() + "/tables/", restClient.getToken())
+                   .POST(BodyPublishers.ofString(reqBody)).build(),
+                   BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot save document:", e);
+        }
+        handleError(response);
     }
     
-    public void update(TableCreationRequest tcr) {
+    public void update(CreateTable tcr) {
+        Assert.notNull(tcr, "TableCreationRequest");
+        HttpResponse<String> response;
+        try {
+            String reqBody = getObjectMapper().writeValueAsString(tcr);
+           response = getHttpClient().send(
+                   startRequest(keyspaceClient.getEndPointSchemaKeyspace() + "/tables/", restClient.getToken())
+                   .PUT(BodyPublishers.ofString(reqBody)).build(),
+                   BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot save document:", e);
+        }
+        handleError(response);
     }
     
     
     //Delete a table
     //https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
-    public void delete() {}
+    public void delete() {
+        HttpResponse<String> response;
+        try {
+            response = getHttpClient().send(
+                    startRequest(getEndPointSchemaCurrentTable(), 
+                    restClient.getToken()).DELETE().build(), 
+                    BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot delete table " + tableName, e);
+        }
+        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+            throw new TableNotFoundException(tableName);
+        }
+        handleError(response);
+    }
     
     public RowResultPage search(Object query) {
         return null;

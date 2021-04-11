@@ -1,5 +1,6 @@
 package com.dstx.astra.sdk;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
@@ -12,29 +13,21 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.rest.ApiRestClient;
+import io.stargate.sdk.rest.TableClient;
+import io.stargate.sdk.rest.domain.ClusteringExpression;
+import io.stargate.sdk.rest.domain.ClusteringOrder;
+import io.stargate.sdk.rest.domain.ColumnDefinition;
+import io.stargate.sdk.rest.domain.CreateTable;
+import io.stargate.sdk.rest.domain.TableDefinition;
 
 /**
  * DATASET
- * 
- * CREATE TABLE IF NOT EXISTS videos (
- *   genre     text,
- *   year      int,
- *   title     text,
- *   upload    timestamp,
- *   email     text,
- *   url       text,
- *   tags      set <text>,
- *   frames    list<int>,
- *   formats   frozen<map <text,text>>,
- *   PRIMARY KEY ((genre), year, title)
- * ) WITH CLUSTERING ORDER BY (year DESC, title ASC);
- * 
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
 public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
   
-    private static final String WORKING_KEYSPACE = "astra_sdk_keyspacec_test";
+    private static final String WORKING_KEYSPACE = "sdk_test_ks";
     private static final String WORKING_TABLE    = "videos";
     
     private static ApiRestClient clientApiRest;
@@ -42,6 +35,13 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     @BeforeAll
     public static void config() {
         System.out.println(ANSI_YELLOW + "[T05_RestApi_IntegrationTest]" + ANSI_RESET);
+        
+        client = AstraClient.builder()
+                .databaseId("f420bc37-b22e-44fc-8371-72fe2202f07d")
+                .cloudProviderRegion("eu-central-1")
+                .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
+                .build();
+        
         clientApiRest = client.apiRest();
     }
     
@@ -156,7 +156,6 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace found");
     }
     
-    
     @Test
     @Order(6)
     public void shoud_delete_keyspace() throws InterruptedException {
@@ -179,29 +178,171 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     }
     
     // CRUD ON TABLES
+    
+    /*
+    * CREATE TABLE IF NOT EXISTS videos (
+    *   genre     text,
+    *   year      int,
+    *   title     text,
+    *   upload    timestamp,
+    *   tags      set <text>,
+    *   frames    list<int>,
+    *   tuples    tuple<text,text,text>,
+    *   formats   frozen<map <text,text>>,
+    *   PRIMARY KEY ((genre), year, title)
+    * ) WITH CLUSTERING ORDER BY (year DESC, title ASC);
+    * 
+    */
     @Test
     @Order(7)
-    public void should_create_new_table() 
+    public void should_create_table() 
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#07 Create a table" + ANSI_RESET);
-        Assertions.assertFalse(clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE).exist());
-        clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(clientApiRest.keyspace(WORKING_KEYSPACE).exist());
+        TableClient tc = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE + "_tmp");
+        if (tc.exist()) {
+            tc.delete();
+            int wait = 0;
+            while (wait++ < 10 && tc.exist()) {
+                Thread.sleep(1000);
+            }
+        }
+        Assertions.assertFalse(tc.exist());
+        // Core Request
+        CreateTable tcr = new CreateTable();
+        tcr.setIfNotExists(true);
+        tcr.getColumnDefinitions().add(new ColumnDefinition("genre", "text"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("year", "int"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("title", "text"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("upload", "timestamp"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("tags", "set<text>"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("frames", "list<int>"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("tuples", "tuple<text,text,text>"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("formats", "frozen<map <text,text>>"));
+        tcr.getPrimaryKey().getPartitionKey().add("genre");
+        tcr.getPrimaryKey().getClusteringKey().add("year");
+        tcr.getPrimaryKey().getClusteringKey().add("title");
+        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("year", ClusteringOrder.DESC));
+        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("title", ClusteringOrder.ASC));
+        tc.create(tcr);
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating table " + WORKING_TABLE + "_tmp");
+        int wait = 0;
+        while (wait++ < 10 && !clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE + "_tmp").exist()) {
+            Thread.sleep(1000);
+        }
+        Assertions.assertTrue(clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE + "_tmp").exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table " + WORKING_TABLE + "_tmp now exists.");
+        
+        
+        TableClient working_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        if (working_table.exist()) {
+            working_table.delete();
+            wait = 0;
+            while (wait++ < 10 && working_table.exist()) {
+                Thread.sleep(1000);
+            }
+        }
+        Assertions.assertFalse(working_table.exist());
+        
+        // With a Builder
+        working_table.create(CreateTable.builder()
+                       .ifNotExist(true)
+                       .addPartitionKey("genre", "text")
+                       .addClusteringKey("year", "int", ClusteringOrder.DESC)
+                       .addClusteringKey("title", "text", ClusteringOrder.ASC)
+                       .addColumn("upload", "timestamp")
+                       .addColumn("tags", "set<text>")
+                       .addColumn("frames", "list<int>")
+                       .addColumn("tuples", "tuple<text,text,text>")
+                       .addColumn("formats", "frozen<map <text,text>>")
+                       .build());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating table " + WORKING_TABLE);
+        wait = 0;
+        while (wait++ < 10 && !working_table.exist()) {
+            Thread.sleep(1000);
+        }
+        Assertions.assertTrue(working_table.exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table " + WORKING_TABLE + " now exists.");
     }
     
     @Test
     @Order(8)
-    public void should_list_tables_names() 
+    public void should_list_tables_definition() 
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#08 List tables names in a keyspace" + ANSI_RESET);
-        clientApiRest.keyspace(WORKING_KEYSPACE).tableNames();
+        System.out.println(ANSI_YELLOW + "\n#08 List tables in a keyspace" + ANSI_RESET);
+        Assertions.assertTrue(clientApiRest
+                .keyspace(WORKING_KEYSPACE)
+                .tables().count() > 0);
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - List OK");
     }
     
     @Test
     @Order(9)
-    public void should_list_tables_definition() 
+    public void should_table_find() 
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#09 List tables definition in a keyspace" + ANSI_RESET);
-       
+        System.out.println(ANSI_YELLOW + "\n#09 Table find" + ANSI_RESET);
+        Optional<TableDefinition> otd = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE).find();
+        Assertions.assertTrue(otd.isPresent());
+        Assertions.assertEquals("genre", otd.get().getPrimaryKey().getPartitionKey().get(0));
+        Assertions.assertEquals("year", otd.get().getPrimaryKey().getClusteringKey().get(0));
+        Assertions.assertEquals("title", otd.get().getPrimaryKey().getClusteringKey().get(1));
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Working table found");
+    }
+    
+    @Test
+    @Order(10)
+    public void should_list_tables_names() 
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#10 List tables names in a keyspace" + ANSI_RESET);
+        Assertions.assertTrue(clientApiRest
+                .keyspace(WORKING_KEYSPACE)
+                .tableNames().count()>0);
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Name list OK");
+    }
+    
+    @Test
+    @Order(11)
+    public void should_table_exist() 
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#11 Table exist" + ANSI_RESET);
+        Assertions.assertTrue(clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE).exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Working table found");
+    }
+    
+    @Test
+    @Order(12)
+    public void should_delete_table_exist() 
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#12 Delete a table" + ANSI_RESET);
+        // Given
+        Assertions.assertTrue(clientApiRest
+                .keyspace(WORKING_KEYSPACE)
+                .exist());
+        Assertions.assertTrue(clientApiRest
+                .keyspace(WORKING_KEYSPACE)
+                .table(WORKING_TABLE + "_tmp")
+                .exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Target table exist");
+        // When
+        clientApiRest
+            .keyspace(WORKING_KEYSPACE)
+            .table(WORKING_TABLE + "_tmp").delete();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Delete request sent");
+        
+        int wait = 0;
+        while (wait++ < 10 && clientApiRest
+                .keyspace(WORKING_KEYSPACE)
+                .table(WORKING_TABLE + "_tmp").exist()) {
+            Thread.sleep(1000);
+        }
+        
+        // Then
+        Assertions.assertFalse(clientApiRest
+                .keyspace(WORKING_KEYSPACE)
+                .table(WORKING_TABLE + "_tmp")
+                .exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Target table has been deleted");
+        
     }
     
     // CRUD ON COLUMNS

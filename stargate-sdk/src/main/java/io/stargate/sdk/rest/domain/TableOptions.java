@@ -3,6 +3,11 @@ package io.stargate.sdk.rest.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Configuration at table level.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class TableOptions {
     
     /*
@@ -16,9 +21,22 @@ public class TableOptions {
     
     private List<ClusteringExpression> clusteringExpression = new ArrayList<>();
     
+    /**
+     * Default Constructor.
+     */
+    public TableOptions() {}
     
-    
-   
+    /**
+     * Constructor with Parameters.
+     * @param ttl
+     *      defaultTimeToLive
+     * @param cols
+     *      clustering expressions
+     */
+    public TableOptions(int ttl,  List<ClusteringExpression> cols) {
+        this.defaultTimeToLive    = ttl;
+        this.clusteringExpression = cols;
+    }
 
     /**
      * Getter accessor for attribute 'defaultTimeToLive'.

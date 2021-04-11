@@ -1,6 +1,11 @@
 package io.stargate.sdk.rest.domain;
 
-public enum ClusteringOrder { 
-    asc,
-    desc 
+/**
+ * Clustering order in table definition
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
+public enum ClusteringOrder {  
+    ASC,
+    DESC 
 }
