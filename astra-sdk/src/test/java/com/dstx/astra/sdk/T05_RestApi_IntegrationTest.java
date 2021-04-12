@@ -19,6 +19,7 @@ import io.stargate.sdk.rest.domain.ClusteringOrder;
 import io.stargate.sdk.rest.domain.ColumnDefinition;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.TableDefinition;
+import io.stargate.sdk.rest.domain.TableOptions;
 
 /**
  * DATASET
@@ -345,11 +346,108 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         
     }
     
-    // CRUD ON COLUMNS
-    
-    public void should_create_new_columns() {
+    @Test
+    @Order(13)
+    public void should_update_tableOptions()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#13 Update table metadata" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
+        Assertions.assertTrue(tmp_table.exist());
+        Assertions.assertNotEquals(25, tmp_table.find().get().getTableOptions().getDefaultTimeToLive());
+        // When
+        tmp_table.updateOptions(new TableOptions(25, null));
+        // Then
+        Assertions.assertNotEquals(25, tmp_table.find().get().getTableOptions().getDefaultTimeToLive());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table updated");
+        tmp_table.updateOptions(new TableOptions(0,null));
     }
     
+    @Test
+    @Order(14)
+    public void should_list_columns()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#14 list columns" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
+        Assertions.assertTrue(tmp_table.exist());
+        // When
+        Assertions.assertTrue(tmp_table.columns().filter(c -> "frames".equalsIgnoreCase(c.getName())).findFirst().isPresent());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Expected columns OK");
+        // When
+        Assertions.assertTrue(tmp_table.columnNames().collect(Collectors.toList()).contains("frames"));
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Expected columns names OK");
+        
+    }
+    
+    @Test
+    @Order(15)
+    public void should_find_a_columns()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#15 Find a column" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
+        Assertions.assertTrue(tmp_table.exist());
+        // When
+        Assertions.assertTrue(tmp_table.column("frames").find().isPresent());
+        Assertions.assertTrue(tmp_table.column("frames").exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column found");
+    }
+        
+    @Test
+    @Order(16)
+    public void should_create_a_columns()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#16 Create a column" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
+        Assertions.assertTrue(tmp_table.exist());
+        Assertions.assertFalse(tmp_table.column("custom").find().isPresent());
+        // Given
+        tmp_table.column("custom").create(new ColumnDefinition("custom", "text"));
+        // Then
+        Assertions.assertTrue(tmp_table.column("custom").find().isPresent());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column created");
+    }
+    
+    @Test
+    @Order(17)
+    public void should_delete_a_columns()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#17 Delete a column" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
+        Assertions.assertTrue(tmp_table.exist());
+        Assertions.assertTrue(tmp_table.column("custom").find().isPresent());
+        // Given
+        tmp_table.column("custom").delete();
+        // Then
+        Assertions.assertFalse(tmp_table.column("custom").find().isPresent());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Deleted");
+    }
+    
+    
+    @Test
+    @Order(18)
+    public void should_rename_a_columns()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#18 Updating a column" + ANSI_RESET);
+        
+        // Resource not working
+        
+        /* Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
+        if (!tmp_table.column("custom").exist()) {
+            tmp_table.column("custom").create(new ColumnDefinition("custom", "text"));
+        }
+        Assertions.assertTrue(tmp_table.column("custom").find().isPresent());
+        // When
+        tmp_table.column("custom").rename("renamed");
+        // Then
+        Assertions.assertTrue(tmp_table.column("renamed").find().isPresent());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Updated");
+        */
+    }
     
     // CRUD ON DATA
     

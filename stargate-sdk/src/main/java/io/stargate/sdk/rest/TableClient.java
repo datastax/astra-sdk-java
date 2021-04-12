@@ -23,6 +23,7 @@ import io.stargate.sdk.rest.domain.RowMapper;
 import io.stargate.sdk.rest.domain.RowResultPage;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.TableDefinition;
+import io.stargate.sdk.rest.domain.TableOptions;
 import io.stargate.sdk.rest.exception.TableNotFoundException;
 import io.stargate.sdk.utils.Assert;
 
@@ -138,13 +139,18 @@ public class TableClient {
         handleError(response);
     }
     
-    public void update(CreateTable tcr) {
-        Assert.notNull(tcr, "TableCreationRequest");
+    public void updateOptions(TableOptions to) {
+        Assert.notNull(to, "TableCreationRequest");
         HttpResponse<String> response;
         try {
-            String reqBody = getObjectMapper().writeValueAsString(tcr);
+           CreateTable ct = CreateTable.builder().build();
+           ct.setPrimaryKey(null);
+           ct.setColumnDefinitions(null);
+           ct.setName(tableName);
+           ct.setTableOptions(to);
+           String reqBody = getObjectMapper().writeValueAsString(ct);
            response = getHttpClient().send(
-                   startRequest(keyspaceClient.getEndPointSchemaKeyspace() + "/tables/", restClient.getToken())
+                   startRequest(getEndPointSchemaCurrentTable() , restClient.getToken())
                    .PUT(BodyPublishers.ofString(reqBody)).build(),
                    BodyHandlers.ofString());
         } catch (Exception e) {
@@ -153,9 +159,11 @@ public class TableClient {
         handleError(response);
     }
     
-    
-    //Delete a table
-    //https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
+    /*
+     * Delete a table
+     *
+     * @see https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
+     */
     public void delete() {
         HttpResponse<String> response;
         try {
@@ -172,6 +180,8 @@ public class TableClient {
         handleError(response);
     }
     
+    // DATA
+    
     public RowResultPage search(Object query) {
         return null;
     }
@@ -185,6 +195,16 @@ public class TableClient {
      */
     public ColumnsClient column(String columnId) {
         return new ColumnsClient(restClient, keyspaceClient, this, columnId);
+    }
+
+    /**
+     * Getter accessor for attribute 'tableName'.
+     *
+     * @return
+     *       current value of 'tableName'
+     */
+    public String getTableName() {
+        return tableName;
     }
     
 
