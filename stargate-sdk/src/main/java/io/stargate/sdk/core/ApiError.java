@@ -1,4 +1,4 @@
-package io.stargate.sdk.utils;
+package io.stargate.sdk.core;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import java.io.Serializable;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StargateApiError implements Serializable {
+public class ApiError implements Serializable {
     
     /** Serial number. */
     private static final long serialVersionUID = 1312739916968639792L;

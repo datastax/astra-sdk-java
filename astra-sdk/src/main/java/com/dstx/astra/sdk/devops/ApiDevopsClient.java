@@ -24,7 +24,7 @@ import com.dstx.astra.sdk.devops.res.Database;
 import com.dstx.astra.sdk.devops.res.DatabaseAvailableRegion;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.stargate.sdk.utils.ApiSupport;
+import io.stargate.sdk.core.ApiSupport;
 import io.stargate.sdk.utils.Assert;
 import io.stargate.sdk.utils.Utils;
 

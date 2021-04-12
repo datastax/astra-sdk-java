@@ -1,11 +1,11 @@
 package io.stargate.sdk.doc;
 
+import static io.stargate.sdk.core.ApiSupport.getHttpClient;
+import static io.stargate.sdk.core.ApiSupport.getObjectMapper;
+import static io.stargate.sdk.core.ApiSupport.handleError;
+import static io.stargate.sdk.core.ApiSupport.startRequest;
 import static io.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
 import static io.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
-import static io.stargate.sdk.utils.ApiSupport.getHttpClient;
-import static io.stargate.sdk.utils.ApiSupport.getObjectMapper;
-import static io.stargate.sdk.utils.ApiSupport.handleError;
-import static io.stargate.sdk.utils.ApiSupport.startRequest;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -18,13 +18,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.stargate.sdk.doc.QueryDocument.QueryDocumentBuilder;
-import io.stargate.sdk.exception.CollectionNotFoundException;
-import io.stargate.sdk.utils.ApiResponse;
+import io.stargate.sdk.core.ApiResponse;
+import io.stargate.sdk.doc.domain.CollectionDefinition;
+import io.stargate.sdk.doc.domain.DocumentResultPage;
+import io.stargate.sdk.doc.domain.QueryDocument;
+import io.stargate.sdk.doc.domain.QueryDocument.QueryDocumentBuilder;
+import io.stargate.sdk.doc.exception.CollectionNotFoundException;
 import io.stargate.sdk.utils.Assert;
 import io.stargate.sdk.utils.JsonUtils;
 
@@ -54,6 +58,7 @@ public class CollectionClient {
         this.docClient     = docClient;
         this.namespaceClient = namespaceClient;
         this.collectionName  = collectionName;
+        Assert.hasLength(collectionName, "collectionName");
     }
     
     /**
@@ -64,15 +69,27 @@ public class CollectionClient {
     }
     
     /**
+     * Get metadata of the collection. There is no dedicated resources we
+     * use the list and filter with what we need.
+     *
+     * @return
+     *      metadata of the collection if its exist or empty
+     */
+    public Optional<CollectionDefinition> find() {
+        return namespaceClient.collections()
+                .filter(c -> collectionName.equalsIgnoreCase(c.getName()))
+                .findFirst();
+    }
+    
+    /**
      * Check if the collection exist.
      */
     public boolean exist() {
-        Assert.hasLength(collectionName, "collectionName");
-        return namespaceClient.collectionNames().anyMatch(collectionName::equals);
+        return namespaceClient.collectionNames()
+                .anyMatch(collectionName::equals);
     }
     
     public void create() {
-        Assert.hasLength(collectionName, "collectionName");
         String createColEndpoint = docClient.getEndPointApiDocument() 
                 + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
                 + PATH_COLLECTIONS;
@@ -89,7 +106,6 @@ public class CollectionClient {
     }
     
     public void delete() {
-        Assert.hasLength(collectionName, "collectionName");
         String delColEndpoint = docClient.getEndPointApiDocument() 
                 + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
                 + PATH_COLLECTIONS + "/" + collectionName;
@@ -166,16 +182,16 @@ public class CollectionClient {
      * Result is (always) paged, default page sze is 50, API only allow 100 MAX.
      * Here we get first page as we do not provide paging state
      */
-    public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz) {
+    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz) {
         return findAll(clazz, QueryDocument.DEFAULT_PAGING_SIZE);
     }
-    public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz, int pageSize) {
+    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, int pageSize) {
         return findAll(clazz, pageSize, null);
     }
-    public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz, String pageState) {
+    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, String pageState) {
         return findAll(clazz, QueryDocument.DEFAULT_PAGING_SIZE, pageState);
     }
-    public <DOC> ResultListPage<DOC> findAll(Class<DOC> clazz, int pageSize, String pageState) {
+    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, int pageSize, String pageState) {
         QueryDocumentBuilder builder = QueryDocument.builder().withPageSize(pageSize);
         if (null != pageState) {
             builder.withPageState(pageState);
@@ -184,7 +200,7 @@ public class CollectionClient {
     }
     
     //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
-    public <DOC> ResultListPage<DOC> search(QueryDocument query, Class<DOC> clazz) {
+    public <DOC> DocumentResultPage<DOC> search(QueryDocument query, Class<DOC> clazz) {
         Objects.requireNonNull(clazz);
         HttpResponse<String> response;
         try {
@@ -204,7 +220,7 @@ public class CollectionClient {
                      .readValue(response.body(), 
                              new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){});
              
-            return new ResultListPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()
+            return new DocumentResultPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()
                     .entrySet().stream()
                     .map(doc -> new ApiDocument<DOC>(doc.getKey(), getObjectMapper().convertValue(doc.getValue(), clazz)))
                     .collect(Collectors.toList()));

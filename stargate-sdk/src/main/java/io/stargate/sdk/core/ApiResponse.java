@@ -1,4 +1,4 @@
-package io.stargate.sdk.utils;
+package io.stargate.sdk.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

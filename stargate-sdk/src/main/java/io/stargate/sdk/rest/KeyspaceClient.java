@@ -1,26 +1,33 @@
 package io.stargate.sdk.rest;
 
 
+import static io.stargate.sdk.core.ApiSupport.PATH_SCHEMA;
+import static io.stargate.sdk.core.ApiSupport.getHttpClient;
+import static io.stargate.sdk.core.ApiSupport.getObjectMapper;
+import static io.stargate.sdk.core.ApiSupport.handleError;
+import static io.stargate.sdk.core.ApiSupport.startRequest;
 import static io.stargate.sdk.rest.ApiRestClient.PATH_SCHEMA_KEYSPACES;
-import static io.stargate.sdk.utils.ApiSupport.PATH_SCHEMA;
-import static io.stargate.sdk.utils.ApiSupport.getHttpClient;
-import static io.stargate.sdk.utils.ApiSupport.getObjectMapper;
-import static io.stargate.sdk.utils.ApiSupport.handleError;
-import static io.stargate.sdk.utils.ApiSupport.startRequest;
 
 import java.net.HttpURLConnection;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.stargate.sdk.utils.ApiResponse;
+import io.stargate.sdk.core.ApiResponse;
+import io.stargate.sdk.core.DataCenter;
+import io.stargate.sdk.doc.domain.Namespace;
+import io.stargate.sdk.rest.domain.CreateTable;
+import io.stargate.sdk.rest.domain.Keyspace;
+import io.stargate.sdk.rest.domain.TableDefinition;
 import io.stargate.sdk.utils.Assert;
 
 /**
@@ -36,6 +43,9 @@ public class KeyspaceClient {
     /** Namespace. */
     private final String keyspace;
     
+    /** Hold a reference to client to keep singletons.*/
+    private Map <String, TableClient> tablesClient = new HashMap<>();
+    
     /**
      * Full constructor.
      */
@@ -44,14 +54,17 @@ public class KeyspaceClient {
         this.keyspace = keyspace;
     }
     
-    private String getEndPointSchemaKeyspace() {
+    public String getEndPointSchemaKeyspace() {
         return restclient.getEndPointApiRest()
                 + PATH_SCHEMA 
                 + PATH_SCHEMA_KEYSPACES
                 + "/" + keyspace;
     }
+    
     /**
      * Find a namespace and its metadata based on its id
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspace
      */
     public Optional<Keyspace> find() {
         Assert.hasLength(keyspace, "keyspace id");
@@ -59,7 +72,8 @@ public class KeyspaceClient {
         HttpResponse<String> response;
         try {
              response = getHttpClient().send(
-                     startRequest(getEndPointSchemaKeyspace(), restclient.getToken()).GET().build(), 
+                     startRequest(getEndPointSchemaKeyspace(), 
+                     restclient.getToken()).GET().build(), 
                      BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot find keyspace " + keyspace, e);
@@ -93,7 +107,9 @@ public class KeyspaceClient {
     }
     
     /**
-     * Create a namespace. (not allowed on ASTRA yet)
+     * Create a keyspace providing the replications per Datacenter.
+     *
+     * - IF NOT EXIST is always applied.
      */
     public void create(DataCenter... datacenters) {
         Assert.notNull(keyspace, "keyspace");
@@ -110,6 +126,26 @@ public class KeyspaceClient {
             
         } catch (Exception e) {
             throw new RuntimeException("Cannot create keyspace " + keyspace, e);
+        }
+        handleError(response);
+    }
+    
+    /**
+     * Create a namespace.
+     */
+    public void createSimple(int replicas) {
+        Assert.notNull(keyspace, "namespace");
+        Assert.isTrue(replicas>0, "Replica number should be bigger than 0");
+        String endpoint = restclient.getEndPointApiRest() + PATH_SCHEMA + PATH_SCHEMA_KEYSPACES;
+        HttpResponse<String> response;
+        try {
+            String reqBody = getObjectMapper().writeValueAsString(
+                    new Namespace(keyspace, replicas));
+            response = getHttpClient().send(
+                  startRequest(endpoint, restclient.getToken())
+                  .POST(BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot find namespace " + keyspace, e);
         }
         handleError(response);
     }
@@ -137,7 +173,6 @@ public class KeyspaceClient {
      * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getTables
      */
     public Stream<TableDefinition> tables() {
-        
         HttpResponse<String> response;
         try {
             // Invoke
@@ -171,7 +206,18 @@ public class KeyspaceClient {
      * Move to the Table client
      */
     public TableClient table(String tableName) {
-        return new TableClient(restclient, this, tableName);
+        Assert.hasLength(tableName, "tableName");
+        if (!tablesClient.containsKey(tableName)) {
+            tablesClient.put(tableName, new TableClient(restclient, this, tableName));
+        }
+        return tablesClient.get(tableName);
+    }
+    
+    /**
+     * Syntax sugar more easier to understand in a fluent API.
+     */
+    public void createTable(String tableName, CreateTable ct) {
+        table(tableName).create(ct);
     }
     
     /**

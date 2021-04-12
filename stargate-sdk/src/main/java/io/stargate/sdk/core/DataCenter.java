@@ -1,4 +1,4 @@
-package io.stargate.sdk.rest;
+package io.stargate.sdk.core;
 
 /**
  * Bean DataCenter.
@@ -7,9 +7,9 @@ package io.stargate.sdk.rest;
  */
 public class DataCenter {
 
-    String name;
+    private String name;
     
-    int replicas = 1;
+    private int replicas = 1;
     
     public DataCenter() {}
     

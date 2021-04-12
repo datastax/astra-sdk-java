@@ -1,4 +1,4 @@
-package io.stargate.sdk.doc;
+package io.stargate.sdk.core;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import java.util.Optional;
  * @param <DOC>
  *      document type
  */
-public class ResultListPage< DOC > {
+public class ResultPage<R> {
  
     /** size of page asked. */
     private final int pageSize;
@@ -20,9 +20,9 @@ public class ResultListPage< DOC > {
     private final String pageState;
     
     /** list of results matchin the request. */
-    private final List< ApiDocument<DOC>> results;
+    private final List< R > results;
     
-    public ResultListPage() {
+    public ResultPage() {
         this.pageSize  = 0;
         this.pageState = null;
         this.results   = null;
@@ -30,7 +30,7 @@ public class ResultListPage< DOC > {
     /**
      * Default constructor.
      */
-    public ResultListPage(int pageSize, String pageState, List<ApiDocument<DOC>> results) {
+    public ResultPage(int pageSize, String pageState, List<R> results) {
         this.pageSize  = pageSize;
         this.pageState = pageState;
         this.results   = results;
@@ -62,7 +62,7 @@ public class ResultListPage< DOC > {
      * @return
      *       current value of 'results'
      */
-    public List<ApiDocument<DOC>> getResults() {
+    public List<R> getResults() {
         return results;
     }
 }

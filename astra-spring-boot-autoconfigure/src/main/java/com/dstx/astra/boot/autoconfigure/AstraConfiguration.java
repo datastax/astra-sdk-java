@@ -35,11 +35,32 @@ public class AstraConfiguration {
         /* 
          * Load properties and initialize the client
          */
-        ;
-        AstraClientBuilder builder = AstraClient.builder()
-             .databaseId(astraClientProperties.getDatabaseId())
-             .cloudProviderRegion(astraClientProperties.getCloudRegion())
-             .appToken(astraClientProperties.getApplicationToken());
+        AstraClientBuilder builder = AstraClient.builder();
+        
+        if (null != astraClientProperties.getDatabaseId() &&
+                !"".equals(astraClientProperties.getDatabaseId())) {
+            builder = builder.databaseId(astraClientProperties.getDatabaseId());  
+        }
+        
+        if (null != astraClientProperties.getCloudRegion() &&
+                !"".equals(astraClientProperties.getCloudRegion())) {
+            builder = builder.cloudProviderRegion(astraClientProperties.getCloudRegion());  
+        }
+        
+        if (null != astraClientProperties.getApplicationToken() &&
+                !"".equals(astraClientProperties.getApplicationToken())) {
+            builder = builder.appToken(astraClientProperties.getApplicationToken());  
+        }
+        
+        if (null != astraClientProperties.getClientId() &&
+                !"".equals(astraClientProperties.getClientId())) {
+            builder = builder.clientId(astraClientProperties.getClientId());  
+        }
+        
+        if (null != astraClientProperties.getClientSecret() &&
+                !"".equals(astraClientProperties.getClientSecret())) {
+            builder = builder.clientSecret(astraClientProperties.getClientSecret());  
+        }
         
         if (null != astraClientProperties.getSecureConnectBundlePath() &&
             !"".equals(astraClientProperties.getSecureConnectBundlePath())) {

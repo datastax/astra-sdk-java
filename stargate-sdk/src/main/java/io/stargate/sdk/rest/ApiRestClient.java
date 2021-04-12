@@ -14,9 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.stargate.sdk.doc.Namespace;
-import io.stargate.sdk.utils.ApiResponse;
-import io.stargate.sdk.utils.ApiSupport;
+import io.stargate.sdk.core.ApiResponse;
+import io.stargate.sdk.core.ApiSupport;
+import io.stargate.sdk.doc.domain.Namespace;
+import io.stargate.sdk.rest.domain.Keyspace;
 
 /**
  * Working with REST API and part of schemas with tables and keyspaces;

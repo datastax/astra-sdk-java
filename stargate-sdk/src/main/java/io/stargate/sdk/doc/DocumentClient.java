@@ -1,11 +1,11 @@
 package io.stargate.sdk.doc;
 
+import static io.stargate.sdk.core.ApiSupport.getHttpClient;
+import static io.stargate.sdk.core.ApiSupport.getObjectMapper;
+import static io.stargate.sdk.core.ApiSupport.handleError;
+import static io.stargate.sdk.core.ApiSupport.startRequest;
 import static io.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
 import static io.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
-import static io.stargate.sdk.utils.ApiSupport.getHttpClient;
-import static io.stargate.sdk.utils.ApiSupport.getObjectMapper;
-import static io.stargate.sdk.utils.ApiSupport.handleError;
-import static io.stargate.sdk.utils.ApiSupport.startRequest;
 
 import java.io.Serializable;
 import java.net.HttpURLConnection;
