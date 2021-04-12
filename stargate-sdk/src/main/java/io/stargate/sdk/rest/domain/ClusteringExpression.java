@@ -12,7 +12,7 @@ public class ClusteringExpression implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -910292385355052561L;
 
-    private ClusteringOrder order;
+    private Ordering order;
     
     private String column;
     
@@ -22,7 +22,7 @@ public class ClusteringExpression implements Serializable {
     public ClusteringExpression() {
     }
     
-    public ClusteringExpression(String column, ClusteringOrder order) {
+    public ClusteringExpression(String column, Ordering order) {
         super();
         this.order = order;
         this.column = column;
@@ -34,7 +34,7 @@ public class ClusteringExpression implements Serializable {
      * @return
      *       current value of 'order'
      */
-    public ClusteringOrder getOrder() {
+    public Ordering getOrder() {
         return order;
     }
     
@@ -43,7 +43,7 @@ public class ClusteringExpression implements Serializable {
      * @param order
      *      new value for 'order '
      */
-    public void setOrder(ClusteringOrder order) {
+    public void setOrder(Ordering order) {
         this.order = order;
     }
     

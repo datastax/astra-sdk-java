@@ -15,7 +15,10 @@ import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.rest.ApiRestClient;
 import io.stargate.sdk.rest.TableClient;
 import io.stargate.sdk.rest.domain.ClusteringExpression;
-import io.stargate.sdk.rest.domain.ClusteringOrder;
+import io.stargate.sdk.rest.domain.Ordering;
+import io.stargate.sdk.rest.domain.QueryRowsByPrimaryKey;
+import io.stargate.sdk.rest.domain.Row;
+import io.stargate.sdk.rest.domain.RowResultPage;
 import io.stargate.sdk.rest.domain.ColumnDefinition;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.TableDefinition;
@@ -223,8 +226,8 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         tcr.getPrimaryKey().getPartitionKey().add("genre");
         tcr.getPrimaryKey().getClusteringKey().add("year");
         tcr.getPrimaryKey().getClusteringKey().add("title");
-        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("year", ClusteringOrder.DESC));
-        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("title", ClusteringOrder.ASC));
+        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("year", Ordering.DESC));
+        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("title", Ordering.ASC));
         tc.create(tcr);
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating table " + WORKING_TABLE + "_tmp");
         int wait = 0;
@@ -249,8 +252,8 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         working_table.create(CreateTable.builder()
                        .ifNotExist(true)
                        .addPartitionKey("genre", "text")
-                       .addClusteringKey("year", "int", ClusteringOrder.DESC)
-                       .addClusteringKey("title", "text", ClusteringOrder.ASC)
+                       .addClusteringKey("year", "int", Ordering.DESC)
+                       .addClusteringKey("title", "text", Ordering.ASC)
                        .addColumn("upload", "timestamp")
                        .addColumn("tags", "set<text>")
                        .addColumn("frames", "list<int>")
@@ -426,7 +429,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Deleted");
     }
     
-    
+    // non working method at Stargate LEVEL
     @Test
     @Order(18)
     public void should_rename_a_columns()
@@ -447,6 +450,26 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         Assertions.assertTrue(tmp_table.column("renamed").find().isPresent());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Updated");
         */
+    }
+    
+    // Still need to implement addData to automate this test but good results
+    @Test
+    @Order(19)
+    public void should_find_rows_fromPK()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#19 Retrieve row from primaryKey" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tmp_table.exist());
+        
+        RowResultPage rrp = tmp_table.findByPrimaryKey(QueryRowsByPrimaryKey.builder()
+                .primaryKey("Action","2021")
+                .addSortedField("year", Ordering.ASC)
+                .build());
+        for (Row row : rrp.getResults()) {
+            System.out.println(row.get("title").toString() + " -- " + row.get("year").toString());
+        }
+        
     }
     
     // CRUD ON DATA

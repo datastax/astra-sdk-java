@@ -5,7 +5,7 @@ package io.stargate.sdk.rest.domain;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public enum ClusteringOrder {  
+public enum Ordering {  
     ASC,
     DESC 
 }

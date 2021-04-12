@@ -59,7 +59,7 @@ public class CreateTable implements Serializable {
         
         private Map<String, ColumnDefinition> cc = new HashMap<>();
         
-        private Map<String, ClusteringOrder>  ccOrder = new HashMap<>();
+        private Map<String, Ordering>  ccOrder = new HashMap<>();
         
         private Map<String, ColumnDefinition> cols = new HashMap<>();
         
@@ -110,7 +110,7 @@ public class CreateTable implements Serializable {
             return this;
         }
         
-        public CreateTableBuilder addClusteringKey(String name, String type, ClusteringOrder order) {
+        public CreateTableBuilder addClusteringKey(String name, String type, Ordering order) {
             if (pk.containsKey(name)) {
                 throw new IllegalArgumentException("Cannot add partitionKey column " + name + ", it has already been defined as partition key");
             }
