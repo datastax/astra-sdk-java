@@ -164,8 +164,6 @@ public class ColumnsClient {
         try {
            String reqBody = getObjectMapper().writeValueAsString(
                    new ColumnDefinition(newName, find().get().getTypeDefinition()));
-           System.out.println(reqBody);
-           System.out.println(getEndPointSchemaCurrentColumn());
            response = getHttpClient()
                    .send(startRequest(
                           getEndPointSchemaCurrentColumn(), restClient.getToken())

@@ -12,6 +12,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.stargate.sdk.core.ApiResponse;
 import io.stargate.sdk.core.ResultPage;
 import io.stargate.sdk.rest.domain.ColumnDefinition;
+import io.stargate.sdk.rest.domain.CreateIndex;
 import io.stargate.sdk.rest.domain.CreateTable;
+import io.stargate.sdk.rest.domain.IndexDefinition;
 import io.stargate.sdk.rest.domain.QueryRowsByPrimaryKey;
 import io.stargate.sdk.rest.domain.Row;
 import io.stargate.sdk.rest.domain.RowMapper;
@@ -53,6 +56,13 @@ public class TableClient {
     
     /** Collection name. */
     private final String tableName;
+    
+    /** Hold a reference to client to keep singletons.*/
+    private Map <String, ColumnsClient> columnsClient = new HashMap<>();
+    
+    /** Hold a reference to client to keep singletons.*/
+    private Map <String, IndexClient> indexsClient = new HashMap<>();
+    
     
     /**
      * Full constructor.
@@ -136,6 +146,51 @@ public class TableClient {
         }
     }
     
+    public void createIndex(String idxName, CreateIndex ci) {
+        index(idxName).create(ci);
+    }
+    
+    public void createColumn(String colName, ColumnDefinition cd) {
+        column(colName).create(cd);
+    }
+    
+    /**
+     * Retrieve All indexes for a table.
+     *
+     * @return
+     *      Sream of {@link IndexDefinition} to describe a table
+     */
+    public Stream<IndexDefinition> indexes() {
+        HttpResponse<String> response;
+        try {
+            // Invoke
+            response = getHttpClient().send(
+                    startRequest(getEndPointTableSchema() + "/indexes", restClient.getToken())
+                    .GET().build(), BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot retrieve indexes list for a table", e);
+        }
+        handleError(response);
+        try {
+            TypeReference<List<IndexDefinition>> expectedType = new TypeReference<>(){};
+            return getObjectMapper().readValue(response.body(), expectedType)
+                                    .stream()
+                                    .collect(Collectors.toSet()).stream();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall collection list", e);
+        }
+    }
+    
+    /**
+     * Retrieve All column names.
+     * 
+     * @return
+     *      a list of columns names;
+     */
+    public  Stream<String> indexesNames() {
+        return indexes().map(IndexDefinition::getIndex_name);
+    }
+    
     /**
      * Retrieve All column names.
      * 
@@ -207,6 +262,22 @@ public class TableClient {
             throw new TableNotFoundException(tableName);
         }
         handleError(response);
+    }
+    
+    
+    /**
+     * Retrieve a set of Rows from Primary key value.
+     *
+     * @param query
+     * @return
+     */
+    public <T> ResultPage<T> findByPrimaryKey(QueryRowsByPrimaryKey query, RowMapper<T> mapper) {
+        RowResultPage rrp = findByPrimaryKey(query);
+        return new ResultPage<T>(rrp.getPageSize(), 
+                rrp.getPageState().orElse(null),
+                rrp.getResults().stream()
+                   .map(mapper::map)
+                   .collect(Collectors.toList()));
     }
     
     /**
@@ -295,7 +366,24 @@ public class TableClient {
      * Move to columns client
      */
     public ColumnsClient column(String columnId) {
-        return new ColumnsClient(restClient, keyspaceClient, this, columnId);
+        Assert.hasLength(columnId, "columnName");
+        if (!columnsClient.containsKey(columnId)) {
+            columnsClient.put(columnId, 
+                    new ColumnsClient(restClient, keyspaceClient, this, columnId));
+        }
+        return columnsClient.get(columnId);
+    }
+    
+    /**
+     * Move to columns client
+     */
+    public IndexClient index(String indexName) {
+        Assert.hasLength(indexName, "indexName");
+        if (!indexsClient.containsKey(indexName)) {
+            indexsClient.put(indexName, 
+                    new IndexClient(restClient, keyspaceClient, this, indexName));
+        }
+        return indexsClient.get(indexName);
     }
 
     /**

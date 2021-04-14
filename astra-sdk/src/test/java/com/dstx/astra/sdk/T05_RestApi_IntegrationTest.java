@@ -3,6 +3,8 @@ package com.dstx.astra.sdk;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.datastax.astra.dto.Video;
+import org.datastax.astra.dto.VideoRowMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -15,12 +17,14 @@ import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.rest.ApiRestClient;
 import io.stargate.sdk.rest.TableClient;
 import io.stargate.sdk.rest.domain.ClusteringExpression;
+import io.stargate.sdk.rest.domain.ColumnDefinition;
+import io.stargate.sdk.rest.domain.CreateIndex;
+import io.stargate.sdk.rest.domain.CreateTable;
+import io.stargate.sdk.rest.domain.IndexDefinition;
 import io.stargate.sdk.rest.domain.Ordering;
 import io.stargate.sdk.rest.domain.QueryRowsByPrimaryKey;
 import io.stargate.sdk.rest.domain.Row;
 import io.stargate.sdk.rest.domain.RowResultPage;
-import io.stargate.sdk.rest.domain.ColumnDefinition;
-import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.TableDefinition;
 import io.stargate.sdk.rest.domain.TableOptions;
 
@@ -41,7 +45,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_YELLOW + "[T05_RestApi_IntegrationTest]" + ANSI_RESET);
         
         client = AstraClient.builder()
-                .databaseId("f420bc37-b22e-44fc-8371-72fe2202f07d")
+                .databaseId("8af224f7-1922-491f-a83b-2ebf294ca431")
                 .cloudProviderRegion("eu-central-1")
                 .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
                 .build();
@@ -429,27 +433,23 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Deleted");
     }
     
-    // non working method at Stargate LEVEL
     @Test
     @Order(18)
-    public void should_rename_a_columns()
+    public void should_rename_clustering_columns()
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#18 Updating a column" + ANSI_RESET);
-        
-        // Resource not working
-        
-        /* Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
-        if (!tmp_table.column("custom").exist()) {
-            tmp_table.column("custom").create(new ColumnDefinition("custom", "text"));
-        }
-        Assertions.assertTrue(tmp_table.column("custom").find().isPresent());
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp");
+        Assertions.assertTrue(tmp_table.exist());
+        Assertions.assertTrue(tmp_table.column("title").exist());
+        Assertions.assertTrue(tmp_table.find().get().getPrimaryKey().getClusteringKey().contains("title"));
         // When
-        tmp_table.column("custom").rename("renamed");
+        tmp_table.column("title").rename("new_title");
         // Then
-        Assertions.assertTrue(tmp_table.column("renamed").find().isPresent());
+        Assertions.assertTrue(tmp_table.column("new_title").find().isPresent());
+        // Put back original name
+        tmp_table.column("new_title").rename("title");
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Updated");
-        */
     }
     
     // Still need to implement addData to automate this test but good results
@@ -457,7 +457,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     @Order(19)
     public void should_find_rows_fromPK()
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#19 Retrieve row from primaryKey" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#19 Retrieves row from primaryKey" + ANSI_RESET);
         // Given
         TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
         Assertions.assertTrue(tmp_table.exist());
@@ -469,7 +469,63 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         for (Row row : rrp.getResults()) {
             System.out.println(row.get("title").toString() + " -- " + row.get("year").toString());
         }
+    }
+    
+    @Test
+    @Order(20)
+    public void should_find_rows_withRowMapper()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#20 Retrieve row from primaryKey with RowMapper" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tmp_table.exist());
         
+        tmp_table.findByPrimaryKey(
+            QueryRowsByPrimaryKey.builder()
+                .primaryKey("Action", "2021")
+                .addSortedField("year", Ordering.ASC)
+                .build(), new VideoRowMapper())
+       
+                .getResults()
+                .stream()
+                .map(Video::getGenre)
+                .forEach(System.out::println);
+        
+    }
+    
+    @Test
+    @Order(21)
+    public void should_create_secondaryIndex()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#21 Create Secondary Index" + ANSI_RESET);
+        // Given
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tableVideo.exist());
+        Assertions.assertFalse(tableVideo.index("idx_test").exist());
+        // When
+        tableVideo.index("idx_test").create(
+                CreateIndex.builder().column("title").build());
+        // Then
+        Assertions.assertTrue(tableVideo.index("idx_test").exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Now exist");
+        IndexDefinition idxDef = tableVideo.index("idx_test").find().get();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Index type " + idxDef.getKind());
+    }
+    
+    @Test
+    @Order(21)
+    public void should_delete_secondaryIndex()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#22 Delete Secondary Index" + ANSI_RESET);
+        // Given
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tableVideo.exist());
+        Assertions.assertTrue(tableVideo.index("idx_test").exist());
+        // When
+        tableVideo.index("idx_test").delete();
+        // Then
+        Assertions.assertFalse(tableVideo.index("idx_test").exist());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Index has been deleted");
     }
     
     // CRUD ON DATA
