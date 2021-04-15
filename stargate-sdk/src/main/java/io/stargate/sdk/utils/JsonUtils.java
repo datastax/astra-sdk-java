@@ -80,7 +80,7 @@ public class JsonUtils {
         }
         return output.toString();
     }
-    
+   
     /**
      * Target primitive displayed as JSON.
      *

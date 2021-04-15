@@ -1,5 +1,7 @@
 package com.dstx.astra.sdk;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,7 +24,7 @@ import io.stargate.sdk.rest.domain.CreateIndex;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.IndexDefinition;
 import io.stargate.sdk.rest.domain.Ordering;
-import io.stargate.sdk.rest.domain.QueryRowsByPrimaryKey;
+import io.stargate.sdk.rest.domain.QueryWithKey;
 import io.stargate.sdk.rest.domain.Row;
 import io.stargate.sdk.rest.domain.RowResultPage;
 import io.stargate.sdk.rest.domain.TableDefinition;
@@ -452,52 +454,11 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Updated");
     }
     
-    // Still need to implement addData to automate this test but good results
     @Test
     @Order(19)
-    public void should_find_rows_fromPK()
-    throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#19 Retrieves row from primaryKey" + ANSI_RESET);
-        // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
-        Assertions.assertTrue(tmp_table.exist());
-        
-        RowResultPage rrp = tmp_table.findByPrimaryKey(QueryRowsByPrimaryKey.builder()
-                .primaryKey("Action","2021")
-                .addSortedField("year", Ordering.ASC)
-                .build());
-        for (Row row : rrp.getResults()) {
-            System.out.println(row.get("title").toString() + " -- " + row.get("year").toString());
-        }
-    }
-    
-    @Test
-    @Order(20)
-    public void should_find_rows_withRowMapper()
-    throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#20 Retrieve row from primaryKey with RowMapper" + ANSI_RESET);
-        // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
-        Assertions.assertTrue(tmp_table.exist());
-        
-        tmp_table.findByPrimaryKey(
-            QueryRowsByPrimaryKey.builder()
-                .primaryKey("Action", "2021")
-                .addSortedField("year", Ordering.ASC)
-                .build(), new VideoRowMapper())
-       
-                .getResults()
-                .stream()
-                .map(Video::getGenre)
-                .forEach(System.out::println);
-        
-    }
-    
-    @Test
-    @Order(21)
     public void should_create_secondaryIndex()
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#21 Create Secondary Index" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#19 Create Secondary Index" + ANSI_RESET);
         // Given
         TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
         Assertions.assertTrue(tableVideo.exist());
@@ -513,10 +474,10 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     }
     
     @Test
-    @Order(21)
+    @Order(20)
     public void should_delete_secondaryIndex()
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#22 Delete Secondary Index" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#20 Delete Secondary Index" + ANSI_RESET);
         // Given
         TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
         Assertions.assertTrue(tableVideo.exist());
@@ -528,8 +489,115 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Index has been deleted");
     }
     
-    // CRUD ON DATA
+    // ==============================================================
+    // ========================= DATA ===============================
+    // ==============================================================
     
-    // SEARCH IN DATA
-
+    // Still need to implement addData to automate this test but good results
+    @Test
+    @Order(21)
+    public void should_add_row()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#21 Should add row" + ANSI_RESET);
+        // Given
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tableVideo.exist());
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("genre", "Sci-Fi");
+        data.put("year", 1990);
+        data.put("title", "Test Line");
+        data.put("frames", "[ 1, 2, 3 ]");
+        data.put("formats", "{ '2020':'good', '2019':'okay' }");
+        data.put("tags", "{ 'Emma', 'The Color Purple' }");
+        data.put("tuples", "( 'France', '2016-01-01', '2020-02-02' )");
+        data.put("upload", 1618411879135L);
+        tableVideo.upsert(data);
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Line added");
+        
+        /*
+        {
+            "genre": "Sci-Fi",
+            "year": 1990,
+            "title":"Yes Cedrick Insert Rows",
+            "formats": "{ '2020':'good', '2019':'okay' }",
+            "frames": "[ '1', '2', '3' ]",
+            "tags": "{ 'Emma', 'The Color Purple' }",
+            "tuples": "( 'France', '2016-01-01', '2020-02-02' )",
+            "upload": 1618411879135
+          }
+         */
+        
+        
+    }
+    
+    
+    @Test
+    @Order(22)
+    public void should_delete_row()
+    throws InterruptedException {
+        
+    }
+    
+    @Test
+    @Order(23)
+    public void should_update_row()
+    throws InterruptedException {
+        
+    }
+    
+    @Test
+    @Order(24)
+    public void should_replace_row()
+    throws InterruptedException {
+        
+    }
+        
+    // Still need to implement addData to automate this test but good results
+    @Test
+    @Order(25)
+    public void should_get_rows_pk()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#19 Retrieves row from primaryKey" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tmp_table.exist());
+        
+        RowResultPage rrp = tmp_table.key("Action","2021")
+                .find(QueryWithKey.builder()
+                        .addSortedField("year", Ordering.ASC)
+                        .build());
+        for (Row row : rrp.getResults()) {
+            System.out.println(row.get("title").toString() + " -- " + row.get("year").toString());
+        }
+    }
+    
+    @Test
+    @Order(26)
+    public void should_get_rows_pk_mapper()
+    throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#20 Retrieve row from primaryKey with RowMapper" + ANSI_RESET);
+        // Given
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        Assertions.assertTrue(tmp_table.exist());
+        
+        tmp_table.key("Action", "2021")
+            .find(QueryWithKey.builder()
+                .addSortedField("year", Ordering.ASC)
+                .build(), new VideoRowMapper())
+       
+                .getResults()
+                .stream()
+                .map(Video::getGenre)
+                .forEach(System.out::println);
+    }
+    
+    @Test
+    @Order(24)
+    public void should_rsearch_table()
+    throws InterruptedException {
+        
+    }
+    
+   
 }

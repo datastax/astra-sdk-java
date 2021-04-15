@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.dstx.astra.sdk.AstraClient;
 
-import io.stargate.sdk.core.DataCenter;
-
 @Repository
 public class AstraApplicationConfiguration implements InitializingBean {
     
@@ -26,16 +24,10 @@ public class AstraApplicationConfiguration implements InitializingBean {
     /** {@inheritDoc} */
     @Override
     public void afterPropertiesSet() throws Exception {
-        
-        //LOGGER.info("Released version from Cassandra {}", astraClient.cqlSession()
-        //        .execute("SELECT release_version FROM system.local")
-        //        .one()  
-        //        .getString("release_version"));
-        
-        
-        
+        LOGGER.info("Released version from Cassandra {}", astraClient.cqlSession()
+                .execute("SELECT release_version FROM system.local")
+                .one()  
+                .getString("release_version"));
     }
-    
-   
 
 }

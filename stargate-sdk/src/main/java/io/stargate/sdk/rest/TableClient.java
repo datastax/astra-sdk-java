@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,7 +29,7 @@ import io.stargate.sdk.rest.domain.ColumnDefinition;
 import io.stargate.sdk.rest.domain.CreateIndex;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.IndexDefinition;
-import io.stargate.sdk.rest.domain.QueryRowsByPrimaryKey;
+import io.stargate.sdk.rest.domain.QueryWhere;
 import io.stargate.sdk.rest.domain.Row;
 import io.stargate.sdk.rest.domain.RowMapper;
 import io.stargate.sdk.rest.domain.RowResultPage;
@@ -72,7 +71,28 @@ public class TableClient {
         this.keyspaceClient = keyspaceClient;
         this.tableName      = tableName;
     }
-  
+    
+    // ==============================================================
+    // ========================= SCHEMA TABLE   =====================
+    // ==============================================================
+    
+    /**
+     * Syntax sugar
+     */
+    public String getEndPointTableSchema() {
+        return keyspaceClient.getEndPointSchemaKeyspace() + "/tables/" + tableName;
+    }
+    
+    /**
+     * Getter accessor for attribute 'tableName'.
+     *
+     * @return
+     *       current value of 'tableName'
+     */
+    public String getTableName() {
+        return tableName;
+    }
+    
     /**
      * Get metadata of the collection. There is no dedicated resources we
      * use the list and filter with what we need.
@@ -95,29 +115,72 @@ public class TableClient {
     }
     
     /**
-     * Syntax sugar
+     * Create a table 
+     * @param table creation request
+     * 
+     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
      */
-    public String getEndPointTableSchema() {
-        return keyspaceClient.getEndPointSchemaKeyspace() + "/tables/" + tableName;
-    }
+     public void create(CreateTable tcr) {
+         Assert.notNull(tcr, "TableCreationRequest");
+         tcr.setName(this.tableName);
+         HttpResponse<String> response;
+         try {
+             String reqBody = getObjectMapper().writeValueAsString(tcr);
+            response = getHttpClient().send(
+                    startRequest(keyspaceClient.getEndPointSchemaKeyspace() + "/tables/", restClient.getToken())
+                    .POST(BodyPublishers.ofString(reqBody)).build(),
+                    BodyHandlers.ofString());
+         } catch (Exception e) {
+             throw new RuntimeException("Cannot save document:", e);
+         }
+         handleError(response);
+     }
+     
+     public void updateOptions(TableOptions to) {
+         Assert.notNull(to, "TableCreationRequest");
+         HttpResponse<String> response;
+         try {
+            CreateTable ct = CreateTable.builder().build();
+            ct.setPrimaryKey(null);
+            ct.setColumnDefinitions(null);
+            ct.setName(tableName);
+            ct.setTableOptions(to);
+            String reqBody = getObjectMapper().writeValueAsString(ct);
+            response = getHttpClient().send(
+                    startRequest(getEndPointTableSchema() , restClient.getToken())
+                    .PUT(BodyPublishers.ofString(reqBody)).build(),
+                    BodyHandlers.ofString());
+         } catch (Exception e) {
+             throw new RuntimeException("Cannot save document:", e);
+         }
+         handleError(response);
+     }
+     
+     /*
+      * Delete a table
+      *
+      * @see https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
+      */
+     public void delete() {
+         HttpResponse<String> response;
+         try {
+             response = getHttpClient().send(
+                     startRequest(getEndPointTableSchema(), 
+                     restClient.getToken()).DELETE().build(), 
+                     BodyHandlers.ofString());
+         } catch (Exception e) {
+             throw new RuntimeException("Cannot delete table " + tableName, e);
+         }
+         if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+             throw new TableNotFoundException(tableName);
+         }
+         handleError(response);
+     }
     
-    /**
-     * Syntax sugar
-     */
-    public String getEndPointTablePrimaryKey() {
-        return restClient.getEndPointApiRest() 
-                + "/v2/keyspaces/" + keyspaceClient.getKeyspace() 
-                + "/" + tableName;
-    }
     
-    /**
-     * Syntax sugar
-     */
-    public String getEndPointTableData() {
-        return restClient.getEndPointApiRest() 
-                + "/v2/keyspaces/" + keyspaceClient.getKeyspace() 
-                + "/tables/" + tableName;
-    }
+    // ==============================================================
+    // ========================= SCHEMA COLUMNS =====================
+    // ==============================================================
     
     /**
      * Retrieve All columns.
@@ -146,12 +209,50 @@ public class TableClient {
         }
     }
     
-    public void createIndex(String idxName, CreateIndex ci) {
-        index(idxName).create(ci);
+    /**
+     * Retrieve All column names.
+     * 
+     * @return
+     *      a list of columns names;
+     */
+    public  Stream<String> columnNames() {
+        return columns().map(ColumnDefinition::getName);
     }
     
     public void createColumn(String colName, ColumnDefinition cd) {
         column(colName).create(cd);
+    }
+    
+    /**
+     * Move to columns client
+     */
+    public ColumnsClient column(String columnId) {
+        Assert.hasLength(columnId, "columnName");
+        if (!columnsClient.containsKey(columnId)) {
+            columnsClient.put(columnId, 
+                    new ColumnsClient(restClient, keyspaceClient, this, columnId));
+        }
+        return columnsClient.get(columnId);
+    }
+    
+    // ==============================================================
+    // ========================= SCHEMA INDEX   =====================
+    // ==============================================================
+    
+    /**
+     * Move to columns client
+     */
+    public IndexClient index(String indexName) {
+        Assert.hasLength(indexName, "indexName");
+        if (!indexsClient.containsKey(indexName)) {
+            indexsClient.put(indexName, 
+                    new IndexClient(restClient, keyspaceClient, this, indexName));
+        }
+        return indexsClient.get(indexName);
+    }
+    
+    public void createIndex(String idxName, CreateIndex ci) {
+        index(idxName).create(ci);
     }
     
     /**
@@ -190,31 +291,31 @@ public class TableClient {
     public  Stream<String> indexesNames() {
         return indexes().map(IndexDefinition::getIndex_name);
     }
+   
+    
+    // ==============================================================
+    // ========================= DATA ===============================
+    // ==============================================================
     
     /**
-     * Retrieve All column names.
-     * 
-     * @return
-     *      a list of columns names;
+     * Syntax sugar
      */
-    public  Stream<String> columnNames() {
-        return columns().map(ColumnDefinition::getName);
+    public String getEndPointTable() {
+        return restClient.getEndPointApiRest() 
+                + "/v2/keyspaces/" + keyspaceClient.getKeyspace() 
+                + "/" + tableName;
     }
-    
-   /**
-    * Create a table 
-    * @param table creation request
-    * 
-    * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
-    */
-    public void create(CreateTable tcr) {
-        Assert.notNull(tcr, "TableCreationRequest");
-        tcr.setName(this.tableName);
+   
+    // TODO: Can do better with a bean -> SERIALIZATIO + look at target column type
+    // POST
+    public void upsert(Map<String, Object> record) {
+        Assert.notNull(record, "New Record");
+        Assert.isTrue(!record.isEmpty(), "New record should not be empty");
         HttpResponse<String> response;
         try {
-            String reqBody = getObjectMapper().writeValueAsString(tcr);
+           String reqBody = getObjectMapper().writeValueAsString(record);
            response = getHttpClient().send(
-                   startRequest(keyspaceClient.getEndPointSchemaKeyspace() + "/tables/", restClient.getToken())
+                   startRequest(getEndPointTable(), restClient.getToken())
                    .POST(BodyPublishers.ofString(reqBody)).build(),
                    BodyHandlers.ofString());
         } catch (Exception e) {
@@ -223,116 +324,68 @@ public class TableClient {
         handleError(response);
     }
     
-    public void updateOptions(TableOptions to) {
-        Assert.notNull(to, "TableCreationRequest");
-        HttpResponse<String> response;
-        try {
-           CreateTable ct = CreateTable.builder().build();
-           ct.setPrimaryKey(null);
-           ct.setColumnDefinitions(null);
-           ct.setName(tableName);
-           ct.setTableOptions(to);
-           String reqBody = getObjectMapper().writeValueAsString(ct);
-           response = getHttpClient().send(
-                   startRequest(getEndPointTableSchema() , restClient.getToken())
-                   .PUT(BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot save document:", e);
-        }
-        handleError(response);
-    }
-    
-    /*
-     * Delete a table
-     *
-     * @see https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
-     */
-    public void delete() {
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(getEndPointTableSchema(), 
-                    restClient.getToken()).DELETE().build(), 
-                    BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot delete table " + tableName, e);
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-            throw new TableNotFoundException(tableName);
-        }
-        handleError(response);
-    }
-    
-    
-    /**
-     * Retrieve a set of Rows from Primary key value.
-     *
-     * @param query
-     * @return
-     */
-    public <T> ResultPage<T> findByPrimaryKey(QueryRowsByPrimaryKey query, RowMapper<T> mapper) {
-        RowResultPage rrp = findByPrimaryKey(query);
-        return new ResultPage<T>(rrp.getPageSize(), 
-                rrp.getPageState().orElse(null),
-                rrp.getResults().stream()
-                   .map(mapper::map)
-                   .collect(Collectors.toList()));
-    }
-    
-    /**
-     * Retrieve a set of Rows from Primary key value.
-     *
-     * @param query
-     * @return
-     */
-    public RowResultPage findByPrimaryKey(QueryRowsByPrimaryKey query) {
-        Objects.requireNonNull(query);
+    // GET
+    public RowResultPage search(QueryWhere query) {
         HttpResponse<String> response;
         try {
              // Invoke as JSON
-            response = getHttpClient().send(
-                    startRequest(buildQueryUrl(query), restClient.getToken()).GET().build(), BodyHandlers.ofString());
+            response = getHttpClient().send(startRequest(
+                            buildQueryUrl(query), restClient.getToken()).GET().build(), 
+                            BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new RuntimeException("Cannot search for Rows ", e);
+            throw new RuntimeException("Cannot search for documents ", e);
         }   
         
         handleError(response);
          
         try {
-             ApiResponse<List<LinkedHashMap<String,?>>> result = getObjectMapper()
-                     .readValue(response.body(), 
-                             new TypeReference<ApiResponse<List<LinkedHashMap<String,?>>>>(){});
-             return new RowResultPage(query.getPageSize(), result.getPageState(), result.getData()
-                    .stream()
-                    .map(map -> {
-                        Row r = new Row();
-                        for (Entry<String, ?> val: map.entrySet()) {
-                            r.put(val.getKey(), val.getValue());
-                        }
-                        return r;
-                    })
-                    .collect(Collectors.toList()));
+            ApiResponse<List<LinkedHashMap<String,?>>> result = getObjectMapper()
+                    .readValue(response.body(), 
+                            new TypeReference<ApiResponse<List<LinkedHashMap<String,?>>>>(){});
+            return new RowResultPage(query.getPageSize(), result.getPageState(), result.getData()
+                   .stream()
+                   .map(map -> {
+                       Row r = new Row();
+                       for (Entry<String, ?> val: map.entrySet()) {
+                           r.put(val.getKey(), val.getValue());
+                       }
+                       return r;
+                   })
+                   .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
         }
     }
     
+    /**
+     * Retrieve a set of Rows from Primary key value.
+     *
+     * @param query
+     * @return
+     */
+    public <T> ResultPage<T> search(QueryWhere query, RowMapper<T> mapper) {
+        RowResultPage rrp = search(query);
+        return new ResultPage<T>(
+                rrp.getPageSize(), 
+                rrp.getPageState().orElse(null), 
+                rrp.getResults().stream()
+                   .map(mapper::map)
+                   .collect(Collectors.toList()));
+    }
     
-    private String buildQueryUrl(QueryRowsByPrimaryKey query) {
+    private String buildQueryUrl(QueryWhere query) {
         try {
-            StringBuilder sbUrl = new StringBuilder(getEndPointTablePrimaryKey());
-            Assert.isTrue(!query.getPrimaryKey().isEmpty(), "Primary key should not be null");
-            // Append URL with part of the primary key
-            for(Object pk : query.getPrimaryKey()) {
-                sbUrl.append("/" +  URLEncoder.encode(pk.toString(), StandardCharsets.UTF_8.toString()));
-            }
+            StringBuilder sbUrl = new StringBuilder(getEndPointTable());
             // Add query Params
             sbUrl.append("?page-size=" + query.getPageSize());
             // Depending on query you forge your URL
             if (query.getPageState().isPresent()) {
                 sbUrl.append("&page-state=" + 
                         URLEncoder.encode(query.getPageState().get(), StandardCharsets.UTF_8.toString()));
+            }
+            if (query.getWhere().isPresent()) {
+                sbUrl.append("&where=" + 
+                        URLEncoder.encode(query.getWhere().get(), StandardCharsets.UTF_8.toString()));
             }
             // Fields to retrieve
             if (null != query.getFieldsToRetrieve() && !query.getFieldsToRetrieve().isEmpty()) {
@@ -352,48 +405,13 @@ public class TableClient {
         }
     }
     
-    // DATA
-    
-    public RowResultPage search(Object query) {
-        return null;
-    }
-    
-    public <BEAN> ResultPage<BEAN> search(Object query, RowMapper<BEAN> rowMapper) {
-        return null;
-    }
     
     /**
-     * Move to columns client
+     * Move to the Table client
      */
-    public ColumnsClient column(String columnId) {
-        Assert.hasLength(columnId, "columnName");
-        if (!columnsClient.containsKey(columnId)) {
-            columnsClient.put(columnId, 
-                    new ColumnsClient(restClient, keyspaceClient, this, columnId));
-        }
-        return columnsClient.get(columnId);
-    }
-    
-    /**
-     * Move to columns client
-     */
-    public IndexClient index(String indexName) {
-        Assert.hasLength(indexName, "indexName");
-        if (!indexsClient.containsKey(indexName)) {
-            indexsClient.put(indexName, 
-                    new IndexClient(restClient, keyspaceClient, this, indexName));
-        }
-        return indexsClient.get(indexName);
-    }
-
-    /**
-     * Getter accessor for attribute 'tableName'.
-     *
-     * @return
-     *       current value of 'tableName'
-     */
-    public String getTableName() {
-        return tableName;
+    public KeyClient key(Object... keys) {
+        Assert.notNull(keys, "key");
+        return new KeyClient(restClient.getToken(), this, tableName, keys);
     }
     
 

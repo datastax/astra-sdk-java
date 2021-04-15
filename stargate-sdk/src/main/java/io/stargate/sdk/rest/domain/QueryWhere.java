@@ -1,7 +1,8 @@
-package io.stargate.sdk.doc.domain;
+package io.stargate.sdk.rest.domain;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,7 +18,7 @@ import io.stargate.sdk.utils.JsonUtils;
  *              .withPageSize(in)
  *              .where("age").isGreaterThan(10)
  */
-public class QueryDocument {
+public class QueryWhere {
     
     /** Limit set for the API. */
     public static final int PAGING_SIZE_MAX     = 20;
@@ -35,40 +36,46 @@ public class QueryDocument {
     private final String where;
     
     /** If we want to filter on fields. */
-    private final Set<String> fieldsToRetrieve;
+    private final List<String> fieldsToRetrieve;
     
-    private QueryDocument(QueryDocumentBuilder builder) {
+    /** List of items to retrieve. */
+    private final List<SortField> fieldsToSort;
+            
+    public static QueryRowBuilder builder() {
+        return new QueryRowBuilder(); 
+    }
+    
+    private QueryWhere(QueryRowBuilder builder) {
         this.pageSize         = builder.pageSize;
         this.pageState        = builder.pageState;
         this.where            = builder.whereClause;
-        this.fieldsToRetrieve = builder.fields;
-    }
-    
-    public static QueryDocumentBuilder builder() {
-        return new QueryDocumentBuilder(); 
+        this.fieldsToRetrieve = builder.fieldsToRetrieve;
+        this.fieldsToSort     = builder.fieldsToSort;
     }
     
     /**
      * Builder pattern.
      * @author Cedrick LUNVEN (@clunven)
      */
-    public static class QueryDocumentBuilder {
+    public static class QueryRowBuilder {
         
         /** Page size. */ 
         protected int pageSize = DEFAULT_PAGING_SIZE;
         
         protected String pageState = null;
         
-        protected Set<String> fields = null;
-        
         /** Build where clause. */
         protected String whereClause;
         
-        public QueryDocument build() {
-            return new QueryDocument(this);
+        protected List<String> fieldsToRetrieve = new ArrayList<>();
+        
+        protected List<SortField> fieldsToSort = new ArrayList<>();
+        
+        public QueryWhere build() {
+            return new QueryWhere(this);
         }
         
-        public QueryDocumentBuilder withPageSize(int pageSize) {
+        public QueryRowBuilder withPageSize(int pageSize) {
             if (pageSize < 1 || pageSize > PAGING_SIZE_MAX) {
                 throw new IllegalArgumentException("Page size should be between 1 and 100");
             }
@@ -76,25 +83,54 @@ public class QueryDocument {
             return this;
         }
         
-        public QueryDocumentBuilder withPageState(String pageState) {
+        public QueryRowBuilder withPageState(String pageState) {
             Assert.hasLength(pageState, "pageState");
             this.pageState = pageState;
+            return this;
+        }
+        
+        
+        /**
+         * Only return those fields if provided
+         */
+        public QueryRowBuilder returnedFields(String... fields) {
+            Assert.notNull(fields, "fields");
+            this.fieldsToRetrieve = new ArrayList<>(Arrays.asList(fields));
             return this;
         }
         
         /**
          * Only return those fields if provided
          */
-        public QueryDocumentBuilder withReturnedFields(String... fields) {
+        public QueryRowBuilder addReturnedField(String fieldname) {
+            Assert.hasLength(fieldname, "fieldname");
+            this.fieldsToRetrieve.add(fieldname);
+            return this;
+        }
+        
+        /**
+         * Only return those fields if provided
+         */
+        public QueryRowBuilder sortedFields(SortField... fields) {
             Assert.notNull(fields, "fields");
-            this.fields = new HashSet<>(Arrays.asList(fields));
+            this.fieldsToSort = new ArrayList<>(Arrays.asList(fields));
+            return this;
+        }
+        
+        /**
+         * Only return those fields if provided
+         */
+        public QueryRowBuilder addSortedField(String fieldname, Ordering order) {
+            Assert.hasLength(fieldname, "fieldname");
+            Assert.notNull(order, "order");
+            this.fieldsToSort.add(new SortField(fieldname, order));
             return this;
         }
         
         /**
          * Use 'where" to help you create 
          */
-        public QueryDocumentBuilder withJsonWhereClause(String where) {
+        public QueryRowBuilder withJsonWhereClause(String where) {
             if (this.whereClause != null) {
                 throw new IllegalArgumentException("Only a single where clause is allowd in a query");
             }
@@ -126,12 +162,12 @@ public class QueryDocument {
         private final String fieldName;
         
         /** Working builder to override the 'where' field and move with builder. */
-        private final QueryDocumentBuilder builder;
+        private final QueryRowBuilder builder;
         
         /**
          * Only constructor allowed
          */
-        protected Where(QueryDocumentBuilder builder, String fieldName) {
+        protected Where(QueryRowBuilder builder, String fieldName) {
             this.builder   = builder;
             this.fieldName = fieldName;
         }
@@ -140,25 +176,25 @@ public class QueryDocument {
          * Build where clause 'lt' and move back to builder.
          * A builder can only have a single where clause (not AND allowed)
          */
-        public QueryDocumentBuilder isGreaterThan(double value) {
+        public QueryRowBuilder isGreaterThan(double value) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$gt\": " 
                           + value + "}}");
         }
-        public QueryDocumentBuilder isGreaterOrEqualsThan(double value) {
+        public QueryRowBuilder isGreaterOrEqualsThan(double value) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$gte\": " 
                           + value + "}}");
         }
-        public QueryDocumentBuilder isLessThan(double value) {
+        public QueryRowBuilder isLessThan(double value) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$lt\": " 
                           + value + "}}");
         }
-        public QueryDocumentBuilder isLessOrEqualsThan(double value) {
+        public QueryRowBuilder isLessOrEqualsThan(double value) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$lte\": " 
@@ -169,13 +205,13 @@ public class QueryDocument {
          * No list allow should be a scalar.
          * No contains keyword.
          */
-        public QueryDocumentBuilder isEqualsTo(Object value) {
+        public QueryRowBuilder isEqualsTo(Object value) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$eq\": " 
                           + JsonUtils.valueAsJson(value) + "}}");
         }
-        public QueryDocumentBuilder isNotEqualsTo(Object value) {
+        public QueryRowBuilder isNotEqualsTo(Object value) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$neq\": " 
@@ -186,7 +222,7 @@ public class QueryDocument {
          * No list allow should be a scalar.
          * No contains keyword.
          */
-        public QueryDocumentBuilder isIn(Set<Object> values) {
+        public QueryRowBuilder isIn(Set<Object> values) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$in\": " 
@@ -197,7 +233,7 @@ public class QueryDocument {
          * No list allow should be a scalar.
          * No contains keyword.
          */
-        public QueryDocumentBuilder isNotIn(Set<Object> values) {
+        public QueryRowBuilder isNotIn(Set<Object> values) {
             return builder.withJsonWhereClause(
                     "{\"" + JsonUtils.escapeJson(fieldName) 
                           + "\": {\"$nin\": " 
@@ -225,7 +261,7 @@ public class QueryDocument {
     public Optional<String> getPageState() {
         return Optional.ofNullable(pageState);
     }
-
+    
     /**
      * Getter accessor for attribute 'where'.
      *
@@ -242,8 +278,19 @@ public class QueryDocument {
      * @return
      *       current value of 'fieldsToRetrieve'
      */
-    public Optional<Set<String>> getFieldsToRetrieve() {
-        return Optional.ofNullable(fieldsToRetrieve);
+    public List<String> getFieldsToRetrieve() {
+        return fieldsToRetrieve;
     }
+
+    /**
+     * Getter accessor for attribute 'fieldsToSort'.
+     *
+     * @return
+     *       current value of 'fieldsToSort'
+     */
+    public List<SortField> getFieldsToSort() {
+        return fieldsToSort;
+    }
+
 
 }

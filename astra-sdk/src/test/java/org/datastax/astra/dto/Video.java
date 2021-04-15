@@ -11,6 +11,8 @@ public class Video {
     private String title;
     
     private int year;
+    
+    
 
     /**
      * Getter accessor for attribute 'genre'.

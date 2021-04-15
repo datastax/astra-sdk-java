@@ -16,7 +16,7 @@ import io.stargate.sdk.utils.Assert;
  *              .withPageSize(in)
  *              .where("age").isGreaterThan(10)
  */
-public class QueryRowsByPrimaryKey {
+public class QueryWithKey {
     
     /** Limit set for the API. */
     public static final int PAGING_SIZE_MAX     = 20;
@@ -30,9 +30,6 @@ public class QueryRowsByPrimaryKey {
     /** Cursor for paging. */ 
     private final String pageState;
     
-    /** values for primayKey. */
-    private final List< Object > primaryKey;
-    
     /** If we want to filter on fields. */
     private final List<String> fieldsToRetrieve;
     
@@ -43,12 +40,11 @@ public class QueryRowsByPrimaryKey {
         return new QueryRowBuilder(); 
     }
     
-    private QueryRowsByPrimaryKey(QueryRowBuilder builder) {
+    private QueryWithKey(QueryRowBuilder builder) {
         this.pageSize         = builder.pageSize;
         this.pageState        = builder.pageState;
         this.fieldsToRetrieve = builder.fieldsToRetrieve;
         this.fieldsToSort     = builder.fieldsToSort;
-        this.primaryKey       = builder.valuesPK;
     }
     
     /**
@@ -62,14 +58,12 @@ public class QueryRowsByPrimaryKey {
         
         protected String pageState = null;
         
-        protected List< Object > valuesPK = new ArrayList<>();
-        
         protected List<String> fieldsToRetrieve = new ArrayList<>();
         
         protected List<SortField> fieldsToSort = new ArrayList<>();
         
-        public QueryRowsByPrimaryKey build() {
-            return new QueryRowsByPrimaryKey(this);
+        public QueryWithKey build() {
+            return new QueryWithKey(this);
         }
         
         public QueryRowBuilder withPageSize(int pageSize) {
@@ -86,14 +80,6 @@ public class QueryRowsByPrimaryKey {
             return this;
         }
         
-        /**
-         * Only return those fields if provided
-         */
-        public QueryRowBuilder primaryKey(Object... pk) {
-            Assert.notNull(pk, "fields");
-            this.valuesPK = new ArrayList<>(Arrays.asList(pk));
-            return this;
-        }
         
         /**
          * Only return those fields if provided
@@ -172,16 +158,6 @@ public class QueryRowsByPrimaryKey {
      */
     public List<SortField> getFieldsToSort() {
         return fieldsToSort;
-    }
-  
-    /**
-     * Getter accessor for attribute 'primaryKey'.
-     *
-     * @return
-     *       current value of 'primaryKey'
-     */
-    public List<Object> getPrimaryKey() {
-        return primaryKey;
     }
 
 
