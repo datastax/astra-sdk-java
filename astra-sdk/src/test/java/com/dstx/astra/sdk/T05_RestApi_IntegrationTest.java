@@ -1,6 +1,7 @@
 package com.dstx.astra.sdk;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,8 +16,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import io.stargate.sdk.core.DataCenter;
 import io.stargate.sdk.rest.ApiRestClient;
+import io.stargate.sdk.rest.KeyClient;
 import io.stargate.sdk.rest.TableClient;
 import io.stargate.sdk.rest.domain.ClusteringExpression;
 import io.stargate.sdk.rest.domain.ColumnDefinition;
@@ -25,7 +26,6 @@ import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.IndexDefinition;
 import io.stargate.sdk.rest.domain.Ordering;
 import io.stargate.sdk.rest.domain.QueryWithKey;
-import io.stargate.sdk.rest.domain.Row;
 import io.stargate.sdk.rest.domain.RowResultPage;
 import io.stargate.sdk.rest.domain.TableDefinition;
 import io.stargate.sdk.rest.domain.TableOptions;
@@ -46,13 +46,29 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     public static void config() {
         System.out.println(ANSI_YELLOW + "[T05_RestApi_IntegrationTest]" + ANSI_RESET);
         
+        //initDb("sdk_test_restApi");
+        
         client = AstraClient.builder()
-                .databaseId("8af224f7-1922-491f-a83b-2ebf294ca431")
-                .cloudProviderRegion("eu-central-1")
+                .databaseId("9bd1d0b7-c841-46a0-ae5e-aa15fbebbf23")
+                .cloudProviderRegion("us-east-1")
                 .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
                 .build();
         
         clientApiRest = client.apiRest();
+        
+        // Not available in the doc API anymore as of now
+        if (!client.apiRest().keyspace(WORKING_KEYSPACE).exist()) {
+            client.apiDevops()
+                  .createKeyspace(dbId.get(), WORKING_KEYSPACE);
+            System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating keyspace ");
+            while(!client.apiRest().keyspace(WORKING_KEYSPACE).exist()) {
+                System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
+                waitForSeconds(1);
+            }
+            System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace created");
+        } else {
+            System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace already exist.");
+        }
     }
     
     @Test
@@ -77,10 +93,11 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
     }
     
+    /*
     @Test
     @Order(2)
     @DisplayName("Create and delete keyspace with replicas")
-    public void should_create_tmp_namespace()
+    public void should_create_tmp_keyspace()
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#02 Working with Keyspace" + ANSI_RESET);
         if (clientApiRest.keyspace("tmp_keyspace").exist()) {
@@ -108,7 +125,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     @Test
     @Order(3)
     @DisplayName("Create and delete keyspace with datacenter")
-    public void should_create_tmp_namespace2() throws InterruptedException {
+    public void should_create_tmp_keyspace2() throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#03 Working with Keyspaces 2" + ANSI_RESET);
         // TMP KEYSPACE
         if (clientApiRest.keyspace("tmp_keyspace2").exist()) {
@@ -154,6 +171,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         Assertions.assertTrue(clientApiRest.keyspace(WORKING_KEYSPACE).exist());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace " + WORKING_KEYSPACE + "created");
     }
+    */
     
     @Test
     @Order(5)
@@ -165,6 +183,8 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
                 .contains(WORKING_KEYSPACE));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace found");
     }
+    
+    /*
     
     @Test
     @Order(6)
@@ -186,6 +206,8 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace deleted");
     }
+    
+    */
     
     // CRUD ON TABLES
     
@@ -361,15 +383,15 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#13 Update table metadata" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
-        Assertions.assertTrue(tmp_table.exist());
-        Assertions.assertNotEquals(25, tmp_table.find().get().getTableOptions().getDefaultTimeToLive());
+        TableClient videoTable = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(videoTable.exist());
+        Assertions.assertNotEquals(25, videoTable.find().get().getTableOptions().getDefaultTimeToLive());
         // When
-        tmp_table.updateOptions(new TableOptions(25, null));
+        videoTable.updateOptions(new TableOptions(25, null));
         // Then
-        Assertions.assertNotEquals(25, tmp_table.find().get().getTableOptions().getDefaultTimeToLive());
+        Assertions.assertNotEquals(25, videoTable.find().get().getTableOptions().getDefaultTimeToLive());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table updated");
-        tmp_table.updateOptions(new TableOptions(0,null));
+        videoTable.updateOptions(new TableOptions(0,null));
     }
     
     @Test
@@ -378,13 +400,13 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#14 list columns" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
-        Assertions.assertTrue(tmp_table.exist());
+        TableClient videoTable = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(videoTable.exist());
         // When
-        Assertions.assertTrue(tmp_table.columns().filter(c -> "frames".equalsIgnoreCase(c.getName())).findFirst().isPresent());
+        Assertions.assertTrue(videoTable.columns().filter(c -> "frames".equalsIgnoreCase(c.getName())).findFirst().isPresent());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Expected columns OK");
         // When
-        Assertions.assertTrue(tmp_table.columnNames().collect(Collectors.toList()).contains("frames"));
+        Assertions.assertTrue(videoTable.columnNames().collect(Collectors.toList()).contains("frames"));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Expected columns names OK");
         
     }
@@ -395,11 +417,11 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#15 Find a column" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
-        Assertions.assertTrue(tmp_table.exist());
+        TableClient videoTable = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(videoTable.exist());
         // When
-        Assertions.assertTrue(tmp_table.column("frames").find().isPresent());
-        Assertions.assertTrue(tmp_table.column("frames").exist());
+        Assertions.assertTrue(videoTable.column("frames").find().isPresent());
+        Assertions.assertTrue(videoTable.column("frames").exist());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column found");
     }
         
@@ -409,13 +431,13 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#16 Create a column" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
-        Assertions.assertTrue(tmp_table.exist());
-        Assertions.assertFalse(tmp_table.column("custom").find().isPresent());
+        TableClient videoTable = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(videoTable.exist());
+        Assertions.assertFalse(videoTable.column("custom").find().isPresent());
         // Given
-        tmp_table.column("custom").create(new ColumnDefinition("custom", "text"));
+        videoTable.column("custom").create(new ColumnDefinition("custom", "text"));
         // Then
-        Assertions.assertTrue(tmp_table.column("custom").find().isPresent());
+        Assertions.assertTrue(videoTable.column("custom").find().isPresent());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column created");
     }
     
@@ -425,13 +447,13 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#17 Delete a column" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp2");
-        Assertions.assertTrue(tmp_table.exist());
-        Assertions.assertTrue(tmp_table.column("custom").find().isPresent());
+        TableClient videoTable = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(videoTable.exist());
+        Assertions.assertTrue(videoTable.column("custom").find().isPresent());
         // Given
-        tmp_table.column("custom").delete();
+        videoTable.column("custom").delete();
         // Then
-        Assertions.assertFalse(tmp_table.column("custom").find().isPresent());
+        Assertions.assertFalse(videoTable.column("custom").find().isPresent());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Deleted");
     }
     
@@ -441,16 +463,16 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#18 Updating a column" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos_tmp");
-        Assertions.assertTrue(tmp_table.exist());
-        Assertions.assertTrue(tmp_table.column("title").exist());
-        Assertions.assertTrue(tmp_table.find().get().getPrimaryKey().getClusteringKey().contains("title"));
+        TableClient videoTable = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(videoTable.exist());
+        Assertions.assertTrue(videoTable.column("title").exist());
+        Assertions.assertTrue(videoTable.find().get().getPrimaryKey().getClusteringKey().contains("title"));
         // When
-        tmp_table.column("title").rename("new_title");
+        videoTable.column("title").rename("new_title");
         // Then
-        Assertions.assertTrue(tmp_table.column("new_title").find().isPresent());
+        Assertions.assertTrue(videoTable.column("new_title").find().isPresent());
         // Put back original name
-        tmp_table.column("new_title").rename("title");
+        videoTable.column("new_title").rename("title");
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Column Updated");
     }
     
@@ -460,7 +482,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#19 Create Secondary Index" + ANSI_RESET);
         // Given
-        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         Assertions.assertTrue(tableVideo.exist());
         Assertions.assertFalse(tableVideo.index("idx_test").exist());
         // When
@@ -479,7 +501,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#20 Delete Secondary Index" + ANSI_RESET);
         // Given
-        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         Assertions.assertTrue(tableVideo.exist());
         Assertions.assertTrue(tableVideo.index("idx_test").exist());
         // When
@@ -500,9 +522,9 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#21 Should add row" + ANSI_RESET);
         // Given
-        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         Assertions.assertTrue(tableVideo.exist());
-        
+       
         Map<String, Object> data = new HashMap<>();
         data.put("genre", "Sci-Fi");
         data.put("year", 1990);
@@ -513,22 +535,11 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         data.put("tuples", "( 'France', '2016-01-01', '2020-02-02' )");
         data.put("upload", 1618411879135L);
         tableVideo.upsert(data);
+        
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Line added");
         
-        /*
-        {
-            "genre": "Sci-Fi",
-            "year": 1990,
-            "title":"Yes Cedrick Insert Rows",
-            "formats": "{ '2020':'good', '2019':'okay' }",
-            "frames": "[ '1', '2', '3' ]",
-            "tags": "{ 'Emma', 'The Color Purple' }",
-            "tuples": "( 'France', '2016-01-01', '2020-02-02' )",
-            "upload": 1618411879135
-          }
-         */
-        
-        
+        data.put("title", "title2");
+        tableVideo.upsert(data);
     }
     
     
@@ -537,63 +548,120 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     public void should_delete_row()
     throws InterruptedException {
         
+        System.out.println(ANSI_YELLOW + "\n#22 Should delete row" + ANSI_RESET);
+        // Given
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(tableVideo.exist());
+        
+        KeyClient record = tableVideo.key("Sci-Fi", 1990);
+        RowResultPage rrp = record.find(QueryWithKey.builder().build());
+        Assertions.assertTrue(rrp.getResults().size() > 0);
+        
+        record.delete();
+        rrp = record.find(QueryWithKey.builder().build());
+        Assertions.assertTrue(rrp.getResults().size() == 0);
+        
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Line deleted");
+        
     }
     
     @Test
     @Order(23)
+    @SuppressWarnings("unchecked")
     public void should_update_row()
     throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#23 Update a Row" + ANSI_RESET);
         
+        // Given
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(tableVideo.exist());
+        Map<String, Object> data = new HashMap<>();
+        data.put("genre", "Sci-Fi");
+        data.put("year", 1990);
+        data.put("title", "line_update");
+        data.put("upload", 1618411879135L);
+        tableVideo.upsert(data);
+        
+        // When updating just a value
+        Map<String, Object> update = new HashMap<>();
+        update.put("upload", 1618411879130L);
+        tableVideo.key("Sci-Fi", 1990, "line_update").update(update);
+        
+        // Then
+        RowResultPage rrp = tableVideo
+                .key("Sci-Fi",1990, "line_update")
+                .find(QueryWithKey.builder().build());
+        Assertions.assertTrue(rrp.getResults().size() == 1);
+        Map<String, Object > map = (Map<String, Object>) rrp.getResults().get(0).get("upload");
+        Assertions.assertEquals(130000000, map.get("nano"));
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Line updated");
     }
     
     @Test
     @Order(24)
+    @SuppressWarnings("unchecked")
     public void should_replace_row()
     throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#24 Replace a Row" + ANSI_RESET);
         
+        // Given
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(tableVideo.exist());
+        Map<String, Object> data = new HashMap<>();
+        data.put("genre", "Sci-Fi");
+        data.put("year", 1990);
+        data.put("title", "line_replace");
+        data.put("upload", 1618411879135L);
+        tableVideo.upsert(data);
+        // When updating just a value
+        Map<String, Object> replace = new HashMap<>();
+        replace.put("upload", 1618411879130L);
+        tableVideo.key("Sci-Fi", 1990, "line_update").replace(replace);
+        // Then
+        RowResultPage rrp = tableVideo
+                .key("Sci-Fi",1990, "line_update")
+                .find(QueryWithKey.builder().build());
+        Assertions.assertTrue(rrp.getResults().size() == 1);
+        Map<String, Object > map = (Map<String, Object>) rrp.getResults().get(0).get("upload");
+        Assertions.assertEquals(130000000, map.get("nano"));
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Line Replaced");
     }
         
-    // Still need to implement addData to automate this test but good results
     @Test
     @Order(25)
     public void should_get_rows_pk()
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#19 Retrieves row from primaryKey" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#25 Retrieves row from primaryKey" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         Assertions.assertTrue(tmp_table.exist());
         
-        RowResultPage rrp = tmp_table.key("Action","2021")
+        RowResultPage rrp = tmp_table.key("Sci-Fi",1990)
                 .find(QueryWithKey.builder()
                         .addSortedField("year", Ordering.ASC)
                         .build());
-        for (Row row : rrp.getResults()) {
-            System.out.println(row.get("title").toString() + " -- " + row.get("year").toString());
-        }
+        Assertions.assertEquals(2, rrp.getResults().size());
     }
     
     @Test
     @Order(26)
     public void should_get_rows_pk_mapper()
     throws InterruptedException {
-        System.out.println(ANSI_YELLOW + "\n#20 Retrieve row from primaryKey with RowMapper" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n#26 Retrieve row from primaryKey with RowMapper" + ANSI_RESET);
         // Given
-        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table("videos");
+        TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         Assertions.assertTrue(tmp_table.exist());
         
-        tmp_table.key("Action", "2021")
+        List<Video>  result = tmp_table.key("Sci-Fi",1990)
             .find(QueryWithKey.builder()
                 .addSortedField("year", Ordering.ASC)
                 .build(), new VideoRowMapper())
-       
-                .getResults()
-                .stream()
-                .map(Video::getGenre)
-                .forEach(System.out::println);
+                .getResults();
+        Assertions.assertEquals(2, result.size());
     }
     
     @Test
-    @Order(24)
+    @Order(27)
     public void should_rsearch_table()
     throws InterruptedException {
         

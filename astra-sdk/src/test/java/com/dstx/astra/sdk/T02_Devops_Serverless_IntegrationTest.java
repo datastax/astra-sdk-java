@@ -27,7 +27,7 @@ import com.dstx.astra.sdk.devops.res.DatabaseAvailableRegion;
 @TestMethodOrder(OrderAnnotation.class)
 public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrationTest {
     
-    private static final String SERVERLESS_DB_NAME   = "sdk_serverless";
+    private static final String SERVERLESS_DB_NAME   = "sdk_test_devops";
     private static final String SERVERLESS_KEYSPACE  = "sdk_ks1";
     private static final String SECOND_KEYSPACE      = "sdk_ks2";
     private static final String SERVERLESS_NAMESPACE = "sdk_ns1";
@@ -40,7 +40,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(1)
     public void should_fail_on_invalid_params() {
-        System.out.println(ANSI_YELLOW + "\n#1 Parameter validation" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- Parameter validation" + ANSI_RESET);
         Assertions.assertThrows(IllegalArgumentException.class, () -> new ApiDevopsClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new ApiDevopsClient(null));
     }
@@ -48,7 +48,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(2)
     public void should_connect_to_astra_withAstraClient() {
-        System.out.println(ANSI_YELLOW + "\n#2 Connection with AstraClient" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- Connection with AstraClient" + ANSI_RESET);
         
         // Given
         Assertions.assertTrue(appToken.isPresent());
@@ -67,7 +67,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(3)
     public void should_connect_to_astra_directDevops() {
-        System.out.println(ANSI_YELLOW + "\n#3 Connection with DevopsClient" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- Connection with DevopsClient" + ANSI_RESET);
         
         // Given
         Assertions.assertTrue(appToken.isPresent());
@@ -82,7 +82,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(4)
     public void should_aws_us_east_be_available() {
-        System.out.println(ANSI_YELLOW + "\n#4 AWS Region available" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- AWS Region available" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // When
@@ -107,7 +107,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(5)
     public void should_createServerlessDb() {
-        System.out.println(ANSI_YELLOW + "\n#5 DB Creation" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- DB Creation" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // When
@@ -132,27 +132,21 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
         
         // Then
         Assert.assertTrue(cli.databaseExist(serverlessDbId));
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - DB now exists id='" + serverlessDbId + "'");
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - DB Status is [PENDING]");
-        while(DatabaseStatusType.PENDING.equals(cli.findDatabaseById(serverlessDbId).get().getStatus())) {
-            waitForSeconds(1);   
-        }
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - DB Status is [INITIALIZING] (should take about 3min)");
-        //  When
-        System.out.print("Waiting for db");
-        while(DatabaseStatusType.INITIALIZING.equals(cli.findDatabaseById(serverlessDbId).get().getStatus())) {
-            System.out.print("#");
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Database id=" + serverlessDbId);
+        System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Initializing ");
+        while(!DatabaseStatusType.ACTIVE.equals(cli.findDatabaseById(serverlessDbId).get().getStatus())) {
+            System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
             waitForSeconds(5);
         }
         Assert.assertEquals(DatabaseStatusType.ACTIVE, cli.findDatabaseById(serverlessDbId).get().getStatus());
-        System.out.println(ANSI_GREEN + "\n[OK]" + ANSI_RESET + " - DB Status is [ACTIVE] your are set.");
+        System.out.println(ANSI_GREEN + "\n[OK]" + ANSI_RESET + " - DB is active");
     }
     
     
     @Test
     @Order(6)
     public void should_find_databases() {
-        System.out.println(ANSI_YELLOW + "\n#6 [GET] Returns a list of databases" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- [GET] Returns a list of databases" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // When
@@ -170,7 +164,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(7)
     public void should_find_databases_by_id() {
-        System.out.println(ANSI_YELLOW + "\n#7 [GET] Finds database by ID" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- [GET] Finds database by ID" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         Optional<Database> odb = cli.findDatabaseById(serverlessDbId);
@@ -188,7 +182,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(8)
     public void should_crud_keyspaces() {
-        System.out.println(ANSI_YELLOW + "\n#8 [POST] Adds keyspace into database" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- [POST] Adds keyspace into database" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // Check Parameters
@@ -236,7 +230,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(9)
     public void should_download_secureBundle() {
-        System.out.println(ANSI_YELLOW + "\n#9 [POST] Obtain zip for connecting to the database" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- [POST] Obtain zip for connecting to the database" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         String randomFile = "/tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".zip";
@@ -252,6 +246,8 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(10)
     public void should_not_parkserverless() {
+        System.out.println(ANSI_YELLOW + "- Cannot park serverless" + ANSI_RESET);
+        
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // (6) - Check that we cannot park a serverlessDB
@@ -263,6 +259,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(11)
     public void should_not_unpark_serverless() {
+        System.out.println(ANSI_YELLOW + "- Cannot unpark serverless" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // (7)
@@ -274,6 +271,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(12)
     public void should_not_resize_erverless() {
+        System.out.println(ANSI_YELLOW + "- Cannot resize serverless" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         
@@ -286,6 +284,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(13)
     public void should_not_resetpassword() {
+        System.out.println(ANSI_YELLOW + "- Cannot resect password" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         // (9)
@@ -297,7 +296,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
     @Test
     @Order(14)
     public void should_terminate_db() {
-        System.out.println(ANSI_YELLOW + "\n#14 - [POST] Terminating an instance" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "- [POST] Terminating an instance" + ANSI_RESET);
         // Given
         ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
         cli.terminateDatabase(serverlessDbId);

@@ -3,9 +3,7 @@ package com.dstx.astra.sdk;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.datastax.astra.dto.PersonAstra;
 import org.datastax.astra.dto.PersonAstra.Address;
@@ -44,9 +42,33 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
     @BeforeAll
     public static void config() {
         System.out.println(ANSI_YELLOW + "[T04_DocumentApi_IntegrationTest]" + ANSI_RESET);
+        //initDb("sdk_test_docApi");
+        
+        /*
+        client = AstraClient.builder()
+                .databaseId("f6345d79-6662-4774-86e8-641e9f617c34")
+                .cloudProviderRegion("us-east-1")
+                .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
+                .build();
+        */
+        
         clientApiDoc = client.apiDocument();
+        // Not available in the doc API anymore as of now
+        if (!client.apiDocument().namespace(WORKING_NAMESPACE).exist()) {
+            client.apiDevops()
+                  .createNamespace(dbId.get(), WORKING_NAMESPACE);
+            System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating namespace ");
+            while(!client.apiDocument().namespace(WORKING_NAMESPACE).exist()) {
+                System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
+                waitForSeconds(1);
+            }
+            System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace created");
+        } else {
+            System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespace already exist.");
+        }
+       
     }
-    
+   
     @Test
     @Order(1)
     @DisplayName("Parameter validations should through IllegalArgumentException(s)")
@@ -69,6 +91,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
     }
     
+    /*
     @Test
     @Order(2)
     @DisplayName("Create and delete namespace with replicas")
@@ -126,7 +149,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespaces created");
     }
-
+   
     @Test
     @Order(4)
     @DisplayName("Create working namespace and check list")
@@ -150,6 +173,8 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         Assertions.assertTrue(namespaces.contains(WORKING_NAMESPACE));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Namespaces created");
     }
+    
+    */
     
     @Test
     @Order(5)
@@ -195,7 +220,6 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
     public void should_create_collection() throws InterruptedException {
         // Operations on collections
         System.out.println(ANSI_YELLOW + "\n#06 Create Collection" + ANSI_RESET);
-        System.out.println(ANSI_GREEN + "[POST] Create a collection" + ANSI_RESET);
         // Create working collection is not present
         if (clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).exist()) {
             clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON).delete();

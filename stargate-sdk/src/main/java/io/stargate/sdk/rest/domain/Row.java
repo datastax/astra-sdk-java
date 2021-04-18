@@ -48,6 +48,5 @@ public class Row extends HashMap<String, Object> {
     public Integer getInt(String colName) {
         return getDouble(colName).intValue();
     }
-    
 
 }

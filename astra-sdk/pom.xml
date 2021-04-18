@@ -64,15 +64,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<systemProperties>
-						<!-- Test DB -->
-						<property>
-							<name>ASTRA_DB_REGION</name>
-							<value>eu-central-1</value>
-						</property>
-						<property>
-							<name>ASTRA_DB_ID</name>
-							<value>f420bc37-b22e-44fc-8371-72fe2202f07d</value>
-						</property>
 						<!--  CREDENTIALS -->
 						<property>
 							<name>ASTRA_DB_CLIENT_ID</name>

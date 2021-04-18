@@ -51,10 +51,10 @@ public class KeyClient {
     /**
      * Full constructor.
      */
-    public KeyClient(String token, TableClient tableClient, Object... key) {
+    public KeyClient(String token, TableClient tableClient, Object... keys) {
         this.token          = token;
         this.tableClient    = tableClient;
-        this.key            = new ArrayList<>(Arrays.asList(key));
+        this.key            = new ArrayList<>(Arrays.asList(keys));
     }
     
     /**
@@ -86,6 +86,7 @@ public class KeyClient {
         HttpResponse<String> response;
         try {
              // Invoke as JSON
+            String queryUrl = buildQueryUrl(query);
             response = getHttpClient().send(
                     startRequest(buildQueryUrl(query), 
                             token).GET().build(), BodyHandlers.ofString());

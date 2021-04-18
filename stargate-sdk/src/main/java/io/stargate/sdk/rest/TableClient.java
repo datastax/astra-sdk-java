@@ -405,13 +405,12 @@ public class TableClient {
         }
     }
     
-    
     /**
      * Move to the Table client
      */
     public KeyClient key(Object... keys) {
         Assert.notNull(keys, "key");
-        return new KeyClient(restClient.getToken(), this, tableName, keys);
+        return new KeyClient(restClient.getToken(), this, keys);
     }
     
 
