@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.datastax.astra</groupId>
   <artifactId>astra-sdk-parent</artifactId>
-  <version>2021.1-SNAPSHOT</version>
-  <name>Astra Java SDK Parent POM</name>
+  <version>0.1.0</version>
+  <name>Stargate and Astra Java SDK</name>
   <packaging>pom</packaging>
   <inceptionYear>2021</inceptionYear>
   
@@ -45,7 +45,6 @@
     <module>astra-sdk</module>
     <module>astra-spring-boot-autoconfigure</module>
     <module>astra-spring-boot-starter</module>
-    <module>astra-spring-boot-sample-app</module>
     <module>stargate-sdk</module>
   </modules>
   
