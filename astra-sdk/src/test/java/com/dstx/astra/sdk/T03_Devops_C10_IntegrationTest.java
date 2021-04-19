@@ -1,29 +1,12 @@
 package com.dstx.astra.sdk;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import com.dstx.astra.sdk.devops.ApiDevopsClient;
-import com.dstx.astra.sdk.devops.CloudProviderType;
-import com.dstx.astra.sdk.devops.DatabaseStatusType;
-import com.dstx.astra.sdk.devops.DatabaseTierType;
-import com.dstx.astra.sdk.devops.req.DatabaseCreationRequest;
-import com.dstx.astra.sdk.devops.res.DatabaseAvailableRegion;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class T03_Devops_C10_IntegrationTest extends AbstractAstraIntegrationTest {
     
+    /*
     private static final String C10_DB_NAME      = "sdk_c10";
     private static final String KEYSPACE         = "sdk_ks1";
     
@@ -181,6 +164,8 @@ public class T03_Devops_C10_IntegrationTest extends AbstractAstraIntegrationTest
         }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Status changed to TERMINATED");
     }
+    
+    */
    
     
 }
