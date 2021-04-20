@@ -29,7 +29,7 @@ import io.stargate.sdk.rest.domain.ColumnDefinition;
 import io.stargate.sdk.rest.domain.CreateIndex;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.IndexDefinition;
-import io.stargate.sdk.rest.domain.QueryWhere;
+import io.stargate.sdk.rest.domain.SearchTableQuery;
 import io.stargate.sdk.rest.domain.Row;
 import io.stargate.sdk.rest.domain.RowMapper;
 import io.stargate.sdk.rest.domain.RowResultPage;
@@ -325,12 +325,12 @@ public class TableClient {
     }
     
     // GET
-    public RowResultPage search(QueryWhere query) {
+    public RowResultPage search(SearchTableQuery query) {
         HttpResponse<String> response;
         try {
              // Invoke as JSON
             response = getHttpClient().send(startRequest(
-                            buildQueryUrl(query), restClient.getToken()).GET().build(), 
+                    buildQueryUrl(query), restClient.getToken()).GET().build(), 
                             BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot search for documents ", e);
@@ -363,7 +363,7 @@ public class TableClient {
      * @param query
      * @return
      */
-    public <T> ResultPage<T> search(QueryWhere query, RowMapper<T> mapper) {
+    public <T> ResultPage<T> search(SearchTableQuery query, RowMapper<T> mapper) {
         RowResultPage rrp = search(query);
         return new ResultPage<T>(
                 rrp.getPageSize(), 
@@ -373,7 +373,7 @@ public class TableClient {
                    .collect(Collectors.toList()));
     }
     
-    private String buildQueryUrl(QueryWhere query) {
+    private String buildQueryUrl(SearchTableQuery query) {
         try {
             StringBuilder sbUrl = new StringBuilder(getEndPointTable());
             // Add query Params
@@ -389,7 +389,9 @@ public class TableClient {
             }
             // Fields to retrieve
             if (null != query.getFieldsToRetrieve() && !query.getFieldsToRetrieve().isEmpty()) {
-                sbUrl.append("&fields=" + URLEncoder.encode(JsonUtils.collectionAsJson(query.getFieldsToRetrieve()), StandardCharsets.UTF_8.toString()));
+                sbUrl.append("&fields=" + 
+                        URLEncoder.encode(
+                                String.join(",", query.getFieldsToRetrieve()), StandardCharsets.UTF_8.toString()));
             }
             // Fields to sort on 
             if (null != query.getFieldsToSort() && !query.getFieldsToSort().isEmpty()) {

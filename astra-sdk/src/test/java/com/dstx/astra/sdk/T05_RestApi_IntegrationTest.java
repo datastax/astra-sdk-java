@@ -27,6 +27,8 @@ import io.stargate.sdk.rest.domain.IndexDefinition;
 import io.stargate.sdk.rest.domain.Ordering;
 import io.stargate.sdk.rest.domain.QueryWithKey;
 import io.stargate.sdk.rest.domain.RowResultPage;
+import io.stargate.sdk.rest.domain.SearchTableQuery;
+import io.stargate.sdk.rest.domain.SortField;
 import io.stargate.sdk.rest.domain.TableDefinition;
 import io.stargate.sdk.rest.domain.TableOptions;
 
@@ -652,7 +654,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         TableClient tmp_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         Assertions.assertTrue(tmp_table.exist());
         
-        List<Video>  result = tmp_table.key("Sci-Fi",1990)
+        List<Video> result = tmp_table.key("Sci-Fi",1990)
             .find(QueryWithKey.builder()
                 .addSortedField("year", Ordering.ASC)
                 .build(), new VideoRowMapper())
@@ -664,6 +666,57 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
     @Order(27)
     public void should_rsearch_table()
     throws InterruptedException {
+        System.out.println(ANSI_YELLOW + "\n#27 Searching for Row" + ANSI_RESET);
+        TableClient tableVideo = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
+        Assertions.assertTrue(tableVideo.exist());
+        
+        // Empty table, delete per partition
+        tableVideo.key("Sci-Fi").delete();
+        tableVideo.key("genre1").delete();
+        tableVideo.key("genre2").delete();
+        
+        // 3 rows with genre1 1990
+        Map<String, Object> data = new HashMap<>();
+        data.put("genre", "genre1");
+        data.put("year", 1990);
+        data.put("title", "line1");tableVideo.upsert(data);
+        data.put("title", "line2");tableVideo.upsert(data);
+        data.put("title", "line3");tableVideo.upsert(data);
+        // 3 rows with Search 1991
+        data.put("year", 1991);
+        data.put("title", "line4");tableVideo.upsert(data);
+        data.put("title", "line5");tableVideo.upsert(data);
+        data.put("title", "line6");tableVideo.upsert(data);
+        // 3 rows with genre2 1990
+        data.put("genre", "genre2");
+        data.put("title", "line7");tableVideo.upsert(data);
+        data.put("title", "line8");tableVideo.upsert(data);
+        data.put("title", "line9");tableVideo.upsert(data);
+        
+        // Search 
+        RowResultPage res1 = tableVideo.search(
+                SearchTableQuery.builder()
+                          .where("genre").isEqualsTo("genre1")
+                          .withReturnedFields("title", "year")
+                          .build());
+        Assertions.assertEquals(6, res1.getResults().size());
+       
+        RowResultPage res2 = tableVideo.search(
+                SearchTableQuery.builder()
+                          .where("genre").isEqualsTo("genre2")
+                          .withReturnedFields("title", "year")
+                          .build());
+        Assertions.assertEquals(3, res2.getResults().size());
+        
+        // This req would need allow filtering
+        RowResultPage res3 = tableVideo.search(
+                SearchTableQuery.builder()
+                          .where("genre").isEqualsTo("genre1")
+                          .where("year").isGreaterThan(1989)
+                          .withReturnedFields("title", "year")
+                          .withSortedFields(new SortField("year", Ordering.ASC))
+                          .build());
+        Assertions.assertEquals(3, res3.getResults().size());
         
     }
     

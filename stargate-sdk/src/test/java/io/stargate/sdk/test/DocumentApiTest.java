@@ -24,7 +24,7 @@ import io.stargate.sdk.doc.CollectionClient;
 import io.stargate.sdk.doc.DocumentClient;
 import io.stargate.sdk.doc.NamespaceClient;
 import io.stargate.sdk.doc.domain.DocumentResultPage;
-import io.stargate.sdk.doc.domain.QueryDocument;
+import io.stargate.sdk.doc.domain.SearchDocumentQuery;
 import io.stargate.sdk.test.dto.Person;
 import io.stargate.sdk.test.dto.Person.Address;
 
@@ -75,15 +75,15 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
             StargateClient.builder().localDc(null);
         }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().authenticationUrl("");
+            StargateClient.builder().endPointAuth("");
         }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().documentApiUrl("");
+            StargateClient.builder().endPointRest("");
         }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().documentApiUrl(null);
+            StargateClient.builder().endPointRest(null);
         }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().restApiUrl("");
+            StargateClient.builder().endPointGraphQL("");
         }), () -> Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            StargateClient.builder().restApiUrl(null);
+            StargateClient.builder().endPointGraphQL(null);
         }));
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Tests passed.");
     }
@@ -387,7 +387,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         Assertions.assertTrue(collectionPerson.document("person3").exist());
 
         // Create a query
-        QueryDocument query = QueryDocument.builder().where("age").isGreaterOrEqualsThan(21).build();
+        SearchDocumentQuery query = SearchDocumentQuery.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
         DocumentResultPage<Person> results = collectionPerson.search(query, Person.class);

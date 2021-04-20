@@ -96,6 +96,7 @@ public class IndexClient {
         HttpResponse<String> response;
         try {
            String reqBody = getObjectMapper().writeValueAsString(ci);
+           System.out.println(reqBody);
            response = getHttpClient().send(startRequest(
                            keyspaceClient.getEndPointSchemaKeyspace() 
                            + "/tables/"  + tableClient.getTableName()

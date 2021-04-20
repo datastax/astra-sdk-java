@@ -86,7 +86,6 @@ public class KeyClient {
         HttpResponse<String> response;
         try {
              // Invoke as JSON
-            String queryUrl = buildQueryUrl(query);
             response = getHttpClient().send(
                     startRequest(buildQueryUrl(query), 
                             token).GET().build(), BodyHandlers.ofString());

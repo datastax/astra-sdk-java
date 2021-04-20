@@ -26,8 +26,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.stargate.sdk.core.ApiResponse;
 import io.stargate.sdk.doc.domain.CollectionDefinition;
 import io.stargate.sdk.doc.domain.DocumentResultPage;
-import io.stargate.sdk.doc.domain.QueryDocument;
-import io.stargate.sdk.doc.domain.QueryDocument.QueryDocumentBuilder;
+import io.stargate.sdk.doc.domain.SearchDocumentQuery;
+import io.stargate.sdk.doc.domain.SearchDocumentQuery.SearchDocumentQueryBuilder;
 import io.stargate.sdk.doc.exception.CollectionNotFoundException;
 import io.stargate.sdk.utils.Assert;
 import io.stargate.sdk.utils.JsonUtils;
@@ -183,16 +183,16 @@ public class CollectionClient {
      * Here we get first page as we do not provide paging state
      */
     public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz) {
-        return findAll(clazz, QueryDocument.DEFAULT_PAGING_SIZE);
+        return findAll(clazz, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
     }
     public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, int pageSize) {
         return findAll(clazz, pageSize, null);
     }
     public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, String pageState) {
-        return findAll(clazz, QueryDocument.DEFAULT_PAGING_SIZE, pageState);
+        return findAll(clazz, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
     }
     public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, int pageSize, String pageState) {
-        QueryDocumentBuilder builder = QueryDocument.builder().withPageSize(pageSize);
+        SearchDocumentQueryBuilder builder = SearchDocumentQuery.builder().withPageSize(pageSize);
         if (null != pageState) {
             builder.withPageState(pageState);
         }
@@ -200,7 +200,7 @@ public class CollectionClient {
     }
     
     //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
-    public <DOC> DocumentResultPage<DOC> search(QueryDocument query, Class<DOC> clazz) {
+    public <DOC> DocumentResultPage<DOC> search(SearchDocumentQuery query, Class<DOC> clazz) {
         Objects.requireNonNull(clazz);
         HttpResponse<String> response;
         try {
@@ -229,7 +229,7 @@ public class CollectionClient {
         }
     }
     
-    private String buildQueryUrl(QueryDocument query) {
+    private String buildQueryUrl(SearchDocumentQuery query) {
         try {
             StringBuilder sbUrl = new StringBuilder(docClient.getEndPointApiDocument());
             // Navigate to Namespace

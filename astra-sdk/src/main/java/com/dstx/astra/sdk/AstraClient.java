@@ -44,7 +44,7 @@ public class AstraClient implements Closeable {
     
     /** Building Astra base URL. */
     public static final String ASTRA_ENDPOINT_PREFIX  = "https://";
-    public static final String ASTRA_ENDPOINT_SUFFIX  = ".apps.astra.datastax.com/api/rest";
+    public static final String ASTRA_ENDPOINT_REST_SUFFIX  = ".apps.astra.datastax.com/api/rest";
     public static final String ENV_USER_HOME          = "user.home";
     public static final String SECURE_CONNECT         = "secure_connect_bundle_";
     
@@ -122,9 +122,9 @@ public class AstraClient implements Closeable {
              */
             if (Utils.paramsProvided(b.astraDatabaseId, b.astraDatabaseRegion, b.appToken)) {
                 
-                String astraStargateEndpint = new StringBuilder(ASTRA_ENDPOINT_PREFIX)
+                String astraStargateRestEndpoint = new StringBuilder(ASTRA_ENDPOINT_PREFIX)
                         .append(b.astraDatabaseId).append("-").append(b.astraDatabaseRegion)
-                        .append(ASTRA_ENDPOINT_SUFFIX).toString();
+                        .append(ASTRA_ENDPOINT_REST_SUFFIX).toString();
                 String username = "token";
                 String password = b.appToken;
                 if (Utils.paramsProvided(b.clientId, b.clientSecret)) {
@@ -140,8 +140,7 @@ public class AstraClient implements Closeable {
                  * user interface and use 'token' as username all the time
                  */
                 StargateClientBuilder sBuilder = StargateClient.builder()
-                              .documentApiUrl(astraStargateEndpint)
-                              .restApiUrl(astraStargateEndpint)
+                              .endPointRest(astraStargateRestEndpoint)
                               // Used for CqlSession
                               .username(username)
                               .password(password)

@@ -24,7 +24,7 @@ import io.stargate.sdk.doc.CollectionClient;
 import io.stargate.sdk.doc.DocumentClient;
 import io.stargate.sdk.doc.NamespaceClient;
 import io.stargate.sdk.doc.domain.DocumentResultPage;
-import io.stargate.sdk.doc.domain.QueryDocument;
+import io.stargate.sdk.doc.domain.SearchDocumentQuery;
 
 /**
  * Test operations for the Document API operation
@@ -405,7 +405,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         Assertions.assertTrue(collectionPersonAstra.document("PersonAstra3").exist());
 
         // Create a query
-        QueryDocument query = QueryDocument.builder().where("age").isGreaterOrEqualsThan(21).build();
+        SearchDocumentQuery query = SearchDocumentQuery.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
         DocumentResultPage<PersonAstra> results = collectionPersonAstra.search(query, PersonAstra.class);

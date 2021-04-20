@@ -2,7 +2,7 @@ package io.stargate.sdk.test;
 
 import static io.stargate.sdk.StargateClient.STARGATE_ENDPOINT_AUTH;
 import static io.stargate.sdk.StargateClient.STARGATE_ENDPOINT_CQL;
-import static io.stargate.sdk.StargateClient.STARGATE_ENDPOINT_DOC;
+import static io.stargate.sdk.StargateClient.STARGATE_ENDPOINT_GRAPHQL;
 import static io.stargate.sdk.StargateClient.STARGATE_ENDPOINT_REST;
 import static io.stargate.sdk.StargateClient.STARGATE_LOCAL_DC;
 import static io.stargate.sdk.StargateClient.STARGATE_PASSWORD;
@@ -16,13 +16,13 @@ public class AsbtractStargateTestIt {
     public static final String ANSI_GREEN           = "\u001B[32m";
     public static final String ANSI_YELLOW          = "\u001B[33m";
     
-    public static String username = "cassandra";
-    public static String password = "cassandra";
-    public static String authUrl  = "http://127.0.0.2:8081";
-    public static String docUrl   = "http://127.0.0.2:8082";
-    public static String restUrl  = "http://127.0.0.2:8082";
-    public static String localDc  = "datacenter1";
-    public static String cqlIP  = "127.0.0.2";
+    public static String username    = "cassandra";
+    public static String password    = "cassandra";
+    public static String authUrl     = "http://127.0.0.2:8081";
+    public static String grapqhQlUrl = "http://127.0.0.2:8080";
+    public static String restUrl     = "http://127.0.0.2:8082";
+    public static String localDc     = "datacenter1";
+    public static String cqlIP       = "127.0.0.2";
     
     public static StargateClient client;
     
@@ -51,13 +51,13 @@ public class AsbtractStargateTestIt {
                 && !"".equals(System.getProperty(STARGATE_ENDPOINT_AUTH))) {
             authUrl = System.getProperty(STARGATE_ENDPOINT_AUTH);
         }
-        if (null != System.getenv(STARGATE_ENDPOINT_DOC) 
-                && !"".equals(System.getenv(STARGATE_ENDPOINT_DOC))) {
-            docUrl = System.getenv(STARGATE_ENDPOINT_DOC);
+        if (null != System.getenv(STARGATE_ENDPOINT_GRAPHQL) 
+                && !"".equals(System.getenv(STARGATE_ENDPOINT_GRAPHQL))) {
+            grapqhQlUrl = System.getenv(STARGATE_ENDPOINT_GRAPHQL);
         }
-        if (null != System.getProperty(STARGATE_ENDPOINT_DOC) 
-                && !"".equals(System.getProperty(STARGATE_ENDPOINT_DOC))) {
-            docUrl = System.getProperty(STARGATE_ENDPOINT_DOC);
+        if (null != System.getProperty(STARGATE_ENDPOINT_GRAPHQL) 
+                && !"".equals(System.getProperty(STARGATE_ENDPOINT_GRAPHQL))) {
+            grapqhQlUrl = System.getProperty(STARGATE_ENDPOINT_GRAPHQL);
         }
         if (null != System.getenv(STARGATE_ENDPOINT_REST) 
                 && !"".equals(System.getenv(STARGATE_ENDPOINT_REST))) {
@@ -92,11 +92,10 @@ public class AsbtractStargateTestIt {
         client = StargateClient.builder()
                 .username(username)
                 .password(password)
-                .authenticationUrl(authUrl)
-                .documentApiUrl(docUrl)
-                .restApiUrl(restUrl)
-                .cqlContactPoint(cqlIP, 9042)
-                .localDc(localDc)
+                .endPointAuth(authUrl)
+                .endPointGraphQL(grapqhQlUrl)
+                .endPointGraphQL(restUrl)
+                .cqlContactPoint(cqlIP, 9042).localDc(localDc)
                 .build();
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Stargate Client is up.");
     }

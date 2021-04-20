@@ -3,6 +3,7 @@ package com.dstx.astra.sdk;
 import java.io.File;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -55,6 +56,11 @@ public class T06_AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - cql sucess with dc " + dataCenterName);
     }
     
+    
+    @AfterAll
+    public static void close() {
+        new File(System.getProperty("user.home") + "/.astrarc").delete();
+    }
     
 
 }

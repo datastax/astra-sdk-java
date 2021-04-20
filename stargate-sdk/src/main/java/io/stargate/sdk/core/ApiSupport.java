@@ -121,8 +121,9 @@ public abstract class ApiSupport {
                     .append("}").toString();
                 
                 // Call with a POST
+                System.out.println(endPointAuthentication);
                 HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
-                        .uri(URI.create(endPointAuthentication + "/v1/auth/"))
+                        .uri(URI.create(endPointAuthentication + "/v1/auth"))
                         .timeout(REQUEST_TIMOUT)
                         .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                         .POST(BodyPublishers.ofString(authRequestBody)).build(), BodyHandlers.ofString());

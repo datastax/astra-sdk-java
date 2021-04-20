@@ -16,6 +16,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 
 import io.stargate.sdk.doc.ApiDocumentClient;
+import io.stargate.sdk.graphql.ApiGraphQLClient;
 import io.stargate.sdk.rest.ApiRestClient;
 import io.stargate.sdk.utils.Assert;
 import io.stargate.sdk.utils.Utils;
@@ -36,15 +37,15 @@ public class StargateClient implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StargateClient.class);
     
     /** Enviroment variables to setup connection. */
-    public static final String STARGATE_USERNAME       = "STARGATE_USERNAME";
-    public static final String STARGATE_PASSWORD       = "STARGATE_PASSWORD";
-    public static final String STARGATE_ENDPOINT_AUTH  = "STARGATE_ENDPOINT_AUTH";
-    public static final String STARGATE_ENDPOINT_REST  = "STARGATE_ENDPOINT_REST";
-    public static final String STARGATE_ENDPOINT_DOC   = "STARGATE_ENDPOINT_DOC";
-    public static final String STARGATE_ENDPOINT_CQL   = "STARGATE_ENDPOINT_CQL";
-    public static final String STARGATE_LOCAL_DC       = "STARGATE_LOCAL_DC";
-    public static final String STARGATE_KEYSPACE       = "STARGATE_KEYSPACE";
-    public static final String STARGATE_ENABLE_CQL     = "STARGATE_ENABLE_CQL";
+    public static final String STARGATE_USERNAME         = "STARGATE_USERNAME";
+    public static final String STARGATE_PASSWORD         = "STARGATE_PASSWORD";
+    public static final String STARGATE_ENDPOINT_AUTH    = "STARGATE_ENDPOINT_AUTH";
+    public static final String STARGATE_ENDPOINT_REST    = "STARGATE_ENDPOINT_REST";
+    public static final String STARGATE_ENDPOINT_GRAPHQL = "STARGATE_ENDPOINT_GRAPHQL";
+    public static final String STARGATE_ENDPOINT_CQL     = "STARGATE_ENDPOINT_CQL";
+    public static final String STARGATE_LOCAL_DC         = "STARGATE_LOCAL_DC";
+    public static final String STARGATE_KEYSPACE         = "STARGATE_KEYSPACE";
+    public static final String STARGATE_ENABLE_CQL       = "STARGATE_ENABLE_CQL";
     
     // -----------------------------------------------
     // Attributes to be populated by BUILDER
@@ -56,6 +57,9 @@ public class StargateClient implements Closeable {
     
     /** Hold a reference for the ApiRest. */
     private ApiRestClient apiRest;
+    
+    /** Hold a reference for the ApiGraphQL. */
+    private ApiGraphQLClient apiGraphQL;
     
     /** Hold a reference for the Api Devops. */
     private CqlSession cqlSession;
@@ -75,6 +79,13 @@ public class StargateClient implements Closeable {
     }
     
     /**
+     *  Accessing Rest API
+     */
+    public  ApiGraphQLClient apiGraphQL() {
+        return apiGraphQL;
+    }
+    
+    /**
      * Accessing Cql Session.
      */
     public Optional<CqlSession> cqlSession() {
@@ -88,22 +99,29 @@ public class StargateClient implements Closeable {
     private StargateClient(StargateClientBuilder builder) {
         LOGGER.info("Initializing [StargateClient]");
         
-        if (Utils.paramsProvided(builder.username, builder.password, builder.endPointApiDocument)) {
+        if (Utils.paramsProvided(builder.username, builder.password, builder.endPointRest)) {
+            
             apiDoc = new ApiDocumentClient(builder.username, 
                     builder.password, 
                     builder.endPointAuthentication, 
                     builder.appToken,
-                    builder.endPointApiDocument);
+                    builder.endPointRest);
+        
+            apiRest = new ApiRestClient(builder.username, 
+                    builder.password, 
+                    builder.endPointAuthentication,
+                    builder.appToken,
+                    builder.endPointRest);
         }
         
-        if (Utils.paramsProvided(builder.username, 
-                builder.endPointApiRest)) {
-            apiRest = new ApiRestClient(builder.username, 
-                builder.password, 
-                builder.endPointAuthentication,
-                builder.appToken,
-                builder.endPointApiRest);
-        }
+        if (Utils.paramsProvided(builder.username, builder.password, builder.endPointGraphQL)) {
+            apiGraphQL = new ApiGraphQLClient(builder.username, 
+                    builder.password, 
+                    builder.endPointAuthentication, 
+                    builder.appToken,
+                    builder.endPointGraphQL);
+        }   
+        
         // For security reason you want to disable CQL
         if (builder.enableCql) {
             if (Utils.paramsProvided(builder.username, builder.password)) {
@@ -184,14 +202,14 @@ public class StargateClient implements Closeable {
         private String username = "cassandra";
         /** Password - required all the time */
         private String password = "cassandra";
-        /** This the endPoint to invoke to work with different API(s). */
-        private String endPointAuthentication = "http://localhost:8081";
         /** if provided the authentication URL is not use to get token. */
         private String appToken = null;
         /** This the endPoint to invoke to work with different API(s). */
-        private String endPointApiRest = "http://localhost:8082";
+        private String endPointAuthentication = "http://localhost:8081";
         /** This the endPoint to invoke to work with different API(s). */
-        private String endPointApiDocument = "http://localhost:8082";
+        private String endPointRest = "http://localhost:8082";
+        /** This the endPoint to invoke to work with different API(s). */
+        private String endPointGraphQL = "http://localhost:8080";
         /** If this flag is disabled no CQL session will be created. */
         private boolean enableCql = true;
         /** working with local Cassandra. */
@@ -216,11 +234,11 @@ public class StargateClient implements Closeable {
             if (null != System.getenv(STARGATE_ENDPOINT_AUTH)) {
                 this.endPointAuthentication = System.getenv(STARGATE_ENDPOINT_AUTH);
             }
-            if (null != System.getenv(STARGATE_ENDPOINT_DOC)) {
-                this.endPointApiDocument = System.getenv(STARGATE_ENDPOINT_DOC);
+            if (null != System.getenv(STARGATE_ENDPOINT_GRAPHQL)) {
+                this.endPointGraphQL = System.getenv(STARGATE_ENDPOINT_GRAPHQL);
             }
             if (null != System.getenv(STARGATE_ENDPOINT_REST)) {
-                this.endPointApiRest = System.getenv(STARGATE_ENDPOINT_REST);
+                this.endPointRest = System.getenv(STARGATE_ENDPOINT_REST);
             }
             if (null != System.getenv(STARGATE_ENDPOINT_CQL)) {
                 this.endPointCql = Arrays.asList(System.getenv(STARGATE_ENDPOINT_CQL).split(","));
@@ -246,12 +264,13 @@ public class StargateClient implements Closeable {
             this.password = password;
             return this;
         }
-        public StargateClientBuilder authenticationUrl(String authenticationUrl) {
-            if ("".equals(authenticationUrl)) {
-                throw new IllegalArgumentException("Parameter 'authenticationUrl' "
+        public StargateClientBuilder endPointAuth(String endPointAuth) {
+            // If null = Astra
+            if ("".equals(endPointAuth)) {
+                throw new IllegalArgumentException("Parameter 'endPointAuth' "
                         + "should be null nor empty");
             }
-            this.endPointAuthentication = authenticationUrl;
+            this.endPointAuthentication = endPointAuth;
             return this;
         }
         public StargateClientBuilder appToken(String token) {
@@ -259,14 +278,14 @@ public class StargateClient implements Closeable {
             this.appToken               = token;
             return this;
         }
-        public StargateClientBuilder documentApiUrl(String documentApiUrl) {
-            Assert.hasLength(documentApiUrl, "documentApiUrl");
-            this.endPointApiDocument = documentApiUrl;
+        public StargateClientBuilder endPointGraphQL(String endPointGraphQL) {
+            Assert.hasLength(endPointGraphQL, "endPointGraphQL");
+            this.endPointGraphQL = endPointGraphQL;
             return this;
         }
-        public StargateClientBuilder restApiUrl(String restApiUrl) {
-            Assert.hasLength(restApiUrl, "restApiUrl");
-            this.endPointApiRest = restApiUrl;
+        public StargateClientBuilder endPointRest(String endPointRest) {
+            Assert.hasLength(endPointRest, "restApiUrl");
+            this.endPointRest = endPointRest;
             return this;
         }
         public StargateClientBuilder localDc(String localDc) {

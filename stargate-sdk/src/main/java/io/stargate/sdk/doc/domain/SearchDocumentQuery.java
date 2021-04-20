@@ -1,12 +1,19 @@
 package io.stargate.sdk.doc.domain;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import io.stargate.sdk.core.Filter;
+import io.stargate.sdk.core.FilterCondition;
+import io.stargate.sdk.rest.domain.SearchTableQuery;
 import io.stargate.sdk.utils.Assert;
-import io.stargate.sdk.utils.JsonUtils;
+import io.stargate.sdk.utils.Utils;
 
 /**
  * Build a queyr with filter clause
@@ -17,7 +24,7 @@ import io.stargate.sdk.utils.JsonUtils;
  *              .withPageSize(in)
  *              .where("age").isGreaterThan(10)
  */
-public class QueryDocument {
+public class SearchDocumentQuery {
     
     /** Limit set for the API. */
     public static final int PAGING_SIZE_MAX     = 20;
@@ -37,22 +44,29 @@ public class QueryDocument {
     /** If we want to filter on fields. */
     private final Set<String> fieldsToRetrieve;
     
-    private QueryDocument(QueryDocumentBuilder builder) {
+    /**
+     * Constructor hidden to enforce builder usage.
+     * @param builder
+     *      filled builder.
+     */
+    private SearchDocumentQuery(SearchDocumentQueryBuilder builder) {
         this.pageSize         = builder.pageSize;
         this.pageState        = builder.pageState;
-        this.where            = builder.whereClause;
         this.fieldsToRetrieve = builder.fields;
+        // Note that the Json Where query is built here but not yet escaped
+        this.where            = builder.getWhereClause();
     }
     
-    public static QueryDocumentBuilder builder() {
-        return new QueryDocumentBuilder(); 
+    /** static accees to a builder instance. */
+    public static SearchDocumentQueryBuilder builder() {
+        return new SearchDocumentQueryBuilder(); 
     }
     
     /**
      * Builder pattern.
      * @author Cedrick LUNVEN (@clunven)
      */
-    public static class QueryDocumentBuilder {
+    public static class SearchDocumentQueryBuilder {
         
         /** Page size. */ 
         protected int pageSize = DEFAULT_PAGING_SIZE;
@@ -61,14 +75,30 @@ public class QueryDocument {
         
         protected Set<String> fields = null;
         
-        /** Build where clause. */
+        /** 
+         * One can provide the full where clause as a JSON String.
+         * If not null it will be used and the filters will be ignored.
+         */
         protected String whereClause;
         
-        public QueryDocument build() {
-            return new QueryDocument(this);
+        /**
+         * Use to build the where Clause as a JsonString if the field 
+         * whereClause is not provided.
+         * - FieldName + condition + value
+         */
+        protected List<Filter> filters = new ArrayList<>();
+        
+        /**
+         * Terminal call to build immutable instance of {@link SearchTableQuery}.
+         *
+         * @return
+         *      immutable instance of {@link SearchTableQuery}.
+         */
+        public SearchDocumentQuery build() {
+            return new SearchDocumentQuery(this);
         }
         
-        public QueryDocumentBuilder withPageSize(int pageSize) {
+        public SearchDocumentQueryBuilder withPageSize(int pageSize) {
             if (pageSize < 1 || pageSize > PAGING_SIZE_MAX) {
                 throw new IllegalArgumentException("Page size should be between 1 and 100");
             }
@@ -76,7 +106,7 @@ public class QueryDocument {
             return this;
         }
         
-        public QueryDocumentBuilder withPageState(String pageState) {
+        public SearchDocumentQueryBuilder withPageState(String pageState) {
             Assert.hasLength(pageState, "pageState");
             this.pageState = pageState;
             return this;
@@ -85,7 +115,7 @@ public class QueryDocument {
         /**
          * Only return those fields if provided
          */
-        public QueryDocumentBuilder withReturnedFields(String... fields) {
+        public SearchDocumentQueryBuilder withReturnedFields(String... fields) {
             Assert.notNull(fields, "fields");
             this.fields = new HashSet<>(Arrays.asList(fields));
             return this;
@@ -94,7 +124,7 @@ public class QueryDocument {
         /**
          * Use 'where" to help you create 
          */
-        public QueryDocumentBuilder withJsonWhereClause(String where) {
+        public SearchDocumentQueryBuilder withWhereClauseJson(String where) {
             if (this.whereClause != null) {
                 throw new IllegalArgumentException("Only a single where clause is allowd in a query");
             }
@@ -106,9 +136,26 @@ public class QueryDocument {
         /**
          * Only return those fields if provided
          */
-        public Where where(String fieldName) {
+        public SearchDocumentWhere where(String fieldName) {
             Assert.hasLength(fieldName, "fieldName");
-            return new Where(this, fieldName);
+            return new SearchDocumentWhere(this, fieldName);
+        }
+        
+        /**
+         * Build Where Clause based on Filters.
+         *
+         * @return
+         */
+        public String getWhereClause() {
+            // Explicit values will got primer on filters
+            if (Utils.hasLength(whereClause)) {
+                return whereClause;
+            }
+            // Use Filters
+            return "{" + filters.stream()
+                    .map(Filter::toString)
+                    .collect(Collectors.joining(",")) 
+                    + "}";
         }
         
     }
@@ -120,90 +167,50 @@ public class QueryDocument {
      * where("field").greaterThan(40)
      *               .lessThan(50);
      */
-    public static class Where {
+    public static class SearchDocumentWhere {
         
         /** Required field name. */
         private final String fieldName;
         
         /** Working builder to override the 'where' field and move with builder. */
-        private final QueryDocumentBuilder builder;
+        private final SearchDocumentQueryBuilder builder;
         
         /**
          * Only constructor allowed
          */
-        protected Where(QueryDocumentBuilder builder, String fieldName) {
+        protected SearchDocumentWhere(SearchDocumentQueryBuilder builder, String fieldName) {
             this.builder   = builder;
             this.fieldName = fieldName;
         }
-       
-        /**
-         * Build where clause 'lt' and move back to builder.
-         * A builder can only have a single where clause (not AND allowed)
-         */
-        public QueryDocumentBuilder isGreaterThan(double value) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$gt\": " 
-                          + value + "}}");
-        }
-        public QueryDocumentBuilder isGreaterOrEqualsThan(double value) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$gte\": " 
-                          + value + "}}");
-        }
-        public QueryDocumentBuilder isLessThan(double value) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$lt\": " 
-                          + value + "}}");
-        }
-        public QueryDocumentBuilder isLessOrEqualsThan(double value) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$lte\": " 
-                          + value + "}}");
+        private SearchDocumentQueryBuilder addFilter(FilterCondition op, Object value) {
+            builder.filters.add(new Filter(fieldName,op, value));
+            return builder;
         }
         
-        /**
-         * No list allow should be a scalar.
-         * No contains keyword.
-         */
-        public QueryDocumentBuilder isEqualsTo(Object value) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$eq\": " 
-                          + JsonUtils.valueAsJson(value) + "}}");
+        public SearchDocumentQueryBuilder isLessThan(Object value) {
+            return addFilter(FilterCondition.LessThan, value);
         }
-        public QueryDocumentBuilder isNotEqualsTo(Object value) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$neq\": " 
-                          + JsonUtils.valueAsJson(value) + "}}");
+        public SearchDocumentQueryBuilder isLessOrEqualsThan(Object value) {
+            return addFilter(FilterCondition.LessThanOrEqualsTo, value);
         }
-        
-        /**
-         * No list allow should be a scalar.
-         * No contains keyword.
-         */
-        public QueryDocumentBuilder isIn(Set<Object> values) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$in\": " 
-                          + JsonUtils.collectionAsJson(values) + "}}");
+        public SearchDocumentQueryBuilder isGreaterThan(Object value) {
+            return addFilter(FilterCondition.GreaterThan, value);
         }
-        
-        /**
-         * No list allow should be a scalar.
-         * No contains keyword.
-         */
-        public QueryDocumentBuilder isNotIn(Set<Object> values) {
-            return builder.withJsonWhereClause(
-                    "{\"" + JsonUtils.escapeJson(fieldName) 
-                          + "\": {\"$nin\": " 
-                          + JsonUtils.collectionAsJson(values) + "}}");
+        public SearchDocumentQueryBuilder isGreaterOrEqualsThan(Object value) {
+            return addFilter(FilterCondition.GreaterThenOrEqualsTo, value);
         }
-        
+        public SearchDocumentQueryBuilder isEqualsTo(Object value) {
+            return addFilter(FilterCondition.EqualsTo, value);
+        }
+        public SearchDocumentQueryBuilder isNotEqualsTo(Object value) {
+            return addFilter(FilterCondition.NotEqualsTo, value);
+        }
+        public SearchDocumentQueryBuilder exists() {
+            return addFilter(FilterCondition.Exists, null);
+        }
+        public SearchDocumentQueryBuilder isIn(Collection<Object> values) {
+            return addFilter(FilterCondition.In, values);
+        }
     }
 
     /**
