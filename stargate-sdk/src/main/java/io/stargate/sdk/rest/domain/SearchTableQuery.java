@@ -135,10 +135,24 @@ public class SearchTableQuery {
         /**
          * Only return those fields if provided
          */
+        public SearchTableQueryBuilder select(String... fields) {
+            return withReturnedFields(fields);
+        }
+        
+        /**
+         * Only return those fields if provided
+         */
         public SearchTableQueryBuilder withSortedFields(SortField... fields) {
             Assert.notNull(fields, "fields");
             this.fieldsToSort = new ArrayList<>(Arrays.asList(fields));
             return this;
+        }
+        
+        /**
+         * Only return those fields if provided
+         */
+        public SearchTableQueryBuilder sortBy(SortField... fields) {
+            return withSortedFields(fields);
         }
         
         /**

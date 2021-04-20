@@ -709,13 +709,13 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
         Assertions.assertEquals(3, res2.getResults().size());
         
         // This req would need allow filtering
-        RowResultPage res3 = tableVideo.search(
-                SearchTableQuery.builder()
-                          .where("genre").isEqualsTo("genre1")
-                          .where("year").isGreaterThan(1989)
-                          .withReturnedFields("title", "year")
-                          .withSortedFields(new SortField("year", Ordering.ASC))
-                          .build());
+        RowResultPage res3 = tableVideo.search(SearchTableQuery.builder()
+               .select("title", "year")
+               .where("genre").isEqualsTo("genre1")
+               .where("year").isGreaterThan(1989)
+               .sortBy(new SortField("year", Ordering.ASC))
+               .build());
+        
         Assertions.assertEquals(3, res3.getResults().size());
         
     }

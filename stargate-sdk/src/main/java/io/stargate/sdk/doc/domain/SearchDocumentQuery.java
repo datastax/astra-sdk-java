@@ -122,6 +122,13 @@ public class SearchDocumentQuery {
         }
         
         /**
+         * Only return those fields if provided
+         */
+        public SearchDocumentQueryBuilder select(String... fields) {
+            return withReturnedFields(fields);
+        }
+        
+        /**
          * Use 'where" to help you create 
          */
         public SearchDocumentQueryBuilder withWhereClauseJson(String where) {
