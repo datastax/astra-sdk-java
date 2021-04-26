@@ -16,7 +16,7 @@
 
 		<!-- Astra Expose APIs through Stargate -->
 		<dependency>
-			<groupId>io.stargate</groupId>
+			<groupId>com.datastax.stargate</groupId>
 			<artifactId>stargate-sdk</artifactId>
 			<version>${project.version}</version>
 		</dependency>
