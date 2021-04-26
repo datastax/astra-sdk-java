@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.stargate</groupId>
+	<groupId>com.datastax.stargate</groupId>
 	<artifactId>stargate-sdk</artifactId>
 	<name>+ stargate-sdk</name>
 	<description>Connect to Stargate Data Gateway</description>
@@ -15,10 +15,12 @@
 	</parent>
 
 	<dependencies>
+	    <!--  Support for Cqlsession -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-core</artifactId>
 		</dependency>
+		<!-- Support for JSON Api -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -31,6 +33,7 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+		<!--  Logger -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -39,6 +42,12 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 		</dependency>
+		<!-- Support for GraphQL -->
+		<dependency>
+		    <groupId>com.graphql-java</groupId>
+		    <artifactId>graphql-java</artifactId>
+		</dependency>
+				
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
