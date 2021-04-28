@@ -53,6 +53,12 @@ public class AstraClient implements Closeable {
    
     /** Hold a reference for the Api Devops. */
     private ApiDevopsClient apiDevops;
+    
+    /** If provided hold a reference to the db Id, */ 
+    private final String astraDatabaseId;
+    
+    /** If provided hold a reference to the db cloud region. */ 
+    private final String astraDatabaseRegion;
   
     /**
      * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link ApiDevopsClient}, {@link ApiCqlClient} with
@@ -73,6 +79,9 @@ public class AstraClient implements Closeable {
             LOGGER.info("+ Devops API is enabled.");
         }
         
+        this.astraDatabaseRegion = b.astraDatabaseRegion;
+        this.astraDatabaseId     = b.astraDatabaseId;
+       
         if (Utils.paramsProvided(b.astraDatabaseId)) {
             /*
              * -----
@@ -363,6 +372,26 @@ public class AstraClient implements Closeable {
        if (null != stargateClient) {
            stargateClient.close();
        }
+    }
+
+    /**
+     * Getter accessor for attribute 'astraDatabaseId'.
+     *
+     * @return
+     *       current value of 'astraDatabaseId'
+     */
+    public String getAstraDatabaseId() {
+        return astraDatabaseId;
+    }
+
+    /**
+     * Getter accessor for attribute 'astraDatabaseRegion'.
+     *
+     * @return
+     *       current value of 'astraDatabaseRegion'
+     */
+    public String getAstraDatabaseRegion() {
+        return astraDatabaseRegion;
     }
 
 }
