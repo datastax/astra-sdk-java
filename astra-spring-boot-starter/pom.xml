@@ -8,7 +8,7 @@
  <parent>
   <groupId>com.datastax.astra</groupId>
   <artifactId>astra-sdk-parent</artifactId>
-  <version>0.1.2</version>
+  <version>0.1.3-SNAPSHOT</version>
  </parent>
 
  <dependencies>
