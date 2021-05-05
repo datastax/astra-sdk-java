@@ -27,3 +27,5 @@ dist
 .factorypath
 .sts4-cache
 *.log
+
+release.properties
