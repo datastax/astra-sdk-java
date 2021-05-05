@@ -74,15 +74,10 @@ public class ApiError implements Serializable {
 
     /**
      * Setter accessor for attribute 'message'.
-     * @param messages
-     * 		new value for 'message '
+     * @param message
+     * 		new value for 'message'
      */
     public void setMessage(String message) {
         this.message = message;
     }
-
-
-
-    
-    
 }

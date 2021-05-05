@@ -43,10 +43,10 @@ public class Token implements Serializable {
     /**
      * Constructor wil all fields.
      *
-     * @param clientId
-     * @param clientSecret
-     * @param token
-     * @param role
+     * @param clientId String
+     * @param clientSecret String
+     * @param token String
+     * @param role String
      */
     public Token(String clientId, String clientSecret, String token, String role) {
         super();

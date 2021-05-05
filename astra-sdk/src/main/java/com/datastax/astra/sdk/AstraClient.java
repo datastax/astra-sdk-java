@@ -184,7 +184,11 @@ public class AstraClient implements Closeable {
         LOGGER.info("[AstraClient] has been initialized.");
     }
     
-    /** Document Api. */
+    /**
+     * Document Api.
+     * 
+     * @return ApiDocumentClient
+     */
     public ApiDocumentClient apiDocument() {
         if (stargateClient == null) {
             throw new IllegalStateException("Api Document is not available "
@@ -195,6 +199,8 @@ public class AstraClient implements Closeable {
     
     /** 
      * Rest Api. 
+     * 
+     * @return ApiRestClient
      */
     public ApiRestClient apiRest() {
         if (stargateClient == null) {
@@ -206,6 +212,8 @@ public class AstraClient implements Closeable {
     
     /** 
      * GraphQL Api. 
+     * 
+     * @return ApiGraphQLClient
      */
     public ApiGraphQLClient apiGraphQL() {
         if (stargateClient == null) {
@@ -216,7 +224,9 @@ public class AstraClient implements Closeable {
     }
     
     /**
-     *  Devops API
+     * Devops API
+     * 
+     * @return ApiDevopsClient
      */
     public ApiDevopsClient apiDevops() {
         if (apiDevops == null) {
@@ -227,7 +237,9 @@ public class AstraClient implements Closeable {
     }
     
     /**
-     *  CQL API
+     * CQL API
+     * 
+     * @return CqlSession
      */
     public CqlSession cqlSession() {
         if (stargateClient == null || stargateClient.cqlSession().isEmpty()) {
@@ -239,6 +251,8 @@ public class AstraClient implements Closeable {
     
     /**
      * Builder Pattern
+     * 
+     * @return AstraClientBuilder
      */
     public static final AstraClientBuilder builder() {
         return new AstraClientBuilder();
@@ -310,6 +324,13 @@ public class AstraClient implements Closeable {
             }
         }   
         
+        /**
+         * astraRc
+         * 
+         * @param arc AstraRc
+         * @param sectionName String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder astraRc(AstraRc arc, String sectionName) {
             Map<String,String> section = arc.getSections().get(sectionName);
             if (null != section) {
@@ -338,36 +359,84 @@ public class AstraClient implements Closeable {
             return this;
         }
         
+        /**
+         * databaseId
+         * 
+         * @param uid String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder databaseId(String uid) {
             Assert.hasLength(uid, "astraDatabaseId");
             this.astraDatabaseId = uid;
             return this;
         }
+
+        /**
+         * cloudProviderRegion
+         * 
+         * @param region String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder cloudProviderRegion(String region) {
             Assert.hasLength(region, "astraDatabaseRegion");
             this.astraDatabaseRegion = region;
             return this;
         }
+
+        /**
+         * appToken
+         * 
+         * @param token String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder appToken(String token) {
             Assert.hasLength(token, "token");
             this.appToken = token;
             return this;
         }
+
+        /**
+         * secureConnectBundle
+         * 
+         * @param secureConnectBundle String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder secureConnectBundle(String secureConnectBundle) {
             Assert.hasLength(secureConnectBundle, "secureConnectBundle");
             this.secureConnectBundle = secureConnectBundle;
             return this;
         }
+
+        /**
+         * keyspace
+         * 
+         * @param keyspace String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder keyspace(String keyspace) {
             Assert.hasLength(keyspace, "keyspace");
             this.keyspace = keyspace;
             return this;
         }
+
+        /**
+         * clientId
+         * 
+         * @param clientId String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder clientId(String clientId) {
             Assert.hasLength(clientId, "clientId");
             this.clientId = clientId;
             return this;
         }
+
+        /**
+         * clientSecret
+         * 
+         * @param clientSecret String
+         * @return AstraClientBuilder
+         */
         public AstraClientBuilder clientSecret(String clientSecret) {
             Assert.hasLength(clientSecret, "clientSecret");
             this.clientSecret = clientSecret;
@@ -376,6 +445,8 @@ public class AstraClient implements Closeable {
         
         /**
          * Create the client
+         * 
+         * @return AstraClient
          */
         public AstraClient build() {
             return new AstraClient(this);
