@@ -46,6 +46,7 @@ public class ApiResponse<DATA> {
     
     /**
      * Default Constructor.
+     * @param t DATA
      */
     public ApiResponse(DATA t) {
         this.data = t;

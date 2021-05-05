@@ -41,6 +41,10 @@ public class DocumentResultPage< DOC > extends ResultPage<ApiDocument<DOC>> {
     
     /**
      * Full constructor.
+     * 
+     * @param pageSize int
+     * @param pageState String
+     * @param results List
      */
     public DocumentResultPage(int pageSize, String pageState, List<ApiDocument<DOC>> results) {
         super(pageSize,pageState,results);

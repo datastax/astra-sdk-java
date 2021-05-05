@@ -72,6 +72,8 @@ public class IndexClient {
     
     /**
      * Syntax sugar
+     * 
+     * @return String
      */
     public String getEndPointSchemaCurrentIndex() {
         return keyspaceClient.getEndPointSchemaKeyspace() 
@@ -94,7 +96,8 @@ public class IndexClient {
     
     /**
      * Check if the column exist on the 
-     * @return
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return tableClient.indexesNames().anyMatch(indexName::equals);
@@ -143,5 +146,4 @@ public class IndexClient {
         }
         handleError(response);
     }
-    
 }

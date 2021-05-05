@@ -57,6 +57,12 @@ public class ApiDocumentClient extends ApiSupport {
     
     /**
      * Constructor for ASTRA.
+     * 
+     * @param username String
+     * @param password String
+     * @param endPointAuthentication String
+     * @param appToken String
+     * @param endPointApiDocument String
      */
     public ApiDocumentClient(String username, String password, String endPointAuthentication, String appToken, String endPointApiDocument) {
         hasLength(endPointApiDocument, "endPointApiDocument");
@@ -72,6 +78,8 @@ public class ApiDocumentClient extends ApiSupport {
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
+     * 
+     * @return Stream
      */
     public Stream<Namespace> namespaces() {
         String endpoint = endPointApiDocument + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
@@ -105,6 +113,7 @@ public class ApiDocumentClient extends ApiSupport {
      * Return list of Namespace (keyspaces) names available.
      *
      * @see Namespace
+     * @return Stream
      */
     public Stream<String> namespaceNames() {
         return namespaces().map(Keyspace::getName);
@@ -112,6 +121,9 @@ public class ApiDocumentClient extends ApiSupport {
     
     /**
      * Move the document API (namespace client)
+     * 
+     * @param namespace String
+     * @return NamespaceClient
      */
     public NamespaceClient namespace(String namespace) {
         return new NamespaceClient(this, namespace);

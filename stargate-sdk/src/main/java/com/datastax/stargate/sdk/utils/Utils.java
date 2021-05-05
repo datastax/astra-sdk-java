@@ -36,18 +36,32 @@ public class Utils {
      */
     private Utils() {}
     
-    
+    /**
+     * hasLength
+     * 
+     * @param str String
+     * @return boolean
+     */
     public static boolean hasLength(String str) {
         return (null != str && !"".equals(str));
     }
     
+    /**
+     * paramsProvided
+     * 
+     * @param lStr String
+     * @return boolean
+     */
     public static boolean paramsProvided(String... lStr) {
         if (null == lStr) return false;
         return Arrays.stream(lStr).allMatch(Utils::hasLength);
     }
     
     /**
-     * Download file
+     * downloadFile
+     * 
+     * @param urlStr String
+     * @param file String
      */
     public static void downloadFile(String urlStr, String file) {
         URL url;
@@ -75,5 +89,4 @@ public class Utils {
             } catch (IOException e) {}
         }
     }
-
 }

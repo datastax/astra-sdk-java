@@ -73,6 +73,8 @@ public class ColumnsClient {
     
     /**
      * Syntax sugar
+     * 
+     * @return String
      */
     public String getEndPointSchemaCurrentColumn() {
         return keyspaceClient.getEndPointSchemaKeyspace() 
@@ -83,7 +85,7 @@ public class ColumnsClient {
     /**
      * Retrieve a column.
      *
-     * @return
+     * @return ColumnDefinition
      */
     public Optional<ColumnDefinition> find() {
         HttpResponse<String> response;
@@ -119,7 +121,8 @@ public class ColumnsClient {
     
     /**
      * Check if the column exist on the 
-     * @return
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return find().isPresent();
@@ -128,7 +131,7 @@ public class ColumnsClient {
     /**
      * Add a column.
      *
-     * @param cd
+     * @param cd ColumnDefinition
      */
     public void create(ColumnDefinition cd) {
         Assert.notNull(cd, "ColumnDefinition");
@@ -169,7 +172,7 @@ public class ColumnsClient {
     /**
      * Update a column.
      *
-     * @param cd
+     * @param newName String
      */
     public void rename(String newName) {
         Assert.hasLength(newName, "New columns name");
@@ -189,5 +192,4 @@ public class ColumnsClient {
         }
         handleError(response);
     }
-    
 }

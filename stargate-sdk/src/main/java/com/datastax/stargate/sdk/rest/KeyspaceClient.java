@@ -63,12 +63,20 @@ public class KeyspaceClient {
     
     /**
      * Full constructor.
+     * 
+     * @param restclient ApiRestClient
+     * @param keyspace String
      */
     public KeyspaceClient(ApiRestClient restclient, String keyspace) {
         this.restclient    = restclient;
         this.keyspace = keyspace;
     }
     
+    /**
+     * getEndPointSchemaKeyspace
+     * 
+     * @return String
+     */
     public String getEndPointSchemaKeyspace() {
         return restclient.getEndPointApiRest()
                 + PATH_SCHEMA 
@@ -78,8 +86,9 @@ public class KeyspaceClient {
     
     /**
      * Find a namespace and its metadata based on its id
+     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspace
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspace
+     * @return Keyspace
      */
     public Optional<Keyspace> find() {
         Assert.hasLength(keyspace, "keyspace id");
@@ -116,6 +125,8 @@ public class KeyspaceClient {
     
     /**
      * Check it the keyspace exist.
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return find().isPresent();
@@ -123,8 +134,9 @@ public class KeyspaceClient {
     
     /**
      * Create a keyspace providing the replications per Datacenter.
-     *
      * - IF NOT EXIST is always applied.
+     * 
+     * @param datacenters DataCenter
      */
     public void create(DataCenter... datacenters) {
         Assert.notNull(keyspace, "keyspace");
@@ -147,6 +159,8 @@ public class KeyspaceClient {
     
     /**
      * Create a namespace.
+     * 
+     * @param replicas int
      */
     public void createSimple(int replicas) {
         Assert.notNull(keyspace, "namespace");
@@ -167,8 +181,7 @@ public class KeyspaceClient {
     
     /**
      * Delete a keyspace.
-     * 
-     * @see https://stargate.io/docs/stargate/1.0/developers-guide/api_ref/openapi_rest_ref.html#_deletekeyspace
+     * https://stargate.io/docs/stargate/1.0/developers-guide/api_ref/openapi_rest_ref.html#_deletekeyspace
      */
     public void delete() {
         HttpResponse<String> response;
@@ -184,8 +197,9 @@ public class KeyspaceClient {
     
     /**
      * List tablenames in keyspace.
+     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getTables
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getTables
+     * @return TableDefinition
      */
     public Stream<TableDefinition> tables() {
         HttpResponse<String> response;
@@ -212,6 +226,8 @@ public class KeyspaceClient {
     
     /**
      * Map to list only table names.
+     * 
+     * @return Stream
      */
     public Stream<String> tableNames() {
         return tables().map(TableDefinition::getName);
@@ -219,6 +235,9 @@ public class KeyspaceClient {
     
     /**
      * Move to the Table client
+     * 
+     * @param tableName String
+     * @return TableClient
      */
     public TableClient table(String tableName) {
         Assert.hasLength(tableName, "tableName");
@@ -230,6 +249,9 @@ public class KeyspaceClient {
     
     /**
      * Syntax sugar more easier to understand in a fluent API.
+     * 
+     * @param tableName tableName
+     * @param ct CreateTable
      */
     public void createTable(String tableName, CreateTable ct) {
         table(tableName).create(ct);
@@ -238,12 +260,9 @@ public class KeyspaceClient {
     /**
      * Getter accessor for attribute 'keyspace'.
      *
-     * @return
-     *       current value of 'keyspace'
+     * @return current value of 'keyspace'
      */
     public String getKeyspace() {
         return keyspace;
     }
-    
-    
 }

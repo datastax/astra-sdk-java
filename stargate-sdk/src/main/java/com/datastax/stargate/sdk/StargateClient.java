@@ -80,28 +80,32 @@ public class StargateClient implements Closeable {
     private CqlSession cqlSession;
     
     /**
-     *  Accessing Document API
+     * Accessing Document API
+     * @return ApiDocumentClient
      */
     public ApiDocumentClient apiDocument() {
         return apiDoc;
     }
     
     /**
-     *  Accessing Rest API
+     * Accessing Rest API
+     * @return ApiRestClient
      */
-    public  ApiRestClient apiRest() {
+    public ApiRestClient apiRest() {
         return apiRest;
     }
     
     /**
-     *  Accessing Rest API
+     * Accessing Rest API
+     * @return ApiGraphQLClient
      */
-    public  ApiGraphQLClient apiGraphQL() {
+    public ApiGraphQLClient apiGraphQL() {
         return apiGraphQL;
     }
     
     /**
      * Accessing Cql Session.
+     * @return CqlSession
      */
     public Optional<CqlSession> cqlSession() {
         return Optional.ofNullable(cqlSession);
@@ -204,6 +208,7 @@ public class StargateClient implements Closeable {
     
     /**
      * Builder Pattern
+     * @return StargateClientBuilder
      */
     public static final StargateClientBuilder builder() {
         return new StargateClientBuilder();
@@ -336,6 +341,7 @@ public class StargateClient implements Closeable {
         
         /**
          * Create the client
+         * @return StargateClient
          */
         public StargateClient build() {
             return new StargateClient(this);
@@ -350,5 +356,4 @@ public class StargateClient implements Closeable {
             LOGGER.info("Closing CqlSession.");
         }
     }
-
 }

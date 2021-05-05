@@ -61,6 +61,9 @@ public class NamespaceClient {
     
     /**
      * Full constructor.
+     * 
+     * @param docClient ApiDocumentClient
+     * @param namespace String
      */
     public NamespaceClient(ApiDocumentClient docClient, String namespace) {
         this.docClient    = docClient;
@@ -73,8 +76,11 @@ public class NamespaceClient {
                 + PATH_SCHEMA_NAMESPACES 
                 + "/" + namespace;
     }
+
     /**
      * Find a namespace and its metadata based on its id
+     * 
+     * @return Namespace
      */
     public Optional<Namespace> find() {
         Assert.hasLength(namespace, "namespaceId");
@@ -104,6 +110,8 @@ public class NamespaceClient {
     
     /**
      * Check if namespace exists.
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return find().isPresent();
@@ -111,6 +119,8 @@ public class NamespaceClient {
     
     /**
      * Create a namespace.
+     * 
+     * @param datacenters DataCenter
      */
     public void create(DataCenter... datacenters) {
         Assert.notNull(namespace, "namespace");
@@ -135,6 +145,8 @@ public class NamespaceClient {
     
     /**
      * Create a namespace.
+     * 
+     * @param replicas int
      */
     public void createSimple(int replicas) {
         Assert.notNull(namespace, "namespace");
@@ -174,8 +186,9 @@ public class NamespaceClient {
    
     /**
      * List collections in namespace.
-     * 
      * GET /v2/namespaces/{namespace-id}/collections
+     * 
+     * @return CollectionDefinition
      */
     public Stream<CollectionDefinition> collections() {
         String listcolEndpoint = docClient.getEndPointApiDocument() 
@@ -203,13 +216,21 @@ public class NamespaceClient {
     
     /**
      * List collections in namespace.
-     * 
      * GET /v2/namespaces/{namespace-id}/collections
+     * 
+     * @return String
      */
     public Stream<String> collectionNames() {
         return collections().map(CollectionDefinition::getName);
     }
     
+    /**
+     * marshallApiResponseNamespace
+     * 
+     * @param body String
+     * @return ApiResponse
+     * @throws Exception Exception
+     */
     private ApiResponse<Namespace> marshallApiResponseNamespace(String body)
     throws Exception {
        return getObjectMapper()
@@ -226,6 +247,9 @@ public class NamespaceClient {
     
     /**
      * Move to the collection client
+     * 
+     * @param collectionName String
+     * @return CollectionClient
      */
     public CollectionClient collection(String collectionName) {
         return new CollectionClient(docClient, this, collectionName);

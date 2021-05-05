@@ -43,16 +43,22 @@ public class Row extends HashMap<String, Object> {
         }
         return super.get(colName);
     }
-    
+
     /**
      * Retrieve a column value as a String.
+     * 
+     * @param colName String
+     * @return String
      */
     public String getString(String colName) {
         return String.valueOf(get(colName));
     }
-    
+
     /**
      * Retrieve a column value as a Double.
+     * 
+     * @param colName String
+     * @return Double
      */
     public Double getDouble(String colName) {
         return Double.valueOf(getString(colName));
@@ -60,9 +66,11 @@ public class Row extends HashMap<String, Object> {
     
     /**
      * Retrieve a column value as an Integer.
+     * 
+     * @param colName String
+     * @return Integer
      */
     public Integer getInt(String colName) {
         return getDouble(colName).intValue();
     }
-
 }

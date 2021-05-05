@@ -68,6 +68,10 @@ public class CollectionClient {
     
     /**
      * Full constructor.
+     * 
+     * @param docClient ApiDocumentClient
+     * @param namespaceClient NamespaceClient
+     * @param collectionName String
      */
     public CollectionClient(ApiDocumentClient docClient,  NamespaceClient namespaceClient,  String collectionName) {
         this.docClient     = docClient;
@@ -78,6 +82,9 @@ public class CollectionClient {
     
     /**
      * Move to document Resource
+     * 
+     * @param docId String
+     * @return DocumentClient
      */
     public DocumentClient document(String docId) {
         return new DocumentClient(docClient, namespaceClient, this, docId);
@@ -98,6 +105,8 @@ public class CollectionClient {
     
     /**
      * Check if the collection exist.
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return namespaceClient.collectionNames()
@@ -163,6 +172,10 @@ public class CollectionClient {
     
     /**
      * Create a new document from any serializable object
+     * 
+     * @param <DOC> DOC
+     * @param doc DOC
+     * @return DOC
      */
     public <DOC extends Serializable> String createNewDocument(DOC doc) {
         Objects.requireNonNull(doc);
@@ -196,6 +209,10 @@ public class CollectionClient {
      * 
      * Result is (always) paged, default page sze is 50, API only allow 100 MAX.
      * Here we get first page as we do not provide paging state
+     * 
+     * @param <DOC> DOC
+     * @param clazz DOC
+     * @return DOC
      */
     public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz) {
         return findAll(clazz, SearchDocumentQuery.DEFAULT_PAGING_SIZE);

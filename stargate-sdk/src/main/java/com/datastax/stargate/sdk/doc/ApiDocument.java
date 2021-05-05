@@ -34,6 +34,9 @@ public class ApiDocument<BEAN> {
     
     /**
      * Constructor with Params
+     * 
+     * @param docId String
+     * @param doc BEAN
      */
     public ApiDocument(String docId, BEAN doc) {
         this.documentId = docId;

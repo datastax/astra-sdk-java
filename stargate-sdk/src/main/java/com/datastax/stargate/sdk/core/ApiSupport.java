@@ -78,7 +78,7 @@ public abstract class ApiSupport {
                 .executor(Executors.newFixedThreadPool(5))
                 .build();
     
-    /** Object <=> Json marshaller as a Jackson Mapper. */
+    /** Object to Json marshaller as a Jackson Mapper. */
     protected static final ObjectMapper objectMapper = new ObjectMapper()
                 .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
                 .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
@@ -114,6 +114,7 @@ public abstract class ApiSupport {
     
     /**
      * Generate or renew authentication token
+     * @return String
      */
     public String getToken() {
         if ((System.currentTimeMillis() - tokenCreatedtime) > 1000 * tokenttl.getSeconds()) {
@@ -161,6 +162,7 @@ public abstract class ApiSupport {
     
     /**
      * Utility to process error Requests.
+     * @param res HttpResponse
      */
     public static void handleError(HttpResponse<String> res) {
         if (res.statusCode() >=300) {
@@ -184,10 +186,9 @@ public abstract class ApiSupport {
     /**
     * Mutualizing request headers/settings.
     *
-    * @param suffix
-    *      end of the url
-    * @return
-    *      builder for the query
+    * @param url end of the url
+    * @param token String
+    * @return builder for the query
     */
     public static HttpRequest.Builder startRequest(String url, String token) {
        return HttpRequest.newBuilder()

@@ -38,6 +38,12 @@ public class ApiGraphQLClient extends ApiSupport {
     
     /**
      * Constructor for ASTRA.
+     * 
+     * @param username String
+     * @param password String
+     * @param endPointAuthentication String
+     * @param appToken String
+     * @param endPointApiGraphQL String
      */
     public ApiGraphQLClient(String username, String password, String endPointAuthentication,  String appToken, String endPointApiGraphQL) {
         hasLength(endPointApiGraphQL, "endPointApiRest");

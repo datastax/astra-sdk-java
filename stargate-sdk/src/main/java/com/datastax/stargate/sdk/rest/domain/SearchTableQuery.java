@@ -62,7 +62,11 @@ public class SearchTableQuery {
     /** List of items to retrieve. */
     private final List<SortField> fieldsToSort;
     
-    /** static accees to a builder instance. */
+    /**
+     * static accees to a builder instance.
+     * 
+     * @return SearchTableQueryBuilder
+     */
     public static SearchTableQueryBuilder builder() {
         return new SearchTableQueryBuilder(); 
     }
@@ -123,6 +127,12 @@ public class SearchTableQuery {
             return new SearchTableQuery(this);
         }
          
+        /**
+         * withPageSize
+         * 
+         * @param pageSize int
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder withPageSize(int pageSize) {
             if (pageSize < 1 || pageSize > PAGING_SIZE_MAX) {
                 throw new IllegalArgumentException("Page size should be between 1 and 100");
@@ -131,6 +141,12 @@ public class SearchTableQuery {
             return this;
         }
         
+        /**
+         * withPageState
+         * 
+         * @param pageState String
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder withPageState(String pageState) {
             Assert.hasLength(pageState, "pageState");
             this.pageState = pageState;
@@ -139,6 +155,9 @@ public class SearchTableQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields String
+         * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder withReturnedFields(String... fields) {
             Assert.notNull(fields, "fields");
@@ -150,6 +169,9 @@ public class SearchTableQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields String
+         * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder select(String... fields) {
             return withReturnedFields(fields);
@@ -157,6 +179,9 @@ public class SearchTableQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields SortField
+         * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder withSortedFields(SortField... fields) {
             Assert.notNull(fields, "fields");
@@ -166,13 +191,19 @@ public class SearchTableQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields SortField
+         * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder sortBy(SortField... fields) {
             return withSortedFields(fields);
         }
         
         /**
-         * Use 'where" to help you create 
+         * Use 'where" to help you create
+         * 
+         * @param where String
+         * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder withWhereClauseJson(String where) {
             if (this.whereClause != null) {
@@ -185,6 +216,9 @@ public class SearchTableQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fieldName String
+         * @return SearchTableWhere
          */
         public SearchTableWhere where(String fieldName) {
             Assert.hasLength(fieldName, "fieldName");
@@ -194,7 +228,7 @@ public class SearchTableQuery {
         /**
          * Build Where Clause based on Filters.
          *
-         * @return
+         * @return String
          */
         public String getWhereClause() {
             // Explicit values will got primer on filters
@@ -226,51 +260,135 @@ public class SearchTableQuery {
         
         /**
          * Only constructor allowed
+         * 
+         * @param builder SearchTableQueryBuilder
+         * @param fieldName String
          */
         protected SearchTableWhere(SearchTableQueryBuilder builder, String fieldName) {
             this.builder   = builder;
             this.fieldName = fieldName;
         }
         
+        /**
+         * addFilter
+         * 
+         * @param op FilterCondition
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         private SearchTableQueryBuilder addFilter(FilterCondition op, Object value) {
             builder.filters.add(new Filter(fieldName,op, value));
             return builder;
         }
         
+        /**
+         * isLessThan
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isLessThan(Object value) {
             return addFilter(FilterCondition.LessThan, value);
         }
+
+        /**
+         * isLessOrEqualsThan
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isLessOrEqualsThan(Object value) {
             return addFilter(FilterCondition.LessThanOrEqualsTo, value);
         }
+
+        /**
+         * isGreaterThan
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isGreaterThan(Object value) {
             return addFilter(FilterCondition.GreaterThan, value);
         }
+        
+        /**
+         * isGreaterOrEqualsThan
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isGreaterOrEqualsThan(Object value) {
             return addFilter(FilterCondition.GreaterThenOrEqualsTo, value);
         }
+
+        /**
+         * isEqualsTo
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isEqualsTo(Object value) {
             return addFilter(FilterCondition.EqualsTo, value);
         }
+
+        /**
+         * isNotEqualsTo
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isNotEqualsTo(Object value) {
             return addFilter(FilterCondition.NotEqualsTo, value);
         }
+        
+        /**
+         * exists
+         * 
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder exists() {
             return addFilter(FilterCondition.Exists, null);
         }
+
+        /**
+         * isIn
+         * 
+         * @param values Collection
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder isIn(Collection<Object> values) {
             return addFilter(FilterCondition.In, values);
         }
+
+        /**
+         * contains
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder contains(Object value) {
             return addFilter(FilterCondition.Contains, value);
         }
+
+        /**
+         * containsKey
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder containsKey(Object value) {
             return addFilter(FilterCondition.ContainsKey, value);
         }
+
+        /**
+         * containsEntry
+         * 
+         * @param value Object
+         * @return SearchTableQueryBuilder
+         */
         public SearchTableQueryBuilder containsEntry(Object value) {
             return addFilter(FilterCondition.ContainsEntry, value);
         }
-        
     }
 
     /**

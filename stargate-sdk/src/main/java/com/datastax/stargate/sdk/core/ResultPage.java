@@ -24,7 +24,7 @@ import java.util.Optional;
  *
  * @author Cedrick LUNVEN (@clunven)
  *
- * @param <DOC>
+ * @param <R>
  *      document type
  */
 public class ResultPage<R> {
@@ -45,6 +45,10 @@ public class ResultPage<R> {
     }
     /**
      * Default constructor.
+     * 
+     * @param pageSize int
+     * @param pageState String
+     * @param results List
      */
     public ResultPage(int pageSize, String pageState, List<R> results) {
         this.pageSize  = pageSize;

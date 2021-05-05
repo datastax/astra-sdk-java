@@ -52,6 +52,12 @@ public class ApiRestClient extends ApiSupport {
     
     /**
      * Constructor for ASTRA.
+     * 
+     * @param username String
+     * @param password String
+     * @param endPointAuthentication String
+     * @param appToken String
+     * @param endPointApiRest String
      */
     public ApiRestClient(String username, String password, String endPointAuthentication,  String appToken, String endPointApiRest) {
         hasLength(endPointApiRest, "endPointApiRest");
@@ -67,8 +73,9 @@ public class ApiRestClient extends ApiSupport {
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
+     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
+     * @return Keyspace
      */
     public Stream<Keyspace> keyspaces() {
         
@@ -101,6 +108,7 @@ public class ApiRestClient extends ApiSupport {
      * Return list of Namespace (keyspaces) names available.
      *
      * @see Namespace
+     * @return String
      */
     public Stream<String> keyspaceNames() {
         return keyspaces().map(Keyspace::getName);
@@ -108,6 +116,9 @@ public class ApiRestClient extends ApiSupport {
     
     /**
      * Move to the Rest API
+     * 
+     * @param keyspace String
+     * @return KeyspaceClient
      */
     public KeyspaceClient keyspace(String keyspace) {
         return new KeyspaceClient(this, keyspace);
@@ -116,8 +127,7 @@ public class ApiRestClient extends ApiSupport {
     /**
      * Getter accessor for attribute 'endPointApiRest'.
      *
-     * @return
-     *       current value of 'endPointApiRest'
+     * @return current value of 'endPointApiRest'
      */
     public String getEndPointApiRest() {
         return endPointApiRest;

@@ -36,9 +36,12 @@ public class RowResultPage extends ResultPage<Row> {
     
     /**
      * Full constructor.
+     * 
+     * @param pageSize int
+     * @param pageState String
+     * @param results List
      */
     public RowResultPage(int pageSize, String pageState, List<Row> results) {
         super(pageSize,pageState,results);
     }
-    
 }
