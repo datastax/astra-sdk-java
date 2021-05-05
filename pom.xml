@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.datastax.astra</groupId>
   <artifactId>astra-sdk-parent</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <name>Stargate and Astra Java SDK</name>
   <packaging>pom</packaging>
   <inceptionYear>2021</inceptionYear>
@@ -35,6 +35,7 @@
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <maven-fmt-maven-plugin>2.2.0</maven-fmt-maven-plugin>
     <maven-xml-format-maven-plugin>3.0.7</maven-xml-format-maven-plugin>
+    <skipTests>true</skipTests>
   </properties>
   <modules>
     <module>astra-sdk</module>
@@ -160,6 +161,9 @@
               <version>${junit-jupiter.version}</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <skipTests>${skipTests}</skipTests>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -174,7 +178,7 @@
     <connection>scm:git:git@github.com:datastax/astra-sdk-java.git</connection>
     <developerConnection>scm:git:git@github.com:datastax/astra-sdk-java.git</developerConnection>
     <url>https://github.com/datastax/astra-sdk-java</url>
-    <tag>HEAD</tag>
+    <tag>astra-sdk-parent-0.1.0</tag>
   </scm>
   <developers>
     <developer>
