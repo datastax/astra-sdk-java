@@ -29,3 +29,4 @@ dist
 *.log
 
 release.properties
+pom.xml.releaseBackup
