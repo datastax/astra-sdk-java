@@ -137,8 +137,8 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
                 .cloudProvider(CloudProviderType.AWS)
                 .cloudRegion("us-east-1")
                 .keyspace(SERVERLESS_KEYSPACE)
-                .username("cedrick")
-                .password("cedrick1")
+                .username("...")
+                .password("...")
                 .build();
         
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.createDatabase(null));

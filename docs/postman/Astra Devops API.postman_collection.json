@@ -106,7 +106,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n     \"name\":\"db_created_with_postman\",\n     \"keyspace\": \"ks1\",\n     \"cloudProvider\": \"AWS\",\n     \"region\":\"us-east-1\",\n     \"tier\":\"A5\",\n     \"capacityUnits\":1,\n     \"user\":\"astraUser\",\n     \"password\":\"astraPassword1\"\n}"
+					"raw": "{\n     \"name\":\"db_created_with_postman\",\n     \"keyspace\": \"ks1\",\n     \"cloudProvider\": \"AWS\",\n     \"region\":\"us-east-1\",\n     \"tier\":\"A5\",\n     \"capacityUnits\":1,\n     \"user\":\"astraUser\",\n     \"password\":\"...\"\n}"
 				},
 				"url": {
 					"raw": "https://api.astra.datastax.com/v2/databases",
@@ -413,7 +413,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\":\"astraUser\",\n    \"password\":\"astraPassword1\"\n}"
+					"raw": "{\n    \"username\":\"astraUser\",\n    \"password\":\"...\"\n}"
 				},
 				"url": {
 					"raw": "https://api.astra.datastax.com/v2/databases/{{targetDatabaseId}}/resetPassword",

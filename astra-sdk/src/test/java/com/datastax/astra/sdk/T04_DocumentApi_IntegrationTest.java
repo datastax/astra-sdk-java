@@ -62,9 +62,9 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         
         /*
         client = AstraClient.builder()
-                .databaseId("f6345d79-6662-4774-86e8-641e9f617c34")
-                .cloudProviderRegion("us-east-1")
-                .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
+                .databaseId("...")
+                .cloudProviderRegion("...")
+                .appToken("AstraCS:...")
                 .build();
         */
         

@@ -63,8 +63,8 @@ public class T03_Devops_C10_IntegrationTest extends AbstractAstraIntegrationTest
                 .cloudProvider(CloudProviderType.AWS)
                 .cloudRegion("us-east-1")
                 .keyspace(KEYSPACE)
-                .username("cedrick")
-                .password("cedrick1")
+                .username("...")
+                .password("...")
                 .build();
        
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.createDatabase(null));
