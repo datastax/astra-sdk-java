@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.rest;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
@@ -49,6 +65,10 @@ public class KeyClient {
     
     /**
      * Full constructor.
+     * 
+     * @param token String
+     * @param tableClient TableClient
+     * @param keys Object
      */
     public KeyClient(String token, TableClient tableClient, Object... keys) {
         this.token          = token;
@@ -58,6 +78,8 @@ public class KeyClient {
     
     /**
      * Build endpoint of this resource
+     * 
+     * @return String
      */
     private String getEndPointCurrentKey() {
         StringBuilder sbUrl = new StringBuilder(tableClient.getEndPointTable());
@@ -76,8 +98,8 @@ public class KeyClient {
     /**
      * Retrieve a set of Rows from Primary key value.
      *
-     * @param query
-     * @return
+     * @param query QueryWithKey
+     * @return RowResultPage
      */
     // GET
     public RowResultPage find(QueryWithKey query) {
@@ -115,9 +137,11 @@ public class KeyClient {
     
     /**
      * Retrieve a set of Rows from Primary key value.
-     *
-     * @param query
-     * @return
+     * 
+     * @param <T> T
+     * @param query QueryWithKey
+     * @param mapper RowMapper
+     * @return ResultPage
      */
     public <T> ResultPage<T> find(QueryWithKey query, RowMapper<T> mapper) {
         RowResultPage rrp = find(query);
@@ -142,7 +166,11 @@ public class KeyClient {
         handleError(response);
     }
     
-    // PATCH
+    /**
+     * update
+     * 
+     * @param newRecord Map
+     */
     public void update(Map<String, Object> newRecord) {
         HttpResponse<String> response;
         try {
@@ -157,7 +185,11 @@ public class KeyClient {
         handleError(response);
     }
     
-    // PUT
+    /**
+     * replace
+     * 
+     * @param newRecord Map
+     */
     public void replace(Map<String, Object> newRecord) {
        HttpResponse<String> response;
         try {
@@ -175,6 +207,9 @@ public class KeyClient {
     
     /**
      * Build complex URL as expected with primaryKey.
+     * 
+     * @param query QueryWithKey
+     * @return String
      */
     private String buildQueryUrl(QueryWithKey query) {
         try {
@@ -203,6 +238,4 @@ public class KeyClient {
             throw new IllegalArgumentException("Cannot enode URL", e);
         }
     }
-  
-
 }

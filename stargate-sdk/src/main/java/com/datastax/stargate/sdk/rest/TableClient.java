@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.rest;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
@@ -64,6 +80,10 @@ public class TableClient {
     
     /**
      * Full constructor.
+     * 
+     * @param restClient ApiRestClient
+     * @param keyspaceClient KeyspaceClient
+     * @param tableName String
      */
     public TableClient(ApiRestClient restClient,  KeyspaceClient keyspaceClient,  String tableName) {
         this.restClient     = restClient;
@@ -77,6 +97,8 @@ public class TableClient {
     
     /**
      * Syntax sugar
+     * 
+     * @return String
      */
     public String getEndPointTableSchema() {
         return keyspaceClient.getEndPointSchemaKeyspace() + "/tables/" + tableName;
@@ -85,8 +107,7 @@ public class TableClient {
     /**
      * Getter accessor for attribute 'tableName'.
      *
-     * @return
-     *       current value of 'tableName'
+     * @return current value of 'tableName'
      */
     public String getTableName() {
         return tableName;
@@ -96,8 +117,7 @@ public class TableClient {
      * Get metadata of the collection. There is no dedicated resources we
      * use the list and filter with what we need.
      *
-     * @return
-     *      metadata of the collection if its exist or empty
+     * @return metadata of the collection if its exist or empty
      */
     public Optional<TableDefinition> find() {
         return keyspaceClient.tables()
@@ -107,6 +127,8 @@ public class TableClient {
     
     /**
      * Check if the table exist.
+     * 
+     * @return boolean
      */
     public boolean exist() { 
         return keyspaceClient.tableNames()
@@ -115,9 +137,9 @@ public class TableClient {
     
     /**
      * Create a table 
-     * @param table creation request
+     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
+     * @param tcr creation request
      */
      public void create(CreateTable tcr) {
          Assert.notNull(tcr, "TableCreationRequest");
@@ -135,6 +157,11 @@ public class TableClient {
          handleError(response);
      }
      
+     /**
+      * updateOptions
+      * 
+      * @param to TableOptions
+      */
      public void updateOptions(TableOptions to) {
          Assert.notNull(to, "TableCreationRequest");
          HttpResponse<String> response;
@@ -157,8 +184,7 @@ public class TableClient {
      
      /*
       * Delete a table
-      *
-      * @see https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
+      * https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
       */
      public void delete() {
          HttpResponse<String> response;
@@ -218,12 +244,21 @@ public class TableClient {
         return columns().map(ColumnDefinition::getName);
     }
     
+    /**
+     * createColumn
+     * 
+     * @param colName String
+     * @param cd ColumnDefinition
+     */
     public void createColumn(String colName, ColumnDefinition cd) {
         column(colName).create(cd);
     }
     
     /**
      * Move to columns client
+     * 
+     * @param columnId String
+     * @return ColumnsClient
      */
     public ColumnsClient column(String columnId) {
         Assert.hasLength(columnId, "columnName");
@@ -240,6 +275,9 @@ public class TableClient {
     
     /**
      * Move to columns client
+     * 
+     * @param indexName String
+     * @return IndexClient
      */
     public IndexClient index(String indexName) {
         Assert.hasLength(indexName, "indexName");
@@ -250,6 +288,12 @@ public class TableClient {
         return indexsClient.get(indexName);
     }
     
+    /**
+     * createIndex
+     * 
+     * @param idxName String
+     * @param ci CreateIndex
+     */
     public void createIndex(String idxName, CreateIndex ci) {
         index(idxName).create(ci);
     }
@@ -258,7 +302,7 @@ public class TableClient {
      * Retrieve All indexes for a table.
      *
      * @return
-     *      Sream of {@link IndexDefinition} to describe a table
+     *      Stream of {@link IndexDefinition} to describe a table
      */
     public Stream<IndexDefinition> indexes() {
         HttpResponse<String> response;
@@ -287,7 +331,7 @@ public class TableClient {
      * @return
      *      a list of columns names;
      */
-    public  Stream<String> indexesNames() {
+    public Stream<String> indexesNames() {
         return indexes().map(IndexDefinition::getIndex_name);
     }
    
@@ -298,6 +342,8 @@ public class TableClient {
     
     /**
      * Syntax sugar
+     * 
+     * @return String
      */
     public String getEndPointTable() {
         return restClient.getEndPointApiRest() 
@@ -305,8 +351,11 @@ public class TableClient {
                 + "/" + tableName;
     }
    
-    // TODO: Can do better with a bean -> SERIALIZATIO + look at target column type
-    // POST
+    /**
+     * TODO: Can do better with a bean - SERIALIZATIO + look at target column type
+     * 
+     * @param record Map
+     */
     public void upsert(Map<String, Object> record) {
         Assert.notNull(record, "New Record");
         Assert.isTrue(!record.isEmpty(), "New record should not be empty");
@@ -323,7 +372,12 @@ public class TableClient {
         handleError(response);
     }
     
-    // GET
+    /**
+     * search
+     * 
+     * @param query SearchTableQuery
+     * @return RowResultPage
+     */
     public RowResultPage search(SearchTableQuery query) {
         HttpResponse<String> response;
         try {
@@ -358,9 +412,11 @@ public class TableClient {
     
     /**
      * Retrieve a set of Rows from Primary key value.
-     *
-     * @param query
-     * @return
+     * 
+     * @param <T> ResultPage
+     * @param query SearchTableQuery
+     * @param mapper RowMapper
+     * @return ResultPage
      */
     public <T> ResultPage<T> search(SearchTableQuery query, RowMapper<T> mapper) {
         RowResultPage rrp = search(query);
@@ -372,6 +428,12 @@ public class TableClient {
                    .collect(Collectors.toList()));
     }
     
+    /**
+     * buildQueryUrl
+     * 
+     * @param query SearchTableQuery
+     * @return String
+     */
     private String buildQueryUrl(SearchTableQuery query) {
         try {
             StringBuilder sbUrl = new StringBuilder(getEndPointTable());
@@ -405,14 +467,15 @@ public class TableClient {
             throw new IllegalArgumentException("Cannot enode URL", e);
         }
     }
-    
+
     /**
      * Move to the Table client
+     * 
+     * @param keys Object
+     * @return KeyClient
      */
     public KeyClient key(Object... keys) {
         Assert.notNull(keys, "key");
         return new KeyClient(restClient.getToken(), this, keys);
     }
-    
-
 }

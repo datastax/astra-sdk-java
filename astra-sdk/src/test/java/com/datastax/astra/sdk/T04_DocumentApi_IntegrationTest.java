@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.astra.sdk;
 
 import java.lang.reflect.InvocationTargetException;
@@ -46,9 +62,9 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         
         /*
         client = AstraClient.builder()
-                .databaseId("f6345d79-6662-4774-86e8-641e9f617c34")
-                .cloudProviderRegion("us-east-1")
-                .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
+                .databaseId("...")
+                .cloudProviderRegion("...")
+                .appToken("AstraCS:...")
                 .build();
         */
         

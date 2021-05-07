@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.doc;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.PATH_SCHEMA;
@@ -45,6 +61,9 @@ public class NamespaceClient {
     
     /**
      * Full constructor.
+     * 
+     * @param docClient ApiDocumentClient
+     * @param namespace String
      */
     public NamespaceClient(ApiDocumentClient docClient, String namespace) {
         this.docClient    = docClient;
@@ -57,8 +76,11 @@ public class NamespaceClient {
                 + PATH_SCHEMA_NAMESPACES 
                 + "/" + namespace;
     }
+
     /**
      * Find a namespace and its metadata based on its id
+     * 
+     * @return Namespace
      */
     public Optional<Namespace> find() {
         Assert.hasLength(namespace, "namespaceId");
@@ -88,6 +110,8 @@ public class NamespaceClient {
     
     /**
      * Check if namespace exists.
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return find().isPresent();
@@ -95,6 +119,8 @@ public class NamespaceClient {
     
     /**
      * Create a namespace.
+     * 
+     * @param datacenters DataCenter
      */
     public void create(DataCenter... datacenters) {
         Assert.notNull(namespace, "namespace");
@@ -119,6 +145,8 @@ public class NamespaceClient {
     
     /**
      * Create a namespace.
+     * 
+     * @param replicas int
      */
     public void createSimple(int replicas) {
         Assert.notNull(namespace, "namespace");
@@ -158,8 +186,9 @@ public class NamespaceClient {
    
     /**
      * List collections in namespace.
-     * 
      * GET /v2/namespaces/{namespace-id}/collections
+     * 
+     * @return CollectionDefinition
      */
     public Stream<CollectionDefinition> collections() {
         String listcolEndpoint = docClient.getEndPointApiDocument() 
@@ -187,13 +216,21 @@ public class NamespaceClient {
     
     /**
      * List collections in namespace.
-     * 
      * GET /v2/namespaces/{namespace-id}/collections
+     * 
+     * @return String
      */
     public Stream<String> collectionNames() {
         return collections().map(CollectionDefinition::getName);
     }
     
+    /**
+     * marshallApiResponseNamespace
+     * 
+     * @param body String
+     * @return ApiResponse
+     * @throws Exception Exception
+     */
     private ApiResponse<Namespace> marshallApiResponseNamespace(String body)
     throws Exception {
        return getObjectMapper()
@@ -210,6 +247,9 @@ public class NamespaceClient {
     
     /**
      * Move to the collection client
+     * 
+     * @param collectionName String
+     * @return CollectionClient
      */
     public CollectionClient collection(String collectionName) {
         return new CollectionClient(docClient, this, collectionName);

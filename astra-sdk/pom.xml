@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>astra-sdk</artifactId>
 	<name>+ astra-sdk</name>
@@ -9,7 +7,7 @@
 	<parent>
 		<groupId>com.datastax.astra</groupId>
 		<artifactId>astra-sdk-parent</artifactId>
-		<version>0.1.0</version>
+		<version>0.1.9-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -67,15 +65,15 @@
 						<!--  CREDENTIALS -->
 						<property>
 							<name>ASTRA_DB_CLIENT_ID</name>
-							<value>TWRvjlcrgfZYfhcxGZhUlAZH</value>
+							<value>...</value>
 						</property>
 						<property>
 							<name>ASTRA_DB_CLIENT_SECRET</name>
-							<value>7xKSrZPLbWxDJ0WXybX.L9buQuAw,2y-it2v3jl1TARPZCgn1rIXRJX.BQ-TAhOeTS_26pkqd2,m8HtOT5bZcxwn7ysP9pUSW0MrO47Y+OEPx_mM-j8I2DGpniJb6AHy</value>
+							<value>...</value>
 						</property>
 						<property>
 							<name>ASTRA_DB_APPLICATION_TOKEN</name>
-							<value>AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d</value>
+							<value>...</value>
 						</property>
 					</systemProperties>
 				</configuration>

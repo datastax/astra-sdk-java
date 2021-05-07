@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.rest;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
@@ -57,6 +73,8 @@ public class ColumnsClient {
     
     /**
      * Syntax sugar
+     * 
+     * @return String
      */
     public String getEndPointSchemaCurrentColumn() {
         return keyspaceClient.getEndPointSchemaKeyspace() 
@@ -67,7 +85,7 @@ public class ColumnsClient {
     /**
      * Retrieve a column.
      *
-     * @return
+     * @return ColumnDefinition
      */
     public Optional<ColumnDefinition> find() {
         HttpResponse<String> response;
@@ -103,7 +121,8 @@ public class ColumnsClient {
     
     /**
      * Check if the column exist on the 
-     * @return
+     * 
+     * @return boolean
      */
     public boolean exist() {
         return find().isPresent();
@@ -112,7 +131,7 @@ public class ColumnsClient {
     /**
      * Add a column.
      *
-     * @param cd
+     * @param cd ColumnDefinition
      */
     public void create(ColumnDefinition cd) {
         Assert.notNull(cd, "ColumnDefinition");
@@ -153,7 +172,7 @@ public class ColumnsClient {
     /**
      * Update a column.
      *
-     * @param cd
+     * @param newName String
      */
     public void rename(String newName) {
         Assert.hasLength(newName, "New columns name");
@@ -173,5 +192,4 @@ public class ColumnsClient {
         }
         handleError(response);
     }
-    
 }

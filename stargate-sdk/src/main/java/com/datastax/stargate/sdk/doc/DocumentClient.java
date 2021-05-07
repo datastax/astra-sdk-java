@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.doc;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
@@ -38,6 +54,11 @@ public class DocumentClient {
     
     /**
      * Full constructor.
+     * 
+     * @param docClient ApiDocumentClient
+     * @param namespaceClient NamespaceClient
+     * @param collectionClient CollectionClient
+     * @param docId String
      */
     public DocumentClient(
             ApiDocumentClient docClient, NamespaceClient namespaceClient, 
@@ -60,8 +81,9 @@ public class DocumentClient {
     
     /**
      * Leverage find() to check existence without eventual formatting issues. 
+     * https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
+     * @return boolean
      */
     public boolean exist() {
         Assert.hasLength(docId, "documentId");
@@ -75,14 +97,11 @@ public class DocumentClient {
     }
     
     /**
-     * Replace a document
+     * Replace a document. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceDoc
      * 
-     * @param <DOC>
-     *      working class
-     * @param clazz
-     *      working class
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceDoc
+     * @param <DOC> working class
+     * @param doc DOC
+     * @return DOC
      */
     public <DOC extends Serializable> String upsert(DOC doc) {
         Assert.notNull(doc, "document");
@@ -103,14 +122,11 @@ public class DocumentClient {
     }
   
     /**
-     * Update part of a document
+     * Update part of a document. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfDoc
      * 
-     * @param <DOC>
-     *      working class
-     * @param clazz
-     *      working class
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfDoc
+     * @param <DOC> working class
+     * @param doc working class
+     * @return DOC
      */
     public <DOC extends Serializable> String update(DOC doc) {
         Assert.notNull(doc, "document");
@@ -131,16 +147,11 @@ public class DocumentClient {
     
     
     /**
-     * Get a document by {document-id}.
+     * Get a document by {document-id}. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
      *
-     * @param <DOC>
-     *      working class
-     * @param clazz
-     *      working class
-     * @return
-     *      a document if exist
-     *      
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
+     * @param <DOC> working class
+     * @param clazz working class
+     * @return a document if exist
      */
     public <DOC extends Serializable> Optional<DOC> find(Class<DOC> clazz) {
         Assert.hasLength(docId, "documentId");
@@ -161,9 +172,8 @@ public class DocumentClient {
     }
 
     /**
-     * Delete a document.
-     *          
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteDoc
+     * Delete a document. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteDoc
+     *           
      */
     public void delete() {
         Assert.hasLength(docId, "documentId");
@@ -186,16 +196,12 @@ public class DocumentClient {
     
     /**
      * Get a sub document by {document-path}.
+     * https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/GetSubDocByPath
      *
-     * @param <SUBDOC>
-     *      working class
-     * @param className
-     *      working class
-     * @param path
-     *      subpath in the doc/ 
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/GetSubDocByPath
-     * @return
+     * @param <SUBDOC> working class
+     * @param path subpath in the doc
+     * @param className  working class
+     * @return SUBDOC
      */
     public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> className) {
         Assert.hasLength(docId, "documentId");
@@ -221,13 +227,11 @@ public class DocumentClient {
     
     /**
      * Replace a subpart of the document.
+     * https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceSubDoc
      * 
-     * @param <SUBDOC>
-     *      working class
-     * @param newValue
-     *      object for the new value
-     *      
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceSubDoc
+     * @param <SUBDOC> working class
+     * @param path subpath in the doc
+     * @param newValue object for the new value
      */
     public <SUBDOC> void replaceSubDocument(String path, SUBDOC newValue) {
         Assert.hasLength(path, "path");
@@ -249,13 +253,11 @@ public class DocumentClient {
     
     /**
      * Update part of a sub document
+     * https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfSubDoc
      * 
-     * @param <SUBDOC>
-     *      working class
-     * @param newValue
-     *      object for the new value
-     *
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfSubDoc
+     * @param <SUBDOC> working class
+     * @param path subpath in the doc
+     * @param newValue object for the new value
      */
     public <SUBDOC> void updateSubDocument(String path, SUBDOC newValue) {
         Assert.hasLength(path, "path");
@@ -278,11 +280,9 @@ public class DocumentClient {
     
     /**
      * Delete a sub document.
+     * https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteSubDoc
      * 
-     * @param path
-     *      sub document path
-     *      
-     * @path https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteSubDoc
+     * @param path sub document path
      */
     public void deleteSubDocument(String path) {
         Assert.hasLength(path, "path");
@@ -301,6 +301,12 @@ public class DocumentClient {
         handleError(response);
     }
     
+    /**
+     * marshallDocumentId
+     * 
+     * @param body String
+     * @return String
+     */
     private String marshallDocumentId(String body) {
         try {
             return (String) getObjectMapper()
@@ -311,6 +317,14 @@ public class DocumentClient {
         }
     }
     
+    /**
+     * marshallDocument
+     * 
+     * @param <DOC> DOC
+     * @param body String
+     * @param clazz DOC
+     * @return DOC
+     */
     private  <DOC> DOC marshallDocument(String body,  Class<DOC> clazz) {
         try {
             return getObjectMapper().readValue(body, clazz);
@@ -318,6 +332,4 @@ public class DocumentClient {
             throw new RuntimeException("Cannot marshal output '" + body + "' into class '"+ clazz +"'", e);
         }
     }
-    
-    
 }

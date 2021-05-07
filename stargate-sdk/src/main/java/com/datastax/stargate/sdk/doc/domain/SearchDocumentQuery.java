@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.doc.domain;
 
 import java.util.ArrayList;
@@ -57,7 +73,11 @@ public class SearchDocumentQuery {
         this.where            = builder.getWhereClause();
     }
     
-    /** static accees to a builder instance. */
+    /**
+     * static accees to a builder instance
+     * 
+     * @return SearchDocumentQueryBuilder
+     */
     public static SearchDocumentQueryBuilder builder() {
         return new SearchDocumentQueryBuilder(); 
     }
@@ -106,6 +126,12 @@ public class SearchDocumentQuery {
             return this;
         }
         
+        /**
+         * withPageState
+         * 
+         * @param pageState String
+         * @return SearchDocumentQueryBuilder
+         */
         public SearchDocumentQueryBuilder withPageState(String pageState) {
             Assert.hasLength(pageState, "pageState");
             this.pageState = pageState;
@@ -114,6 +140,9 @@ public class SearchDocumentQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields String
+         * @return SearchDocumentQueryBuilder
          */
         public SearchDocumentQueryBuilder withReturnedFields(String... fields) {
             Assert.notNull(fields, "fields");
@@ -123,6 +152,9 @@ public class SearchDocumentQuery {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields String
+         * @return SearchDocumentQueryBuilder
          */
         public SearchDocumentQueryBuilder select(String... fields) {
             return withReturnedFields(fields);
@@ -130,6 +162,9 @@ public class SearchDocumentQuery {
         
         /**
          * Use 'where" to help you create 
+         * 
+         * @param where String
+         * @return SearchDocumentQueryBuilder
          */
         public SearchDocumentQueryBuilder withWhereClauseJson(String where) {
             if (this.whereClause != null) {
@@ -142,6 +177,8 @@ public class SearchDocumentQuery {
         
         /**
          * Only return those fields if provided
+         * @param fieldName String
+         * @return SearchDocumentWhere
          */
         public SearchDocumentWhere where(String fieldName) {
             Assert.hasLength(fieldName, "fieldName");
@@ -151,7 +188,7 @@ public class SearchDocumentQuery {
         /**
          * Build Where Clause based on Filters.
          *
-         * @return
+         * @return String
          */
         public String getWhereClause() {
             // Explicit values will got primer on filters
@@ -184,6 +221,9 @@ public class SearchDocumentQuery {
         
         /**
          * Only constructor allowed
+         * 
+         * @param builder SearchDocumentQueryBuilder
+         * @param fieldName String
          */
         protected SearchDocumentWhere(SearchDocumentQueryBuilder builder, String fieldName) {
             this.builder   = builder;

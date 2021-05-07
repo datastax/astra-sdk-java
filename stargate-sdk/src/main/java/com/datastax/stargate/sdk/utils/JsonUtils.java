@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.utils;
 
 import java.util.Collection;
@@ -15,7 +31,7 @@ public class JsonUtils {
     
     /**
      * Code is built based on https://github.com/fangyidong/json-simple/blob/master/src/main/java/org/json/simple/JSONValue.java
-     * by FangYidong<fangyidong@yahoo.com.cn>. THANK YOU ! ff4j core needs to stay with no dependency.
+     * by FangYidong fangyidong@yahoo.com.cn THANK YOU ! ff4j core needs to stay with no dependency.
      * 
      * 
      * The following characters are reserved characters and can not be used in JSON and must be properly escaped to be used in strings.
@@ -94,14 +110,13 @@ public class JsonUtils {
         if (value instanceof String) return "\"" + escapeJson(value.toString()) + "\"";
         return value.toString();
     }
-    
+
     /**
      * Serialize a collection of object as Json. Element should eventually override <code>toString()</code> to produce JSON.
-     *
-     * @param pCollec
-     *      input collection
-     * @return
-     *      collection as String
+     * 
+     * @param <T> T
+     * @param pCollec input collection
+     * @return collection as String
      */
     public static final <T> String collectionAsJson(final Collection < T > pCollec) {
         if (pCollec == null)   return "null";
@@ -119,11 +134,11 @@ public class JsonUtils {
 
     /**
      * Serialize a map of objects as Json. Elements should override <code>toString()</code> to produce JSON.
-     *
-     * @param customProperties
-     *      target properties
-     * @return
-     *      target json expression
+     * 
+     * @param <K> K
+     * @param <V> V
+     * @param pMap target properties
+     * @return target json expression
      */
     public static final <K,V> String mapAsJson(final Map<K,V> pMap) {
         if (pMap == null)   return "null";
@@ -139,5 +154,4 @@ public class JsonUtils {
         json.append("}");
         return json.toString();
     }
-    
 }

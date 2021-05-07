@@ -3,18 +3,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.datastax.astra</groupId>
   <artifactId>astra-sdk-parent</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.9-SNAPSHOT</version>
   <name>Stargate and Astra Java SDK</name>
   <packaging>pom</packaging>
   <inceptionYear>2021</inceptionYear>
-  
-  <description>Astra Sofware Development Kit. Tools and library to work with Astra.datastax.com</description>
-  
+  <description>Astra Sofware Development Kit. Tools and library to work with astra.datastax.com</description>
+  <url>https://github.com/datastax/astra-sdk-java</url>
   <organization>
     <name>DataStax</name>
     <url>http://datastax.com</url>
   </organization>
-  
   <licenses>
     <license>
       <name>Apache 2</name>
@@ -22,9 +20,7 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
   <properties>
-  
     <java-driver.version>4.10.0</java-driver.version>
     <spring.version>5.3.2</spring.version>
     <spring-boot.version>2.4.2</spring-boot.version>
@@ -33,22 +29,20 @@
     <graphql-java.version>16.2</graphql-java.version>
     <junit-platform.version>1.7.0</junit-platform.version>
     <junit-jupiter.version>5.7.0</junit-jupiter.version>
-    
     <maven-compiler-plugin.source>11</maven-compiler-plugin.source>
     <maven-compiler-plugin.target>11</maven-compiler-plugin.target>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <maven-fmt-maven-plugin>2.2.0</maven-fmt-maven-plugin>
     <maven-xml-format-maven-plugin>3.0.7</maven-xml-format-maven-plugin>
+    <skipTests>true</skipTests>
   </properties>
-  
   <modules>
     <module>astra-sdk</module>
     <module>astra-spring-boot-autoconfigure</module>
     <module>astra-spring-boot-starter</module>
     <module>stargate-sdk</module>
   </modules>
-  
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -97,24 +91,24 @@
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-		<groupId>com.graphql-java</groupId>
-		<artifactId>graphql-java</artifactId>
-		<version>${graphql-java.version}</version>    
-	  </dependency>
+        <groupId>com.graphql-java</groupId>
+        <artifactId>graphql-java</artifactId>
+        <version>${graphql-java.version}</version>
+      </dependency>
       <dependency>
-	    <groupId>org.junit.jupiter</groupId>
-		<artifactId>junit-jupiter-engine</artifactId>
-		<version>${junit-jupiter.version}</version>
-		<scope>test</scope>
-	  </dependency>
-	  <dependency>
-	    <groupId>org.junit.platform</groupId>
-		<artifactId>junit-platform-runner</artifactId>
-		<version>${junit-platform.version}</version>
-		<scope>test</scope>
-	  </dependency>
-	  <!-- Creating a SpringBoot Starter -->
-	  <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit-jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-runner</artifactId>
+        <version>${junit-platform.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <!-- Creating a SpringBoot Starter -->
+      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot</artifactId>
         <version>${spring-boot.version}</version>
@@ -131,89 +125,102 @@
         <optional>true</optional>
       </dependency>
       <dependency>
-     	<groupId>org.springframework.boot</groupId>
-    	<artifactId>spring-boot-configuration-processor</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-configuration-processor</artifactId>
         <version>${spring-boot.version}</version>
         <optional>true</optional>
       </dependency>
       <dependency>
-	    <groupId>org.springframework.boot</groupId>
-	    <artifactId>spring-boot-starter</artifactId>
-	    <version>${spring-boot.version}</version>
-	  </dependency> 
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
-  
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven-compiler-plugin.version}</version>
-          <configuration>
-            <source>${maven-compiler-plugin.source}</source>
-            <target>${maven-compiler-plugin.target}</target>
-            <showWarnings>true</showWarnings>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven-surefire-plugin.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.junit.jupiter</groupId>
-              <artifactId>junit-jupiter-engine</artifactId>
-              <version>${junit-jupiter.version}</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <!-- 
-        <plugin>
-          <groupId>com.coveo</groupId>
-          <artifactId>fmt-maven-plugin</artifactId>
-          <version>${maven-fmt-maven-plugin}</version>
-        </plugin>
-        <plugin>
-          <groupId>au.com.acegi</groupId>
-          <artifactId>xml-format-maven-plugin</artifactId>
-          <version>${maven-xml-format-maven-plugin}</version>
-        </plugin>-->
-        
-      </plugins>
-    </pluginManagement>
-    <!--     <plugins>
+    <plugins>
       <plugin>
-        <groupId>com.coveo</groupId>
-        <artifactId>fmt-maven-plugin</artifactId>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>false</autoReleaseAfterClose>
+          <skipLocalStaging>true</skipLocalStaging>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
         <executions>
           <execution>
+            <id>attach-sources</id>
             <goals>
-              <goal>format</goal>
+              <goal>jar-no-fork</goal>
             </goals>
-            <phase>process-sources</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
-        <groupId>au.com.acegi</groupId>
-        <artifactId>xml-format-maven-plugin</artifactId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <tagNameFormat>@{project.version}</tagNameFormat>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <useReleaseProfile>false</useReleaseProfile>
+          <releaseProfiles>release</releaseProfiles>
+          <goals>deploy</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${maven-compiler-plugin.source}</source>
+          <target>${maven-compiler-plugin.target}</target>
+          <showWarnings>true</showWarnings>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <skipTests>${skipTests}</skipTests>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
         <executions>
           <execution>
-            <id>xml-format</id>
+            <id>attach-javadocs</id>
             <goals>
-              <goal>xml-format</goal>
+              <goal>jar</goal>
             </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <indentSize>2</indentSize>
-            </configuration>
           </execution>
         </executions>
       </plugin>
-    </plugins>-->
+    </plugins>
   </build>
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+  <scm>
+    <connection>scm:git:git@github.com:datastax/astra-sdk-java.git</connection>
+    <developerConnection>scm:git:git@github.com:datastax/astra-sdk-java.git</developerConnection>
+    <url>https://github.com/datastax/astra-sdk-java</url>
+    <tag>HEAD</tag>
+  </scm>
   <developers>
     <developer>
       <id>clunven</id>
@@ -222,4 +229,25 @@
       <url>https://github.com/clun</url>
     </developer>
   </developers>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

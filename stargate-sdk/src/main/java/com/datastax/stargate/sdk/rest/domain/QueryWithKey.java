@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.stargate.sdk.rest.domain;
 
 import java.util.ArrayList;
@@ -35,11 +51,21 @@ public class QueryWithKey {
     
     /** List of items to retrieve. */
     private final List<SortField> fieldsToSort;
-            
+    
+    /**
+     * builder
+     * 
+     * @return QueryRowBuilder
+     */
     public static QueryRowBuilder builder() {
         return new QueryRowBuilder(); 
     }
     
+    /**
+     * QueryWithKey
+     * 
+     * @param builder QueryRowBuilder
+     */
     private QueryWithKey(QueryRowBuilder builder) {
         this.pageSize         = builder.pageSize;
         this.pageState        = builder.pageState;
@@ -62,10 +88,21 @@ public class QueryWithKey {
         
         protected List<SortField> fieldsToSort = new ArrayList<>();
         
+        /**
+         * build
+         * 
+         * @return QueryWithKey
+         */
         public QueryWithKey build() {
             return new QueryWithKey(this);
         }
         
+        /**
+         * withPageSize
+         * 
+         * @param pageSize int
+         * @return QueryRowBuilder
+         */
         public QueryRowBuilder withPageSize(int pageSize) {
             if (pageSize < 1 || pageSize > PAGING_SIZE_MAX) {
                 throw new IllegalArgumentException("Page size should be between 1 and 100");
@@ -74,6 +111,12 @@ public class QueryWithKey {
             return this;
         }
         
+        /**
+         * withPageState
+         * 
+         * @param pageState String
+         * @return QueryRowBuilder
+         */
         public QueryRowBuilder withPageState(String pageState) {
             Assert.hasLength(pageState, "pageState");
             this.pageState = pageState;
@@ -83,6 +126,9 @@ public class QueryWithKey {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields String
+         * @return QueryRowBuilder
          */
         public QueryRowBuilder returnedFields(String... fields) {
             Assert.notNull(fields, "fields");
@@ -92,6 +138,9 @@ public class QueryWithKey {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fieldname String
+         * @return QueryRowBuilder
          */
         public QueryRowBuilder addReturnedField(String fieldname) {
             Assert.hasLength(fieldname, "fieldname");
@@ -101,6 +150,9 @@ public class QueryWithKey {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fields SortField
+         * @return QueryRowBuilder
          */
         public QueryRowBuilder sortedFields(SortField... fields) {
             Assert.notNull(fields, "fields");
@@ -110,6 +162,10 @@ public class QueryWithKey {
         
         /**
          * Only return those fields if provided
+         * 
+         * @param fieldname String
+         * @param order Ordering
+         * @return QueryRowBuilder
          */
         public QueryRowBuilder addSortedField(String fieldname, Ordering order) {
             Assert.hasLength(fieldname, "fieldname");
@@ -159,6 +215,4 @@ public class QueryWithKey {
     public List<SortField> getFieldsToSort() {
         return fieldsToSort;
     }
-
-
 }

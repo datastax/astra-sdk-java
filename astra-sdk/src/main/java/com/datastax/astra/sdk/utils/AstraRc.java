@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.astra.sdk.utils;
 
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_APPLICATION_TOKEN;
@@ -56,6 +72,8 @@ public class AstraRc {
     
     /**
      * Load from specified file
+     * 
+     * @param fileName String
      */
     public AstraRc(String fileName) {
         this.sections = AstraRc.load(fileName).getSections();
@@ -63,6 +81,8 @@ public class AstraRc {
     
     /**
      * Load from a set of keys (sections / Key / Value)
+     * 
+     * @param s Map
      */
     public AstraRc(Map <String, Map<String, String>> s) {
         this.sections = s;
@@ -87,6 +107,10 @@ public class AstraRc {
     
     /**
      * Helper to react a key in the file based on section name and key
+     * 
+     * @param sectionName String
+     * @param key String
+     * @return String
      */
     public String read(String sectionName, String key) {
         return (!sections.containsKey(sectionName)) ? 
@@ -97,6 +121,8 @@ public class AstraRc {
     
     /**
      * Check if file ~/.astrac is present in the filesystem
+     * 
+     * @return File
      */
     public static boolean exists() {
         return new File(System.getProperty(ENV_USER_HOME) 
@@ -107,7 +133,7 @@ public class AstraRc {
     /**
      * Generate astrarc based on values in DB using devops API.
      *
-     * @param devopsClient
+     * @param devopsClient ApiDevopsClient
      */
     public static void create(ApiDevopsClient devopsClient) {
         save(extractDatabasesInfos(devopsClient));
@@ -115,6 +141,10 @@ public class AstraRc {
   
     /**
      * Update only one key.
+     * 
+     * @param section String
+     * @param key String
+     * @param value String
      */
     public static void save(String section, String key, String value) {
         Map <String, Map<String, String>> astraRc = new HashMap<>();
@@ -129,7 +159,6 @@ public class AstraRc {
      *
      * @param astraRc
      *      update .astrarc file. 
-     * @throws IOException 
      */
     public static void save(Map <String, Map<String, String>> astraRc) {
         LOGGER.info("Updating .astrarc file");
@@ -172,6 +201,8 @@ public class AstraRc {
     
     /*
      * Loading ~/.astrarc (if present).
+     * 
+     * @return AstraRc
      */ 
     public static AstraRc load() {
         return load(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME);
@@ -181,6 +212,8 @@ public class AstraRc {
      * Loading ~/.astrarc (if present).
      * Key = block name (dbname of default), then key/value
      * 
+     * @param fileName String
+     * @return AstraRc
      */
     public static AstraRc load(String fileName) {
         Map <String, Map<String, String>> sections = new HashMap<>();
@@ -217,6 +250,8 @@ public class AstraRc {
     
     /**
      * Prepare file content
+     * 
+     * @param astraRc Map
      */
     private static String generateFileContent(Map <String, Map<String, String>> astraRc) {
         StringBuilder sb = new StringBuilder();
@@ -246,6 +281,8 @@ public class AstraRc {
    
     /**
      * Generate expecting key in the file
+     * 
+     * @param devopsClient ApiDevopsClient
      */
     private static Map <String, Map<String, String>> extractDatabasesInfos(ApiDevopsClient devopsClient) {
         // Look for 'all' (limit 100), non terminated DB
@@ -267,6 +304,13 @@ public class AstraRc {
         return result;
     }
     
+    /**
+     * dbKeys
+     * 
+     * @param db Database
+     * @param token String
+     * @return Map
+     */
     private static Map<String, String> dbKeys(Database db, String token) {
         Map<String, String> dbKeys = new HashMap<>();
         dbKeys.put(ASTRA_DB_ID, db.getId() );

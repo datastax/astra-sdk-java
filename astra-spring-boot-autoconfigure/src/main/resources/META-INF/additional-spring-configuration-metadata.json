@@ -3,7 +3,7 @@
     {
       "name": "astra.databaseId",
       "type": "java.lang.String",
-      "defaultValue": "1234566..."
+      "defaultValue": "..."
     },
     {
       "name": "astra.cloudRegion",

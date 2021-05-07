@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datastax.astra.sdk.devops;
 
 import java.net.HttpURLConnection;
@@ -32,8 +48,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * 
  * The JDK11 client http is used and as such jdk11+ is required
  * 
- * Documentation:
- * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
+ * Documentation: https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -50,6 +65,8 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * As immutable object use builder to initiate the object.
+     * 
+     * @param authToken String
      */
     public ApiDevopsClient(String authToken) {
        this.bearerAuthToken = authToken;
@@ -58,8 +75,7 @@ public class ApiDevopsClient extends ApiSupport {
      
     /**
      * Returns supported regions and availability for a given user and organization
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listAvailableRegions
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listAvailableRegions
      * 
      * @return
      *  supported regions and availability 
@@ -88,7 +104,9 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Map regions from plain list to Tier/Cloud/Region Structure
-     * @return
+     * 
+     * @param all DatabaseAvailableRegion
+     * @return Map
      */
     public Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseAvailableRegion>>> mapAvailableRegions(Stream<DatabaseAvailableRegion> all) {
         Map<DatabaseTierType, Map<CloudProviderType,List<DatabaseAvailableRegion>>> m = new HashMap<>();
@@ -131,8 +149,10 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Find Databases matching the provided filter.
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listDatabases
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listDatabases
+     * @param filter DatabaseFilter
+     * @return Stream
      */
     public Stream<Database> findDatabases(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
@@ -157,13 +177,12 @@ public class ApiDevopsClient extends ApiSupport {
    
     /**
      * Retrieve a DB by its id.
-     *
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
+     * 
      * @param dbId
      *      unique db identifier
      * @return
-     *      the database if present,
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
+     *      the database if present
      */
     public Optional<Database> findDatabaseById(String dbId) {
         Assert.hasLength(dbId, "Database identifier");
@@ -204,13 +223,12 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Evaluate if a database exists using the findById method.
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
      * 
      * @param dbId
      *      database identifier
      * @return
      *      database existence
-     *      
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
      */
     public boolean databaseExist(String dbId) {
         return findDatabaseById(dbId).isPresent();
@@ -218,8 +236,10 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Syntax sugar for doc API
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
+     * @param dbId String
+     * @param namespace String
      */
     public void createNamespace(String dbId, String namespace) {
         createKeyspace(dbId, namespace);
@@ -227,13 +247,12 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Create a new keyspace in a DB.
-     *
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
+     * 
      * @param dbId
      *      unique identifier for database id
      * @param keyspace
      *      keyspace name to create
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
      */
     public void createKeyspace(String dbId, String keyspace) {
         Assert.hasLength(dbId, "Datatasbe id");
@@ -258,8 +277,10 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Download SecureBundle.
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
+     * @param dbId String
+     * @param destination String
      */
     public void downloadSecureConnectBundle(String dbId, String destination) {
         Assert.hasLength(dbId, "Database id");
@@ -294,13 +315,12 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Create a database base on some parameters.
-     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase
+     *  
      * @param dbCreationRequest
      *      creation request with tier and capacity unit
      * @return
      *      the new instance id.
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase
      */
     public String createDatabase(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");
@@ -347,11 +367,10 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Unparks a database.
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
      *
      * @param dbId
      *          unique identifier for the db
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
      */
     public void unparkDatabase(String dbId) {
         Assert.hasLength(dbId, "Database id");
@@ -373,11 +392,10 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Terminates a database.
-     *
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
+     * 
      * @param dbId
      *          unique identifier for the db
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
      */
     public void terminateDatabase(String dbId) {
         Assert.hasLength(dbId, "Database id");
@@ -400,11 +418,10 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Resizes a database.
-     *
-     * @param dbId
-     *          unique identifier for the db
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase
+     * @param databaseID unique identifier for the db
+     * @param capacityUnits int
      */
     public void resizeDatase(String databaseID, int capacityUnits) {
         Assert.hasLength(databaseID, "Database id");
@@ -427,15 +444,14 @@ public class ApiDevopsClient extends ApiSupport {
     
     /**
      * Resets Password.
-     *
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword
+     * 
      * @param dbId
      *      unique identifier for the db
      * @param username
      *      username
      * @param password
      *      password
-     * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword
      */
     public void resetPassword(String dbId, String username, String password) {
         Assert.hasLength(dbId, "Database id");
