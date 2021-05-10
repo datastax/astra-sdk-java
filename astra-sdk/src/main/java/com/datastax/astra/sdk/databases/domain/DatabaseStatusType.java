@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops;
+package com.datastax.astra.sdk.databases.domain;
 
 /**
  * Encoded all values for 'tier'

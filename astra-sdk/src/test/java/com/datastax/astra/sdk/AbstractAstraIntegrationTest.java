@@ -21,12 +21,12 @@ import java.util.Optional;
 import org.junit.Assert;
 
 import com.datastax.astra.sdk.AstraClient.AstraClientBuilder;
-import com.datastax.astra.sdk.devops.ApiDevopsClient;
-import com.datastax.astra.sdk.devops.CloudProviderType;
-import com.datastax.astra.sdk.devops.DatabaseStatusType;
-import com.datastax.astra.sdk.devops.DatabaseTierType;
-import com.datastax.astra.sdk.devops.req.DatabaseCreationRequest;
-import com.datastax.astra.sdk.devops.res.Database;
+import com.datastax.astra.sdk.databases.DatabasesClient;
+import com.datastax.astra.sdk.databases.domain.CloudProviderType;
+import com.datastax.astra.sdk.databases.domain.Database;
+import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
+import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
+import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.oss.driver.shaded.guava.common.base.Strings;
 
 /**
@@ -90,17 +90,19 @@ public abstract class AbstractAstraIntegrationTest {
     protected static void terminateDb(String dbName) {
         System.out.println(ANSI_YELLOW + "Terminate DB " + dbName + ANSI_RESET);
         Optional<Database> existingDb = client
-                .apiDevops()
-                .findDatabasesNonTerminatedByName(dbName)
+                .apiDevopsDatabases()
+                .databasesNonTerminatedByName(dbName)
                 .filter(db -> dbName.equals(db.getInfo().getName()))
                 .findFirst();
         if(existingDb.isPresent()) {
-            client
-            .apiDevops().terminateDatabase(existingDb.get().getId());
+            client.apiDevopsDatabases()
+                  .database(existingDb.get().getId())
+                  .terminate();
             System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Terminating [" + dbName + "] id=" + existingDb.get().getId());
             System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Terminating ");
-            while(DatabaseStatusType.TERMINATED != client.apiDevops()
-                    .findDatabaseById(existingDb.get().getId()).get().getStatus() ) {
+            while(DatabaseStatusType.TERMINATED != client.apiDevopsDatabases()
+                    .database(existingDb.get().getId())
+                    .find().get().getStatus() ) {
                 System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
                 waitForSeconds(5);
             }
@@ -122,10 +124,10 @@ public abstract class AbstractAstraIntegrationTest {
         System.out.println(ANSI_YELLOW + "Create DB " + dbName + ANSI_RESET);
         Assert.assertTrue(appToken.isPresent());
         Assert.assertNotNull(dbName);
-        ApiDevopsClient cli = new ApiDevopsClient(appToken.get());
+        DatabasesClient cli = new DatabasesClient(appToken.get());
         
         Optional<Database> existingDb = cli
-                    .findDatabasesNonTerminatedByName(dbName)
+                    .databasesNonTerminatedByName(dbName)
                     .filter(db -> dbName.equals(db.getInfo().getName()))
                     .findFirst();
         if (existingDb.isPresent()) {
@@ -143,11 +145,11 @@ public abstract class AbstractAstraIntegrationTest {
                 .build());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Database [" + dbName + "] id=" + id);
         System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Initializing ");
-        while(!DatabaseStatusType.ACTIVE.equals(cli.findDatabaseById(id).get().getStatus())) {
+        while(!DatabaseStatusType.ACTIVE.equals(cli.database(id).find().get().getStatus())) {
             System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
             waitForSeconds(5);
         }
-        Assert.assertEquals(DatabaseStatusType.ACTIVE, cli.findDatabaseById(id).get().getStatus());
+        Assert.assertEquals(DatabaseStatusType.ACTIVE, cli.database(id).find().get().getStatus());
         System.out.println(ANSI_GREEN + "\n[OK]" + ANSI_RESET + " - DB is active");
         return id;
     }

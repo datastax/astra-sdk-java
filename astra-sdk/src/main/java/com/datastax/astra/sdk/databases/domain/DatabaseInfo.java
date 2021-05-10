@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.res;
+package com.datastax.astra.sdk.databases.domain;
 
 import java.util.Set;
-
-import com.datastax.astra.sdk.devops.CloudProviderType;
-import com.datastax.astra.sdk.devops.DatabaseTierType;
 
 /**
  * Wrapper for DatabaseInfo attribut in findDatabase.

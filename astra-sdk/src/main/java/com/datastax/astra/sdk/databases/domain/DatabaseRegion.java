@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.res;
+package com.datastax.astra.sdk.databases.domain;
 
-import com.datastax.astra.sdk.devops.CloudProviderType;
-import com.datastax.astra.sdk.devops.DatabaseTierType;
-
-public class DatabaseAvailableRegion {
+public class DatabaseRegion {
 
     private DatabaseTierType tier = DatabaseTierType.developer;
     
@@ -45,7 +42,7 @@ public class DatabaseAvailableRegion {
     
     private int defaultStoragePerCapacityUnitGb=10;
 
-    public DatabaseAvailableRegion() {
+    public DatabaseRegion() {
     }
     
     /**

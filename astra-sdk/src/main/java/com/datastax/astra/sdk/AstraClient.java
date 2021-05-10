@@ -19,11 +19,14 @@ package com.datastax.astra.sdk;
 import java.io.Closeable;
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.astra.sdk.devops.ApiDevopsClient;
+import com.datastax.astra.sdk.databases.DatabasesClient;
+import com.datastax.astra.sdk.iam.IamClient;
+import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.stargate.sdk.StargateClient;
@@ -35,12 +38,7 @@ import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 
 /**
- * Public interface to interact with ASTRA API.
- * 
- * .namespace("")          : will lead you to document (schemaless) API
- * .keyspace("")           : will lead you to rest API (table oriented) API
- * .devops(id,name,secret) : is the devops API
- * .cql()                  : Give you a CqlSession
+ * Public interface to interact with ASTRA APIs.
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -68,22 +66,35 @@ public class AstraClient implements Closeable {
     private StargateClient stargateClient;
    
     /** Hold a reference for the Api Devops. */
-    private ApiDevopsClient apiDevops;
+    private DatabasesClient apiDevopsDatabases;
     
-    /** If provided hold a reference to the db Id, */ 
-    private final String astraDatabaseId;
+    /** Hold a reference for the Api Devops. */
+    private StreamingClient apiDevopsStreaming;
     
-    /** If provided hold a reference to the db cloud region. */ 
-    private final String astraDatabaseRegion;
-  
+    /** Hold a reference for the Api Devops. */
+    private IamClient apiDevopsIam;
+    
+    /** Hold a reference for the authentication token. */
+    private final String bearerToken;
+    
+    /** Hold a reference for clientId. */
+    private final String clientId;
+    
+    /** Hold a reference for clientId. */
+    private final String clientSecret;
+    
     /**
-     * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link ApiDevopsClient}, {@link ApiCqlClient} with
+     * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link DatabasesClient}, {@link ApiCqlClient} with
      * a constructor. The full flegde constructor would took 12 pararms.
      */
     private AstraClient(AstraClientBuilder b) {
         
         LOGGER.info("+ Load configuration from Builder parameters");
         
+        this.bearerToken         = b.appToken;
+        this.clientId            = b.clientId;
+        this.clientSecret        = b.clientSecret;
+      
         /*
          * -----
          * ENABLE DEVOPS API (if possible) 
@@ -91,12 +102,11 @@ public class AstraClient implements Closeable {
          * -----
          */
         if (Utils.paramsProvided(b.appToken)) {
-            apiDevops = new ApiDevopsClient(b.appToken);  
+            apiDevopsDatabases = new DatabasesClient(b.appToken);  
+            apiDevopsIam       = new IamClient(b.appToken);  
+            apiDevopsStreaming = new StreamingClient(b.appToken);
             LOGGER.info("+ Devops API is enabled.");
         }
-        
-        this.astraDatabaseRegion = b.astraDatabaseRegion;
-        this.astraDatabaseId     = b.astraDatabaseId;
        
         if (Utils.paramsProvided(b.astraDatabaseId)) {
             /*
@@ -127,14 +137,14 @@ public class AstraClient implements Closeable {
                 cloudSecureBundle = pathAstraSecureBundle;
             
             // #3. Download zip if not present
-            } else if (null != apiDevops && null != b.astraDatabaseId) {
+            } else if (null != apiDevopsDatabases && null != b.astraDatabaseId) {
                 File folderAstra = new File(pathAstraFolder);
                 if (!folderAstra.exists()) {
                         folderAstra.mkdir();
                         LOGGER.info("+ Creating folder .astra"); 
                     }
                     LOGGER.info("+ Downloading secureBundle for db '{}'", b.astraDatabaseId);
-                    apiDevops.downloadSecureConnectBundle(b.astraDatabaseId, pathAstraSecureBundle);
+                    apiDevopsDatabases.database(b.astraDatabaseId).downloadSecureConnectBundle(pathAstraSecureBundle);
                     cloudSecureBundle = pathAstraSecureBundle;
             }
             LOGGER.info("+ SecureBundle Path used: {}", cloudSecureBundle);
@@ -189,7 +199,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDocumentClient
      */
-    public ApiDocumentClient apiDocument() {
+    public ApiDocumentClient apiStargateDocument() {
         if (stargateClient == null) {
             throw new IllegalStateException("Api Document is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
@@ -202,7 +212,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiRestClient
      */
-    public ApiRestClient apiRest() {
+    public ApiRestClient apiStargateData() {
         if (stargateClient == null) {
             throw new IllegalStateException("Api Rest is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
@@ -215,7 +225,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiGraphQLClient
      */
-    public ApiGraphQLClient apiGraphQL() {
+    public ApiGraphQLClient apiStargateGraphQL() {
         if (stargateClient == null) {
             throw new IllegalStateException("GraphQL Api is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
@@ -228,12 +238,38 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public ApiDevopsClient apiDevops() {
-        if (apiDevops == null) {
+    public DatabasesClient apiDevopsDatabases() {
+        if (apiDevopsDatabases == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");
         }
-        return apiDevops;
+        return apiDevopsDatabases;
+    }
+    
+    /**
+     * Devops API
+     * 
+     * @return ApiDevopsClient
+     */
+    public IamClient apiDevopsIam() {
+        if (apiDevopsIam == null) {
+            throw new IllegalStateException("Api Devops is not available "
+                    + "you need to provide clientId/clientName/clientSecret at initialization.");
+        }
+        return apiDevopsIam;
+    }
+    
+    /**
+     * Devops API
+     * 
+     * @return ApiDevopsClient
+     */
+    public StreamingClient apiDevopsStreaming() {
+        if (apiDevopsStreaming == null) {
+            throw new IllegalStateException("Api Devops is not available "
+                    + "you need to provide clientId/clientName/clientSecret at initialization.");
+        }
+        return apiDevopsStreaming;
     }
     
     /**
@@ -460,25 +496,35 @@ public class AstraClient implements Closeable {
            stargateClient.close();
        }
     }
-
+    
     /**
-     * Getter accessor for attribute 'astraDatabaseId'.
+     * Getter accessor for attribute 'clientId'.
      *
      * @return
-     *       current value of 'astraDatabaseId'
+     *       current value of 'clientId'
      */
-    public String getAstraDatabaseId() {
-        return astraDatabaseId;
+    public Optional<String> getBearerToken() {
+        return Optional.ofNullable(bearerToken);
+    }
+    
+    /**
+     * Getter accessor for attribute 'clientId'.
+     *
+     * @return
+     *       current value of 'clientId'
+     */
+    public Optional<String> getClientId() {
+        return Optional.ofNullable(clientId);
     }
 
     /**
-     * Getter accessor for attribute 'astraDatabaseRegion'.
+     * Getter accessor for attribute 'clientSecret'.
      *
      * @return
-     *       current value of 'astraDatabaseRegion'
+     *       current value of 'clientSecret'
      */
-    public String getAstraDatabaseRegion() {
-        return astraDatabaseRegion;
+    public Optional<String> getClientSecret() {
+        return Optional.ofNullable(clientSecret);
     }
 
 }

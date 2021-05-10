@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.res;
+package com.datastax.astra.sdk.databases.domain;
 
 /**
  * Represents Storage information for the db.

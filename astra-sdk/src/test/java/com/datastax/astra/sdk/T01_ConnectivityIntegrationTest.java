@@ -106,7 +106,7 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
                 .appToken(appToken.get())
                 .build()) {
                 // Then
-                Assertions.assertTrue(cli.apiDocument().namespaceNames().count() > 0);
+                Assertions.assertTrue(cli.apiStargateDocument().namespaceNames().count() > 0);
          }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
     }
@@ -127,7 +127,7 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
                 .appToken(appToken.get())
                 .build()) {
                 // Then
-            Assertions.assertTrue(cli.apiRest().keyspaceNames().count() > 0);
+            Assertions.assertTrue(cli.apiStargateData().keyspaceNames().count() > 0);
         }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
     }
@@ -143,10 +143,11 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
         try(AstraClient cli = AstraClient.builder()
                 .appToken(appToken.get())
                 .build()) {
+          
             // Then
             Assertions.assertNotNull(cli
-                    .apiDevops()
-                    .findAllDatabases()
+                    .apiDevopsDatabases()
+                    .databases()
                     .collect(Collectors.toList()));
          }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);

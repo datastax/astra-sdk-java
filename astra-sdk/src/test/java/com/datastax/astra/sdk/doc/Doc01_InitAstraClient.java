@@ -38,8 +38,6 @@ public class Doc01_InitAstraClient {
                 .keyspace("optional_keyspace")
                 // Terminal Call
                 .build();
-        
-        
        
     }
 

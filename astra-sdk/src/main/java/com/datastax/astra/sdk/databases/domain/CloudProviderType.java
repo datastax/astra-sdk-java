@@ -14,26 +14,29 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops;
+package com.datastax.astra.sdk.databases.domain;
 
 /**
- * Encoded all values for 'availableActions'
+ * Encoded all values for 'cloudProvider'
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public enum DatabaseActionType {
-    addDatacenters,
-    addKeyspace,
-    addTable,
-    getCreds,
-    launchMigrationProxy,
-    park,
-    removeKeyspace,
-    removeMigrationProxy,
-    resize,
-    resetPassword,
-    suspend,
-    terminate,
-    terminateDatacenter,
-    unpark;
+public enum CloudProviderType {
+    
+    ALL("ALL"), 
+    GCP("GCP"), 
+    GCP_MARKETPLACE("GCP_MARKETPLACE"), 
+    AZURE("AZURE"), 
+    AWS("AWS");
+    
+    private String code;
+    
+    private CloudProviderType(String code) {
+        this.code = code;
+    }
+    
+    public String getCode() {
+        return code;
+    }
+    
 }

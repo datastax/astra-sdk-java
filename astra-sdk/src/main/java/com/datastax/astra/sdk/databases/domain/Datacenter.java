@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.res;
+package com.datastax.astra.sdk.databases.domain;
 
 import java.io.Serializable;
-
-import com.datastax.astra.sdk.devops.CloudProviderType;
-import com.datastax.astra.sdk.devops.DatabaseTierType;
 
 /**
  * Represent a Cassandra DataCenter (ring) in a database instance.

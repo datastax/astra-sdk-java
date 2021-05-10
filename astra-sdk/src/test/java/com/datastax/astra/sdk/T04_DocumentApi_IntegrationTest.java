@@ -68,13 +68,13 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
                 .build();
         */
         
-        clientApiDoc = client.apiDocument();
+        clientApiDoc = client.apiStargateDocument();
         // Not available in the doc API anymore as of now
-        if (!client.apiDocument().namespace(WORKING_NAMESPACE).exist()) {
-            client.apiDevops()
-                  .createNamespace(dbId.get(), WORKING_NAMESPACE);
+        if (!client.apiStargateDocument().namespace(WORKING_NAMESPACE).exist()) {
+            client.apiDevopsDatabases().database(dbId.get())
+                  .createNamespace(WORKING_NAMESPACE);
             System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating namespace ");
-            while(!client.apiDocument().namespace(WORKING_NAMESPACE).exist()) {
+            while(!client.apiStargateDocument().namespace(WORKING_NAMESPACE).exist()) {
                 System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
                 waitForSeconds(1);
             }

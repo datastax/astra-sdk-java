@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.req;
-
-import com.datastax.astra.sdk.devops.CloudProviderType;
-import com.datastax.astra.sdk.devops.DatabaseTierType;
+package com.datastax.astra.sdk.databases.domain;
 
 public class DatabaseCreationBuilder {
 
