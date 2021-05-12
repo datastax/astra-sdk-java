@@ -4,12 +4,15 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 
 import com.datastax.astra.sdk.iam.IamClient;
+import com.datastax.astra.sdk.streaming.StreamingClient;
+import com.datastax.astra.sdk.streaming.domain.CreateTenant;
+import com.datastax.astra.sdk.streaming.domain.Tenant;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class T09_Devops_Streaming_IntegrationTest extends AbstractAstraIntegrationTest {
@@ -30,8 +33,30 @@ public class T09_Devops_Streaming_IntegrationTest extends AbstractAstraIntegrati
     
     @Test
     @Order(2)
+    public void should_list_tenants() {
+        System.out.println(ANSI_YELLOW + "- List Tenants" + ANSI_RESET);
+        StreamingClient streaming = new StreamingClient(appToken.get());
+        streaming.tenants()
+                 .map(Tenant::getTenantName)
+                 .forEach(System.out::println);
+    }
+    
+    @Test
+    @Order(3)
     public void should_list_providers() {
-        
+        System.out.println(ANSI_YELLOW + "- List Providers" + ANSI_RESET);
+        StreamingClient streaming = new StreamingClient(appToken.get());
+        System.out.println(streaming.providers());
+    }
+    
+    @Test
+    @Order(4)
+    public void should_create_tenant() {
+        System.out.println(ANSI_YELLOW + "- Create a tenant" + ANSI_RESET);
+        StreamingClient streaming = new StreamingClient(appToken.get());
+        CreateTenant ct = new CreateTenant();
+        ct.setCloudProvider("aws");
+        ct.setCloudRegion("useast2");
     }
 
 }
