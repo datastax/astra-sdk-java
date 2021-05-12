@@ -97,7 +97,7 @@ public abstract class AbstractAstraIntegrationTest {
         if(existingDb.isPresent()) {
             client.apiDevopsDatabases()
                   .database(existingDb.get().getId())
-                  .terminate();
+                  .delete();
             System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Terminating [" + dbName + "] id=" + existingDb.get().getId());
             System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Terminating ");
             while(DatabaseStatusType.TERMINATED != client.apiDevopsDatabases()

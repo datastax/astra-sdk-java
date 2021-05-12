@@ -175,7 +175,7 @@ public class DatabaseClient extends ApiDevopsSupport {
      * 
      * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
      */
-    public void terminate() {
+    public void delete() {
         HttpResponse<String> response;
         try {
             // Invocation

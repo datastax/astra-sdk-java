@@ -10,13 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.datastax.astra.sdk.iam.domain.RoleDefinition;
-import com.datastax.astra.sdk.iam.domain.TokensResponse;
 import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
+import com.datastax.astra.sdk.iam.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.iam.domain.IamToken;
 import com.datastax.astra.sdk.iam.domain.Role;
+import com.datastax.astra.sdk.iam.domain.RoleDefinition;
+import com.datastax.astra.sdk.iam.domain.TokensResponse;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -86,29 +88,6 @@ public class IamClient extends ApiDevopsSupport {
     }
     
     /**
-     * List tokens
-     */
-    public Stream<IamToken> tokens() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = getHttpClient()
-                    .send(startRequest(PATH_TOKENS)
-                    .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return getObjectMapper()
-                        .readValue(res.body(), TokensResponse.class)
-                        .getClients()
-                        .stream();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'clientIdSecrets'");
-        throw processErrors(res);
-    }
-    
-    /**
      * Create a new role.
      * 
      * @param cr
@@ -144,6 +123,62 @@ public class IamClient extends ApiDevopsSupport {
     public RoleClient role(String roleId) {
         Assert.hasLength(roleId, "Role Id should not be null nor empty");
         return new RoleClient(bearerAuthToken, roleId);
+    }
+    
+    /**
+     * List tokens
+     */
+    public Stream<IamToken> tokens() {
+        HttpResponse<String> res;
+        try {
+            // Invocation (no marshalling yet)
+            res = getHttpClient()
+                    .send(startRequest(PATH_TOKENS)
+                    .GET().build(), BodyHandlers.ofString());
+            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
+                return getObjectMapper()
+                        .readValue(res.body(), TokensResponse.class)
+                        .getClients()
+                        .stream();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        LOGGER.error("Error in 'clientIdSecrets'");
+        throw processErrors(res);
+    }
+    
+    /**
+     * Move to token resource.
+     */
+    public TokenClient token(String tokenId) {
+        return new TokenClient(this, bearerAuthToken, tokenId);
+    }
+    
+    /**
+     * Create token
+     */
+    public CreateTokenResponse createToken(String role) {
+        Assert.hasLength(role, "role");
+        HttpResponse<String> response;
+        try {
+           response = getHttpClient().send(
+                   startRequest(PATH_TOKENS)
+                   .POST(BodyPublishers.ofString("{"
+                           + " \"roles\": [ \"" 
+                           + JsonUtils.escapeJson(role) 
+                           + "\"]}")).build(), BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot create a new token", e);
+        }
+        
+        handleError(response);
+        
+        try {
+            return getObjectMapper().readValue(response.body(), CreateTokenResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall new token", e);
+        }
     }
     
 

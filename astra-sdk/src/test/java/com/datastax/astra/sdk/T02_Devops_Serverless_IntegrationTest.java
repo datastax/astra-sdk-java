@@ -317,7 +317,7 @@ public class T02_Devops_Serverless_IntegrationTest extends AbstractAstraIntegrat
         System.out.println(ANSI_YELLOW + "- [POST] Terminating an instance" + ANSI_RESET);
         // Given
         DatabasesClient cli = new DatabasesClient(appToken.get());
-        cli.database(serverlessDbId).terminate();
+        cli.database(serverlessDbId).delete();
         while(DatabaseStatusType.TERMINATING != cli.database(serverlessDbId).find().get().getStatus() ) {
             waitForSeconds(1);
         }

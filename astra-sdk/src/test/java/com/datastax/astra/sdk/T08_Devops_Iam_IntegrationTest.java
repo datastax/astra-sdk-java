@@ -10,9 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.sdk.iam.IamClient;
-import com.datastax.astra.sdk.iam.domain.RoleDefinition;
 import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
+import com.datastax.astra.sdk.iam.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.iam.domain.Permission;
+import com.datastax.astra.sdk.iam.domain.RoleDefinition;
+
+import graphql.Assert;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest {
@@ -130,9 +133,29 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
         // Given
         IamClient iamClient = new IamClient(appToken.get());
         iamClient.tokens().forEach(t->System.out.println(t.getRoles()));
-        
     }
 
     
+    @Test
+    @Order(8)
+    public void should_create_token() {
+        System.out.println(ANSI_YELLOW + "- Creating a Token" + ANSI_RESET);
+        IamClient iamClient = new IamClient(appToken.get());
+        CreateTokenResponse res = iamClient.createToken("write");
+        System.out.println(res.getClientId());
+        Assert.assertTrue(iamClient.token(res.getClientId()).exist());
+    }
     
+    @Test
+    @Order(8)
+    public void should_delete_token() {
+        IamClient iamClient = new IamClient(appToken.get());
+        // Given
+        String token = "rmuoZHiMPejnZoBSBeAHFIid";
+        Assert.assertTrue(iamClient.token(token).exist());
+        // When
+        iamClient.token(token).delete();
+        // Then
+        Assert.assertFalse(iamClient.token(token).exist());
+    }
 }
