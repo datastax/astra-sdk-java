@@ -57,6 +57,10 @@ public class T09_Devops_Streaming_IntegrationTest extends AbstractAstraIntegrati
         CreateTenant ct = new CreateTenant();
         ct.setCloudProvider("aws");
         ct.setCloudRegion("useast2");
+        ct.setTenantName("cedrick.lunven@datastax.com");
+        ct.setPlan("free");
+        ct.setTenantName("sdk_tenant");
+        streaming.createTenant(ct);
     }
 
 }
