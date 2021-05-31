@@ -23,7 +23,7 @@ public class Role implements Serializable {
     private String type;
     
     @JsonProperty("Policy")
-    private String policy;
+    private RolePolicy policy;
     
     public static final class Policy {
         String description;
@@ -95,7 +95,7 @@ public class Role implements Serializable {
      * @return
      *       current value of 'policy'
      */
-    public String getPolicy() {
+    public RolePolicy getPolicy() {
         return policy;
     }
 
@@ -104,9 +104,8 @@ public class Role implements Serializable {
      * @param policy
      * 		new value for 'policy '
      */
-    public void setPolicy(String policy) {
+    public void setPolicy(RolePolicy policy) {
         this.policy = policy;
-    }
-        
+    }  
 
 }

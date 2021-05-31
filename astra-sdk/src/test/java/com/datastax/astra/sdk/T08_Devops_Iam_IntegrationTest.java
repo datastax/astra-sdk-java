@@ -14,6 +14,7 @@ import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.iam.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.iam.domain.Permission;
 import com.datastax.astra.sdk.iam.domain.RoleDefinition;
+import com.datastax.astra.sdk.iam.domain.User;
 
 import graphql.Assert;
 
@@ -49,7 +50,6 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
         });
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Can connect to ASTRA with token");
     }
-    
     
     @Test
     @Order(3)
@@ -98,7 +98,6 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
         Assertions.assertFalse(iamClient.role(roleId).exist());
     }
     
-
     @Test
     @Order(6)
     public void should_update_a_role() {
@@ -126,7 +125,6 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
                 );
     }
     
-
     @Test
     @Order(7)
     public void should_list_tokens() {
@@ -134,7 +132,6 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
         IamClient iamClient = new IamClient(appToken.get());
         iamClient.tokens().forEach(t->System.out.println(t.getRoles()));
     }
-
     
     @Test
     @Order(8)
@@ -147,7 +144,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     }
     
     @Test
-    @Order(8)
+    @Order(9)
     public void should_delete_token() {
         IamClient iamClient = new IamClient(appToken.get());
         // Given
@@ -157,5 +154,13 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
         iamClient.token(token).delete();
         // Then
         Assert.assertFalse(iamClient.token(token).exist());
+    }
+    
+    @Test
+    @Order(10)
+    public void should_list_users() {
+        // Given
+        IamClient iamClient = new IamClient(appToken.get());
+        iamClient.users().map(User::getEmail).forEach(System.out::println);
     }
 }

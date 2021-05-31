@@ -10,7 +10,7 @@ import java.util.List;
  * @author Cedrick LUNVEN (@clunven)
  *
  */
-public class PolicyJson implements Serializable {
+public class RolePolicy implements Serializable {
     
     /** Serial. */
     private static final long serialVersionUID = 5232715799485159463L;

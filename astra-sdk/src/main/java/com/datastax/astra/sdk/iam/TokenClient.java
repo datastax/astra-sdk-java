@@ -84,8 +84,8 @@ public class TokenClient extends ApiDevopsSupport {
         }
         HttpResponse<String> response;
         try {
-            response = getHttpClient().send(
-                    startRequest(resourceSuffix).DELETE().build(), 
+            response = http().send(
+                    req(resourceSuffix).DELETE().build(), 
                     BodyHandlers.ofString()
             );
             if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {

@@ -2,7 +2,7 @@ package com.datastax.astra.sdk.iam.domain;
 
 import java.util.List;
 
-public class TokensResponse {
+public class ResponseAllIamTokens {
     
     private List<IamToken> clients;
 

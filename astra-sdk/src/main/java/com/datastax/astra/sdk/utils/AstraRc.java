@@ -295,12 +295,12 @@ public class AstraRc {
         // [default]
         Map <String, Map<String, String>> result = new HashMap<>();
         result.put(ASTRARC_DEFAULT, new HashMap<>());
-        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getBearerAuthToken());
+        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getToken());
         if (dbs.size() > 0) {
-            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getBearerAuthToken()));
+            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getToken()));
         }
         // Loop on each database
-        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getBearerAuthToken())));
+        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getToken())));
         return result;
     }
     

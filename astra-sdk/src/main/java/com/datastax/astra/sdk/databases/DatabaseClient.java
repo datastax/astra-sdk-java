@@ -51,13 +51,13 @@ public class DatabaseClient extends ApiDevopsSupport {
         // Api Call
         HttpResponse<String> response;
         try {
-           response = getHttpClient()
-                   .send(startRequest(PATH_DATABASES + "/" + databaseId).GET()
+           response = http()
+                   .send(req(PATH_DATABASES + "/" + databaseId).GET()
                    .build(), BodyHandlers.ofString());
            
            // Mashallinging 
            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-               return Optional.ofNullable(getObjectMapper().readValue(response.body(),Database.class));
+               return Optional.ofNullable(om().readValue(response.body(),Database.class));
            } else if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
                return Optional.empty();
            }
@@ -95,8 +95,8 @@ public class DatabaseClient extends ApiDevopsSupport {
         // HTTP CALL
         HttpResponse<String> response;
         try {
-            response =  getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/keyspaces/" + keyspace)
+            response =  http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/keyspaces/" + keyspace)
                     .POST(BodyPublishers.noBody())
                     .build(), BodyHandlers.ofString());
         } catch (Exception e) {
@@ -128,8 +128,8 @@ public class DatabaseClient extends ApiDevopsSupport {
     public void park() {
         HttpResponse<String> response;
         try {
-            response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/park")
+            response = http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/park")
                     .POST(BodyPublishers.noBody())
                     .build(), BodyHandlers.ofString());
         } catch (Exception e) {
@@ -150,8 +150,8 @@ public class DatabaseClient extends ApiDevopsSupport {
     public void unpark() {
         HttpResponse<String> response;
         try {
-            response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/unpark")
+            response = http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/unpark")
                     .POST(BodyPublishers.noBody())
                     .build(), BodyHandlers.ofString());
         } catch (Exception e) {
@@ -172,8 +172,8 @@ public class DatabaseClient extends ApiDevopsSupport {
         HttpResponse<String> response;
         try {
             // Invocation
-            response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/terminate")
+            response = http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/terminate")
                     .POST(BodyPublishers.noBody())
                     .build(), BodyHandlers.ofString());
         } catch (Exception e) {
@@ -199,8 +199,8 @@ public class DatabaseClient extends ApiDevopsSupport {
         Assert.isTrue(capacityUnits>0, "Capacity Unit");
         HttpResponse<String> response;
         try {
-            response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/resize")
+            response = http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/resize")
                     .POST(BodyPublishers.ofString("{ \"capacityUnits\":" + capacityUnits + "}"))
                     .build(), BodyHandlers.ofString());
         } catch (Exception e) {
@@ -226,8 +226,8 @@ public class DatabaseClient extends ApiDevopsSupport {
     public void resetPassword(String username, String password) {
         HttpResponse<String> response;
         try {
-            response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/resetPassword")
+            response = http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/resetPassword")
                     .POST(BodyPublishers.ofString("{ "
                             + "\"username\": \"" + username + "\", "
                             + "\"password\": \"" + password + "\"  }"))
@@ -256,8 +256,8 @@ public class DatabaseClient extends ApiDevopsSupport {
         // HTTP CALL
         HttpResponse<String> response;
         try {
-            response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES + "/" + databaseId + "/secureBundleURL")
+            response = http()
+                    .send(req(PATH_DATABASES + "/" + databaseId + "/secureBundleURL")
                     .POST(BodyPublishers.noBody())
                     .build(), BodyHandlers.ofString()); 
         } catch (Exception e) {
@@ -272,7 +272,7 @@ public class DatabaseClient extends ApiDevopsSupport {
         
         // Download binary in target folder
         try {
-             Utils.downloadFile((String) getObjectMapper()
+             Utils.downloadFile((String) om()
                   .readValue(response.body(), Map.class)
                   .get("downloadURL"), destination);
         } catch (Exception e) {

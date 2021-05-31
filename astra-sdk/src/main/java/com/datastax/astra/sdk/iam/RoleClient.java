@@ -52,8 +52,8 @@ public class RoleClient extends ApiDevopsSupport {
     public Optional<Role> find() {
          HttpResponse<String> response;
          try {
-             response = getHttpClient().send(
-                     startRequest(resourceSuffix).GET().build(), 
+             response = http().send(
+                     req(resourceSuffix).GET().build(), 
                      BodyHandlers.ofString());
          } catch (Exception e) {
              throw new RuntimeException("Cannot invoke API to find document:", e);
@@ -66,7 +66,7 @@ public class RoleClient extends ApiDevopsSupport {
          handleError(response);
          
          try {
-             return Optional.of(getObjectMapper().readValue(response.body(), Role.class));
+             return Optional.of(om().readValue(response.body(), Role.class));
          } catch (Exception e) {
              throw new RuntimeException("Cannot Marshall output in 'find role()' body=" + response.body(), e);
          }
@@ -74,6 +74,9 @@ public class RoleClient extends ApiDevopsSupport {
     
     /**
      * Check if a role is present
+     * 
+     * @return
+     *      if current role with id exist
      */
     public boolean exist() {
         return find().isPresent();
@@ -88,7 +91,7 @@ public class RoleClient extends ApiDevopsSupport {
         }
         HttpResponse<String> response;
         try {
-            response = getHttpClient().send(startRequest(resourceSuffix)
+            response = http().send(req(resourceSuffix)
                      .DELETE().build(), BodyHandlers.ofString());
             if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
                 return;
@@ -109,9 +112,9 @@ public class RoleClient extends ApiDevopsSupport {
         Assert.notNull(cr, "CreateRole request");
         HttpResponse<String> response;
         try {
-           String reqBody = getObjectMapper().writeValueAsString(cr);
-           response = getHttpClient().send(
-                   startRequest(resourceSuffix)
+           String reqBody = om().writeValueAsString(cr);
+           response = http().send(
+                   req(resourceSuffix)
                    .PUT(BodyPublishers.ofString(reqBody)).build(),
                    BodyHandlers.ofString());
         } catch (Exception e) {

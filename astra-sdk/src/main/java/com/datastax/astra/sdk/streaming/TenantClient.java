@@ -44,23 +44,37 @@ public class TenantClient extends ApiDevopsSupport {
     
     /**
      * Check if a role is present
+     * 
+     * @return
+     *      if the tenant exist
      */
     public boolean exist() {
         return find().isPresent();
     }
     
+    /**
+     * Create a new tenant.
+     *
+     * @param ct
+     *      tenant creation request
+     */
     public void create(CreateTenant ct) {
         // TODO
     }
     
-    // why this clusterId ?
+    /**
+     * Deleting a tenant and cluster.
+     *
+     * @param clusterId
+     *      cluster identifier
+     */
     public void delete(String clusterId) {
         if (!exist()) {
             throw new RuntimeException("Tenant '"+ tenantId + "' has not been found");
         }
         HttpResponse<String> response;
         try {
-            response = getHttpClient().send(startRequest(resourceSuffix + "/clusters/" + clusterId)
+            response = http().send(req(resourceSuffix + "/clusters/" + clusterId)
                      .DELETE().build(), BodyHandlers.ofString());
             if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
                 return;

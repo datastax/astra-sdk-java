@@ -55,7 +55,7 @@ public abstract class ApiDevopsSupport {
      * @return
      *      builder for the query
      */
-    public HttpRequest.Builder startRequest(String suffix) {
+    public HttpRequest.Builder req(String suffix) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(ASTRA_ENDPOINT_DEVOPS + suffix))
                 .timeout(REQUEST_TIMOUT)
@@ -77,7 +77,7 @@ public abstract class ApiDevopsSupport {
             response.statusCode() != HttpURLConnection.HTTP_INTERNAL_ERROR) {
             try {
                 // Marshalling error block
-                ApiResponseError apiErr = getObjectMapper().readValue(response.body(),  ApiResponseError.class);
+                ApiResponseError apiErr = om().readValue(response.body(),  ApiResponseError.class);
                 apiErr.getErrors().stream().forEach(err -> LOGGER.error(err.toString()));
                 // Throw Specialized Exception
                 if (response.statusCode() == HttpURLConnection.HTTP_FORBIDDEN) {
@@ -111,7 +111,7 @@ public abstract class ApiDevopsSupport {
      * @return
      *       current value of 'httpclient'
      */
-    public HttpClient getHttpClient() {
+    protected HttpClient http() {
         return ApiSupport.getHttpClient();
     }
 
@@ -121,7 +121,7 @@ public abstract class ApiDevopsSupport {
      * @return
      *       current value of 'objectmapper'
      */
-    public ObjectMapper getObjectMapper() {
+    protected ObjectMapper om() {
         return ApiSupport.getObjectMapper();
     }
     
@@ -131,7 +131,7 @@ public abstract class ApiDevopsSupport {
      * @return
      *       current value of 'bearerAuthToken'
      */
-    public String getBearerAuthToken() {
+    protected String getToken() {
         return bearerAuthToken;
     }
     

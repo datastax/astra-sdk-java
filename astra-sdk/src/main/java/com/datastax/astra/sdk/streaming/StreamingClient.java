@@ -31,13 +31,20 @@ public class StreamingClient extends ApiDevopsSupport {
     
     /**
      * Full constructor.
+     * @param token
+     *      authenticated user
      */
     public StreamingClient(String token) {
        super(token);
     }
     
     /**
-     * Operations on tenants
+     * Operations on tenants.
+     * 
+     * @param tenantName
+     *      current tenant identifier
+     * @return
+     *      client specialized for the tenant
      */
     public TenantClient tenant(String tenantName) {
         Assert.hasLength(tenantName, "tenantName");
@@ -47,15 +54,21 @@ public class StreamingClient extends ApiDevopsSupport {
         return cacheTenants.get(tenantName); 
     }
     
+    /**
+     * List tenants in the current instance.
+     * 
+     * @return
+     *      list of tenants.
+     */
     public Stream<Tenant> tenants() {
         HttpResponse<String> res;
         try {
             // Invocation (no marshalling yet)
-            res = getHttpClient()
-                    .send(startRequest(PATH_STREAMING + PATH_TENANTS)
+            res = http()
+                    .send(req(PATH_STREAMING + PATH_TENANTS)
                     .GET().build(), BodyHandlers.ofString());
             if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return getObjectMapper()
+                return om()
                         .readValue(res.body(), new TypeReference<List<Tenant>>(){})
                         .stream();
             }
@@ -68,24 +81,30 @@ public class StreamingClient extends ApiDevopsSupport {
     
     /**
      * Syntax sugar to help
+     *
+     * @param ct
+     *      creation request for tenant
      */
     public void createTenant(CreateTenant ct) {
         tenant(ct.getTenantName()).create(ct);
     }
     
     /**
-     * Operations on providers
+     * Operations on providers.
+     * 
+     * @return
+     *      list of cloud providers and regions
      */
     @SuppressWarnings("unchecked")
     public Map<String, List<String>> providers() {
         HttpResponse<String> res;
         try {
             // Invocation (no marshalling yet)
-            res = getHttpClient()
-                    .send(startRequest(PATH_STREAMING + PATH_PROVIDERS)
+            res = http()
+                    .send(req(PATH_STREAMING + PATH_PROVIDERS)
                     .GET().build(), BodyHandlers.ofString());
             if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return getObjectMapper()
+                return om()
                         .readValue(res.body(), Map.class);
             }
         } catch (Exception e) {

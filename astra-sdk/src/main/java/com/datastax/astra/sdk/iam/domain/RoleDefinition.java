@@ -15,10 +15,15 @@ public class RoleDefinition {
     private String name;
     
     /** Policy for our new custom role */
-    private final PolicyJson policy;
+    private final RolePolicy policy;
     
     /**
      * Pattern builder.
+     * 
+     * @param orgId
+     *      organiization identifiier
+     * @return
+     *      builder
      */
     public static RoleDefinitionBuilder builder(String orgId) {
         return new RoleDefinitionBuilder(orgId);
@@ -26,10 +31,13 @@ public class RoleDefinition {
     
     /**
      * Pattern builder.
+     * 
+     * @param builder
+     *          constructor with builder
      */
     private RoleDefinition(RoleDefinitionBuilder builder) {
         this.name = builder.name;
-        PolicyJson policy = new PolicyJson();
+        RolePolicy policy = new RolePolicy();
         policy.setEffect("allow");
         policy.setDescription(builder.description);
         policy.setActions(builder.permissions
@@ -135,7 +143,7 @@ public class RoleDefinition {
      * @return
      *       current value of 'policy'
      */
-    public PolicyJson getPolicy() {
+    public RolePolicy getPolicy() {
         return policy;
     }
 

@@ -56,13 +56,13 @@ public class DatabasesClient extends ApiDevopsSupport {
         HttpResponse<String> res;
         try {
            // Invocation with no marshalling
-           res = getHttpClient().send(
-                   startRequest(PATH_REGIONS).GET().build(), 
+           res = http().send(
+                   req(PATH_REGIONS).GET().build(), 
                     BodyHandlers.ofString());
             
             // Parsing as list of Bean if OK
             if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return  getObjectMapper().readValue(res.body(),
+                return  om().readValue(res.body(),
                         new TypeReference<List<DatabaseRegion>>(){})
                                    .stream();
             }
@@ -147,11 +147,11 @@ public class DatabasesClient extends ApiDevopsSupport {
         HttpResponse<String> res;
         try {
             // Invocation (no marshalling yet)
-            res = getHttpClient()
-                    .send(startRequest(filter.urlParams())
+            res = http()
+                    .send(req(filter.urlParams())
                     .GET().build(), BodyHandlers.ofString());
             if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return getObjectMapper()
+                return om()
                         .readValue(res.body(), new TypeReference<List<Database>>(){})
                         .stream();
             }
@@ -169,6 +169,7 @@ public class DatabasesClient extends ApiDevopsSupport {
      * @param dbId
      *          unique identifieer id
      * @return
+     *          client specialized for this db
      */
     public DatabaseClient database(String dbId) {
         Assert.hasLength(dbId, "Database Id should not be null nor empty");
@@ -189,10 +190,10 @@ public class DatabasesClient extends ApiDevopsSupport {
         Assert.notNull(dbCreationRequest, "Database creation request");
         HttpResponse<String> response ;
         try {
-           response = getHttpClient()
-                    .send(startRequest(PATH_DATABASES)
+           response = http()
+                    .send(req(PATH_DATABASES)
                     .POST(BodyPublishers.ofString(
-                            getObjectMapper().writeValueAsString(dbCreationRequest)))
+                            om().writeValueAsString(dbCreationRequest)))
                     .build(), BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot create a new instance", e);
@@ -204,8 +205,6 @@ public class DatabasesClient extends ApiDevopsSupport {
         } 
         return response.headers().map().get("location").get(0);
     }
-
-   
     
 
 }
