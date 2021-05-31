@@ -34,12 +34,21 @@ public class IamClient extends ApiDevopsSupport {
     public static final String PATH_TOKENS         = "/clientIdSecrets";
     
     /**
-     * Full constructor.
+     * Default Constructor
+     * 
+     * @param token
+     *          authenticated token
      */
     public IamClient(String token) {
         super(token);
     }
     
+    /**
+     * Retrieve Organization id.
+     *
+     * @return
+     *      organization id.
+     */
     public String organizationId() {
         HttpResponse<String> res;
         try {
@@ -119,6 +128,11 @@ public class IamClient extends ApiDevopsSupport {
     
     /**
      * Move the document API (namespace client)
+     * 
+     * @param roleId
+     *      unique identifier for the role
+     * @return
+     *      role rest client
      */
     public RoleClient role(String roleId) {
         Assert.hasLength(roleId, "Role Id should not be null nor empty");
@@ -150,6 +164,11 @@ public class IamClient extends ApiDevopsSupport {
     
     /**
      * Move to token resource.
+     * 
+     * @param tokenId
+     *      token identifier
+     * @return
+     *      rest client for a token
      */
     public TokenClient token(String tokenId) {
         return new TokenClient(this, bearerAuthToken, tokenId);
@@ -157,6 +176,11 @@ public class IamClient extends ApiDevopsSupport {
     
     /**
      * Create token
+     *
+     * @param role
+     *      create a token with dedicated role
+     * @return
+     *      created token
      */
     public CreateTokenResponse createToken(String role) {
         Assert.hasLength(role, "role");

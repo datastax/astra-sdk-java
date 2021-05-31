@@ -34,6 +34,9 @@ public abstract class ApiDevopsSupport {
     
     /**
      * As immutable object use builder to initiate the object.
+     * 
+     * @param authToken
+     *          authenticated token
      */
     public ApiDevopsSupport(String authToken) {
        this.bearerAuthToken = authToken;

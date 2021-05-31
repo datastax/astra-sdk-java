@@ -29,7 +29,12 @@ public class RoleClient extends ApiDevopsSupport {
     private final String resourceSuffix;
     
     /**
-     * Constructor for immutability
+     * Default constructor.
+     *
+     * @param token
+     *      authenticated token
+     * @param roleId
+     *      current role identifier
      */
     public RoleClient(String token, String roleId) {
         super(token);
@@ -95,7 +100,10 @@ public class RoleClient extends ApiDevopsSupport {
     }
     
     /**
-     * Update an existing roole.
+     * Update an existing role.
+     * 
+     * @param cr
+     *      role definition
      */
     public void update(RoleDefinition cr) {
         Assert.notNull(cr, "CreateRole request");

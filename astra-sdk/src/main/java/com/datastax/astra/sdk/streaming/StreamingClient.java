@@ -26,7 +26,6 @@ public class StreamingClient extends ApiDevopsSupport {
     public static final String PATH_TENANTS    = "/tenants";
     public static final String PATH_PROVIDERS  = "/providers";
     
-    
     // MAP TENANT
     private Map<String, TenantClient> cacheTenants = new HashMap<>();
     

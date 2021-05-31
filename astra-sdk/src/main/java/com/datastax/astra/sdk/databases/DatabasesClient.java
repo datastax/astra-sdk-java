@@ -27,8 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * 
  * The JDK11 client http is used and as such jdk11+ is required
  * 
- * Documentation:
- * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
+ * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -39,6 +38,9 @@ public class DatabasesClient extends ApiDevopsSupport {
     
     /**
      * As immutable object use builder to initiate the object.
+     * 
+     * @param authToken
+     *      authenticated token
      */
     public DatabasesClient(String authToken) {
        super(authToken);
@@ -47,10 +49,8 @@ public class DatabasesClient extends ApiDevopsSupport {
     /**
      * Returns supported regions and availability for a given user and organization
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listAvailableRegions
-     * 
      * @return
-     *  supported regions and availability 
+     *      supported regions and availability 
      */
     public Stream<DatabaseRegion> regions() {
         HttpResponse<String> res;
@@ -75,8 +75,10 @@ public class DatabasesClient extends ApiDevopsSupport {
     }
     
     /**
-     * Map regions from plain list to Tier/Cloud/Region Structure
+     * Map regions from plain list to Tier/Cloud/Region Structure.
+     *
      * @return
+     *      regions organized by cloud providers
      */
     public Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> regionsMap() {
         Map<DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> m = new HashMap<>();
@@ -111,7 +113,7 @@ public class DatabasesClient extends ApiDevopsSupport {
      * Default Filter to find databases.
      *
      * @return
-     *      value
+     *      list of non terminated db
      */
     public Stream<Database> databasesNonTerminated() {
         return searchDatabases(DatabaseFilter.builder().build());
@@ -133,7 +135,12 @@ public class DatabasesClient extends ApiDevopsSupport {
     /**
      * Find Databases matching the provided filter.
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listDatabases
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listDatabases
+     * 
+     * @param filter
+     *      filter to search for db
+     * @return
+     *      list of db
      */
     public Stream<Database> searchDatabases(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
@@ -176,7 +183,7 @@ public class DatabasesClient extends ApiDevopsSupport {
      * @return
      *      the new instance id.
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase
      */
     public String createDatabase(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");

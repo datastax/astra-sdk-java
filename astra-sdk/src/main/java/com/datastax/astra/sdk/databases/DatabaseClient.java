@@ -25,7 +25,12 @@ public class DatabaseClient extends ApiDevopsSupport {
     private final String databaseId;
     
     /**
-     * Full constructor.
+     * Default constructor.
+     *
+     * @param bearerAuthToken
+     *          authentication token
+     * @param databaseId
+     *          uniique database identifier
      */
     public DatabaseClient(String bearerAuthToken, String databaseId) {
         super(bearerAuthToken);
@@ -35,13 +40,11 @@ public class DatabaseClient extends ApiDevopsSupport {
     
     /**
      * Retrieve a DB by its id.
-     *
-     * @param dbId
-     *      unique db identifier
+     * 
      * @return
      *      the database if present,
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
      */
     public Optional<Database> find() {
         Assert.hasLength(databaseId, "Database identifier");
@@ -70,8 +73,6 @@ public class DatabaseClient extends ApiDevopsSupport {
     /**
      * Evaluate if a database exists using the findById method.
      * 
-     * @param dbId
-     *      database identifier
      * @return
      *      database existence
      *      
@@ -83,13 +84,11 @@ public class DatabaseClient extends ApiDevopsSupport {
     
     /**
      * Create a new keyspace in a DB.
-     *
-     * @param dbId
-     *      unique identifier for database id
+     * 
      * @param keyspace
      *      keyspace name to create
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
      */
     public void createKeyspace(String keyspace) {
         Assert.hasLength(keyspace, "Namespace");
@@ -114,7 +113,10 @@ public class DatabaseClient extends ApiDevopsSupport {
     /**
      * Syntax sugar for doc API
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
+     * @param namespace
+     *          target namespace
+     *         
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace          
      */
     public void createNamespace(String namespace) {
         createKeyspace(namespace);
@@ -122,9 +124,6 @@ public class DatabaseClient extends ApiDevopsSupport {
     
     /**
      * Parks a database
-     * 
-     * @param dbId
-     *      unique identifier for the db
      */
     public void park() {
         HttpResponse<String> response;
@@ -145,11 +144,8 @@ public class DatabaseClient extends ApiDevopsSupport {
     
     /**
      * Unparks a database.
-     *
-     * @param dbId
-     *          unique identifier for the db
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
      */
     public void unpark() {
         HttpResponse<String> response;
@@ -169,11 +165,8 @@ public class DatabaseClient extends ApiDevopsSupport {
     
     /**
      * Terminates a database.
-     *
-     * @param dbId
-     *          unique identifier for the db
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
      */
     public void delete() {
         HttpResponse<String> response;
@@ -197,10 +190,10 @@ public class DatabaseClient extends ApiDevopsSupport {
     /**
      * Resizes a database.
      *
-     * @param dbId
-     *          unique identifier for the db
+     * @param capacityUnits
+     *          sizing of a 'classic' db in Astra
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase
      */
     public void resize(int capacityUnits) {
         Assert.isTrue(capacityUnits>0, "Capacity Unit");
@@ -223,14 +216,12 @@ public class DatabaseClient extends ApiDevopsSupport {
     /**
      * Resets Password.
      *
-     * @param dbId
-     *      unique identifier for the db
      * @param username
      *      username
      * @param password
      *      password
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword
      */
     public void resetPassword(String username, String password) {
         HttpResponse<String> response;
@@ -254,7 +245,10 @@ public class DatabaseClient extends ApiDevopsSupport {
     /**
      * Download SecureBundle.
      * 
-     * @see https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
+     * @param destination
+     *      file to save the securebundle
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
      */
     public void downloadSecureConnectBundle(String destination) {
         Assert.hasLength(destination, "destination");

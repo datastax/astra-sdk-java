@@ -29,6 +29,13 @@ public class TokenClient extends ApiDevopsSupport {
     
     /**
      * Constructor for immutability
+     * 
+     * @param cli
+     *      client to work with IAM
+     * @param token
+     *      authenticated token
+     * @param tokenId
+     *      unique token
      */
     public TokenClient(IamClient cli, String token, String tokenId) {
         super(token);
@@ -38,6 +45,13 @@ public class TokenClient extends ApiDevopsSupport {
         Assert.hasLength(tokenId, "tokenId");
     }
     
+    /**
+     * Constructor with od
+     * @param token
+     *      authenticated token
+     * @param tokenId
+     *      unique token id
+     */
     public TokenClient(String token, String tokenId) {
         this(null, token, tokenId);
     }
