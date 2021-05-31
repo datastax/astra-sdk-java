@@ -1,5 +1,7 @@
 package com.datastax.astra.sdk;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +15,7 @@ import com.datastax.astra.sdk.iam.IamClient;
 import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.iam.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.iam.domain.Permission;
+import com.datastax.astra.sdk.iam.domain.Role;
 import com.datastax.astra.sdk.iam.domain.RoleDefinition;
 import com.datastax.astra.sdk.iam.domain.User;
 
@@ -161,6 +164,33 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     public void should_list_users() {
         // Given
         IamClient iamClient = new IamClient(appToken.get());
-        iamClient.users().map(User::getEmail).forEach(System.out::println);
+        iamClient.users().forEach(u -> {
+            System.out.println(u.getEmail() + "=" + u.getUserId());
+        });
+    }
+    
+    @Test
+    @Order(11)
+    public void should_find_user() {
+        // Given
+        IamClient iamClient = new IamClient(appToken.get());
+        Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
+        Assert.assertTrue(iamClient.findUserByEmail("cedrick.lunven@gmail.com").isPresent());
+        Assert.assertFalse(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da318").exist());
+        Assert.assertTrue(iamClient.findRoleByName(Role.ORGANIZATION_ADMINISTRATOR).isPresent());
+    }
+    
+    @Test
+    @Order(12)
+    public void should_addRoles() {
+        // Given
+        IamClient iamClient = new IamClient(appToken.get());
+        Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
+        
+        User u1 = iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").find().get();
+        u1.getRoles().stream().forEach(r -> System.out.println(r.getName() + "=" + r.getId()));
+        
+        iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315")
+                 .updateRoles(Role.ORGANIZATION_ADMINISTRATOR, Role.USER_ADMIN_API);
     }
 }

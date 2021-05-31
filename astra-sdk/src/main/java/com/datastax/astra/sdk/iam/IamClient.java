@@ -9,6 +9,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
@@ -21,6 +22,7 @@ import com.datastax.astra.sdk.iam.domain.ResponseAllIamTokens;
 import com.datastax.astra.sdk.iam.domain.ResponseAllUsers;
 import com.datastax.astra.sdk.iam.domain.User;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -74,6 +76,11 @@ public class IamClient extends ApiDevopsSupport {
         }
     }
     
+    
+    // ------------------------------------------------------
+    //                 WORKING WITH USERS
+    // ------------------------------------------------------
+    
     /**
      * List users in organization.
      * 
@@ -98,6 +105,32 @@ public class IamClient extends ApiDevopsSupport {
     }
     
     /**
+     * Specialized a client for user.
+     *
+     * @param userId
+     *      current identifier
+     * @return
+     *      client for a user
+     */
+    public UserClient user(String userId) {
+        Assert.hasLength(userId, "userId Id should not be null nor empty");
+        return new UserClient(this, bearerAuthToken, userId);
+    }
+    
+    /**
+     * Retrieve a suer from his email.
+     * 
+     * @param email
+     *      user email
+     * @return
+     *      user iif exist
+     */
+    public Optional<User> findUserByEmail(String email) {
+        Assert.hasLength(email, "User email should not be null nor empty");
+        return users().filter(u-> u.getEmail().equalsIgnoreCase(email)).findFirst();
+    }
+    
+    /**
      * Invite a user.
      * @param email
      *      user email
@@ -107,22 +140,26 @@ public class IamClient extends ApiDevopsSupport {
     public void inviteUser(String email, String... roles) {
         Assert.notNull(email, "User email");
         Assert.notNull(roles, "User roles");
-        
         if (roles.length == 0) {
             throw new IllegalArgumentException("Roles list cannot be empty");
         }
         
-        // Validate roles ids
-        Arrays.asList(roles).stream().forEach(r -> {
-           if (!role(r).exist()) { 
-               throw new IllegalArgumentException("Cannot find role with id " + r);
+        InviteUserRequest iur = new InviteUserRequest(this.organizationId(), email);
+        Arrays.asList(roles).stream().forEach(currentRole -> {
+           if (IdUtils.isUUID(currentRole)) {
+               iur.addRoles(currentRole);
+           } else {
+               Optional<Role> opt = findRoleByName(currentRole);
+               if (opt.isPresent()) {
+                   iur.addRoles(opt.get().getId());
+               } else {
+                   throw new IllegalArgumentException("Cannot find role with id " + currentRole);
+               }
            }
         });
         
         HttpResponse<String> response;
         try {
-           InviteUserRequest iur = new InviteUserRequest(this.organizationId(), email);
-           iur.addRoles(roles);
            String reqBody = om().writeValueAsString(iur);
            response = http().send(req(PATH_ORGANIZATIONS + UserClient.PATH_USERS)
                             .PUT(BodyPublishers.ofString(reqBody)).build(),
@@ -132,6 +169,11 @@ public class IamClient extends ApiDevopsSupport {
         }
         handleError(response);
     }
+    
+    
+    // ------------------------------------------------------
+    //                 WORKING WITH ROLES
+    // ------------------------------------------------------
     
     /**
      * List roles in a Organizations.
@@ -197,6 +239,23 @@ public class IamClient extends ApiDevopsSupport {
         Assert.hasLength(roleId, "Role Id should not be null nor empty");
         return new RoleClient(bearerAuthToken, roleId);
     }
+    
+    /**
+     * Retrieve a suer from his email.
+     * 
+     * @param email
+     *      user email
+     * @return
+     *      user iif exist
+     */
+    public Optional<Role> findRoleByName(String roleName) {
+        Assert.hasLength(roleName, "User email should not be null nor empty");
+        return roles().filter(r-> r.getName().equalsIgnoreCase(roleName)).findFirst();
+    }
+    
+    // ------------------------------------------------------
+    //                 WORKING WITH TOKENS
+    // ------------------------------------------------------
     
     /**
      * List tokens

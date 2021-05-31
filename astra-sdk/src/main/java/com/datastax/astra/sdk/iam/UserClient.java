@@ -13,14 +13,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.datastax.astra.sdk.iam.domain.Role;
 import com.datastax.astra.sdk.iam.domain.User;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.stargate.sdk.utils.Assert;
 
 public class UserClient extends ApiDevopsSupport {
 
     /** Resource suffix. */ 
     public static final String PATH_USERS = "/users";
+    
+    /** Reference to iamClient. */
+    private IamClient iamClient; 
     
     /** Role identifier. */
     private final String userId;
@@ -36,9 +41,10 @@ public class UserClient extends ApiDevopsSupport {
      * @param userId
      *      current user identifier
      */
-    public UserClient(String token, String userId) {
+    public UserClient(IamClient iamClient, String token, String userId) {
         super(token);
-        this.userId = userId;
+        this.userId         = userId;
+        this.iamClient      = iamClient;
         this.resourceSuffix = IamClient.PATH_ORGANIZATIONS + PATH_USERS + "/" + userId;
         Assert.hasLength(userId, "userId");
     }
@@ -115,12 +121,27 @@ public class UserClient extends ApiDevopsSupport {
         if (roles.length == 0) {
             throw new IllegalArgumentException("Roles list cannot be empty");
         }
+        
+        Map<String, List<String>> mapRoles = new HashMap<>();
+        mapRoles.put("roles", new ArrayList<>());
+        Arrays.asList(roles).stream().forEach(currentRole -> {
+            if (IdUtils.isUUID(currentRole)) {
+                mapRoles.get("roles").add(currentRole);
+            } else {
+                Optional<Role> opt = iamClient.findRoleByName(currentRole);
+                if (opt.isPresent()) {
+                    mapRoles.get("roles").add(opt.get().getId());
+                } else {
+                    throw new IllegalArgumentException("Cannot find role with id " + currentRole);
+                }
+            }
+         });
+        
         HttpResponse<String> response;
         try {
-           Map<String, List<String>> mapRoles = new HashMap<>();
-           mapRoles.put("roles", new ArrayList<>(Arrays.asList(roles)));
-           response = http().send(req(resourceSuffix)
-                            .PUT(BodyPublishers.ofString(om().writeValueAsString(mapRoles))).build(),
+           response = http().send(req(resourceSuffix + "/roles")
+                            .PUT(BodyPublishers.ofString(om().writeValueAsString(mapRoles)))
+                            .build(),
                    BodyHandlers.ofString());
         } catch (Exception e) {
             throw new RuntimeException("Cannot create a new role", e);
