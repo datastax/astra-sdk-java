@@ -71,6 +71,9 @@ public class TokenClient extends ApiDevopsSupport {
                         .findFirst();
     }
     
+    /**
+     * 
+     */
     public boolean exist() {
         return find().isPresent();
     }

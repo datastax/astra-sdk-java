@@ -49,17 +49,26 @@ public class AstraClient implements Closeable {
     
     /** Initialize parameters from Environment variables. */
     public static final String ASTRA_DB_ID                = "ASTRA_DB_ID";
+    /** */
     public static final String ASTRA_DB_REGION            = "ASTRA_DB_REGION";
+    /** */
     public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
+    /** */
     public static final String ASTRA_DB_CLIENT_ID         = "ASTRA_DB_CLIENT_ID";
+    /** */
     public static final String ASTRA_DB_CLIENT_SECRET     = "ASTRA_DB_CLIENT_SECRET";
+    /** */
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
+    /** */
     public static final String ASTRA_DB_SECURE_BUNDLE     = "ASTRA_DB_SECURE_BUNDLE";
     
     /** Building Astra base URL. */
     public static final String ASTRA_ENDPOINT_PREFIX  = "https://";
+    /** */
     public static final String ASTRA_ENDPOINT_REST_SUFFIX  = ".apps.astra.datastax.com/api/rest";
+    /** */
     public static final String ENV_USER_HOME          = "user.home";
+    /** */
     public static final String SECURE_CONNECT         = "secure_connect_bundle_";
     
     /** Stargate client wrapping DOC, REST,GraphQL and CQL APis. */
@@ -299,14 +308,21 @@ public class AstraClient implements Closeable {
      */
     public static class AstraClientBuilder {
         
+        /** */
         public String  astraDatabaseId;
+        /** */
         public String  astraDatabaseRegion;
         
+        /** */
         public String  clientId;
+        /** */
         public String  clientSecret;
         
+        /** */
         public String  appToken;
+        /** */
         public String  secureConnectBundle;
+        /** */
         public String  keyspace;
           
         /**

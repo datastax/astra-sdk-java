@@ -12,6 +12,9 @@ import com.datastax.astra.sdk.streaming.domain.Tenant;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class TenantClient extends ApiDevopsSupport {
 
     /** Constants. */

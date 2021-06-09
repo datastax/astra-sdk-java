@@ -22,18 +22,32 @@ package com.datastax.astra.sdk.databases.domain;
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum DatabaseActionType {
+    /** */
     addDatacenters,
+    /** */
     addKeyspace,
+    /** */
     addTable,
+    /** */
     getCreds,
+    /** */
     launchMigrationProxy,
+    /** */
     park,
+    /** */
     removeKeyspace,
+    /** */
     removeMigrationProxy,
+    /** */
     resize,
+    /** */
     resetPassword,
+    /** */
     suspend,
+    /** */
     terminate,
+    /** */
     terminateDatacenter,
+    /** */
     unpark;
 }

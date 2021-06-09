@@ -20,6 +20,9 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class Database {
     

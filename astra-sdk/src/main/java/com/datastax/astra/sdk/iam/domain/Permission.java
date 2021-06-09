@@ -1,5 +1,8 @@
 package com.datastax.astra.sdk.iam.domain;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public enum Permission {
     
     org_read("org-read","Read Organization"),

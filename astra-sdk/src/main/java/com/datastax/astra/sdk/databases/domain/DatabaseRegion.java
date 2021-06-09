@@ -16,6 +16,9 @@
 
 package com.datastax.astra.sdk.databases.domain;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class DatabaseRegion {
 
     private DatabaseTierType tier = DatabaseTierType.developer;
@@ -42,6 +45,9 @@ public class DatabaseRegion {
     
     private int defaultStoragePerCapacityUnitGb=10;
 
+    /**
+     * 
+     */
     public DatabaseRegion() {
     }
     

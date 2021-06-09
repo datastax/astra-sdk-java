@@ -33,7 +33,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class DatabasesClient extends ApiDevopsSupport {
     
+    /** */
     public static final String PATH_DATABASES = "databases";
+    /** */
     public static final String PATH_REGIONS   = "availableRegions";
     
     /**

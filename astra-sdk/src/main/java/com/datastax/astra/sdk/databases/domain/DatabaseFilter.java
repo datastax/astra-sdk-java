@@ -18,18 +18,27 @@ package com.datastax.astra.sdk.databases.domain;
 
 import java.util.Optional;
 
+/** 
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class DatabaseFilter {
     
+    /** */
     public static final int DEFAULT_LIMIT = 25;
     
+    /** */
     private final int limit;
     
+    /** */
     private final String startingAfterDbId;
     
+    /** */
     private final Include include;
     
+    /** */
     private final CloudProviderType provider;
     
+    /** */
     public DatabaseFilter() {
         DatabaseFilter f = DatabaseFilter.builder().build();
         if (f.getStartingAfterDbId().isPresent()) {
@@ -42,6 +51,9 @@ public class DatabaseFilter {
         this.provider          = f.getProvider();
     }
     
+    /**
+     * 
+     */
     public DatabaseFilter(int limit, Include i, CloudProviderType p, String startingAfter) {
         this.startingAfterDbId = startingAfter;
         this.limit             = limit;
@@ -49,6 +61,9 @@ public class DatabaseFilter {
         this.provider          = p;
     }
     
+    /**
+     * 
+     */
     public String urlParams() {
         StringBuilder sbURL = new StringBuilder("databases?")
                 .append("include=" + getInclude().name().toLowerCase())
@@ -60,6 +75,9 @@ public class DatabaseFilter {
         return sbURL.toString();
     }
     
+    /**
+     * @author Cedrick LUNVEN (@clunven)
+     */
     public static enum Include {
         NON_TERMINATED,ALL,ACTIVE,PENDING,
         PREPARING,PREPARED,INITIALIZING,
@@ -68,35 +86,63 @@ public class DatabaseFilter {
         RESIZING,ERROR,MAINTENANCE;
     }
     
-    
+    /**
+     * 
+     */
     public static DatabaseFilterBuilder builder() {
         return new DatabaseFilterBuilder();
     }
     
+    /** 
+     * @author Cedrick LUNVEN (@clunven)
+     */
     public static class DatabaseFilterBuilder {
+        /** */
         private int limit = DEFAULT_LIMIT;
+        /** */
         private String startingAfterDbId = null;
+        /** */
         private CloudProviderType provider = CloudProviderType.ALL;
+        /** */
         private Include include  = Include.NON_TERMINATED;
         
         public DatabaseFilterBuilder() {}
         
+        /**
+         * 
+         */
         public DatabaseFilterBuilder limit(int l) {
             this.limit = l;
             return this;
         }
+
+        /**
+         * 
+         */
         public DatabaseFilterBuilder startingAfterDbId(String dbId) {
             this.startingAfterDbId = dbId;
             return this;
         }
+
+        /**
+         * 
+         */
         public DatabaseFilterBuilder provider(CloudProviderType p) {
             this.provider = p;
             return this;
         }
+
+        /**
+         * 
+         */
         public DatabaseFilterBuilder include(Include i) {
             this.include = i;
             return this;
         }
+
+        /**
+         * 
+         */
         public DatabaseFilter build() {
             return new DatabaseFilter(limit, include, provider, startingAfterDbId);
         }

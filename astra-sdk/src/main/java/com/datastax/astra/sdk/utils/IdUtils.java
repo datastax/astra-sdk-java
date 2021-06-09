@@ -2,6 +2,9 @@ package com.datastax.astra.sdk.utils;
 
 import java.util.UUID;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class IdUtils {
 
     /**

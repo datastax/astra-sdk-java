@@ -1,5 +1,8 @@
 package com.datastax.astra.sdk.streaming.domain;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class CreateTenant {
     
     private String cloudProvider;

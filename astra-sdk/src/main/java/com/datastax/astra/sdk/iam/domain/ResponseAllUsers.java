@@ -6,6 +6,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class ResponseAllUsers implements Serializable {
     

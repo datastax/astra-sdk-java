@@ -23,6 +23,7 @@ public class RoleClient extends ApiDevopsSupport {
     /** Path related to Roles. */
     public static final String PATH_ROLES = "/roles";
     
+    /** */
     public static final String ROLE = "/roles";
     
     

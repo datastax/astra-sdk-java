@@ -19,6 +19,9 @@ import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.stargate.sdk.utils.Assert;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class UserClient extends ApiDevopsSupport {
 
     /** Resource suffix. */ 
@@ -36,6 +39,8 @@ public class UserClient extends ApiDevopsSupport {
     /**
      * Default constructor.
      *
+     * @param iamClient
+     *      iamClient
      * @param token
      *      authenticated token
      * @param userId

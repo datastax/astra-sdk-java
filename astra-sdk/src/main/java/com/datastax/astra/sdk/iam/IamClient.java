@@ -36,7 +36,9 @@ public class IamClient extends ApiDevopsSupport {
     
     /** Constants. */
     public static final String PATH_ORGANIZATIONS  = "/organizations";
+    /** */
     public static final String PATH_CURRENT_ORG    = "/currentOrg";
+    /** */
     public static final String PATH_TOKENS         = "/clientIdSecrets";
     
     /**
@@ -243,8 +245,8 @@ public class IamClient extends ApiDevopsSupport {
     /**
      * Retrieve a suer from his email.
      * 
-     * @param email
-     *      user email
+     * @param roleName
+     *      role name
      * @return
      *      user iif exist
      */

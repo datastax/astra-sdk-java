@@ -16,6 +16,9 @@
 
 package com.datastax.astra.sdk.databases.domain;
 
+/** 
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class DatabaseCost {
     
     double costPerMinCents         = 0;

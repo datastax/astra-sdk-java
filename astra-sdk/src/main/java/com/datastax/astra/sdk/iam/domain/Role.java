@@ -7,6 +7,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class Role implements Serializable {
     
@@ -42,6 +45,9 @@ public class Role implements Serializable {
     @JsonProperty("Policy")
     private RolePolicy policy;
     
+    /**
+     * @author Cedrick LUNVEN (@clunven)
+     */
     public static final class Policy {
         String description;
         List<String> resources = new ArrayList<>();

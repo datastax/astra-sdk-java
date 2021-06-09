@@ -2,6 +2,9 @@ package com.datastax.astra.sdk.streaming.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class CreateTenantResponse extends Tenant {
     
