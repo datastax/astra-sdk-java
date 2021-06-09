@@ -27,6 +27,11 @@ public class TenantClient extends ApiDevopsSupport {
    
     /**
      * Full constructor.
+     * 
+     * @param token
+     *      token
+     * @param tenant
+     *      tenant
      */
     public TenantClient(String token, String tenant) {
        super(token);
@@ -37,6 +42,9 @@ public class TenantClient extends ApiDevopsSupport {
     
     /**
      * Find a tenant from ids name.
+     * 
+     * @return 
+     *      tenant
      */
     public Optional<Tenant> find() {
         return new StreamingClient(bearerAuthToken)
