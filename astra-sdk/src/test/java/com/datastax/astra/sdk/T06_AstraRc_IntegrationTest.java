@@ -50,7 +50,7 @@ public class T06_AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
         new File(System.getProperty("user.home") + "/.astrarc").delete();
         Assert.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
         // When
-        AstraRc.create(client.apiDevops());
+        AstraRc.create(client.apiDevopsDatabases());
         // Then
         Assert.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());
         // Then we should be able to load the file

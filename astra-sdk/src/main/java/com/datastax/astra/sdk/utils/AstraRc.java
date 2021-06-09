@@ -35,11 +35,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.astra.sdk.devops.ApiDevopsClient;
-import com.datastax.astra.sdk.devops.CloudProviderType;
-import com.datastax.astra.sdk.devops.req.DatabaseFilter;
-import com.datastax.astra.sdk.devops.req.DatabaseFilter.Include;
-import com.datastax.astra.sdk.devops.res.Database;
+import com.datastax.astra.sdk.databases.DatabasesClient;
+import com.datastax.astra.sdk.databases.domain.CloudProviderType;
+import com.datastax.astra.sdk.databases.domain.Database;
+import com.datastax.astra.sdk.databases.domain.DatabaseFilter;
+import com.datastax.astra.sdk.databases.domain.DatabaseFilter.Include;
 
 /**
  * Utility class to load/save .astrarc file. This file is used to store
@@ -135,7 +135,7 @@ public class AstraRc {
      *
      * @param devopsClient ApiDevopsClient
      */
-    public static void create(ApiDevopsClient devopsClient) {
+    public static void create(DatabasesClient devopsClient) {
         save(extractDatabasesInfos(devopsClient));
     }
   
@@ -284,9 +284,9 @@ public class AstraRc {
      * 
      * @param devopsClient ApiDevopsClient
      */
-    private static Map <String, Map<String, String>> extractDatabasesInfos(ApiDevopsClient devopsClient) {
+    private static Map <String, Map<String, String>> extractDatabasesInfos(DatabasesClient devopsClient) {
         // Look for 'all' (limit 100), non terminated DB
-        List<Database> dbs = devopsClient.findDatabases(DatabaseFilter.builder()
+        List<Database> dbs = devopsClient.searchDatabases(DatabaseFilter.builder()
                 .limit(100)
                 .provider(CloudProviderType.ALL)
                 .include(Include.NON_TERMINATED)
@@ -295,12 +295,12 @@ public class AstraRc {
         // [default]
         Map <String, Map<String, String>> result = new HashMap<>();
         result.put(ASTRARC_DEFAULT, new HashMap<>());
-        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getBearerAuthToken());
+        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getToken());
         if (dbs.size() > 0) {
-            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getBearerAuthToken()));
+            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getToken()));
         }
         // Loop on each database
-        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getBearerAuthToken())));
+        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getToken())));
         return result;
     }
     

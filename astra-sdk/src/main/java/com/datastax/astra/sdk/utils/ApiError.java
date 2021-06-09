@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.res;
+package com.datastax.astra.sdk.utils;
 
 import java.io.Serializable;
 

@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk.devops.req;
+package com.datastax.astra.sdk.databases.domain;
 
 import java.util.Optional;
-
-import com.datastax.astra.sdk.devops.CloudProviderType;
 
 public class DatabaseFilter {
     

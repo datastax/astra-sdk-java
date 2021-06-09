@@ -72,14 +72,15 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
                 .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
                 .build();
         
-        clientApiRest = client.apiRest();
+        clientApiRest = client.apiStargateData();
         
         // Not available in the doc API anymore as of now
-        if (!client.apiRest().keyspace(WORKING_KEYSPACE).exist()) {
-            client.apiDevops()
-                  .createKeyspace(dbId.get(), WORKING_KEYSPACE);
+        if (!client.apiStargateData().keyspace(WORKING_KEYSPACE).exist()) {
+            client.apiDevopsDatabases()
+                  .database(dbId.get())
+                  .createKeyspace(WORKING_KEYSPACE);
             System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating keyspace ");
-            while(!client.apiRest().keyspace(WORKING_KEYSPACE).exist()) {
+            while(!client.apiStargateData().keyspace(WORKING_KEYSPACE).exist()) {
                 System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
                 waitForSeconds(1);
             }
