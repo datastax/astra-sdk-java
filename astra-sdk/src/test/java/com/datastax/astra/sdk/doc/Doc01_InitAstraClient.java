@@ -17,7 +17,6 @@
 package com.datastax.astra.sdk.doc;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraClient.AstraClientBuilder;
 
 /**
  * This is not a test but code snippet
@@ -26,6 +25,7 @@ import com.datastax.astra.sdk.AstraClient.AstraClientBuilder;
  */
 public class Doc01_InitAstraClient {
     
+    @SuppressWarnings("unused")
     public void howToInitializeTheAstraClient() {
         AstraClient client = AstraClient.builder()
                 // If you want to use Devops API

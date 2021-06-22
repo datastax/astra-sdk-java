@@ -21,12 +21,8 @@ public class AbstractDocumentSupport<DOC> {
      */
     @SuppressWarnings("unchecked")
     protected Class<DOC> getGenericClass() {
-        System.out.println("getGenericClass from " +  getClass());
         ParameterizedType pt = (ParameterizedType) getClass().getGenericSuperclass();
-        System.out.println(pt);
-        Class<DOC> doc = (Class<DOC>) pt.getActualTypeArguments()[0];
-        System.out.println(doc);
-        return doc;
+        return (Class<DOC>) pt.getActualTypeArguments()[0];
     }
     
     /**

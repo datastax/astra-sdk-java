@@ -51,8 +51,8 @@ public class SearchDocumentQuery {
     /** Page sixe. */ 
     private final int pageSize;
     
-    /** Cursor for paging. */ 
-    private final String pageState;
+    /** Cursor for paging, not terminal as can be updated for issuing next page */ 
+    private String pageState;
     
     /** Build where clause. */
     private final String where;
@@ -69,7 +69,7 @@ public class SearchDocumentQuery {
         this.pageSize         = builder.pageSize;
         this.pageState        = builder.pageState;
         this.fieldsToRetrieve = builder.fields;
-        // Note that the Json Where query is built here but not yet escaped
+        // Json Where query is built here but not yet escaped
         this.where            = builder.getWhereClause();
     }
     
@@ -298,6 +298,16 @@ public class SearchDocumentQuery {
      */
     public Optional<Set<String>> getFieldsToRetrieve() {
         return Optional.ofNullable(fieldsToRetrieve);
+    }
+
+    /**
+     * Setter accessor for attribute 'pageState'.
+     * 
+     * @param pageState
+     * 		new value for 'pageState '
+     */
+    public void setPageState(String pageState) {
+        this.pageState = pageState;
     }
 
 }

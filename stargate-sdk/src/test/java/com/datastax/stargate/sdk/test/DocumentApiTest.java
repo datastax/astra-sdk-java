@@ -380,7 +380,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
         // When
-        DocumentResultPage<Person> results = collectionPerson.findFirstPage(Person.class);
+        DocumentResultPage<Person> results = collectionPerson.findAllPageable(Person.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<Person> person : results.getResults()) {
@@ -407,7 +407,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         SearchDocumentQuery query = SearchDocumentQuery.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
-        DocumentResultPage<Person> results = collectionPerson.search(query, Person.class);
+        DocumentResultPage<Person> results = collectionPerson.searchPageable(query, Person.class);
         Assert.assertNotNull(results);
         for (ApiDocument<Person> person : results.getResults()) {
             Assert.assertNotNull(person);

@@ -395,7 +395,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
                 .collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        DocumentResultPage<PersonAstra> results = collectionPersonAstra.findFirstPage(PersonAstra.class);
+        DocumentResultPage<PersonAstra> results = collectionPersonAstra.findAllPageable(PersonAstra.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
@@ -424,7 +424,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         SearchDocumentQuery query = SearchDocumentQuery.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
-        DocumentResultPage<PersonAstra> results = collectionPersonAstra.search(query, PersonAstra.class);
+        DocumentResultPage<PersonAstra> results = collectionPersonAstra.searchPageable(query, PersonAstra.class);
         Assert.assertNotNull(results);
         for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
             Assert.assertNotNull(PersonAstra);
