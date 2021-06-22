@@ -92,6 +92,9 @@ public class AstraClient implements Closeable {
     /** Hold a reference for clientId. */
     private final String clientSecret;
     
+    /** Hold a reference for databaseId. */
+    private final String databaseId;
+    
     /**
      * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link DatabasesClient}, {@link ApiCqlClient} with
      * a constructor. The full flegde constructor would took 12 pararms.
@@ -118,6 +121,7 @@ public class AstraClient implements Closeable {
         }
        
         if (Utils.paramsProvided(b.astraDatabaseId)) {
+            this.databaseId = b.astraDatabaseId;
             /*
              * -----
              * ENABLE CQL API
@@ -199,6 +203,8 @@ public class AstraClient implements Closeable {
                 
                 this.stargateClient = sBuilder.build();
             }
+        } else {
+            databaseId = null;
         }
         LOGGER.info("[AstraClient] has been initialized.");
     }
@@ -541,6 +547,26 @@ public class AstraClient implements Closeable {
      */
     public Optional<String> getClientSecret() {
         return Optional.ofNullable(clientSecret);
+    }
+
+    /**
+     * Getter accessor for attribute 'databaseId'.
+     *
+     * @return
+     *       current value of 'databaseId'
+     */
+    public Optional<String> getDatabaseId() {
+        return Optional.ofNullable(databaseId);
+    }
+    
+    /**
+     * Getter accessor for attribute 'stargateClient'.
+     *
+     * @return
+     *       current value of 'stargateClient'
+     */
+    public StargateClient getStargateClient() {
+        return stargateClient;
     }
 
 }

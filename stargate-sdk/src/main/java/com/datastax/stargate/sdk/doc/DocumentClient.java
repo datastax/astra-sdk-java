@@ -23,7 +23,6 @@ import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
 import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
 import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
 
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
@@ -103,7 +102,7 @@ public class DocumentClient {
      * @param doc DOC
      * @return DOC
      */
-    public <DOC extends Serializable> String upsert(DOC doc) {
+    public <DOC> String upsert(DOC doc) {
         Assert.notNull(doc, "document");
         Assert.hasLength(docId, "Document identifier");
         HttpResponse<String> response;
@@ -128,7 +127,7 @@ public class DocumentClient {
      * @param doc working class
      * @return DOC
      */
-    public <DOC extends Serializable> String update(DOC doc) {
+    public <DOC> String update(DOC doc) {
         Assert.notNull(doc, "document");
         Assert.hasLength(docId, "Document identifier");
         HttpResponse<String> response;
@@ -153,7 +152,7 @@ public class DocumentClient {
      * @param clazz working class
      * @return a document if exist
      */
-    public <DOC extends Serializable> Optional<DOC> find(Class<DOC> clazz) {
+    public <DOC> Optional<DOC> find(Class<DOC> clazz) {
         Assert.hasLength(docId, "documentId");
         Assert.notNull(clazz, "className");
         HttpResponse<String> response;
@@ -325,7 +324,7 @@ public class DocumentClient {
      * @param clazz DOC
      * @return DOC
      */
-    private  <DOC> DOC marshallDocument(String body,  Class<DOC> clazz) {
+    private <SUBDOC> SUBDOC marshallDocument(String body,  Class<SUBDOC> clazz) {
         try {
             return getObjectMapper().readValue(body, clazz);
         } catch (Exception e) {

@@ -296,7 +296,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        String docId = collectionPersonAstra.createNewDocument(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
+        String docId = collectionPersonAstra.create(new PersonAstra("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
         Assertions.assertNotNull(docId);
         Thread.sleep(1000);
@@ -395,7 +395,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
                 .collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        DocumentResultPage<PersonAstra> results = collectionPersonAstra.findAll(PersonAstra.class);
+        DocumentResultPage<PersonAstra> results = collectionPersonAstra.findFirstPage(PersonAstra.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<PersonAstra> PersonAstra : results.getResults()) {
@@ -527,7 +527,7 @@ public class T04_DocumentApi_IntegrationTest extends AbstractAstraIntegrationTes
         // When
         p1.replaceSubDocument("address", new Address("city2", 8000));
         // Then
-        Address updated = p1.findSubDocument("address", Address.class).get();
+        Address updated = (Address) p1.findSubDocument("address", Address.class).get();
         Assertions.assertEquals(8000, updated.getZipCode());
         Assertions.assertEquals("city2", updated.getCity());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document updated");

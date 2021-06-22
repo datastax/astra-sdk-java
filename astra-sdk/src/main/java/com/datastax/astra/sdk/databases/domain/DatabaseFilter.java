@@ -65,7 +65,7 @@ public class DatabaseFilter {
      * 
      */
     public String urlParams() {
-        StringBuilder sbURL = new StringBuilder("databases?")
+        StringBuilder sbURL = new StringBuilder("/databases?")
                 .append("include=" + getInclude().name().toLowerCase())
                 .append("&provider=" + getProvider().name().toLowerCase())
                 .append("&limit=" + getLimit());

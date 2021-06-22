@@ -98,11 +98,12 @@ public abstract class ApiDevopsSupport {
                 }
                 return new RuntimeException(response.statusCode() + ": " + apiErr.getErrors().get(0).getMessage());
             } catch (Exception e) {
-                LOGGER.error("Cannot parse response " + response.body(), e);
+                LOGGER.error("Error in request " + response.request().uri());
+                LOGGER.error("+ Parse response " + response.body(), e);
             }
         }
         // Was not able to specialized error throw generic
-        return new RuntimeException("Error code2=" +  response.statusCode()+ " response=" + response.body());
+        return new RuntimeException("Error code=" +  response.statusCode()+ " response=" + response.body());
     }
     
     /**
