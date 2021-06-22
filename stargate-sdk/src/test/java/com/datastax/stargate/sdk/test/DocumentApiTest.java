@@ -294,7 +294,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
         // When
-        String docId = collectionPerson.createNewDocument(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        String docId = collectionPerson.create(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
         Assertions.assertNotNull(docId);
         Thread.sleep(500);
@@ -380,7 +380,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         CollectionClient collectionPerson = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPerson.exist());
         // When
-        DocumentResultPage<Person> results = collectionPerson.findAll(Person.class);
+        DocumentResultPage<Person> results = collectionPerson.findFirstPage(Person.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<Person> person : results.getResults()) {
@@ -506,7 +506,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         // When
         p1.replaceSubDocument("address", new Address("city2", 8000));
         // Then
-        Address updated = p1.findSubDocument("address", Address.class).get();
+        Address updated = (Address) p1.findSubDocument("address", Address.class).get();
         Assertions.assertEquals(8000, updated.getZipCode());
         Assertions.assertEquals("city2", updated.getCity());
     }

@@ -23,7 +23,6 @@ import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
 import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
 import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -31,11 +30,14 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
@@ -58,13 +60,13 @@ public class CollectionClient {
     public static final String DOCUMENT_ID = "documentId";
     
     /** Astra Client. */
-    private final ApiDocumentClient docClient;
+    protected final ApiDocumentClient docClient;
     
     /** Namespace. */
-    private final NamespaceClient namespaceClient;
+    protected final NamespaceClient namespaceClient;
     
     /** Collection name. */
-    private final String collectionName;
+    protected String collectionName;
     
     /**
      * Full constructor.
@@ -77,7 +79,6 @@ public class CollectionClient {
         this.docClient     = docClient;
         this.namespaceClient = namespaceClient;
         this.collectionName  = collectionName;
-        Assert.hasLength(collectionName, "collectionName");
     }
     
     /**
@@ -177,7 +178,7 @@ public class CollectionClient {
      * @param doc DOC
      * @return DOC
      */
-    public <DOC extends Serializable> String createNewDocument(DOC doc) {
+    public <DOC> String create(DOC doc) {
         Objects.requireNonNull(doc);
         String saveDocEndPoint = docClient.getEndPointApiDocument() 
                 + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
@@ -214,26 +215,44 @@ public class CollectionClient {
      * @param clazz DOC
      * @return DOC
      */
-    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz) {
-        return findAll(clazz, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
+    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass) {
+        return findFirstPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
     }
-    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, int pageSize) {
-        return findAll(clazz, pageSize, null);
+    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass, int pageSize) {
+        return findPage(beanClass, pageSize, null);
     }
-    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, String pageState) {
-        return findAll(clazz, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
-    }
-    public <DOC> DocumentResultPage<DOC> findAll(Class<DOC> clazz, int pageSize, String pageState) {
+    public <DOC> DocumentResultPage<DOC> findPage(Class<DOC> beanClass, int pageSize, String pageState) {
         SearchDocumentQueryBuilder builder = SearchDocumentQuery.builder().withPageSize(pageSize);
         if (null != pageState) {
             builder.withPageState(pageState);
         }
-        return search(builder.build(), clazz);
+        return search(builder.build(), beanClass);
+    }
+    
+    /**
+     * This function will retrieve all documents in the Collection.
+     * 
+     * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     */
+    public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
+        List<ApiDocument<DOC>> persons = new ArrayList<>();
+        // Loop on pages up to no more pages (could be done)
+        String pageState = null;
+        do {
+            DocumentResultPage<DOC> pageX = findPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
+            if (pageX.getPageState().isPresent())  {
+                pageState = pageX.getPageState().get();
+            } else {
+                pageState = null;
+            }
+            persons.addAll(pageX.getResults());
+        } while(pageState != null);
+        return persons.stream();
     }
     
     //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
-    public <DOC> DocumentResultPage<DOC> search(SearchDocumentQuery query, Class<DOC> clazz) {
-        Objects.requireNonNull(clazz);
+    public <DOC> DocumentResultPage<DOC> search(SearchDocumentQuery query, Class<DOC> beanClass) {
         HttpResponse<String> response;
         try {
              // Invoke as JSON
@@ -251,15 +270,17 @@ public class CollectionClient {
              ApiResponse<Map<String, LinkedHashMap<?,?>>> result = getObjectMapper()
                      .readValue(response.body(), 
                              new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){});
-             
+           
             return new DocumentResultPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()
                     .entrySet().stream()
-                    .map(doc -> new ApiDocument<DOC>(doc.getKey(), getObjectMapper().convertValue(doc.getValue(), clazz)))
+                    .map(doc -> new ApiDocument<DOC>(doc.getKey(), getObjectMapper().convertValue(doc.getValue(), beanClass)))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
         }
     }
+    
+    
     
     private String buildQueryUrl(SearchDocumentQuery query) {
         try {

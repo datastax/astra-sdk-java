@@ -19,6 +19,8 @@ package com.datastax.stargate.sdk.rest.domain;
 import java.util.List;
 
 import com.datastax.stargate.sdk.core.DataCenter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Represent a keyspace definition with its relevant MetaData.
@@ -103,6 +105,16 @@ public class Keyspace {
      */
     public void setReplicas(Integer replicas) {
         this.replicas = replicas;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
     }
     
 

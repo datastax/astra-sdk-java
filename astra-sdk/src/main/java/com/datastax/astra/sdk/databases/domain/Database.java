@@ -39,7 +39,7 @@ public class Database {
     private DatabaseCost       cost;
     private DatabaseMetrics    metrics;
     
-    private Set<DatabaseActionType> availableActions;
+    private Set<String> availableActions;
     private String studioUrl;
     private String grafanaUrl;
     private String cqlshUrl;
@@ -316,7 +316,7 @@ public class Database {
      * @param availableActions
      * 		new value for 'availableActions '
      */
-    public void setAvailableActions(Set<DatabaseActionType> availableActions) {
+    public void setAvailableActions(Set<String> availableActions) {
         this.availableActions = availableActions;
     }
 
@@ -346,7 +346,7 @@ public class Database {
      * @return
      *       current value of 'availableActions'
      */
-    public Set<DatabaseActionType> getAvailableActions() {
+    public Set<String> getAvailableActions() {
         return availableActions;
     }
        

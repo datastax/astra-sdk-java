@@ -26,7 +26,7 @@ import com.datastax.stargate.sdk.rest.domain.Keyspace;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class Namespace extends Keyspace{
+public class Namespace extends Keyspace {
     
     public Namespace() {}
             

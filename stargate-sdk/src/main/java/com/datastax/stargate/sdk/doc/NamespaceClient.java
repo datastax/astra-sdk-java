@@ -87,7 +87,6 @@ public class NamespaceClient {
         // Invoke Http Endpoint
         HttpResponse<String> response;
         try {
-             System.out.println(getEndPointSchemaNamespace());
              response = getHttpClient().send(
                      startRequest(getEndPointSchemaNamespace(), docClient.getToken()).GET().build(), 
                      BodyHandlers.ofString());
