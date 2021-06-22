@@ -114,6 +114,9 @@ public class CollectionClient {
                 .anyMatch(collectionName::equals);
     }
     
+    /**
+     * Create the collection
+     */
     public void create() {
         String createColEndpoint = docClient.getEndPointApiDocument() 
                 + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
@@ -130,6 +133,9 @@ public class CollectionClient {
         handleError(response);
     }
     
+    /**
+     * Deleting the collection
+     */
     public void delete() {
         String delColEndpoint = docClient.getEndPointApiDocument() 
                 + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
@@ -149,6 +155,9 @@ public class CollectionClient {
         handleError(response);
     }
     
+    /**
+     * Upgrading collection to use SAI index
+     */
     public void upgrade() {
         Assert.hasLength(collectionName, "collectionName");
         String updateColEndpoint = docClient.getEndPointApiDocument() 
@@ -173,10 +182,13 @@ public class CollectionClient {
     
     /**
      * Create a new document from any serializable object
-     * 
-     * @param <DOC> DOC
-     * @param doc DOC
-     * @return DOC
+   
+     * @param <DOC>
+     *          working bean type
+     * @param doc
+     *          working bean instance
+     * @return
+     *          created document id
      */
     public <DOC> String create(DOC doc) {
         Objects.requireNonNull(doc);
@@ -211,22 +223,50 @@ public class CollectionClient {
      * Result is (always) paged, default page sze is 50, API only allow 100 MAX.
      * Here we get first page as we do not provide paging state
      * 
-     * @param <DOC> DOC
-     * @param clazz DOC
-     * @return DOC
+     * @param <DOC>
+     *      generic for working bean
+     * @param beanClass
+     *      class for working bean 
+     * @return
+     *      a page of results
      */
-    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass) {
-        return findFirstPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
+    public <DOC> DocumentResultPage<DOC> findAllPageable(Class<DOC> beanClass) {
+        return findAllPageable(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
     }
-    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass, int pageSize) {
-        return findPage(beanClass, pageSize, null);
+    /**
+     * Find a page
+     * @param <DOC>
+     *      generic for working bean
+     * @param beanClass
+     *      class for working bean 
+     * @param pageSize
+     *      size of expected page
+     * @return
+     *      a page of results
+     */
+    public <DOC> DocumentResultPage<DOC> findAllPageable(Class<DOC> beanClass, int pageSize) {
+        return findAllPageable(beanClass, pageSize, null);
     }
-    public <DOC> DocumentResultPage<DOC> findPage(Class<DOC> beanClass, int pageSize, String pageState) {
+    /**
+     * Search for a page.
+     *
+     * @param <DOC>
+     *      generic for working bean
+     * @param beanClass
+     *      class for working bean 
+     * @param pageSize
+     *      size of expected page
+     * @param pageState
+     *      cursor in research
+     * @return
+     *      a page of results
+     */
+    public <DOC> DocumentResultPage<DOC> findAllPageable(Class<DOC> beanClass, int pageSize, String pageState) {
         SearchDocumentQueryBuilder builder = SearchDocumentQuery.builder().withPageSize(pageSize);
         if (null != pageState) {
             builder.withPageState(pageState);
         }
-        return search(builder.build(), beanClass);
+        return searchPageable(builder.build(), beanClass);
     }
     
     /**
@@ -236,23 +276,23 @@ public class CollectionClient {
      * fetching all pages until no more. 
      */
     public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
-        List<ApiDocument<DOC>> persons = new ArrayList<>();
+        List<ApiDocument<DOC>> documents = new ArrayList<>();
         // Loop on pages up to no more pages (could be done)
         String pageState = null;
         do {
-            DocumentResultPage<DOC> pageX = findPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
+            DocumentResultPage<DOC> pageX = findAllPageable(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
             if (pageX.getPageState().isPresent())  {
                 pageState = pageX.getPageState().get();
             } else {
                 pageState = null;
             }
-            persons.addAll(pageX.getResults());
+            documents.addAll(pageX.getResults());
         } while(pageState != null);
-        return persons.stream();
+        return documents.stream();
     }
     
     //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
-    public <DOC> DocumentResultPage<DOC> search(SearchDocumentQuery query, Class<DOC> beanClass) {
+    public <DOC> DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query, Class<DOC> beanClass) {
         HttpResponse<String> response;
         try {
              // Invoke as JSON
@@ -278,6 +318,24 @@ public class CollectionClient {
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
         }
+    }
+    
+    public <DOC> Stream<ApiDocument<DOC>> search(SearchDocumentQuery query, Class<DOC> beanClass) {
+        List<ApiDocument<DOC>> documents = new ArrayList<>();
+        // Loop on pages up to no more pages (could be done)
+        String pageState = null;
+        do {
+            DocumentResultPage<DOC> pageX = searchPageable(query, beanClass);
+            if (pageX.getPageState().isPresent())  {
+                pageState = pageX.getPageState().get();
+            } else {
+                pageState = null;
+            }
+            documents.addAll(pageX.getResults());
+            // Reuissing query for next page
+            query.setPageState(pageState);
+        } while(pageState != null);
+        return documents.stream();
     }
     
     

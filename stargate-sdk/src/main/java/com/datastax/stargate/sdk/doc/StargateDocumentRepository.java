@@ -77,10 +77,19 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      * @return
      *      result page
      */
-    public DocumentResultPage<DOC> search(SearchDocumentQuery query) {
-        return collectionClient.search(query, getGenericClass());
+    public DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query) {
+        return collectionClient.searchPageable(query, getGenericClass());
     }
     
+    /**
+     * Retrieve all documents from the collection.
+     * 
+     * @return
+     *      every document of the collection
+     */
+    public Stream<ApiDocument<DOC>> search(SearchDocumentQuery query) {
+        return collectionClient.search(query, getGenericClass());
+    }
     /**
      * Retrieve all documents from the collection.
      * 
@@ -91,6 +100,16 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
         return collectionClient.findAll(getGenericClass());
     }
     
+    public DocumentResultPage<DOC> findAllPageable() {
+        return collectionClient.findAllPageable(getGenericClass());
+    }
     
+    public DocumentResultPage<DOC> findAllPageable(int pageSize){
+        return collectionClient.findAllPageable(getGenericClass(), pageSize);
+    }
+    
+    public DocumentResultPage<DOC> findAllPageable(int pageSize, String pageingState){
+        return collectionClient.findAllPageable(getGenericClass(), pageSize, pageingState);
+    }
     
 }  
