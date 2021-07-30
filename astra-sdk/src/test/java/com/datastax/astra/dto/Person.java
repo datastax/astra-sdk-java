@@ -16,17 +16,13 @@
 
 package com.datastax.astra.dto;
 
-import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties
-public class PersonAstra implements Serializable {
+public class Person {
     
-    /** Serial. */
-    private static final long serialVersionUID = 2798538288964412234L;
-
     private String firstname;
     
     private String lastname;
@@ -40,72 +36,24 @@ public class PersonAstra implements Serializable {
     /**
      * Defaut Constructor.
      */
-    public PersonAstra() {}
+    public Person() {}
     
     /**
      * Defaut Constructor.
      */
-    public PersonAstra(String first, String last) {
+    public Person(String first, String last) {
         this.firstname = first;
         this.lastname  = last;
     }
     
-    
     /**
      * Defaut Constructor.
      */
-    public PersonAstra(String first, String last, int age, Address a) {
+    public Person(String first, String last, int age, Address a) {
         this.firstname = first;
         this.lastname  = last;
         this.age = age;
         this.address = a;
-    }
-    
-    
-    
-    public static class Address {
-        private String city;
-        private int zipCode;
-        public Address() {}
-        public Address(String city, int zip) {
-            this.city = city;
-            this.zipCode = zip;
-                    
-        }
-        /**
-         * Getter accessor for attribute 'city'.
-         *
-         * @return
-         *       current value of 'city'
-         */
-        public String getCity() {
-            return city;
-        }
-        /**
-         * Setter accessor for attribute 'city'.
-         * @param city
-         * 		new value for 'city '
-         */
-        public void setCity(String city) {
-            this.city = city;
-        }
-        /**
-         * Getter accessor for attribute 'zipCode'.
-         *
-         * @return
-         *       current value of 'zipCode'
-         */
-        public int getZipCode() {
-            return zipCode;
-        }
-        /**
-         * Setter accessor for attribute 'zipCode'.
-         * @param zipCode
-         * 		new value for 'zipCode '
-         */
-        public void setZipCode(int zipCode) {
-            this.zipCode = zipCode;
-        }
     }
 
 

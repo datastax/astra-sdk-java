@@ -5,10 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
@@ -16,8 +14,6 @@ import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseFilter;
 import com.datastax.astra.sdk.databases.domain.DatabaseFilter.Include;
-import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
-import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -33,10 +29,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class DatabasesClient extends ApiDevopsSupport {
     
-    /** */
-    public static final String PATH_DATABASES = "databases";
-    /** */
-    public static final String PATH_REGIONS   = "availableRegions";
+    /** Pth in the */
+    public static final String PATH_DATABASES = "/databases";
     
     /**
      * As immutable object use builder to initiate the object.
@@ -46,54 +40,6 @@ public class DatabasesClient extends ApiDevopsSupport {
      */
     public DatabasesClient(String authToken) {
        super(authToken);
-    }
-     
-    /**
-     * Returns supported regions and availability for a given user and organization
-     * 
-     * @return
-     *      supported regions and availability 
-     */
-    public Stream<DatabaseRegion> regions() {
-        HttpResponse<String> res;
-        try {
-           // Invocation with no marshalling
-           res = http().send(
-                   req(PATH_REGIONS).GET().build(), 
-                    BodyHandlers.ofString());
-            
-            // Parsing as list of Bean if OK
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return  om().readValue(res.body(),
-                        new TypeReference<List<DatabaseRegion>>(){})
-                                   .stream();
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot list regions", e);
-        }
-        
-        LOGGER.error("Error in 'availableRegions'");
-        throw processErrors(res);
-    }
-    
-    /**
-     * Map regions from plain list to Tier/Cloud/Region Structure.
-     *
-     * @return
-     *      regions organized by cloud providers
-     */
-    public Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> regionsMap() {
-        Map<DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> m = new HashMap<>();
-        regions().forEach(dar -> {
-            if (!m.containsKey(dar.getTier())) {
-                m.put(dar.getTier(), new HashMap<CloudProviderType,List<DatabaseRegion>>());
-            }
-            if (!m.get(dar.getTier()).containsKey(dar.getCloudProvider())) {
-                m.get(dar.getTier()).put(dar.getCloudProvider(), new ArrayList<DatabaseRegion>());
-            }
-            m.get(dar.getTier()).get(dar.getCloudProvider()).add(dar);
-        });
-        return m;
     }
     
     /**
@@ -176,6 +122,22 @@ public class DatabasesClient extends ApiDevopsSupport {
     public DatabaseClient database(String dbId) {
         Assert.hasLength(dbId, "Database Id should not be null nor empty");
         return new DatabaseClient(bearerAuthToken, dbId);
+    }
+    
+    /**
+     * Find a database from its name and not its id.
+     * 
+     * @param dbName
+     *          name for a database
+     */
+    public DatabaseClient databaseByName(String dbName) {
+        Assert.hasLength(dbName, "Database Id should not be null nor empty");
+        List<Database> dbs = databasesNonTerminatedByName(dbName).collect(Collectors.toList());
+        if (1 == dbs.size()) {
+            return new DatabaseClient(bearerAuthToken, dbs.get(0).getId());
+        }
+        throw new IllegalArgumentException("Cannot retrieve database from its name "
+                + "(matching count=" + dbs.size() + ")");
     }
     
     /**

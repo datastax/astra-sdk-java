@@ -53,41 +53,33 @@ import com.datastax.stargate.sdk.rest.domain.TableOptions;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
+public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegrationTest {
   
-    private static final String WORKING_KEYSPACE = "sdk_test_ks";
+    private static final String TEST_DBNAME      = "sdk_test_api_stargate";
+    private static final String WORKING_KEYSPACE = "ks1";
     private static final String WORKING_TABLE    = "videos";
     
     private static ApiRestClient clientApiRest;
     
     @BeforeAll
     public static void config() {
-        System.out.println(ANSI_YELLOW + "[T05_RestApi_IntegrationTest]" + ANSI_RESET);
+        printYellow("=======================================");
+        printYellow("=     Data Api IntegrationTest        =");
+        printYellow("=======================================");
+        String dbId = createDbAndKeyspaceIfNotExist(TEST_DBNAME, WORKING_KEYSPACE);
+        client.cqlSession().close();
         
-        //initDb("sdk_test_restApi");
-        
+        // Connect the client to the new created DB
         client = AstraClient.builder()
-                .databaseId("9bd1d0b7-c841-46a0-ae5e-aa15fbebbf23")
-                .cloudProviderRegion("us-east-1")
-                .appToken("AstraCS:TWRvjlcrgfZYfhcxGZhUlAZH:2174fb7dacfd706a2d14d168706022010e99a7bb7cd133050f46ee0d523b386d")
-                .build();
-        
+                  .appToken(client.getToken().get())
+                  .clientId(client.getClientId().get())
+                  .clientSecret(client.getClientSecret().get())
+                  .keyspace(WORKING_KEYSPACE)
+                  .databaseId(dbId)
+                  .cloudProviderRegion("us-east-1")
+                  .build();
         clientApiRest = client.apiStargateData();
-        
-        // Not available in the doc API anymore as of now
-        if (!client.apiStargateData().keyspace(WORKING_KEYSPACE).exist()) {
-            client.apiDevopsDatabases()
-                  .database(dbId.get())
-                  .createKeyspace(WORKING_KEYSPACE);
-            System.out.print(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating keyspace ");
-            while(!client.apiStargateData().keyspace(WORKING_KEYSPACE).exist()) {
-                System.out.print(ANSI_GREEN + "\u25a0" +ANSI_RESET); 
-                waitForSeconds(1);
-            }
-            System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace created");
-        } else {
-            System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Keyspace already exist.");
-        }
+        printOK("Connection established to the DB");
     }
     
     @Test
@@ -733,7 +725,7 @@ public class T05_RestApi_IntegrationTest extends AbstractAstraIntegrationTest {
                .sortBy(new SortField("year", Ordering.ASC))
                .build());
         
-        Assertions.assertEquals(3, res3.getResults().size());
+        Assertions.assertEquals(6, res3.getResults().size());
         
     }
     

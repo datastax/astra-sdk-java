@@ -18,9 +18,7 @@ package com.datastax.astra.sdk;
 
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -29,33 +27,23 @@ import org.junit.jupiter.api.Test;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTest {
-    
-    @BeforeAll
-    public static void setup() {
-        initDb("sdk_test_connect");
-    }
-    
-    @AfterAll
-    public static void shutdown() {
-        //terminateDb("sdk_test_connect");
-    }
+public class T02_ConnectivityIntegrationTest extends AbstractAstraIntegrationTest {
     
     @Test
     @DisplayName("Connect Cassandra with CqlSession using clientId/ClientSecret")
     public void should_enable_cqlSession_with_clientId_clientSecret() {
         // Given
         System.out.println(ANSI_YELLOW + "- Connect Cassandra with CqlSession using clientId/ClientSecret" + ANSI_RESET);
-        Assertions.assertTrue(dbId.isPresent());
-        Assertions.assertTrue(cloudRegion.isPresent());
-        Assertions.assertTrue(clientId.isPresent());
-        Assertions.assertTrue(clientSecret.isPresent());
+        Assertions.assertTrue(client.getDatabaseId().isPresent());
+        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
+        Assertions.assertTrue(client.getClientId().isPresent());
+        Assertions.assertTrue(client.getClientSecret().isPresent());
         // When (autocloseable)
         try(AstraClient astraClient = AstraClient.builder()
-                .databaseId(dbId.get())
-                .cloudProviderRegion(cloudRegion.get())
-                .clientId(clientId.get())
-                .clientSecret(clientSecret.get())
+                .databaseId(client.getDatabaseId().get())
+                .cloudProviderRegion(client.getDatabaseRegion().get())
+                .clientId(client.getClientId().get())
+                .clientSecret(client.getClientSecret().get())
                 .build()) {
             // Then
             Assertions.assertNotNull(astraClient
@@ -72,14 +60,14 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
         System.out.println(ANSI_YELLOW + "- Connect Cassandra with CqlSession using token/appToken" + ANSI_RESET);
         
         // Given
-        Assertions.assertTrue(dbId.isPresent());
-        Assertions.assertTrue(cloudRegion.isPresent());
-        Assertions.assertTrue(appToken.isPresent());
+        Assertions.assertTrue(client.getDatabaseId().isPresent());
+        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
+        Assertions.assertTrue(client.getToken().isPresent());
         // When (autocloseable)
         try(AstraClient astraClient = AstraClient.builder()
-                .databaseId(dbId.get())
-                .cloudProviderRegion(cloudRegion.get())
-                .appToken(appToken.get())
+                .databaseId(client.getDatabaseId().get())
+                .cloudProviderRegion(client.getDatabaseRegion().get())
+                .appToken(client.getToken().get())
                 .build()) {
             // Then
             Assertions.assertNotNull(astraClient
@@ -96,17 +84,18 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
         System.out.println(ANSI_YELLOW + "- Invoke Document Api providing dbId,cloudRegion,appToken" + ANSI_RESET);
         
         // Given
-        Assertions.assertTrue(dbId.isPresent());
-        Assertions.assertTrue(cloudRegion.isPresent());
-        Assertions.assertTrue(appToken.isPresent());
+        Assertions.assertTrue(client.getDatabaseId().isPresent());
+        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
+        Assertions.assertTrue(client.getToken().isPresent());
         // When
-        try(AstraClient cli = AstraClient.builder()
-                .databaseId(dbId.get())
-                .cloudProviderRegion(cloudRegion.get())
-                .appToken(appToken.get())
+        try(AstraClient astraClient = AstraClient.builder()
+                .databaseId(client.getDatabaseId().get())
+                .cloudProviderRegion(client.getDatabaseRegion().get())
+                .appToken(client.getToken().get())
                 .build()) {
                 // Then
-                Assertions.assertTrue(cli.apiStargateDocument().namespaceNames().count() > 0);
+                Assertions.assertTrue(astraClient
+                        .apiStargateDocument().namespaceNames().count() > 0);
          }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
     }
@@ -117,17 +106,18 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
         System.out.println(ANSI_YELLOW + "- Invoke REST Api providing dbId,cloudRegion,appToken" + ANSI_RESET);
         
         // Given
-        Assertions.assertTrue(dbId.isPresent());
-        Assertions.assertTrue(cloudRegion.isPresent());
-        Assertions.assertTrue(appToken.isPresent());
+        Assertions.assertTrue(client.getDatabaseId().isPresent());
+        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
+        Assertions.assertTrue(client.getToken().isPresent());
         // When
-        try(AstraClient cli = AstraClient.builder()
-                .databaseId(dbId.get())
-                .cloudProviderRegion(cloudRegion.get())
-                .appToken(appToken.get())
+        try(AstraClient astraClient = AstraClient.builder()
+                .databaseId(client.getDatabaseId().get())
+                .cloudProviderRegion(client.getDatabaseRegion().get())
+                .appToken(client.getToken().get())
                 .build()) {
                 // Then
-            Assertions.assertTrue(cli.apiStargateData().keyspaceNames().count() > 0);
+            Assertions.assertTrue(astraClient
+                    .apiStargateData().keyspaceNames().count() > 0);
         }
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
     }
@@ -138,10 +128,10 @@ public class T01_ConnectivityIntegrationTest extends AbstractAstraIntegrationTes
         System.out.println(ANSI_YELLOW + "- Contact Devops API" + ANSI_RESET);
         
         // Given
-        Assertions.assertTrue(appToken.isPresent());
+        Assertions.assertTrue(client.getToken().isPresent());
         // When
         try(AstraClient cli = AstraClient.builder()
-                .appToken(appToken.get())
+                .appToken(client.getToken().get())
                 .build()) {
           
             // Then

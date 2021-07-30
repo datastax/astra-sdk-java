@@ -1,26 +1,32 @@
-package com.datastax.astra.sdk.iam;
+package com.datastax.astra.sdk.organizations;
+
 
 import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
-import com.datastax.astra.sdk.iam.domain.CreateTokenResponse;
-import com.datastax.astra.sdk.iam.domain.IamToken;
-import com.datastax.astra.sdk.iam.domain.InviteUserRequest;
-import com.datastax.astra.sdk.iam.domain.Role;
-import com.datastax.astra.sdk.iam.domain.RoleDefinition;
-import com.datastax.astra.sdk.iam.domain.ResponseAllIamTokens;
-import com.datastax.astra.sdk.iam.domain.ResponseAllUsers;
-import com.datastax.astra.sdk.iam.domain.User;
+import com.datastax.astra.sdk.databases.domain.CloudProviderType;
+import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
+import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
+import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
+import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
+import com.datastax.astra.sdk.organizations.domain.IamToken;
+import com.datastax.astra.sdk.organizations.domain.InviteUserRequest;
+import com.datastax.astra.sdk.organizations.domain.ResponseAllIamTokens;
+import com.datastax.astra.sdk.organizations.domain.ResponseAllUsers;
+import com.datastax.astra.sdk.organizations.domain.Role;
+import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
+import com.datastax.astra.sdk.organizations.domain.User;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.stargate.sdk.utils.Assert;
@@ -28,27 +34,39 @@ import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
- * Group resources of organizations.
- *
+ * Client for the Astra Devops API.
+ * 
+ * The JDK11 client http is used and as such jdk11+ is required
+ * 
+ * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
+ * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class IamClient extends ApiDevopsSupport {
+public class OrganizationsClient extends ApiDevopsSupport {
+    
+    /** Get Available Regions. */
+    public static final String PATH_REGIONS      = "/availableRegions";
+    
+    /** Get Available Regions. */
+    public static final String PATH_ACCESS_LISTS = "/access-lists";
+   
+    /** Core Organization. */
+    public static final String PATH_CURRENT_ORG    = "/currentOrg";
     
     /** Constants. */
     public static final String PATH_ORGANIZATIONS  = "/organizations";
-    /** */
-    public static final String PATH_CURRENT_ORG    = "/currentOrg";
-    /** */
+    
+    /** List clients. */
     public static final String PATH_TOKENS         = "/clientIdSecrets";
     
     /**
-     * Default Constructor
+     * As immutable object use builder to initiate the object.
      * 
-     * @param token
-     *          authenticated token
+     * @param authToken
+     *      authenticated token
      */
-    public IamClient(String token) {
-        super(token);
+    public OrganizationsClient(String authToken) {
+       super(authToken);
     }
     
     /**
@@ -77,9 +95,56 @@ public class IamClient extends ApiDevopsSupport {
             throw new RuntimeException("Cannot marshall organization id", e);
         }
     }
+     
+    /**
+     * Returns supported regions and availability for a given user and organization
+     * 
+     * @return
+     *      supported regions and availability 
+     */
+    public Stream<DatabaseRegion> regions() {
+        HttpResponse<String> res;
+        try {
+           // Invocation with no marshalling
+           res = http().send(
+                   req(PATH_REGIONS).GET().build(), 
+                    BodyHandlers.ofString());
+            
+            // Parsing as list of Bean if OK
+            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
+                return  om().readValue(res.body(),
+                        new TypeReference<List<DatabaseRegion>>(){})
+                                   .stream();
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot list regions", e);
+        }
+        
+        LOGGER.error("Error in 'availableRegions'");
+        throw processErrors(res);
+    }
     
+    /**
+     * Map regions from plain list to Tier/Cloud/Region Structure.
+     *
+     * @return
+     *      regions organized by cloud providers
+     */
+    public Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> regionsMap() {
+        Map<DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> m = new HashMap<>();
+        regions().forEach(dar -> {
+            if (!m.containsKey(dar.getTier())) {
+                m.put(dar.getTier(), new HashMap<CloudProviderType,List<DatabaseRegion>>());
+            }
+            if (!m.get(dar.getTier()).containsKey(dar.getCloudProvider())) {
+                m.get(dar.getTier()).put(dar.getCloudProvider(), new ArrayList<DatabaseRegion>());
+            }
+            m.get(dar.getTier()).get(dar.getCloudProvider()).add(dar);
+        });
+        return m;
+    }
     
-    // ------------------------------------------------------
+ // ------------------------------------------------------
     //                 WORKING WITH USERS
     // ------------------------------------------------------
     

@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk.iam;
+package com.datastax.astra.sdk.organizations;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
 
@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.datastax.astra.sdk.iam.domain.Role;
-import com.datastax.astra.sdk.iam.domain.User;
+import com.datastax.astra.sdk.organizations.domain.Role;
+import com.datastax.astra.sdk.organizations.domain.User;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.stargate.sdk.utils.Assert;
@@ -28,7 +28,7 @@ public class UserClient extends ApiDevopsSupport {
     public static final String PATH_USERS = "/users";
     
     /** Reference to iamClient. */
-    private IamClient iamClient; 
+    private OrganizationsClient iamClient; 
     
     /** Role identifier. */
     private final String userId;
@@ -46,11 +46,11 @@ public class UserClient extends ApiDevopsSupport {
      * @param userId
      *      current user identifier
      */
-    public UserClient(IamClient iamClient, String token, String userId) {
+    public UserClient(OrganizationsClient iamClient, String token, String userId) {
         super(token);
         this.userId         = userId;
         this.iamClient      = iamClient;
-        this.resourceSuffix = IamClient.PATH_ORGANIZATIONS + PATH_USERS + "/" + userId;
+        this.resourceSuffix = OrganizationsClient.PATH_ORGANIZATIONS + PATH_USERS + "/" + userId;
         Assert.hasLength(userId, "userId");
     }
     

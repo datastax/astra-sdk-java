@@ -78,25 +78,30 @@ public abstract class ApiDevopsSupport {
             try {
                 // Marshalling error block
                 ApiResponseError apiErr = om().readValue(response.body(),  ApiResponseError.class);
-                apiErr.getErrors().stream().forEach(err -> LOGGER.error(err.toString()));
+                String msg = "Error code " + response.statusCode();
+                if (apiErr != null) {
+                    apiErr.getErrors().stream().forEach(err -> LOGGER.error(err.toString()));
+                    msg = apiErr.getErrors().get(0).getMessage();
+                }
+                
                 // Throw Specialized Exception
-                if (response.statusCode() == HttpURLConnection.HTTP_FORBIDDEN) {
-                    LOGGER.error("Http code 401: Forbidden, check you token");
-                    return new IllegalStateException("401:" + apiErr.getErrors().get(0).getMessage());
+                if (response.statusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    LOGGER.error("Http code 401: Forbidden (check you token) or illegal operation");
+                    return new IllegalStateException("401:" + msg);
                 }
                 if (response.statusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
                     LOGGER.error("Http code 400: Check your parameters");
-                    return new IllegalArgumentException("400:" + apiErr.getErrors().get(0).getMessage());
+                    return new IllegalArgumentException("400:" + msg);
                 }
                 if (response.statusCode() == HttpURLConnection.HTTP_CONFLICT) {
                     LOGGER.error("Http code 409: Conflict either operation is not allowed or enities may already exists");
-                    return new IllegalArgumentException("409:" + apiErr.getErrors().get(0).getMessage());
+                    return new IllegalArgumentException("409:" + msg);
                 }
                 if (response.statusCode() == 422) {
                     LOGGER.error("Http code 422: Invalid information to create DB");
-                    return new IllegalArgumentException("422:" + apiErr.getErrors().get(0).getMessage());
+                    return new IllegalArgumentException("422:" + msg);
                 }
-                return new RuntimeException(response.statusCode() + ": " + apiErr.getErrors().get(0).getMessage());
+                return new RuntimeException(response.statusCode() + ": " + msg);
             } catch (Exception e) {
                 LOGGER.error("Error in request " + response.request().uri());
                 LOGGER.error("+ Parse response " + response.body(), e);

@@ -53,15 +53,21 @@ public abstract class ApiSupport {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiSupport.class);
     
+    public static final String CONTENT_TYPE_JSON      = "application/json";
+    public static final String PATH_SCHEMA            = "/v2/schemas";
+    public static final String REQUEST_WITH           = "AstraJavaSDK " +
+            ApiSupport.class.getPackage().getImplementationVersion();
+    
     public static final String HEADER_ACCEPT          = "Accept";
     public static final String HEADER_CASSANDRA       = "X-Cassandra-Token";
     public static final String HEADER_CONTENT_TYPE    = "Content-Type";
     public static final String HEADER_AUTHORIZATION   = "Authorization";
-    public static final String CONTENT_TYPE_JSON      = "application/json";
-    public static final String PATH_SCHEMA            = "/v2/schemas";
+    public static final String HEADER_USER_AGENT      = "User-Agent";
+    public static final String HEADER_REQUESTED_WITH  = "X-Requested-With";
+   
     
     /** Set a timeout for Http requests. */
-    public static final Duration REQUEST_TIMOUT = Duration.ofSeconds(10);
+    public static final Duration REQUEST_TIMOUT = Duration.ofSeconds(20);
     
     /** Set a timeout for Http requests. */
     public static final Duration TOKEN_TTL = Duration.ofSeconds(300);
@@ -166,8 +172,16 @@ public abstract class ApiSupport {
      */
     public static void handleError(HttpResponse<String> res) {
         if (res.statusCode() >=300) {
+            LOGGER.error("Processing error " + "Error code=" + res.statusCode());
+            ApiError apiErr = new ApiError();
+            apiErr.setCode(res.statusCode());
+            apiErr.setDescription("N/A");
             try {
-               ApiError apiErr = objectMapper.readValue(res.body(), ApiError.class);
+                apiErr = objectMapper.readValue(res.body(), ApiError.class);
+            } catch (Throwable e) {}
+            
+            try {
+               
                if (res.statusCode() == HttpURLConnection.HTTP_FORBIDDEN || 
                    res.statusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                    throw new AuthenticationException(apiErr.getCode() + ":" + apiErr.getDescription());
@@ -178,13 +192,20 @@ public abstract class ApiSupport {
                if (HttpURLConnection.HTTP_INTERNAL_ERROR == res.statusCode()) {
                    throw new IllegalStateException("Internal Error" + apiErr.getCode() + ":" + apiErr.getDescription());
                }
-             } catch (Exception e) {}
+             } catch (Exception e) {
+                 throw new RuntimeException("Error code=" + res.statusCode() + " response=" + res.body(), e);
+             }
              throw new RuntimeException("Error code=" + res.statusCode() + " response=" + res.body());
         }
     }
     
     /**
     * Mutualizing request headers/settings.
+    * 
+    *  Accepts: "application/json",
+        "Content-Type": "application/json",
+        "User-Agent": "@astrajs 0.0.1",
+        
     *
     * @param url end of the url
     * @param token String
@@ -194,6 +215,8 @@ public abstract class ApiSupport {
        return HttpRequest.newBuilder()
                .timeout(REQUEST_TIMOUT)
                .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+               .header(HEADER_USER_AGENT, REQUEST_WITH)
+               .header(HEADER_REQUESTED_WITH, REQUEST_WITH)
                .header(HEADER_CASSANDRA, token)
                .uri(URI.create(url));
    }

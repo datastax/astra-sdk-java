@@ -1,39 +1,30 @@
 package com.datastax.astra.sdk;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import com.datastax.astra.sdk.iam.IamClient;
-import com.datastax.astra.sdk.iam.domain.CreateRoleResponse;
-import com.datastax.astra.sdk.iam.domain.CreateTokenResponse;
-import com.datastax.astra.sdk.iam.domain.Permission;
-import com.datastax.astra.sdk.iam.domain.Role;
-import com.datastax.astra.sdk.iam.domain.RoleDefinition;
-import com.datastax.astra.sdk.iam.domain.User;
+import com.datastax.astra.sdk.organizations.OrganizationsClient;
+import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
+import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
+import com.datastax.astra.sdk.organizations.domain.Permission;
+import com.datastax.astra.sdk.organizations.domain.Role;
+import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
+import com.datastax.astra.sdk.organizations.domain.User;
 
 import graphql.Assert;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest {
-    
-    @BeforeAll
-    public static void config() {
-        System.out.println(ANSI_YELLOW + "[Astra DEVOPS ROLES Test Suite]" + ANSI_RESET);
-        appToken = Optional.ofNullable("AstraCS:abjIANeldqrcOQmILeACwhOr:5daf79ff81bd667ea29179eac08ae98e047c0f42ad462bf66b2282b372eb641a");
-    }
+public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
     
     @Test
     @Order(1)
     public void should_fail_on_invalid_params() {
         System.out.println(ANSI_YELLOW + "- Parameter validation" + ANSI_RESET);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new IamClient(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new IamClient(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new OrganizationsClient(""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new OrganizationsClient(null));
     }
     
     @Test
@@ -41,9 +32,9 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     public void should_connect_to_astra_withAstraClient() {
         System.out.println(ANSI_YELLOW + "- Connection with AstraClient" + ANSI_RESET);
         // Given
-        Assertions.assertTrue(appToken.isPresent());
+        Assertions.assertTrue(client.getToken().isPresent());
         // When
-        new IamClient(appToken.get()).roles().forEach(role -> {
+        new OrganizationsClient(client.getToken().get()).roles().forEach(role -> {
                    System.out.println(role.getId() 
                        + "-" + role.getType() 
                        + "-" + role.getName() 
@@ -56,8 +47,8 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Order(3)
     public void should_find_role_byId() {
         System.out.println(ANSI_YELLOW + "- Connection with AstraClient" + ANSI_RESET);
-        Assertions.assertTrue(appToken.isPresent());
-        System.out.println(new IamClient(appToken.get())
+        Assertions.assertTrue(client.getToken().isPresent());
+        System.out.println(new OrganizationsClient(client.getToken().get())
             .role("b4ed0e9e-67e8-47b6-8b58-c6629be961a9")
             .find()
             .get()
@@ -69,7 +60,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     public void should_create_a_role() {
         System.out.println(ANSI_YELLOW + "- Creating a role" + ANSI_RESET);
         
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         
         RoleDefinition cr = RoleDefinition.builder(iamClient.organizationId())
                   .name("My New Role")
@@ -91,7 +82,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
         System.out.println(ANSI_YELLOW + "- Deleting a role" + ANSI_RESET);
         // Given
         String roleId= "74b847fe-6804-407f-b2d2-e748103ee851";
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         Assertions.assertTrue(iamClient.role(roleId).exist());
         // When
         iamClient.role(roleId).delete();
@@ -104,7 +95,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     public void should_update_a_role() {
         System.out.println(ANSI_YELLOW + "- Deleting a role" + ANSI_RESET);
         // Given
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         // When
         CreateRoleResponse res = iamClient.createRole(RoleDefinition.builder(iamClient.organizationId())
                 .name("RoleTMP")
@@ -130,7 +121,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Order(7)
     public void should_list_tokens() {
         // Given
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         iamClient.tokens().forEach(t->System.out.println(t.getRoles()));
     }
     
@@ -138,7 +129,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Order(8)
     public void should_create_token() {
         System.out.println(ANSI_YELLOW + "- Creating a Token" + ANSI_RESET);
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         CreateTokenResponse res = iamClient.createToken("write");
         System.out.println(res.getClientId());
         Assert.assertTrue(iamClient.token(res.getClientId()).exist());
@@ -147,7 +138,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Test
     @Order(9)
     public void should_delete_token() {
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         // Given
         String token = "rmuoZHiMPejnZoBSBeAHFIid";
         Assert.assertTrue(iamClient.token(token).exist());
@@ -161,7 +152,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Order(10)
     public void should_list_users() {
         // Given
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         iamClient.users().forEach(u -> {
             System.out.println(u.getEmail() + "=" + u.getUserId());
         });
@@ -171,7 +162,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Order(11)
     public void should_find_user() {
         // Given
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
         Assert.assertTrue(iamClient.findUserByEmail("cedrick.lunven@gmail.com").isPresent());
         Assert.assertFalse(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da318").exist());
@@ -182,7 +173,7 @@ public class T08_Devops_Iam_IntegrationTest extends AbstractAstraIntegrationTest
     @Order(12)
     public void should_addRoles() {
         // Given
-        IamClient iamClient = new IamClient(appToken.get());
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
         
         User u1 = iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").find().get();

@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk.iam.domain;
+package com.datastax.astra.sdk.organizations.domain;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk.iam;
+package com.datastax.astra.sdk.organizations;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
 
@@ -7,7 +7,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Optional;
 
-import com.datastax.astra.sdk.iam.domain.IamToken;
+import com.datastax.astra.sdk.organizations.domain.IamToken;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
 
@@ -19,7 +19,7 @@ import com.datastax.stargate.sdk.utils.Assert;
 public class TokenClient extends ApiDevopsSupport {
     
     /** Reference to IAM to list tokens. */
-    private IamClient iamClient;
+    private OrganizationsClient iamClient;
     
     /** Working role. */
     private final String tokenId;
@@ -37,11 +37,11 @@ public class TokenClient extends ApiDevopsSupport {
      * @param tokenId
      *      unique token
      */
-    public TokenClient(IamClient cli, String token, String tokenId) {
+    public TokenClient(OrganizationsClient cli, String token, String tokenId) {
         super(token);
         this.iamClient      = cli;
         this.tokenId        = tokenId;
-        this.resourceSuffix = IamClient.PATH_TOKENS + "/" + tokenId;
+        this.resourceSuffix = OrganizationsClient.PATH_TOKENS + "/" + tokenId;
         Assert.hasLength(tokenId, "tokenId");
     }
     
@@ -64,7 +64,7 @@ public class TokenClient extends ApiDevopsSupport {
      */
     public Optional<IamToken> find() {
         if (iamClient == null ) {
-            iamClient = new IamClient(bearerAuthToken);
+            iamClient = new OrganizationsClient(bearerAuthToken);
         }
         return iamClient.tokens()
                         .filter(t -> t.getClientId().equalsIgnoreCase(tokenId))

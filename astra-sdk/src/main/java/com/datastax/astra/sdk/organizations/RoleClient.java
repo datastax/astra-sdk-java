@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk.iam;
+package com.datastax.astra.sdk.organizations;
 
 import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
 
@@ -8,8 +8,8 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Optional;
 
-import com.datastax.astra.sdk.iam.domain.RoleDefinition;
-import com.datastax.astra.sdk.iam.domain.Role;
+import com.datastax.astra.sdk.organizations.domain.Role;
+import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
 
@@ -26,10 +26,10 @@ public class RoleClient extends ApiDevopsSupport {
     /** */
     public static final String ROLE = "/roles";
     
-    
     /** Working role. */
     private final String roleId;
     
+    /** Building request suffix. */
     private final String resourceSuffix;
     
     /**
@@ -43,7 +43,7 @@ public class RoleClient extends ApiDevopsSupport {
     public RoleClient(String token, String roleId) {
         super(token);
         this.roleId = roleId;
-        this.resourceSuffix = IamClient.PATH_ORGANIZATIONS + PATH_ROLES + "/" + roleId;
+        this.resourceSuffix = OrganizationsClient.PATH_ORGANIZATIONS + PATH_ROLES + "/" + roleId;
         Assert.hasLength(roleId, "roleId");
     }
     

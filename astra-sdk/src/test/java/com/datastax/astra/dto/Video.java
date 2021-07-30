@@ -23,12 +23,8 @@ package com.datastax.astra.dto;
 public class Video {
     
     private String genre;
-    
     private String title;
-    
     private int year;
-    
-    
 
     /**
      * Getter accessor for attribute 'genre'.

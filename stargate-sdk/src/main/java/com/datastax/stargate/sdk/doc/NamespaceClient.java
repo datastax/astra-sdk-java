@@ -195,6 +195,7 @@ public class NamespaceClient {
                 + "/" + namespace 
                 + PATH_COLLECTIONS;
         HttpResponse<String> response;
+        
         try {
             // Invoke
             response = getHttpClient().send(

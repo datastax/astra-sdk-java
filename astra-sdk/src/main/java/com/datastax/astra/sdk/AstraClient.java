@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.iam.IamClient;
+import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -78,13 +78,13 @@ public class AstraClient implements Closeable {
     private DatabasesClient apiDevopsDatabases;
     
     /** Hold a reference for the Api Devops. */
-    private StreamingClient apiDevopsStreaming;
+    private OrganizationsClient apiDevopsOrganizations;
     
     /** Hold a reference for the Api Devops. */
-    private IamClient apiDevopsIam;
+    private StreamingClient apiDevopsStreaming;
     
     /** Hold a reference for the authentication token. */
-    private final String bearerToken;
+    private final String token;
     
     /** Hold a reference for clientId. */
     private final String clientId;
@@ -95,6 +95,9 @@ public class AstraClient implements Closeable {
     /** Hold a reference for databaseId. */
     private final String databaseId;
     
+    /** Hold a reference for databaseId. */
+    private final String databaseRegion;
+    
     /**
      * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link DatabasesClient}, {@link ApiCqlClient} with
      * a constructor. The full flegde constructor would took 12 pararms.
@@ -103,9 +106,9 @@ public class AstraClient implements Closeable {
         
         LOGGER.info("+ Load configuration from Builder parameters");
         
-        this.bearerToken         = b.appToken;
-        this.clientId            = b.clientId;
-        this.clientSecret        = b.clientSecret;
+        this.token          = b.appToken;
+        this.clientId       = b.clientId;
+        this.clientSecret   = b.clientSecret;
       
         /*
          * -----
@@ -114,14 +117,15 @@ public class AstraClient implements Closeable {
          * -----
          */
         if (Utils.paramsProvided(b.appToken)) {
-            apiDevopsDatabases = new DatabasesClient(b.appToken);  
-            apiDevopsIam       = new IamClient(b.appToken);  
-            apiDevopsStreaming = new StreamingClient(b.appToken);
+            apiDevopsOrganizations  = new OrganizationsClient(b.appToken);
+            apiDevopsDatabases      = new DatabasesClient(b.appToken);  
+            apiDevopsStreaming      = new StreamingClient(b.appToken);
             LOGGER.info("+ Devops API is enabled.");
         }
        
         if (Utils.paramsProvided(b.astraDatabaseId)) {
-            this.databaseId = b.astraDatabaseId;
+            this.databaseId     = b.astraDatabaseId;
+            this.databaseRegion = b.astraDatabaseRegion;
             /*
              * -----
              * ENABLE CQL API
@@ -204,7 +208,8 @@ public class AstraClient implements Closeable {
                 this.stargateClient = sBuilder.build();
             }
         } else {
-            databaseId = null;
+            databaseId     = null;
+            databaseRegion = null;
         }
         LOGGER.info("[AstraClient] has been initialized.");
     }
@@ -253,12 +258,12 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public DatabasesClient apiDevopsDatabases() {
-        if (apiDevopsDatabases == null) {
+    public OrganizationsClient apiDevopsOrganizations() {
+        if (apiDevopsOrganizations == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");
         }
-        return apiDevopsDatabases;
+        return apiDevopsOrganizations;
     }
     
     /**
@@ -266,12 +271,12 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public IamClient apiDevopsIam() {
-        if (apiDevopsIam == null) {
+    public DatabasesClient apiDevopsDatabases() {
+        if (apiDevopsDatabases == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");
         }
-        return apiDevopsIam;
+        return apiDevopsDatabases;
     }
     
     /**
@@ -315,21 +320,21 @@ public class AstraClient implements Closeable {
     public static class AstraClientBuilder {
         
         /** */
-        public String  astraDatabaseId;
+        private String  astraDatabaseId;
         /** */
-        public String  astraDatabaseRegion;
+        private String  astraDatabaseRegion;
         
         /** */
-        public String  clientId;
+        private String  clientId;
         /** */
-        public String  clientSecret;
+        private String  clientSecret;
         
         /** */
-        public String  appToken;
+        private String  appToken;
         /** */
-        public String  secureConnectBundle;
+        private String  secureConnectBundle;
         /** */
-        public String  keyspace;
+        private String  keyspace;
           
         /**
          * Load defaults from Emvironment variables
@@ -525,8 +530,8 @@ public class AstraClient implements Closeable {
      * @return
      *       current value of 'clientId'
      */
-    public Optional<String> getBearerToken() {
-        return Optional.ofNullable(bearerToken);
+    public Optional<String> getToken() {
+        return Optional.ofNullable(token);
     }
     
     /**
@@ -557,6 +562,16 @@ public class AstraClient implements Closeable {
      */
     public Optional<String> getDatabaseId() {
         return Optional.ofNullable(databaseId);
+    }
+    
+    /**
+     * Getter accessor for attribute 'databaseRegion'.
+     *
+     * @return
+     *       current value of 'databaseRegion'
+     */
+    public Optional<String> getDatabaseRegion() {
+        return Optional.ofNullable(databaseRegion);
     }
     
     /**

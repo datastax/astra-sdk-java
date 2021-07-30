@@ -1,25 +1,27 @@
 package com.datastax.astra.sdk.databases;
 
+import static com.datastax.astra.sdk.databases.DatabasesClient.PATH_DATABASES;
+
 import java.net.HttpURLConnection;
+import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
+
 /**
  * Working with the Database part of the devop API.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
 public class DatabaseClient extends ApiDevopsSupport {
-    
-    /** Constants. */
-    public static final String PATH_DATABASES  = "/databases";
     
     /** unique db identifier. */
     private final String databaseId;
@@ -39,6 +41,16 @@ public class DatabaseClient extends ApiDevopsSupport {
     }
     
     /**
+     * Leveraging on Asynchronous HTTP CLIENT.
+     * @return
+     */
+    public CompletableFuture<Optional<Database>> findAsync() {
+        return http()
+              .sendAsync(find_buildRequest(), BodyHandlers.ofString())
+              .thenApply(this::find_mapResponse);
+    }
+    
+    /**
      * Retrieve a DB by its id.
      * 
      * @return
@@ -47,22 +59,43 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
      */
     public Optional<Database> find() {
-        Assert.hasLength(databaseId, "Database identifier");
-        // Api Call
-        HttpResponse<String> response;
-        try {
-           response = http()
-                   .send(req(PATH_DATABASES + "/" + databaseId).GET()
-                   .build(), BodyHandlers.ofString());
-           
-           // Mashallinging 
-           if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-               return Optional.ofNullable(om().readValue(response.body(),Database.class));
-           } else if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-               return Optional.empty();
-           }
+       try {
+        return find_mapResponse(http().send(find_buildRequest(), BodyHandlers.ofString()));
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new RuntimeException("Error during endpoint Invocation find():", e);
+        }
+    }
+    
+    /**
+     * Building request to retrieve one database (if exist).
+     *
+     * @return
+     *      the request to fire against the API.
+     */
+    private HttpRequest find_buildRequest() {
+        return req(PATH_DATABASES + "/" + databaseId).GET().build();
+    }
+    
+    /**
+     * Mutualiization of response mapping to allow Async calls.
+     * 
+     * @param response
+     *      current HTTP response
+     * @return
+     *      the database if present
+     */
+    private Optional<Database> find_mapResponse(HttpResponse<String> response) {
+        
+        if (HttpURLConnection.HTTP_OK == response.statusCode()) {
+            try {
+                return Optional.ofNullable(om().readValue(response.body(),Database.class));
+            } catch(Exception e) {
+                throw new RuntimeException("Cannot marshall output from the HTTP", e);
+            }    
+        }
+        
+        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+            return Optional.empty();
         }
         
         // Specializing error
@@ -80,6 +113,16 @@ public class DatabaseClient extends ApiDevopsSupport {
      */
     public boolean exist() {
         return find().isPresent();
+    }
+    
+    /**
+     * Check existence of a database using async communications.
+     * 
+     * @return
+     *      if its exist.
+     */
+    public CompletableFuture<Boolean> existAsync() {
+        return findAsync().thenApply(Optional::isPresent);
     }
     
     /**
@@ -137,7 +180,7 @@ public class DatabaseClient extends ApiDevopsSupport {
         }
         
         if (HttpURLConnection.HTTP_ACCEPTED != response.statusCode()) {
-            LOGGER.error("Error in 'parkDatabase', with id={}", databaseId);
+            LOGGER.error("Error in 'parkDatabase', code={}, with id={}", response.statusCode(), databaseId);
             throw processErrors(response);
         }
     }

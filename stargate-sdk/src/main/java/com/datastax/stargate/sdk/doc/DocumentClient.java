@@ -163,10 +163,13 @@ public class DocumentClient {
         } catch (Exception e) {
             throw new RuntimeException("Cannot invoke API to find document:", e);
         }
-        handleError(response);
         if (HttpURLConnection.HTTP_OK == response.statusCode()) {
            return Optional.of(marshallDocument(response.body(), clazz));
         }
+        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+            return Optional.empty();
+        }
+        handleError(response);
         return Optional.empty();
     }
 
@@ -216,10 +219,13 @@ public class DocumentClient {
         } catch (Exception e) {
             throw new RuntimeException("Cannot invoke API to find sub document:", e);
         }
-        handleError(response);
         if (HttpURLConnection.HTTP_OK == response.statusCode()) {
             return Optional.of(marshallDocument(response.body(), className));
         }
+        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+            return Optional.empty();
+        }
+        handleError(response);
         return Optional.empty();
     }
     
@@ -324,8 +330,12 @@ public class DocumentClient {
      * @param clazz DOC
      * @return DOC
      */
+    @SuppressWarnings("unchecked")
     private <SUBDOC> SUBDOC marshallDocument(String body,  Class<SUBDOC> clazz) {
         try {
+            if (clazz.equals(String.class)) {
+               return (SUBDOC) body;
+            }
             return getObjectMapper().readValue(body, clazz);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshal output '" + body + "' into class '"+ clazz +"'", e);
