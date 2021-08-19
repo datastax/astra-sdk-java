@@ -272,7 +272,7 @@ public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegration
         DatabasesClient cli = new DatabasesClient(client.getToken().get());
         // (6) - Check that we cannot park a serverlessDB
         printOK("POST] Parks a database serverless is not possible" + ANSI_RESET);
-        Assertions.assertThrows(IllegalStateException.class, () -> cli.database(serverlessDbId).park());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> cli.database(serverlessDbId).park());
         printOK("Expected exception retrieved");
     }
     
@@ -284,7 +284,7 @@ public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegration
         DatabasesClient cli = new DatabasesClient(client.getToken().get());
         // (7)
         printOK("[POST] Unparks a database serverless is not possible)" + ANSI_RESET);
-        Assertions.assertThrows(IllegalStateException.class, () -> cli.database(serverlessDbId).unpark());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> cli.database(serverlessDbId).unpark());
         printOK("Expected exception retrieved");
     }
     

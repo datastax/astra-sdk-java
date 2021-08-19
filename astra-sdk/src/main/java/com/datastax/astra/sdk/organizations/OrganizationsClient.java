@@ -20,6 +20,7 @@ import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
 import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
+import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
 import com.datastax.astra.sdk.organizations.domain.IamToken;
 import com.datastax.astra.sdk.organizations.domain.InviteUserRequest;
 import com.datastax.astra.sdk.organizations.domain.ResponseAllIamTokens;
@@ -41,6 +42,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
  * 
  * @author Cedrick LUNVEN (@clunven)
+ */
+/**
+ * Class to TODO
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ *
  */
 public class OrganizationsClient extends ApiDevopsSupport {
     
@@ -305,6 +312,28 @@ public class OrganizationsClient extends ApiDevopsSupport {
     public RoleClient role(String roleId) {
         Assert.hasLength(roleId, "Role Id should not be null nor empty");
         return new RoleClient(bearerAuthToken, roleId);
+    }
+    
+    /**
+     * Helper to find default Roles
+     */
+    public RoleClient role(DefaultRoles role) {
+        Assert.notNull(role, "Role  should not be null nor empty");
+        String id = findRole(role).get().getId();
+        System.out.println(id);
+        return new RoleClient(bearerAuthToken, findRole(role).get().getId());
+    }
+    
+    /**
+     * Retrieve a suer from his email.
+     * 
+     * @param roleName
+     *      role name
+     * @return
+     *      user iif exist
+     */
+    public Optional<Role> findRole(DefaultRoles role) {
+        return findRoleByName(role.getName());
     }
     
     /**

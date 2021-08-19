@@ -26,6 +26,7 @@
     <spring-boot.version>2.4.2</spring-boot.version>
     <logback.version>1.2.3</logback.version>
     <jackson.version>2.12.1</jackson.version>
+    <httpclient.version>4.5.13</httpclient.version>
     <graphql-java.version>16.2</graphql-java.version>
     <junit-platform.version>1.7.0</junit-platform.version>
     <junit-jupiter.version>5.7.0</junit-jupiter.version>
@@ -45,6 +46,11 @@
   </modules>
   <dependencyManagement>
     <dependencies>
+      <dependency>
+    	<groupId>org.apache.httpcomponents</groupId>
+    	<artifactId>httpclient</artifactId>
+    	<version>${httpclient.version}</version>
+	  </dependency>
       <dependency>
         <groupId>com.datastax.oss</groupId>
         <artifactId>java-driver-core</artifactId>

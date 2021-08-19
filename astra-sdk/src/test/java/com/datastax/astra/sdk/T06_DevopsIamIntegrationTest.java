@@ -1,6 +1,11 @@
 package com.datastax.astra.sdk;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -9,6 +14,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
+import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
 import com.datastax.astra.sdk.organizations.domain.Permission;
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
@@ -19,44 +25,79 @@ import graphql.Assert;
 @TestMethodOrder(OrderAnnotation.class)
 public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
     
+    // Client Test
+    private static final String TEST_DBNAME       = "sdk_test_api_devops";
+    private static final String WORKING_KEYSPACE  = "ks1";
+    private static OrganizationsClient clientOrg;
+    
+    @BeforeAll
+    public static void config() {
+        printYellow("=======================================");
+        printYellow("=          DevopsAPI IAM              =");
+        printYellow("=======================================");
+        createDbAndKeyspaceIfNotExist(TEST_DBNAME, WORKING_KEYSPACE);
+        clientOrg = new OrganizationsClient(client.getToken().get());
+    }
+        
     @Test
     @Order(1)
     public void should_fail_on_invalid_params() {
-        System.out.println(ANSI_YELLOW + "- Parameter validation" + ANSI_RESET);
+        printYellow("Parameter validation");
         Assertions.assertThrows(IllegalArgumentException.class, () -> new OrganizationsClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new OrganizationsClient(null));
     }
     
     @Test
     @Order(2)
-    public void should_connect_to_astra_withAstraClient() {
-        System.out.println(ANSI_YELLOW + "- Connection with AstraClient" + ANSI_RESET);
-        // Given
-        Assertions.assertTrue(client.getToken().isPresent());
+    public void should_list_roles() {
+        printYellow("\nShould List Roles");
         // When
-        new OrganizationsClient(client.getToken().get()).roles().forEach(role -> {
-                   System.out.println(role.getId() 
-                       + "-" + role.getType() 
-                       + "-" + role.getName() 
-                       + "-" + role.getPolicy());
-        });
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Can connect to ASTRA with token");
+        List<Role> listRoles = clientOrg.roles().collect(Collectors.toList());
+        // Then
+        Assertions.assertTrue(listRoles.size() > 5);
+        printOK("Roles can be retrieved");
+        for (Role r : listRoles) {
+            Assertions.assertNotNull(r);
+            Assertions.assertNotNull(r.getName());
+            System.out.println("+ " + r.getName() + "=" + r.getId());
+        }
+        printOK("Roles are populated");
     }
     
     @Test
     @Order(3)
+    public void should_find_role_byName() {
+        printYellow("Find a role by its Name");
+        // When
+        Optional<Role> role = clientOrg.findRoleByName(DefaultRoles.DATABASE_ADMINISTRATOR.getName());
+        // Then (it is a default role, should be there)
+        Assertions.assertTrue(role.isPresent());
+    }
+    
+    @Test
+    @Order(4)
+    public void should_find_defaultRoles() {
+        printYellow("Find a role by its Name");
+        // When
+        Optional<Role> role = clientOrg.role(DefaultRoles.DATABASE_ADMINISTRATOR).find();
+        // Then (it is a default role, should be there)
+        Assertions.assertTrue(role.isPresent());
+    }
+    
+    @Test
+    @Order(5)
     public void should_find_role_byId() {
-        System.out.println(ANSI_YELLOW + "- Connection with AstraClient" + ANSI_RESET);
+        printYellow("Connection with AstraClient");
         Assertions.assertTrue(client.getToken().isPresent());
         System.out.println(new OrganizationsClient(client.getToken().get())
-            .role("b4ed0e9e-67e8-47b6-8b58-c6629be961a9")
+            .role("1faa93f2-b889-4190-9585-4bc6e3c3595a")
             .find()
             .get()
             .getName());
     }
     
     @Test
-    @Order(4)
+    @Order(6)
     public void should_create_a_role() {
         System.out.println(ANSI_YELLOW + "- Creating a role" + ANSI_RESET);
         
@@ -166,7 +207,7 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
         Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
         Assert.assertTrue(iamClient.findUserByEmail("cedrick.lunven@gmail.com").isPresent());
         Assert.assertFalse(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da318").exist());
-        Assert.assertTrue(iamClient.findRoleByName(Role.ORGANIZATION_ADMINISTRATOR).isPresent());
+        //Assert.assertTrue(iamClient.findRoleByName(Role.ORGANIZATION_ADMINISTRATOR).isPresent());
     }
     
     @Test
@@ -179,7 +220,7 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
         User u1 = iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").find().get();
         u1.getRoles().stream().forEach(r -> System.out.println(r.getName() + "=" + r.getId()));
         
-        iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315")
-                 .updateRoles(Role.ORGANIZATION_ADMINISTRATOR, Role.USER_ADMIN_API);
+        //iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315")
+        //         .updateRoles(Role.ORGANIZATION_ADMINISTRATOR, Role.USER_ADMIN_API);
     }
 }

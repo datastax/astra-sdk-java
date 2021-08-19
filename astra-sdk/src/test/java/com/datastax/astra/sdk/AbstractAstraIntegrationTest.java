@@ -150,7 +150,7 @@ public abstract class AbstractAstraIntegrationTest {
                 atempt++;
             }
             Assert.assertEquals(DatabaseStatusType.ACTIVE, dbc.find().get().getStatus());
-            printOK("DB is active");
+            printOK("\nDB is active");
             return serverlessDbId;
         }
     }

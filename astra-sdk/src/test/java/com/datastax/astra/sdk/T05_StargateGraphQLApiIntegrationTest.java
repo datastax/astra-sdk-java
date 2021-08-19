@@ -17,7 +17,11 @@
 package com.datastax.astra.sdk;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.stargate.sdk.graphql.ApiGraphQLClient;
@@ -53,6 +57,28 @@ public class T05_StargateGraphQLApiIntegrationTest extends AbstractAstraIntegrat
                   .build();
         clientGraphQL = client.apiStargateGraphQL();
         printOK("Connection established to the DB");
+    }
+    
+    @Test
+    @Order(1)
+    @DisplayName("Parameter validations should through IllegalArgumentException(s)")
+    public void builderParams_should_not_be_empty() {
+        printYellow("Checking required parameters " + ANSI_RESET);
+        Assertions.assertAll("Required parameters",
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().databaseId(null); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().databaseId(""); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().cloudProviderRegion(""); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().cloudProviderRegion(null); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().appToken(""); }),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, 
+                        () -> { AstraClient.builder().appToken(null); })
+        );
+       printOK("Validation OK");
     }
     
     

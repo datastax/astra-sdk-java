@@ -18,6 +18,12 @@
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-core</artifactId>
 		</dependency>
+		<!--  JDK8 http Client -->
+		<dependency>
+    		<groupId>org.apache.httpcomponents</groupId>
+    		<artifactId>httpclient</artifactId>
+		</dependency>
+
 		<!-- Support for JSON Api -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
