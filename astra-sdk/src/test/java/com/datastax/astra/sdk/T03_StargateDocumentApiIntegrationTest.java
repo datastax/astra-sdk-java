@@ -186,7 +186,7 @@ public class T03_StargateDocumentApiIntegrationTest extends AbstractAstraIntegra
     
     @Test
     @Order(6)
-    @DisplayName("Order document")
+    @DisplayName("Upsert document")
     public void should_upsert_document_create() throws InterruptedException {
         printYellow("should_upsert_document_createh");
         // Given
@@ -228,8 +228,6 @@ public class T03_StargateDocumentApiIntegrationTest extends AbstractAstraIntegra
     public void should_delete_document() throws InterruptedException {
         printYellow("should_delete_document");
         // Given
-        
-        
         CollectionClient collectionPersonAstra = clientApiDoc
                 .namespace(WORKING_NAMESPACE)
                 .collection(COLLECTION_PERSON);
@@ -250,10 +248,11 @@ public class T03_StargateDocumentApiIntegrationTest extends AbstractAstraIntegra
         Assertions.assertFalse(collectionPersonAstra.document(uid).exist());
         printOK("Document does not exist");
         
-        Assertions.assertTrue(collectionPersonAstra
+        Assertions.assertFalse(collectionPersonAstra
                 .document(uid)
                 .find(String.class)
-                .isEmpty());
+                .isPresent());
+      
         Assertions.assertThrows(RuntimeException.class, () -> {
             collectionPersonAstra.document(uid).delete();
         });
@@ -327,13 +326,96 @@ public class T03_StargateDocumentApiIntegrationTest extends AbstractAstraIntegra
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document list found");
     }
     
+   
 
     @Test
     @Order(12)
+    @DisplayName("Find sub doc")
+    public void should_find_subdocument() {
+        printYellow("should_find_subdocument");
+        // Given, Collection exist, Document Exist
+        CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(cc.exist());
+        System.out.println(" + Collection exist");
+
+        // Create doc
+        DocumentClient p1 = cc.document("PersonAstra1");
+        p1.upsert(new Person("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        Assertions.assertTrue(p1.find(Person.class).isPresent());
+        System.out.println(" + Document created");
+
+        // When
+        Optional<String> os = p1.findSubDocument("firstname", String.class);
+        Assertions.assertTrue(os.isPresent());
+        Assertions.assertTrue(os.get().length() > 0);
+        System.out.println(" + subdoc find");
+
+        // When
+        Optional<Integer> oi = p1.findSubDocument("age", Integer.class);
+        Assertions.assertTrue(oi.isPresent());
+        Assertions.assertEquals(20, oi.get());
+
+        // When
+        Optional<Address> oa = p1.findSubDocument("address", Address.class);
+        Assertions.assertTrue(oa.isPresent());
+        Assertions.assertEquals(75000, oa.get().getZipCode());
+
+        // When
+        Optional<Integer> oz = p1.findSubDocument("address/zipCode", Integer.class);
+        Assertions.assertTrue(oz.isPresent());
+        Assertions.assertEquals(75000, oz.get());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document retrieved");
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("Update sub doc")
+    public void should_update_subdocument() {
+        printYellow("should_update_subdocument");
+        // Given
+        CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(cc.exist());
+
+        DocumentClient p1 = cc.document("PersonAstra1");
+        p1.upsert(new Person("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        Assertions.assertTrue(p1.find(Person.class).isPresent());
+
+        // When
+        p1.replaceSubDocument("address", new Address("city2", 8000));
+        // Then
+        Address updated = (Address) p1.findSubDocument("address", Address.class).get();
+        Assertions.assertEquals(8000, updated.getZipCode());
+        Assertions.assertEquals("city2", updated.getCity());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document updated");
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("Delete sub doc")
+    public void should_delete_subdocument() {
+        printYellow("should_delete_subdocument");
+        // Given
+        CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        Assertions.assertTrue(cc.exist());
+        DocumentClient p1 = cc.document("PersonAstra1");
+        p1.upsert(new Person("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
+        Assertions.assertTrue(p1.find(Person.class).isPresent());
+        Assertions.assertTrue(p1.findSubDocument("address", Address.class).isPresent());
+        // When
+        p1.deleteSubDocument("address");
+        // Then
+        Assertions.assertFalse(p1.findSubDocument("address", Address.class).isPresent());
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document deleted");
+    }
+    
+    @Test
+    @Order(15)
     @DisplayName("Invalid parameters")
     public void testInvalidDoc() {
         printYellow("testInvalidDoc");
-        DocumentClient dc = StargateClient.builder().disableCQL().build().apiDocument().namespace("n").collection("c")
+        DocumentClient dc = StargateClient.builder()
+                .disableCQL().build()
+                .apiDocument().namespace("n").collection("c")
                 .document("??a=&invalid??");
 
         Assertions.assertAll("Required parameters", () -> Assertions.assertThrows(RuntimeException.class, () -> {
@@ -368,83 +450,6 @@ public class T03_StargateDocumentApiIntegrationTest extends AbstractAstraIntegra
             method.invoke(dc, "invalid_body");
         });
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
-    }
-
-    @Test
-    @Order(13)
-    @DisplayName("Find sub doc")
-    public void should_find_subdocument() {
-        printYellow("should_find_subdocument");
-        // Given, Collection exist, Document Exist
-        CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(cc.exist());
-
-        // Create doc
-        DocumentClient p1 = cc.document("PersonAstra1");
-        p1.upsert(new Person("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
-        Assertions.assertTrue(p1.find(Person.class).isPresent());
-
-        // When
-        Optional<String> os = p1.findSubDocument("firstname", String.class);
-        Assertions.assertTrue(os.isPresent());
-        Assertions.assertTrue(os.get().length() > 0);
-
-        // When
-        Optional<Integer> oi = p1.findSubDocument("age", Integer.class);
-        Assertions.assertTrue(oi.isPresent());
-        Assertions.assertEquals(20, oi.get());
-
-        // When
-        Optional<Address> oa = p1.findSubDocument("address", Address.class);
-        Assertions.assertTrue(oa.isPresent());
-        Assertions.assertEquals(75000, oa.get().getZipCode());
-
-        // When
-        Optional<Integer> oz = p1.findSubDocument("address/zipCode", Integer.class);
-        Assertions.assertTrue(oz.isPresent());
-        Assertions.assertEquals(75000, oz.get());
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document retrieved");
-    }
-
-    @Test
-    @Order(14)
-    @DisplayName("Update sub doc")
-    public void should_update_subdocument() {
-        printYellow("should_update_subdocument");
-        // Given
-        CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(cc.exist());
-
-        DocumentClient p1 = cc.document("PersonAstra1");
-        p1.upsert(new Person("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
-        Assertions.assertTrue(p1.find(Person.class).isPresent());
-
-        // When
-        p1.replaceSubDocument("address", new Address("city2", 8000));
-        // Then
-        Address updated = (Address) p1.findSubDocument("address", Address.class).get();
-        Assertions.assertEquals(8000, updated.getZipCode());
-        Assertions.assertEquals("city2", updated.getCity());
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document updated");
-    }
-
-    @Test
-    @Order(15)
-    @DisplayName("Delete sub doc")
-    public void should_delete_subdocument() {
-        printYellow("should_delete_subdocument");
-        // Given
-        CollectionClient cc = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
-        Assertions.assertTrue(cc.exist());
-        DocumentClient p1 = cc.document("PersonAstra1");
-        p1.upsert(new Person("PersonAstra1", "PersonAstra1", 20, new Address("Paris", 75000)));
-        Assertions.assertTrue(p1.find(Person.class).isPresent());
-        Assertions.assertFalse(p1.findSubDocument("address", Address.class).isEmpty());
-        // When
-        p1.deleteSubDocument("address");
-        // Then
-        Assertions.assertTrue(p1.findSubDocument("address", Address.class).isEmpty());
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Sub document deleted");
     }
     
     

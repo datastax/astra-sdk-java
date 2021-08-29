@@ -1,59 +1,40 @@
 package com.datastax.astra.sdk.organizations;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-
-import java.net.HttpURLConnection;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Optional;
 
 import com.datastax.astra.sdk.organizations.domain.IamToken;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Client for resource '/clientIdSecret' 
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class TokenClient extends ApiDevopsSupport {
-    
-    /** Reference to IAM to list tokens. */
-    private OrganizationsClient iamClient;
+public class TokenClient {
     
     /** Working role. */
     private final String tokenId;
     
-    /** Current url. */
-    private final String resourceSuffix;
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final OrganizationsClient org;
     
     /**
-     * Constructor for immutability
-     * 
-     * @param cli
-     *      client to work with IAM
-     * @param token
-     *      authenticated token
-     * @param tokenId
-     *      unique token
+     * Default constructor.
+     *
+     * @param http
+     *      client
+     * @param roleId
+     *      current role identifier
      */
-    public TokenClient(OrganizationsClient cli, String token, String tokenId) {
-        super(token);
-        this.iamClient      = cli;
-        this.tokenId        = tokenId;
-        this.resourceSuffix = OrganizationsClient.PATH_TOKENS + "/" + tokenId;
+    public TokenClient(OrganizationsClient org, String tokenId) {
+        this.tokenId = tokenId;
+        this.org     = org;
+        this.http    = HttpApisClient.getInstance();
         Assert.hasLength(tokenId, "tokenId");
-    }
-    
-    /**
-     * Constructor with od
-     * @param token
-     *      authenticated token
-     * @param tokenId
-     *      unique token id
-     */
-    public TokenClient(String token, String tokenId) {
-        this(null, token, tokenId);
     }
     
     /**
@@ -63,16 +44,13 @@ public class TokenClient extends ApiDevopsSupport {
      *      role informations
      */
     public Optional<IamToken> find() {
-        if (iamClient == null ) {
-            iamClient = new OrganizationsClient(bearerAuthToken);
-        }
-        return iamClient.tokens()
-                        .filter(t -> t.getClientId().equalsIgnoreCase(tokenId))
-                        .findFirst();
+        return org.tokens()
+                  .filter(t -> t.getClientId().equalsIgnoreCase(tokenId))
+                  .findFirst();
     }
     
     /**
-     * 
+     * Check in inexistence of a token.
      */
     public boolean exist() {
         return find().isPresent();
@@ -85,19 +63,33 @@ public class TokenClient extends ApiDevopsSupport {
         if (!exist()) {
             throw new RuntimeException("Token '"+ tokenId + "' has not been found");
         }
-        HttpResponse<String> response;
-        try {
-            response = http().send(
-                    req(resourceSuffix).DELETE().build(), 
-                    BodyHandlers.ofString()
-            );
-            if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
-                return;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to delete a document:", e);
-        }
-        handleError(response);
+        http.DELETE(getEndpointToken());
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointToken() {
+        return getEndpointToken(tokenId);
+    }
+    
+    /**
+     * Endpoint to access dbs (static)
+     *
+     * @param dbId
+     *      database identifer
+     * @return
+     *      database endpoint
+     */
+    public static String getEndpointToken(String tokenId) {
+        return OrganizationsClient.getApiDevopsEndpointTokens() + "/" + tokenId;
     }
 
 }

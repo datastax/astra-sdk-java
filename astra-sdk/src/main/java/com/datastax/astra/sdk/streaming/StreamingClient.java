@@ -1,8 +1,8 @@
 package com.datastax.astra.sdk.streaming;
 
-import java.net.HttpURLConnection;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +10,10 @@ import java.util.stream.Stream;
 
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.utils.ApiLocator;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -19,7 +21,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StreamingClient extends ApiDevopsSupport {
+public class StreamingClient {
 
     /** Constants. */
     public static final String PATH_STREAMING  = "/streaming";
@@ -29,14 +31,37 @@ public class StreamingClient extends ApiDevopsSupport {
     // MAP TENANT
     private Map<String, TenantClient> cacheTenants = new HashMap<>();
     
+    private static final TypeReference<List<Tenant>> TYPE_LIST_TENANTS = 
+            new TypeReference<List<Tenant>>(){};
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** hold a reference to the bearer token. */
+    private final String bearerAuthToken;
+    
     /**
-     * Full constructor.
-     * @param token
-     *      authenticated user
+     * As immutable object use builder to initiate the object.
+     * 
+     * @param authToken
+     *      authenticated token
      */
-    public StreamingClient(String token) {
-       super(token);
+    public StreamingClient(HttpApisClient client) {
+        this.http = client;
+        this.bearerAuthToken = client.getToken();
     }
+    
+    /**
+     * As immutable object use builder to initiate the object.
+     * 
+     * @param authToken
+     *      authenticated token
+     */
+    public StreamingClient(String bearerAuthToken) {
+       this.bearerAuthToken = bearerAuthToken;
+       this.http = HttpApisClient.getInstance();
+       http.setToken(bearerAuthToken);
+    } 
     
     /**
      * Operations on tenants.
@@ -49,7 +74,7 @@ public class StreamingClient extends ApiDevopsSupport {
     public TenantClient tenant(String tenantName) {
         Assert.hasLength(tenantName, "tenantName");
         if (!cacheTenants.containsKey(tenantName)) {
-            cacheTenants.put(tenantName, new TenantClient(bearerAuthToken, tenantName));
+            cacheTenants.put(tenantName, new TenantClient(this, http, tenantName));
         }
         return cacheTenants.get(tenantName); 
     }
@@ -61,22 +86,8 @@ public class StreamingClient extends ApiDevopsSupport {
      *      list of tenants.
      */
     public Stream<Tenant> tenants() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http()
-                    .send(req(PATH_STREAMING + PATH_TENANTS)
-                    .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om()
-                        .readValue(res.body(), new TypeReference<List<Tenant>>(){})
-                        .stream();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'Tenants'");
-        throw processErrors(res);
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointTenants());
+        return unmarshallType(res.getBody(), TYPE_LIST_TENANTS).stream();
     }
     
     /**
@@ -97,20 +108,51 @@ public class StreamingClient extends ApiDevopsSupport {
      */
     @SuppressWarnings("unchecked")
     public Map<String, List<String>> providers() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http()
-                    .send(req(PATH_STREAMING + PATH_PROVIDERS)
-                    .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om()
-                        .readValue(res.body(), Map.class);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'providers'");
-        throw processErrors(res);
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointProviders());
+        return unmarshallBean(res.getBody(), Map.class);
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointStreaming() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_STREAMING;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointTenants() {
+        return getApiDevopsEndpointStreaming() + PATH_TENANTS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointProviders() {
+        return getApiDevopsEndpointStreaming() + PATH_PROVIDERS;
+    }
+    
+    /**
+     * Access to the current authentication token.
+     *
+     * @return
+     *      authentication token
+     */
+    public String getToken() {
+       return bearerAuthToken;
     }
 }

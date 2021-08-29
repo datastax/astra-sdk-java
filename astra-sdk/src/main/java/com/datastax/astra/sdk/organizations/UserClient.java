@@ -1,11 +1,8 @@
 package com.datastax.astra.sdk.organizations;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,42 +12,38 @@ import java.util.Optional;
 
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.User;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
 import com.datastax.astra.sdk.utils.IdUtils;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.datastax.stargate.sdk.utils.JsonUtils;
 
 /**
  * @author Cedrick LUNVEN (@clunven)
  */
-public class UserClient extends ApiDevopsSupport {
+public class UserClient{
 
-    /** Resource suffix. */ 
-    public static final String PATH_USERS = "/users";
-    
-    /** Reference to iamClient. */
-    private OrganizationsClient iamClient; 
-    
     /** Role identifier. */
     private final String userId;
     
-    /** Suffix for the resource. */ 
-    private final String resourceSuffix;
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final OrganizationsClient org;
     
     /**
      * Default constructor.
      *
-     * @param iamClient
-     *      iamClient
-     * @param token
-     *      authenticated token
-     * @param userId
-     *      current user identifier
+     * @param http
+     *      client
+     * @param roleId
+     *      current role identifier
      */
-    public UserClient(OrganizationsClient iamClient, String token, String userId) {
-        super(token);
-        this.userId         = userId;
-        this.iamClient      = iamClient;
-        this.resourceSuffix = OrganizationsClient.PATH_ORGANIZATIONS + PATH_USERS + "/" + userId;
+    public UserClient(OrganizationsClient org, String userId) {
+        this.userId = userId;
+        this.org    = org;
+        this.http   = HttpApisClient.getInstance();
         Assert.hasLength(userId, "userId");
     }
     
@@ -61,25 +54,12 @@ public class UserClient extends ApiDevopsSupport {
      *      user informations
      */
     public Optional<User> find() {
-         HttpResponse<String> response;
-         try {
-             response = http().send(req(resourceSuffix).GET().build(), 
-                     BodyHandlers.ofString());
-         } catch (Exception e) {
-             throw new RuntimeException("Cannot invoke API to find document:", e);
-         }
-         
-         if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-             return Optional.empty();
-         }
-         
-         handleError(response);
-         
-         try {
-             return Optional.of(om().readValue(response.body(), User.class));
-         } catch (Exception e) {
-             throw new RuntimeException("Cannot Marshall output in 'find user()' body=" + response.body(), e);
-         }
+        ApiResponseHttp res = http.GET(getEndpointUser());
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(JsonUtils.unmarshallBean(res.getBody(), User.class));
+        }
     }
     
     /**
@@ -99,17 +79,7 @@ public class UserClient extends ApiDevopsSupport {
         if (!exist()) {
             throw new RuntimeException("User '"+ userId + "' has not been found");
         }
-        HttpResponse<String> response;
-        try {
-            response = http().send(req(resourceSuffix)
-                     .DELETE().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
-                return;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to delete a user:", e);
-        }
-        handleError(response);
+        http.DELETE(getEndpointUser());
     }
     
     /**
@@ -119,21 +89,21 @@ public class UserClient extends ApiDevopsSupport {
      *      replace existing roles of a userss
      */
     public void updateRoles(String... roles) {
+        // Parameter valication
         Assert.notNull(roles, "User roles");
+        Assert.isTrue(roles.length >0 , "Roles list cannot be empty");
         if (!exist()) {
             throw new RuntimeException("User '"+ userId + "' has not been found");
         }
-        if (roles.length == 0) {
-            throw new IllegalArgumentException("Roles list cannot be empty");
-        }
         
+        // Building body
         Map<String, List<String>> mapRoles = new HashMap<>();
         mapRoles.put("roles", new ArrayList<>());
         Arrays.asList(roles).stream().forEach(currentRole -> {
             if (IdUtils.isUUID(currentRole)) {
                 mapRoles.get("roles").add(currentRole);
             } else {
-                Optional<Role> opt = iamClient.findRoleByName(currentRole);
+                Optional<Role> opt = org.findRoleByName(currentRole);
                 if (opt.isPresent()) {
                     mapRoles.get("roles").add(opt.get().getId());
                 } else {
@@ -142,17 +112,33 @@ public class UserClient extends ApiDevopsSupport {
             }
          });
         
-        HttpResponse<String> response;
-        try {
-           response = http().send(req(resourceSuffix + "/roles")
-                            .PUT(BodyPublishers.ofString(om().writeValueAsString(mapRoles)))
-                            .build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create a new role", e);
-        }
-        handleError(response);
+        http.PUT(getEndpointUser() + "/roles", marshall(mapRoles));
     }
     
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointUser() {
+        return getEndpointUser(userId);
+    }
+    
+    /**
+     * Endpoint to access dbs (static)
+     *
+     * @param dbId
+     *      database identifer
+     * @return
+     *      database endpoint
+     */
+    public static String getEndpointUser(String user) {
+        return OrganizationsClient.getApiDevopsEndpointUsers() + "/" + user;
+    }
     
 }

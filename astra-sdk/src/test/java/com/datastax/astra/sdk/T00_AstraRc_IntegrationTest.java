@@ -16,8 +16,15 @@
 
 package com.datastax.astra.sdk;
 
+import java.io.File;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import com.datastax.astra.sdk.utils.AstraRc;
 
 /**
  * TEST Loading databases metadata in .astrarc 
@@ -27,24 +34,24 @@ import org.junit.jupiter.api.TestMethodOrder;
 @TestMethodOrder(OrderAnnotation.class)
 public class T00_AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
     
-//    @Test
-//    @Order(1)
-//    public void should_create_astraRc_File() {
-//        // You need to have en var ASTRA_DB_APPLICATION_TOKEN
-//        
-//        printYellow("Create file ");
-//        // Given
-//        new File(System.getProperty("user.home") + "/.astrarc").delete();
-//        Assert.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
-//        printOK("File Deleted if exist");
-//        // When
-//        AstraRc.create(client.apiDevopsDatabases());
-//        printOK("File Created");
-//        // Then
-//        Assert.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());
-//        // Then we should be able to load the file
-//        AstraRc.load().print();
-//        printOK("Loaded ");
-//    }
+    @Test
+    @Order(1)
+    public void should_create_astraRc_File() {
+        // You need to have en var ASTRA_DB_APPLICATION_TOKEN
+        
+        printYellow("Create file ");
+        // Given
+        new File(System.getProperty("user.home") + "/.astrarc").delete();
+        Assertions.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
+        printOK("File Deleted if exist");
+        // When
+        AstraRc.create(client.apiDevopsDatabases());
+        printOK("File Created");
+        // Then
+        Assertions.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());
+        // Then we should be able to load the file
+        AstraRc.load().print();
+        printOK("Loaded ");
+    }
 
 }

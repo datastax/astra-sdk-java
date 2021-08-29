@@ -32,7 +32,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.dto.Video;
 import com.datastax.astra.dto.VideoRowMapper;
-import com.datastax.stargate.sdk.rest.ApiRestClient;
+import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.rest.KeyClient;
 import com.datastax.stargate.sdk.rest.TableClient;
 import com.datastax.stargate.sdk.rest.domain.ClusteringExpression;
@@ -47,6 +47,7 @@ import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
 import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;
 import com.datastax.stargate.sdk.rest.domain.TableOptions;
+import com.datastax.stargate.sdk.utils.Assert;
 
 /**
  * DATASET
@@ -59,7 +60,7 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
     private static final String WORKING_KEYSPACE = "ks1";
     private static final String WORKING_TABLE    = "videos";
     
-    private static ApiRestClient clientApiRest;
+    private static ApiDataClient clientApiRest;
     
     @BeforeAll
     public static void config() {
@@ -222,6 +223,11 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
     
     // CRUD ON TABLES
     
+    @Test
+    public void shoud_list_tables() {
+        clientApiRest.keyspace(WORKING_KEYSPACE).tableNames();
+    }
+    
     /*
     * CREATE TABLE IF NOT EXISTS videos (
     *   genre     text,
@@ -253,6 +259,7 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
         Assertions.assertFalse(tc.exist());
         // Core Request
         CreateTable tcr = new CreateTable();
+        tcr.setName(WORKING_TABLE + "_tmp");
         tcr.setIfNotExists(true);
         tcr.getColumnDefinitions().add(new ColumnDefinition("genre", "text"));
         tcr.getColumnDefinitions().add(new ColumnDefinition("year", "int"));
@@ -275,15 +282,14 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
         }
         Assertions.assertTrue(clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE + "_tmp").exist());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table " + WORKING_TABLE + "_tmp now exists.");
+        TableClient working_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE + "_tmp");
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table " + WORKING_TABLE + "_tmp loaded.");
+        working_table.delete();
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Table " + WORKING_TABLE + "_tmp deleted.");
         
-        
-        TableClient working_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
-        if (working_table.exist()) {
-            working_table.delete();
-            wait = 0;
-            while (wait++ < 10 && working_table.exist()) {
-                Thread.sleep(1000);
-            }
+        wait = 0;
+        while (wait++ < 10 && working_table.exist()) {
+           Thread.sleep(1000);
         }
         Assertions.assertFalse(working_table.exist());
         

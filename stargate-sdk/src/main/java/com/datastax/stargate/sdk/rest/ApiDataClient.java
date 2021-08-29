@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.stargate.sdk.doc;
+package com.datastax.stargate.sdk.rest;
 
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
@@ -34,28 +34,29 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
- * Client for the Astra/Stargate document (collections) API.
+ * Working with REST API and part of schemas with tables and keyspaces;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentClient {
-    
+public class ApiDataClient {
+
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDocumentClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDataClient.class);
     
-    /** Resource for document API schemas. */
-    public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
-    public static final String PATH_SCHEMA            = "/v2/schemas";
+    /** Schenma sub level. */
+    public static final String PATH_KEYSPACES  = "/keyspaces";
+    public static final String PATH_SCHEMA     = "/schemas";
+    public static final String PATH_V2         = "/v2";
     
-    private static final TypeReference<ApiResponse<List<Namespace>>> RESPONSE_LIST_NAMESPACE = 
-            new TypeReference<ApiResponse<List<Namespace>>>(){};
-    
-    /** This the endPoint to invoke to work with different API(s). */
-    private final String endPointApiDocument;
-    
+    private static final TypeReference<ApiResponse<List<Keyspace>>> RESPONSE_LIST_KEYSPACE = 
+            new TypeReference<ApiResponse<List<Keyspace>>>(){};
+            
     /** Wrapper handling header and error management as a singleton. */
     private final HttpApisClient http;
-   
+    
+    /** This the endPoint to invoke to work with different API(s). */
+    private final String endPointApiRest;
+    
     /**
      * Initialized document API with an URL and a token.
      * 
@@ -64,13 +65,13 @@ public class ApiDocumentClient {
      * @param token
      *      authentication token
      */
-    public ApiDocumentClient(String endpoint, String token) {
+    public ApiDataClient(String endpoint, String token) {
         Assert.hasLength(endpoint, "endpoint");
         Assert.hasLength(token, "token");
-        this.endPointApiDocument =  endpoint;
+        this.endPointApiRest =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setToken(token);
-        LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
+        LOGGER.info("+ Data API:  {}, ", endPointApiRest);
     }
     
     /**
@@ -80,60 +81,72 @@ public class ApiDocumentClient {
      * @param endPointAuthentication
      * @param endPointApiDocument
      */
-    public ApiDocumentClient(String endpoint, ApiTokenProvider tokenProvider) {
+    public ApiDataClient(String endpoint, ApiTokenProvider tokenProvider) {
         Assert.hasLength(endpoint, "endpoint");
         Assert.notNull(tokenProvider, "tokenProvider");
-        this.endPointApiDocument =  endpoint;
+        this.endPointApiRest =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API(s) Document is [ENABLED] {}", endPointApiDocument);
+        LOGGER.info("+ API(s) REST Data is [ENABLED] {}", endPointApiRest);
     }
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
-     * s
-     * @return Stream
+     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
+     * 
+     * @return Keyspace
      */
-    public Stream<Namespace> namespaces() {
-        ApiResponseHttp res = http.GET(getEndpointSchemaNamespaces());
-        return unmarshallType(res.getBody(), RESPONSE_LIST_NAMESPACE).getData().stream();
+    public Stream<Keyspace> keyspaces() {
+        ApiResponseHttp res = http.GET(getEndpointSchemaKeyspaces());
+        return unmarshallType(res.getBody(), RESPONSE_LIST_KEYSPACE).getData().stream();
     }
     
     /**
      * Return list of Namespace (keyspaces) names available.
      *
      * @see Namespace
-     * @return Stream
+     * @return String
      */
-    public Stream<String> namespaceNames() {
-        return namespaces().map(Keyspace::getName);
+    public Stream<String> keyspaceNames() {
+        return keyspaces().map(Keyspace::getName);
     }
     
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
     /**
-     * Move the document API (namespace client)
+     * Move to the Rest API
      * 
-     * @param namespace String
-     * @return NamespaceClient
+     * @param keyspace String
+     * @return KeyspaceClient
      */
-    public NamespaceClient namespace(String namespace) {
-        return new NamespaceClient(this, namespace);
+    public KeyspaceClient keyspace(String keyspace) {
+        return new KeyspaceClient(this, keyspace);
     }
     
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
     /**
-     * Getter accessor for attribute 'endPointApiDocument'.
+     * Getter accessor for attribute 'endPointApiRest'.
      *
-     * @return
-     *       current value of 'endPointApiDocument'
+     * @return current value of 'endPointApiRest'
      */
-    public String getEndPointApiDocument() {
-        return endPointApiDocument;
+    public String getEndPointApiRest() {
+        return endPointApiRest;
     }
-
+    
     /**
      * Endpoint to access schema for namespace.
      */
-    public String getEndpointSchemaNamespaces() {
-        return getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
+    public String getEndpointSchemaKeyspaces() {
+        return getEndPointApiRest() + PATH_V2 + PATH_SCHEMA + PATH_KEYSPACES;
     }
-
+    
+    public String getEndPointKeyspaces() {
+        return getEndPointApiRest() + PATH_V2 + PATH_KEYSPACES;
+    }
+    
 }

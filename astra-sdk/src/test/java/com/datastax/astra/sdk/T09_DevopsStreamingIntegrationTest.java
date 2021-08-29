@@ -18,7 +18,7 @@ public class T09_DevopsStreamingIntegrationTest extends AbstractAstraIntegration
     public void should_fail_on_invalid_params() {
         System.out.println(ANSI_YELLOW + "- Parameter validation" + ANSI_RESET);
         Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamingClient(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamingClient(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamingClient((String) null));
     }
     
     @Test

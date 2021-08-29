@@ -19,6 +19,7 @@ import com.datastax.astra.sdk.organizations.domain.Permission;
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.organizations.domain.User;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 import graphql.Assert;
 
@@ -43,8 +44,12 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
     @Order(1)
     public void should_fail_on_invalid_params() {
         printYellow("Parameter validation");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new OrganizationsClient(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new OrganizationsClient(null));
+        Assertions.assertThrows(IllegalArgumentException.class, 
+                () -> new OrganizationsClient(""));
+        Assertions.assertThrows(IllegalArgumentException.class, 
+                () -> new OrganizationsClient((String)null));
+        Assertions.assertThrows(IllegalArgumentException.class, 
+                () -> new OrganizationsClient((HttpApisClient)null));
     }
     
     @Test

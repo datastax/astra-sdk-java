@@ -16,21 +16,16 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
-import static com.datastax.stargate.sdk.core.ApiSupport.getObjectMapper;
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
-import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
-import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
 
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Part of the Document API in stargate wrapper for methods at the document level.
@@ -38,12 +33,9 @@ import com.datastax.stargate.sdk.utils.Assert;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class DocumentClient {
-     
-    /** Astra Client. */
-    private final ApiDocumentClient docClient;
     
-    /** Namespace. */
-    private final NamespaceClient namespaceClient;
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
     
     /** Namespace. */
     private final CollectionClient collectionClient;
@@ -54,28 +46,13 @@ public class DocumentClient {
     /**
      * Full constructor.
      * 
-     * @param docClient ApiDocumentClient
-     * @param namespaceClient NamespaceClient
      * @param collectionClient CollectionClient
      * @param docId String
      */
-    public DocumentClient(
-            ApiDocumentClient docClient, NamespaceClient namespaceClient, 
-            CollectionClient collectionClient, String docId) {
-        this.docClient         = docClient;
-        this.namespaceClient   = namespaceClient;
+    public DocumentClient(CollectionClient collectionClient, String docId) {
         this.collectionClient  = collectionClient;
         this.docId             = docId;
-    }
-    
-    /**
-     * Build endpoint of the resource
-     */
-    private String getEndpoint() {
-        return docClient.getEndPointApiDocument()
-                + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                + PATH_COLLECTIONS + "/" + collectionClient.getCollectionName()
-                + "/" + docId;
+        this.http = HttpApisClient.getInstance();
     }
     
     /**
@@ -85,14 +62,8 @@ public class DocumentClient {
      * @return boolean
      */
     public boolean exist() {
-        Assert.hasLength(docId, "documentId");
-        try {
-            return HttpURLConnection.HTTP_OK == getHttpClient().send(
-                    startRequest(getEndpoint(), docClient.getToken())
-                      .GET().build(), BodyHandlers.discarding()).statusCode();
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot test document existence", e);
-        }
+        return HttpURLConnection.HTTP_OK == 
+                http.GET(getEndPointDocument()).getCode();
     }
     
     /**
@@ -104,20 +75,8 @@ public class DocumentClient {
      */
     public <DOC> String upsert(DOC doc) {
         Assert.notNull(doc, "document");
-        Assert.hasLength(docId, "Document identifier");
-        HttpResponse<String> response;
-        try {
-            String reqBody = getObjectMapper().writeValueAsString(doc);
-           response = getHttpClient().send(
-                   startRequest(getEndpoint(), docClient.getToken())
-                   .PUT(BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot save document:", e);
-        }    
-        
-        handleError(response);
-        return marshallDocumentId(response.body());
+        ApiResponseHttp res = http.PUT(getEndPointDocument(), marshall(doc));
+        return marshallDocumentId(res.getBody());
     }
   
     /**
@@ -129,21 +88,10 @@ public class DocumentClient {
      */
     public <DOC> String update(DOC doc) {
         Assert.notNull(doc, "document");
-        Assert.hasLength(docId, "Document identifier");
-        HttpResponse<String> response;
-        try {
-           String reqBody = getObjectMapper().writeValueAsString(doc);
-           response = getHttpClient().send(
-                   startRequest(getEndpoint(), docClient.getToken()).method("PATCH", BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot save document:", e);
-        }
-        handleError(response);
-        return marshallDocumentId(response.body());
+        Assert.notNull(doc, "document");
+        ApiResponseHttp res = http.PATCH(getEndPointDocument(), marshall(doc));
+        return marshallDocumentId(res.getBody());
     }
-    
-    
     
     /**
      * Get a document by {document-id}. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
@@ -153,47 +101,33 @@ public class DocumentClient {
      * @return a document if exist
      */
     public <DOC> Optional<DOC> find(Class<DOC> clazz) {
-        Assert.hasLength(docId, "documentId");
         Assert.notNull(clazz, "className");
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(getEndpoint() + "?raw=true", docClient.getToken())
-                        .GET().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to find document:", e);
+        ApiResponseHttp res = http.GET(getEndPointDocument() + "?raw=true");
+        if (HttpURLConnection.HTTP_OK == res.getCode()) {
+           return Optional.of(marshallDocument(res.getBody(), clazz));
         }
-        if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-           return Optional.of(marshallDocument(response.body(), clazz));
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         }
-        handleError(response);
         return Optional.empty();
     }
 
     /**
      * Delete a document. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/deleteDoc
-     *           
      */
     public void delete() {
-        Assert.hasLength(docId, "documentId");
         if (!exist()) {
-            throw new RuntimeException("Document '"+ docId + "' has not been found");
+            throw new IllegalArgumentException("Cannot delete " + docId + ", it does not exists");
         }
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(getEndpoint(), docClient.getToken())
-                     .DELETE().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
-                return;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to delete a document:", e);
+        http.DELETE(getEndPointDocument());
+    }
+    
+    private String formatPath(String path) {
+        Assert.hasLength(path, "hasLength");
+        if (!path.startsWith("/")) {
+            path = "/" + path;
         }
-        handleError(response);
+        return path;
     }
     
     /**
@@ -206,29 +140,16 @@ public class DocumentClient {
      * @return SUBDOC
      */
     public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> className) {
-        Assert.hasLength(docId, "documentId");
-        Assert.hasLength(path, "hasLength");
         Assert.notNull(className, "expectedClass");
-        if (!path.startsWith("/")) {
-            path = "/" + path;
+        ApiResponseHttp res = http.GET(getEndPointDocument() + formatPath(path) + "?raw=true");
+        if (HttpURLConnection.HTTP_OK == res.getCode()) {
+           return Optional.of(marshallDocument(res.getBody(), className));
         }
-        HttpResponse<String> response;
-        try {
-           response = getHttpClient().send(startRequest(getEndpoint() + path + "?raw=true", docClient.getToken())
-                    .GET().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to find sub document:", e);
-        }
-        if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-            return Optional.of(marshallDocument(response.body(), className));
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         }
-        handleError(response);
         return Optional.empty();
     }
-    
     
     /**
      * Replace a subpart of the document.
@@ -239,21 +160,8 @@ public class DocumentClient {
      * @param newValue object for the new value
      */
     public <SUBDOC> void replaceSubDocument(String path, SUBDOC newValue) {
-        Assert.hasLength(path, "path");
         Assert.notNull(newValue, "newValue");
-        if (!path.startsWith("/")) {
-            path = "/" + path;
-        }
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(getEndpoint() + path, docClient.getToken())
-                     .PUT(BodyPublishers.ofString(getObjectMapper().writeValueAsString(newValue))).build(), 
-                    BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("An error occured when updating sub documents", e);
-        }
-        handleError(response);
+        http.PUT(getEndPointDocument() + formatPath(path), marshall(newValue));
     }
     
     /**
@@ -265,23 +173,9 @@ public class DocumentClient {
      * @param newValue object for the new value
      */
     public <SUBDOC> void updateSubDocument(String path, SUBDOC newValue) {
-        Assert.hasLength(path, "path");
         Assert.notNull(newValue, "newValue");
-        if (!path.startsWith("/")) {
-            path = "/" + path;
-        }
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(getEndpoint() + path + "?raw=true", docClient.getToken())
-                     .method("PATCH", BodyPublishers.ofString(getObjectMapper().writeValueAsString(newValue))).build(), 
-                    BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("An error occured when updating sub documents", e);
-        }
-        handleError(response);
+        http.PATCH(getEndPointDocument() + formatPath(path), marshall(newValue));
     }
-    
     
     /**
      * Delete a sub document.
@@ -290,20 +184,7 @@ public class DocumentClient {
      * @param path sub document path
      */
     public void deleteSubDocument(String path) {
-        Assert.hasLength(path, "path");
-        if (!path.startsWith("/")) {
-            path = "/" + path;
-        }
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                        startRequest(getEndpoint() + path + "?raw=true", docClient.getToken())
-                            .DELETE().build(), BodyHandlers.ofString());
-            
-        } catch (Exception e) {
-            throw new RuntimeException("An error occured when deleting sub documents", e);
-        }
-        handleError(response);
+        http.DELETE(getEndPointDocument() + formatPath(path) + "?raw=true");
     }
     
     /**
@@ -314,9 +195,7 @@ public class DocumentClient {
      */
     private String marshallDocumentId(String body) {
         try {
-            return (String) getObjectMapper()
-                    .readValue(body, Map.class)
-                    .get(CollectionClient.DOCUMENT_ID);
+            return (String) unmarshallBean(body, Map.class).get(CollectionClient.DOCUMENT_ID);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document after 'upsert'", e);
         }
@@ -336,9 +215,17 @@ public class DocumentClient {
             if (clazz.equals(String.class)) {
                return (SUBDOC) body;
             }
-            return getObjectMapper().readValue(body, clazz);
+            return unmarshallBean(body, clazz);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshal output '" + body + "' into class '"+ clazz +"'", e);
         }
     }
+    
+    /**
+     * Build endpoint of the resource
+     */
+    private String getEndPointDocument() {
+        return collectionClient.getEndPointCollection() + "/" + docId;
+    }
+    
 }

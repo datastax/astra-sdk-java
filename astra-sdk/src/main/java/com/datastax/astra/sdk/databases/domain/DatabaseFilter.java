@@ -65,11 +65,11 @@ public class DatabaseFilter {
      * 
      */
     public String urlParams() {
-        StringBuilder sbURL = new StringBuilder("/databases?")
+        StringBuilder sbURL = new StringBuilder("?")
                 .append("include=" + getInclude().name().toLowerCase())
                 .append("&provider=" + getProvider().name().toLowerCase())
                 .append("&limit=" + getLimit());
-        if (!getStartingAfterDbId().isEmpty()) {
+        if (getStartingAfterDbId().isPresent()) {
             sbURL.append("&starting_after=" + getStartingAfterDbId().get());
         }
         return sbURL.toString();

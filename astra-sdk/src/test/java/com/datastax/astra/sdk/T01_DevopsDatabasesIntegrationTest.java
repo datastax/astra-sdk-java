@@ -38,6 +38,7 @@ import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
 import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
 import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegrationTest {
@@ -56,20 +57,22 @@ public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegration
     public void should_fail_on_invalid_params() {
         printYellow("Parameter validation");
         Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient((String) null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient((HttpApisClient) null));
     }
     
     @Test
     @Order(2)
-    public void should_connect_with_AstraClient() {
+    public void should_connect_with_AstraClient() throws InterruptedException {
         printYellow("Connection with AstraClient");
         Assertions.assertTrue(client.getToken().isPresent());
+        HttpApisClient.getInstance().setToken(client.getToken().get());
         Assertions.assertNotNull(client
                     .apiDevopsOrganizations()
                     .regions().collect(Collectors.toList()).size() > 1);
         printOK("Can connect to ASTRA with AstraClient");
     }
-    
+   
     @Test
     @Order(3)
     public void should_connect_with_OrganizationsClient() {
@@ -184,6 +187,7 @@ public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegration
         printOK("Fields metrics,storage,info are populated");
     }
     
+    /*
     @Test
     @Order(8)
     public void should_find_databases_by_id_Async() throws InterruptedException {
@@ -197,7 +201,7 @@ public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegration
                System.out.println(db.get().getId()); 
         });    
         Thread.sleep(1000);
-    }
+    }*/
     
     @Test
     @Order(8)

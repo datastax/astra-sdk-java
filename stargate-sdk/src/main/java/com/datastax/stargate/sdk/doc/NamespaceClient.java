@@ -16,31 +16,23 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.PATH_SCHEMA;
-import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
-import static com.datastax.stargate.sdk.core.ApiSupport.getObjectMapper;
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
-import static com.datastax.stargate.sdk.doc.ApiDocumentClient.PATH_SCHEMA_NAMESPACES;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.datastax.stargate.sdk.core.ApiResponse;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.DataCenter;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Client for Document API 'Namespace' resource /v2/namespaces
@@ -53,6 +45,16 @@ public class NamespaceClient {
     public static final String PATH_NAMESPACES  = "/v2/namespaces";
     public static final String PATH_COLLECTIONS = "/collections";
     
+    /** Marshalling {@link TypeReference}. */
+    private static final TypeReference<ApiResponse<Namespace>> RESPONSE_NAMESPACE = 
+            new TypeReference<ApiResponse<Namespace>>(){};
+            
+    private static final TypeReference<ApiResponse<List<CollectionDefinition>>> RESPONSE_COLLECTIONS = 
+            new TypeReference<ApiResponse<List<CollectionDefinition>>>(){};
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+            
     /** Astra Client. */
     private final ApiDocumentClient docClient;
     
@@ -68,13 +70,8 @@ public class NamespaceClient {
     public NamespaceClient(ApiDocumentClient docClient, String namespace) {
         this.docClient    = docClient;
         this.namespace    = namespace;
-    }
-    
-    private String getEndPointSchemaNamespace() {
-        return docClient.getEndPointApiDocument() 
-                + PATH_SCHEMA 
-                + PATH_SCHEMA_NAMESPACES 
-                + "/" + namespace;
+        this.http = HttpApisClient.getInstance();
+        Assert.notNull(namespace, "namespace");
     }
 
     /**
@@ -83,27 +80,11 @@ public class NamespaceClient {
      * @return Namespace
      */
     public Optional<Namespace> find() {
-        Assert.hasLength(namespace, "namespaceId");
-        // Invoke Http Endpoint
-        HttpResponse<String> response;
-        try {
-             response = getHttpClient().send(
-                     startRequest(getEndPointSchemaNamespace(), docClient.getToken()).GET().build(), 
-                     BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot find namespace " + namespace, e);
-        }
-        
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+        ApiResponseHttp res = http.GET(getEndPointSchemaNamespace());
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
-        }
-        
-        handleError(response);
-        
-        try {
-            return Optional.of(marshallApiResponseNamespace(response.body()).getData());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot Marshall output in 'find namespace()' body=" + response.body(), e);
+        } else {
+            return Optional.of(unmarshallType(res.getBody(), RESPONSE_NAMESPACE).getData());
         }
     }
     
@@ -122,24 +103,10 @@ public class NamespaceClient {
      * @param datacenters DataCenter
      */
     public void create(DataCenter... datacenters) {
-        Assert.notNull(namespace, "namespace");
         Assert.notNull(datacenters, "datacenters");
-        Assert.isTrue(datacenters.length>0, "DataCenters are required");
-        String endpoint = docClient.getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
-        HttpResponse<String> response;
-        try {
-            
-            String reqBody = getObjectMapper().writeValueAsString(
-                    new Namespace(namespace, Arrays.asList(datacenters)));
-            
-            response = getHttpClient().send(
-                  startRequest(endpoint, docClient.getToken())
-                  .POST(BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
-            
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot find namespace " + namespace, e);
-        }
-        handleError(response);
+        Assert.isTrue(datacenters.length > 0, "DataCenters are required");
+        http.POST(docClient.getEndpointSchemaNamespaces(), 
+             marshall(new Namespace(namespace, Arrays.asList(datacenters))));
     }
     
     /**
@@ -148,20 +115,9 @@ public class NamespaceClient {
      * @param replicas int
      */
     public void createSimple(int replicas) {
-        Assert.notNull(namespace, "namespace");
         Assert.isTrue(replicas>0, "Replica number should be bigger than 0");
-        String endpoint = docClient.getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
-        HttpResponse<String> response;
-        try {
-            String reqBody = getObjectMapper().writeValueAsString(
-                    new Namespace(namespace, replicas));
-            response = getHttpClient().send(
-                  startRequest(endpoint, docClient.getToken())
-                  .POST(BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot find namespace " + namespace, e);
-        }
-        handleError(response);
+        http.POST(docClient.getEndpointSchemaNamespaces(),
+             marshall(new Namespace(namespace, replicas)));
     }
     
     
@@ -169,18 +125,7 @@ public class NamespaceClient {
      * Delete a namespace.
      */
     public void delete() {
-        String delEndPoint = docClient.getEndPointApiDocument() 
-                + PATH_SCHEMA 
-                + PATH_SCHEMA_NAMESPACES + "/" + namespace;
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(delEndPoint, docClient.getToken())
-                    .DELETE().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot delete namespace", e);
-        }
-        handleError(response);
+        http.DELETE(getEndPointSchemaNamespace());
     }
    
     /**
@@ -190,28 +135,10 @@ public class NamespaceClient {
      * @return CollectionDefinition
      */
     public Stream<CollectionDefinition> collections() {
-        String listcolEndpoint = docClient.getEndPointApiDocument() 
-                + PATH_NAMESPACES 
-                + "/" + namespace 
-                + PATH_COLLECTIONS;
-        HttpResponse<String> response;
-        
-        try {
-            // Invoke
-            response = getHttpClient().send(
-                    startRequest(listcolEndpoint, docClient.getToken())
-                    .GET().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot retrieve collection list", e);
-        }
-        handleError(response);
-        try {
-            return marshallApiResponseCollections(response.body())
-                    .getData().stream()
-                    .collect(Collectors.toSet()).stream();
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot marshall collection list", e);
-        }
+        // Access API
+        ApiResponseHttp res = http.GET(getEndPointCollections());
+        // Masharl returned objects
+        return unmarshallType(res.getBody(), RESPONSE_COLLECTIONS).getData().stream();
     }
     
     /**
@@ -222,27 +149,6 @@ public class NamespaceClient {
      */
     public Stream<String> collectionNames() {
         return collections().map(CollectionDefinition::getName);
-    }
-    
-    /**
-     * marshallApiResponseNamespace
-     * 
-     * @param body String
-     * @return ApiResponse
-     * @throws Exception Exception
-     */
-    private ApiResponse<Namespace> marshallApiResponseNamespace(String body)
-    throws Exception {
-       return getObjectMapper()
-                 .readValue(body, 
-                         new TypeReference<ApiResponse<Namespace>>(){});
-    }
-    
-    private ApiResponse<List<CollectionDefinition>> marshallApiResponseCollections(String body)
-    throws JsonMappingException, JsonProcessingException {
-        return getObjectMapper()
-                .readValue(body, 
-                        new TypeReference<ApiResponse<List<CollectionDefinition>>>(){});
     }
     
     /**
@@ -264,5 +170,26 @@ public class NamespaceClient {
     public String getNamespace() {
         return namespace;
     }
+    
+    /**
+     * Access to schema namespace.
+     * 
+     * @return
+     *      schema namespace
+     */
+    public String getEndPointSchemaNamespace() {
+        return docClient.getEndpointSchemaNamespaces() + "/" + namespace;
+    }
+    
+    /**
+     * Access to schema namespace.
+     * 
+     * @return
+     *      schema namespace
+     */
+    public String getEndPointCollections() {
+        return docClient.getEndPointApiDocument() + PATH_NAMESPACES + "/" + namespace + PATH_COLLECTIONS;
+    }
+    
     
 }

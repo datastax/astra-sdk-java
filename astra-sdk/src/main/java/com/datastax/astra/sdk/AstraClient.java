@@ -28,12 +28,13 @@ import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.sdk.utils.ApiLocator;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.StargateClient.StargateClientBuilder;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
-import com.datastax.stargate.sdk.graphql.ApiGraphQLClient;
-import com.datastax.stargate.sdk.rest.ApiRestClient;
+import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
+import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -61,11 +62,6 @@ public class AstraClient implements Closeable {
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
     /** */
     public static final String ASTRA_DB_SECURE_BUNDLE     = "ASTRA_DB_SECURE_BUNDLE";
-    
-    /** Building Astra base URL. */
-    public static final String ASTRA_ENDPOINT_PREFIX  = "https://";
-    /** */
-    public static final String ASTRA_ENDPOINT_REST_SUFFIX  = ".apps.astra.datastax.com/api/rest";
     /** */
     public static final String ENV_USER_HOME          = "user.home";
     /** */
@@ -99,12 +95,12 @@ public class AstraClient implements Closeable {
     private final String databaseRegion;
     
     /**
-     * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link DatabasesClient}, {@link ApiCqlClient} with
+     * You can create on of {@link ApiDocumentClient}, {@link ApiDataClient}, {@link DatabasesClient}, {@link ApiCqlClient} with
      * a constructor. The full flegde constructor would took 12 pararms.
      */
     private AstraClient(AstraClientBuilder b) {
         
-        LOGGER.info("+ Load configuration from Builder parameters");
+        LOGGER.info("+ Load Builder parameters");
         
         this.token          = b.appToken;
         this.clientId       = b.clientId;
@@ -120,7 +116,9 @@ public class AstraClient implements Closeable {
             apiDevopsOrganizations  = new OrganizationsClient(b.appToken);
             apiDevopsDatabases      = new DatabasesClient(b.appToken);  
             apiDevopsStreaming      = new StreamingClient(b.appToken);
-            LOGGER.info("+ Devops API is enabled.");
+            LOGGER.info("+ API(s) Devops is [ENABLED]");
+        } else {
+            LOGGER.info("+ API(s) Devops is [DISABLED]");
         }
        
         if (Utils.paramsProvided(b.astraDatabaseId)) {
@@ -164,7 +162,7 @@ public class AstraClient implements Closeable {
                     apiDevopsDatabases.database(b.astraDatabaseId).downloadSecureConnectBundle(pathAstraSecureBundle);
                     cloudSecureBundle = pathAstraSecureBundle;
             }
-            LOGGER.info("+ SecureBundle Path used: {}", cloudSecureBundle);
+            LOGGER.info("+ Load Secure Connect: {}", cloudSecureBundle);
         
             /*
              * -----
@@ -173,18 +171,14 @@ public class AstraClient implements Closeable {
              * -----
              */
             if (Utils.paramsProvided(b.astraDatabaseId, b.astraDatabaseRegion, b.appToken)) {
-                
-                String astraStargateRestEndpoint = new StringBuilder(ASTRA_ENDPOINT_PREFIX)
-                        .append(b.astraDatabaseId).append("-").append(b.astraDatabaseRegion)
-                        .append(ASTRA_ENDPOINT_REST_SUFFIX).toString();
                 String username = "token";
                 String password = b.appToken;
                 if (Utils.paramsProvided(b.clientId, b.clientSecret)) {
-                    LOGGER.info("+ Using clientId/clientSecret for CqlSession");
+                    LOGGER.info("+ CQL Credentials: ${clientId}${/clientSecret}");
                     username = b.clientId;
                     password = b.clientSecret;
                 } else {
-                    LOGGER.info("+ Using 'token'/appToken for CqlSession");
+                    LOGGER.info("+ CQL Credentials: 'token'/${token}");
                 }
                 
                 /* 
@@ -192,14 +186,15 @@ public class AstraClient implements Closeable {
                  * user interface and use 'token' as username all the time
                  */
                 StargateClientBuilder sBuilder = StargateClient.builder()
-                              .endPointRest(astraStargateRestEndpoint)
+                              .endPointRest(ApiLocator.getApiRestEndpoint(b.astraDatabaseId, b.astraDatabaseRegion))
+                              .endPointGraphQL(ApiLocator.getApiGraphQLEndPoint(b.astraDatabaseId, b.astraDatabaseRegion))
                               // Used for CqlSession
                               .username(username)
                               .password(password)
                               // Use for HTTP Calls, required for Astra.
                               .appToken(b.appToken);
                 if (Utils.paramsProvided(b.keyspace)) {
-                    sBuilder = sBuilder.keypace(b.keyspace);
+                    sBuilder = sBuilder.keyspace(b.keyspace);
                 }
                 if (null != cloudSecureBundle) {
                     sBuilder = sBuilder.astraCloudSecureBundle(cloudSecureBundle);
@@ -232,7 +227,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiRestClient
      */
-    public ApiRestClient apiStargateData() {
+    public ApiDataClient apiStargateData() {
         if (stargateClient == null) {
             throw new IllegalStateException("Api Rest is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
@@ -298,7 +293,7 @@ public class AstraClient implements Closeable {
      * @return CqlSession
      */
     public CqlSession cqlSession() {
-        if (stargateClient == null || stargateClient.cqlSession().isEmpty()) {
+        if (stargateClient == null || !stargateClient.cqlSession().isPresent()) {
             throw new IllegalStateException("CQL not available  Rest is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
         }
@@ -344,12 +339,12 @@ public class AstraClient implements Closeable {
             
             // Configuration File
             if (AstraRc.exists()) {
-                LOGGER.info("+ Load configuration from file ~/.astrarc");
+                LOGGER.info("+ Load ~/.astrarc");
                 astraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
             }
             
             // Environment Variables
-            LOGGER.info("+ Load configuration from Environment Variables/Property");
+            LOGGER.info("+ Load Environment Variables");
             if (Utils.hasLength(System.getProperty(ASTRA_DB_ID))) {
                 this.astraDatabaseId = System.getProperty(ASTRA_DB_ID);
             } else if (Utils.hasLength(System.getenv(ASTRA_DB_ID))) {

@@ -1,12 +1,10 @@
 package com.datastax.astra.sdk.organizations;
 
+import static com.datastax.astra.sdk.utils.ApiLocator.getApiDevopsEndpoint;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-
-import java.net.HttpURLConnection;
-import java.net.http.HttpResponse;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,9 +26,11 @@ import com.datastax.astra.sdk.organizations.domain.ResponseAllUsers;
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.organizations.domain.User;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.utils.ApiLocator;
 import com.datastax.astra.sdk.utils.IdUtils;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -43,28 +43,42 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-/**
- * Class to TODO
- *
- * @author Cedrick LUNVEN (@clunven)
- *
- */
-public class OrganizationsClient extends ApiDevopsSupport {
+public class OrganizationsClient {
     
     /** Get Available Regions. */
-    public static final String PATH_REGIONS      = "/availableRegions";
+    public static final String PATH_REGIONS = "/availableRegions";
     
     /** Get Available Regions. */
     public static final String PATH_ACCESS_LISTS = "/access-lists";
    
     /** Core Organization. */
-    public static final String PATH_CURRENT_ORG    = "/currentOrg";
+    public static final String PATH_CURRENT_ORG = "/currentOrg";
     
     /** Constants. */
-    public static final String PATH_ORGANIZATIONS  = "/organizations";
+    public static final String PATH_ORGANIZATIONS = "/organizations";
     
     /** List clients. */
-    public static final String PATH_TOKENS         = "/clientIdSecrets";
+    public static final String PATH_TOKENS = "/clientIdSecrets";
+    
+    /** Path related to Roles. */
+    public static final String PATH_ROLES = "/roles";
+    
+    /** Resource suffix. */ 
+    public static final String PATH_USERS = "/users";
+    
+    /** List of regions. */
+    public static final TypeReference<List<DatabaseRegion>> TYPE_LIST_REGION = 
+            new TypeReference<List<DatabaseRegion>>(){};
+            
+    /** List of Roles. */
+    public static final TypeReference<List<Role>> TYPE_LIST_ROLES = 
+            new TypeReference<List<Role>>(){};
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** hold a reference to the bearer token. */
+    private final String bearerAuthToken;
     
     /**
      * As immutable object use builder to initiate the object.
@@ -72,9 +86,26 @@ public class OrganizationsClient extends ApiDevopsSupport {
      * @param authToken
      *      authenticated token
      */
-    public OrganizationsClient(String authToken) {
-       super(authToken);
+    public OrganizationsClient(HttpApisClient client) {
+        this.http = client;
+        this.bearerAuthToken = client.getToken();
     }
+    
+    /**
+     * As immutable object use builder to initiate the object.
+     * 
+     * @param authToken
+     *      authenticated token
+     */
+    public OrganizationsClient(String bearerAuthToken) {
+       this.bearerAuthToken = bearerAuthToken;
+       this.http = HttpApisClient.getInstance();
+       http.setToken(bearerAuthToken);
+    } 
+    
+    // ------------------------------------------------------
+    //                 CORE FEATURES
+    // ------------------------------------------------------
     
     /**
      * Retrieve Organization id.
@@ -83,24 +114,10 @@ public class OrganizationsClient extends ApiDevopsSupport {
      *      organization id.
      */
     public String organizationId() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http().send(req(PATH_CURRENT_ORG)
-                        .GET().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        
-        handleError(res);
-        
-        try {
-            return (String) om()
-                        .readValue(res.body(), Map.class)
-                        .get("id");
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot marshall organization id", e);
-        }
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpoint()+ PATH_CURRENT_ORG);
+        // Parse response
+        return (String) unmarshallBean(res.getBody(),  Map.class).get("id");
     }
      
     /**
@@ -110,25 +127,10 @@ public class OrganizationsClient extends ApiDevopsSupport {
      *      supported regions and availability 
      */
     public Stream<DatabaseRegion> regions() {
-        HttpResponse<String> res;
-        try {
-           // Invocation with no marshalling
-           res = http().send(
-                   req(PATH_REGIONS).GET().build(), 
-                    BodyHandlers.ofString());
-            
-            // Parsing as list of Bean if OK
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return  om().readValue(res.body(),
-                        new TypeReference<List<DatabaseRegion>>(){})
-                                   .stream();
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot list regions", e);
-        }
-        
-        LOGGER.error("Error in 'availableRegions'");
-        throw processErrors(res);
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_REGIONS);
+        // Marshall response
+        return unmarshallType(res.getBody(), TYPE_LIST_REGION).stream();
     }
     
     /**
@@ -151,7 +153,7 @@ public class OrganizationsClient extends ApiDevopsSupport {
         return m;
     }
     
- // ------------------------------------------------------
+    // ------------------------------------------------------
     //                 WORKING WITH USERS
     // ------------------------------------------------------
     
@@ -162,33 +164,10 @@ public class OrganizationsClient extends ApiDevopsSupport {
      *      list of roles in target organization.
      */
     public Stream<User> users() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http().send(req(PATH_ORGANIZATIONS + UserClient.PATH_USERS)
-                        .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om().readValue(res.body(), ResponseAllUsers.class)
-                                        .getUsers().stream();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'roles'");
-        throw processErrors(res);
-    }
-    
-    /**
-     * Specialized a client for user.
-     *
-     * @param userId
-     *      current identifier
-     * @return
-     *      client for a user
-     */
-    public UserClient user(String userId) {
-        Assert.hasLength(userId, "userId Id should not be null nor empty");
-        return new UserClient(this, bearerAuthToken, userId);
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointUsers());
+        // Marshall response
+        return unmarshallBean(res.getBody(), ResponseAllUsers.class).getUsers().stream();
     }
     
     /**
@@ -206,44 +185,37 @@ public class OrganizationsClient extends ApiDevopsSupport {
     
     /**
      * Invite a user.
+     *
      * @param email
      *      user email
      * @param roles
      *      list of roles to assign
      */
     public void inviteUser(String email, String... roles) {
+        // Parameter validattion
         Assert.notNull(email, "User email");
         Assert.notNull(roles, "User roles");
-        if (roles.length == 0) {
-            throw new IllegalArgumentException("Roles list cannot be empty");
-        }
+        Assert.isTrue(roles.length > 0, "Roles list cannot be empty");
         
-        InviteUserRequest iur = new InviteUserRequest(this.organizationId(), email);
+        // Build the invite request with expected roles
+        InviteUserRequest inviteRequest = new InviteUserRequest(this.organizationId(), email);
         Arrays.asList(roles).stream().forEach(currentRole -> {
            if (IdUtils.isUUID(currentRole)) {
-               iur.addRoles(currentRole);
+               inviteRequest.addRoles(currentRole);
            } else {
+               // If role provided is a role name...
                Optional<Role> opt = findRoleByName(currentRole);
                if (opt.isPresent()) {
-                   iur.addRoles(opt.get().getId());
+                   inviteRequest.addRoles(opt.get().getId());
                } else {
-                   throw new IllegalArgumentException("Cannot find role with id " + currentRole);
+                   throw new IllegalArgumentException("Cannot find role with name " + currentRole);
                }
            }
         });
         
-        HttpResponse<String> response;
-        try {
-           String reqBody = om().writeValueAsString(iur);
-           response = http().send(req(PATH_ORGANIZATIONS + UserClient.PATH_USERS)
-                            .PUT(BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create a new role", e);
-        }
-        handleError(response);
+        // Invoke HTTP
+        http.PUT(getApiDevopsEndpointUsers(), marshall(inviteRequest));
     }
-    
     
     // ------------------------------------------------------
     //                 WORKING WITH ROLES
@@ -256,20 +228,10 @@ public class OrganizationsClient extends ApiDevopsSupport {
      *      list of roles in target organization.
      */
     public Stream<Role> roles() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http().send(req(PATH_ORGANIZATIONS + RoleClient.PATH_ROLES)
-                        .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om().readValue(res.body(), new TypeReference<List<Role>>(){})
-                           .stream();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'roles'");
-        throw processErrors(res);
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointRoles());
+        // Mapping
+        return unmarshallType(res.getBody(), TYPE_LIST_ROLES).stream();
     }
     
     /**
@@ -282,46 +244,9 @@ public class OrganizationsClient extends ApiDevopsSupport {
      */
     public CreateRoleResponse createRole(RoleDefinition cr) {
         Assert.notNull(cr, "CreateRole request");
-        HttpResponse<String> response;
-        try {
-           String reqBody = om().writeValueAsString(cr);
-           response = http().send(req(PATH_ORGANIZATIONS + RoleClient.PATH_ROLES)
-                            .POST(BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create a new role", e);
-        }
-        
-        handleError(response);
-        
-        try {
-            return om().readValue(response.body(), CreateRoleResponse.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot marshall new role", e);
-        }
-    }
-    
-    /**
-     * Move the document API (namespace client)
-     * 
-     * @param roleId
-     *      unique identifier for the role
-     * @return
-     *      role rest client
-     */
-    public RoleClient role(String roleId) {
-        Assert.hasLength(roleId, "Role Id should not be null nor empty");
-        return new RoleClient(bearerAuthToken, roleId);
-    }
-    
-    /**
-     * Helper to find default Roles
-     */
-    public RoleClient role(DefaultRoles role) {
-        Assert.notNull(role, "Role  should not be null nor empty");
-        String id = findRole(role).get().getId();
-        System.out.println(id);
-        return new RoleClient(bearerAuthToken, findRole(role).get().getId());
+        // Invoke endpoint
+        ApiResponseHttp res = http.POST(getApiDevopsEndpointRoles(), marshall(cr));
+        return unmarshallBean(res.getBody(), CreateRoleResponse.class);
     }
     
     /**
@@ -360,35 +285,10 @@ public class OrganizationsClient extends ApiDevopsSupport {
      *      list of tokens for this organization
      */
     public Stream<IamToken> tokens() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http()
-                    .send(req(PATH_TOKENS)
-                    .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om()
-                        .readValue(res.body(), ResponseAllIamTokens.class)
-                        .getClients()
-                        .stream();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'clientIdSecrets'");
-        throw processErrors(res);
-    }
-    
-    /**
-     * Move to token resource.
-     * 
-     * @param tokenId
-     *      token identifier
-     * @return
-     *      rest client for a token
-     */
-    public TokenClient token(String tokenId) {
-        return new TokenClient(this, bearerAuthToken, tokenId);
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointTokens());
+        // Marshall
+        return unmarshallBean(res.getBody(), ResponseAllIamTokens.class).getClients().stream();
     }
     
     /**
@@ -401,26 +301,176 @@ public class OrganizationsClient extends ApiDevopsSupport {
      */
     public CreateTokenResponse createToken(String role) {
         Assert.hasLength(role, "role");
-        HttpResponse<String> response;
-        try {
-           response = http().send(
-                   req(PATH_TOKENS)
-                   .POST(BodyPublishers.ofString("{"
-                           + " \"roles\": [ \"" 
-                           + JsonUtils.escapeJson(role) 
-                           + "\"]}")).build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create a new token", e);
-        }
-        
-        handleError(response);
-        
-        try {
-            return om().readValue(response.body(), CreateTokenResponse.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot marshall new token", e);
-        }
+        // Building request
+        String body = "{ \"roles\": [ \"" + JsonUtils.escapeJson(role) + "\"]}";
+        // Invoke endpoint
+        ApiResponseHttp res = http.POST(getApiDevopsEndpointTokens(), body);
+        // Marshall response
+        return unmarshallBean(res.getBody(), CreateTokenResponse.class);
     }
     
+    // ---------------------------------
+    // ----      ACCESS LISTS       ----
+    // ---------------------------------
+    
+    /**
+     * TODO Get all access lists for an organization
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetAllAccessListsForOrganization
+     *
+     * @return
+     *      access lists for an organization
+     */
+    public Stream<Object> accessLists() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Get access list template
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetAccessListTemplate
+     */
+    public Object accessListTemplate() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Validate structure of an access list
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ValidateAccessList
+     */
+    public Object validateAccessList() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    // ---------------------------------
+    // ----      PRIVATE LINKS      ----
+    // ---------------------------------
+    
+    /**
+     * TODO Get info about all private endpoint connections for a specific org
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ListPrivateLinksForOrg
+     *
+     * @return
+     *      private endpoint connections for a specific org
+     */
+    public Stream<Object> privateLinks() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    // ---------------------------------
+    // ---- Accessing sub resources ----
+    // ---------------------------------
+    
+    /**
+     * Specialized a client for user.
+     *
+     * @param userId
+     *      current identifier
+     * @return
+     *      client for a user
+     */
+    public UserClient user(String userId) {
+        Assert.hasLength(userId, "userId Id should not be null nor empty");
+        return new UserClient(this, userId);
+    }
+    
+    /**
+     * Move to token resource.
+     * 
+     * @param tokenId
+     *      token identifier
+     * @return
+     *      rest client for a token
+     */
+    public TokenClient token(String tokenId) {
+        return new TokenClient(this , tokenId);
+    }
+    
+    /**
+     * Move the document API (namespace client)
+     * 
+     * @param roleId
+     *      unique identifier for the role
+     * @return
+     *      role rest client
+     */
+    public RoleClient role(String roleId) {
+        Assert.hasLength(roleId, "Role Id should not be null nor empty");
+        return new RoleClient(roleId);
+    }
+    
+    /**
+     * Helper to find default Roles
+     */
+    public RoleClient role(DefaultRoles role) {
+        Assert.notNull(role, "Role  should not be null nor empty");
+        return role(findRole(role).get().getId());
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointTokens() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_TOKENS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointCurrentOrganization() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_CURRENT_ORG;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointAvailableRegions() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_REGIONS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointUsers() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_ORGANIZATIONS + PATH_USERS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointRoles() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_ORGANIZATIONS + PATH_ROLES;
+    }
+    
+    /**
+     * Access to the current authentication token.
+     *
+     * @return
+     *      authentication token
+     */
+    public String getToken() {
+        return bearerAuthToken;
+    }
 
 }

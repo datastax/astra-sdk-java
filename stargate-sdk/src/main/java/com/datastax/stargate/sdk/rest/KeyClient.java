@@ -16,16 +16,12 @@
 
 package com.datastax.stargate.sdk.rest;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
-import static com.datastax.stargate.sdk.core.ApiSupport.getObjectMapper;
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
+
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +33,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.datastax.stargate.sdk.core.ApiResponse;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ResultPage;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
 import com.datastax.stargate.sdk.rest.domain.Row;
@@ -44,6 +41,7 @@ import com.datastax.stargate.sdk.rest.domain.RowMapper;
 import com.datastax.stargate.sdk.rest.domain.RowResultPage;
 import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -56,12 +54,16 @@ public class KeyClient {
     
     /** Collection name. */
     private final TableClient tableClient;
-    
+ 
     /** Search PK. */
     private final List< Object> key;
     
-    /** Current auth token. */
-    private final String token;
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** Type for result. */
+    private static final  TypeReference<ApiResponse<List<LinkedHashMap<String,?>>>> TYPE_RESULTS = 
+            new TypeReference<ApiResponse<List<LinkedHashMap<String,?>>>>(){};
     
     /**
      * Full constructor.
@@ -70,30 +72,17 @@ public class KeyClient {
      * @param tableClient TableClient
      * @param keys Object
      */
-    public KeyClient(String token, TableClient tableClient, Object... keys) {
-        this.token          = token;
+    public KeyClient(TableClient tableClient, Object... keys) {
         this.tableClient    = tableClient;
         this.key            = new ArrayList<>(Arrays.asList(keys));
-    }
-    
-    /**
-     * Build endpoint of this resource
-     * 
-     * @return String
-     */
-    private String getEndPointCurrentKey() {
-        StringBuilder sbUrl = new StringBuilder(tableClient.getEndPointTable());
+        this.http           = HttpApisClient.getInstance();
         Assert.notNull(key, "key");
         Assert.isTrue(!key.isEmpty(), "key");
-        try {
-            for(Object pk : key) {
-                sbUrl.append("/" +  URLEncoder.encode(pk.toString(), StandardCharsets.UTF_8.toString()));
-            }
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("Cannot enode URL", e);
-        }
-        return sbUrl.toString();
     }
+    
+    // ---------------------------------
+    // ----          CRUD           ----
+    // ---------------------------------
     
     /**
      * Retrieve a set of Rows from Primary key value.
@@ -103,36 +92,23 @@ public class KeyClient {
      */
     // GET
     public RowResultPage find(QueryWithKey query) {
+        // Parameter validatioons
         Objects.requireNonNull(query);
-        HttpResponse<String> response;
-        try {
-             // Invoke as JSON
-            response = getHttpClient().send(
-                    startRequest(buildQueryUrl(query), 
-                            token).GET().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot search for Rows ", e);
-        }   
-        
-        handleError(response);
-         
-        try {
-             ApiResponse<List<LinkedHashMap<String,?>>> result = getObjectMapper()
-                     .readValue(response.body(), 
-                             new TypeReference<ApiResponse<List<LinkedHashMap<String,?>>>>(){});
-             return new RowResultPage(query.getPageSize(), result.getPageState(), result.getData()
-                    .stream()
-                    .map(map -> {
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(buildQueryUrl(query));
+        // Marshall response
+        ApiResponse<List<LinkedHashMap<String,?>>> result = unmarshallType(res.getBody(), TYPE_RESULTS);
+        // Build outout
+        return new RowResultPage(query.getPageSize(), result.getPageState(), 
+           result.getData().stream()
+                 .map(map -> {
                         Row r = new Row();
                         for (Entry<String, ?> val: map.entrySet()) {
                             r.put(val.getKey(), val.getValue());
                         }
                         return r;
-                    })
-                    .collect(Collectors.toList()));
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot marshall document results", e);
-        }
+                 })
+                 .collect(Collectors.toList()));
     }
     
     /**
@@ -144,7 +120,12 @@ public class KeyClient {
      * @return ResultPage
      */
     public <T> ResultPage<T> find(QueryWithKey query, RowMapper<T> mapper) {
+        // Parameter validatioons
+        Objects.requireNonNull(query);
+        Objects.requireNonNull(mapper);
+        // Find
         RowResultPage rrp = find(query);
+        // Mapping
         return new ResultPage<T>(rrp.getPageSize(), 
                 rrp.getPageState().orElse(null),
                 rrp.getResults().stream()
@@ -152,18 +133,11 @@ public class KeyClient {
                    .collect(Collectors.toList()));
     }
     
-    // DELETE
+    /**
+     * Delete by key
+     */
     public void delete() {
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient()
-                    .send(startRequest(getEndPointCurrentKey(), token)
-                           .DELETE().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot search for Rows ", e);
-        }
-        
-        handleError(response);
+        http.DELETE(getEndPointCurrentKey());
     }
     
     /**
@@ -172,17 +146,7 @@ public class KeyClient {
      * @param newRecord Map
      */
     public void update(Map<String, Object> newRecord) {
-        HttpResponse<String> response;
-        try {
-            String reqBody = getObjectMapper().writeValueAsString(newRecord);
-            response = getHttpClient().send(
-                        startRequest(getEndPointCurrentKey(), token)
-                            .method("PATCH", BodyPublishers.ofString(reqBody)).build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot search for Rows ", e);
-        }
-        
-        handleError(response);
+        http.PATCH(getEndPointCurrentKey(), marshall(newRecord));
     }
     
     /**
@@ -191,19 +155,12 @@ public class KeyClient {
      * @param newRecord Map
      */
     public void replace(Map<String, Object> newRecord) {
-       HttpResponse<String> response;
-        try {
-            String reqBody = getObjectMapper().writeValueAsString(newRecord);
-            response = getHttpClient().send(
-                    startRequest(getEndPointCurrentKey(), token)
-                    .PUT(BodyPublishers.ofString(reqBody)).build(),
-                    BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot search for Rows ", e);
-        }
-        handleError(response);
+       http.PUT(getEndPointCurrentKey(), marshall(newRecord));
     }
     
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
     
     /**
      * Build complex URL as expected with primaryKey.
@@ -237,5 +194,22 @@ public class KeyClient {
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Cannot enode URL", e);
         }
+    }
+    
+    /**
+     * Build endpoint of this resource
+     * 
+     * @return String
+     */
+    private String getEndPointCurrentKey() {
+        StringBuilder sbUrl = new StringBuilder(tableClient.getEndPointTable());
+        try {
+            for(Object pk : key) {
+                sbUrl.append("/" +  URLEncoder.encode(pk.toString(), StandardCharsets.UTF_8.toString()));
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("Cannot enode URL", e);
+        }
+        return sbUrl.toString();
     }
 }

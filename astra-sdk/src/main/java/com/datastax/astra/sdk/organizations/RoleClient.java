@@ -1,49 +1,42 @@
 package com.datastax.astra.sdk.organizations;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Optional;
 
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.datastax.stargate.sdk.utils.JsonUtils;
+
 
 /**
  * Working with the Role part of the devop API.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class RoleClient extends ApiDevopsSupport {
+public class RoleClient {
    
-    /** Path related to Roles. */
-    public static final String PATH_ROLES = "/roles";
-    
-    /** */
-    public static final String ROLE = "/roles";
-    
     /** Working role. */
     private final String roleId;
-    
-    /** Building request suffix. */
-    private final String resourceSuffix;
+  
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
     
     /**
      * Default constructor.
      *
-     * @param token
-     *      authenticated token
+     * @param http
+     *      client
      * @param roleId
      *      current role identifier
      */
-    public RoleClient(String token, String roleId) {
-        super(token);
+    public RoleClient(String roleId) {
         this.roleId = roleId;
-        this.resourceSuffix = OrganizationsClient.PATH_ORGANIZATIONS + PATH_ROLES + "/" + roleId;
+        this.http   = HttpApisClient.getInstance();
         Assert.hasLength(roleId, "roleId");
     }
     
@@ -54,26 +47,12 @@ public class RoleClient extends ApiDevopsSupport {
      *      role informations
      */
     public Optional<Role> find() {
-         HttpResponse<String> response;
-         try {
-             response = http().send(
-                     req(resourceSuffix).GET().build(), 
-                     BodyHandlers.ofString());
-         } catch (Exception e) {
-             throw new RuntimeException("Cannot invoke API to find document:", e);
-         }
-         
-         if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-             return Optional.empty();
-         }
-         
-         handleError(response);
-         
-         try {
-             return Optional.of(om().readValue(response.body(), Role.class));
-         } catch (Exception e) {
-             throw new RuntimeException("Cannot Marshall output in 'find role()' body=" + response.body(), e);
-         }
+        ApiResponseHttp res = http.GET(getEndpointRole());
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(JsonUtils.unmarshallBean(res.getBody(), Role.class));
+        }
     }
     
     /**
@@ -93,17 +72,8 @@ public class RoleClient extends ApiDevopsSupport {
         if (!exist()) {
             throw new RuntimeException("Role '"+ roleId + "' has not been found");
         }
-        HttpResponse<String> response;
-        try {
-            response = http().send(req(resourceSuffix)
-                     .DELETE().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
-                return;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to delete a document:", e);
-        }
-        handleError(response);
+        http.DELETE(getEndpointRole());
+        
     }
     
     /**
@@ -113,18 +83,34 @@ public class RoleClient extends ApiDevopsSupport {
      *      role definition
      */
     public void update(RoleDefinition cr) {
-        Assert.notNull(cr, "CreateRole request");
-        HttpResponse<String> response;
-        try {
-           String reqBody = om().writeValueAsString(cr);
-           response = http().send(
-                   req(resourceSuffix)
-                   .PUT(BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot update a new role", e);
-        }
-        handleError(response);
+        http.PUT(getEndpointRole(), marshall(cr));
     }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointRole() {
+        return getEndpointRole(roleId);
+    }
+    
+    /**
+     * Endpoint to access dbs (static)
+     *
+     * @param dbId
+     *      database identifer
+     * @return
+     *      database endpoint
+     */
+    public static String getEndpointRole(String role) {
+        return OrganizationsClient.getApiDevopsEndpointRoles() + "/" + role;
+    }
+    
    
 }

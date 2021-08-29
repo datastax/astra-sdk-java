@@ -40,6 +40,7 @@ import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.datastax.stargate.sdk.test.dto.Person;
 import com.datastax.stargate.sdk.test.dto.Person.Address;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -110,7 +111,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
     @DisplayName("Get authentication token")
     public void token_should_not_be_null() {
         System.out.println(ANSI_YELLOW + "\n#03 Authentication Token" + ANSI_RESET);
-        String token = client.apiDocument().getToken();
+        String token = HttpApisClient.getInstance().getToken();
         Assertions.assertNotNull(token);
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Token retrieved." + token);
     }
@@ -349,7 +350,7 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         collectionPerson.document(uid).delete();
         Thread.sleep(1000);
         Assertions.assertFalse(collectionPerson.document(uid).exist());
-        Assertions.assertTrue(collectionPerson.document(uid).find(String.class).isEmpty());
+        Assertions.assertFalse(collectionPerson.document(uid).find(String.class).isPresent());
         Assertions.assertThrows(RuntimeException.class, () -> {
             collectionPerson.document(uid).delete();
         });
@@ -521,10 +522,10 @@ public class DocumentApiTest extends AsbtractStargateTestIt {
         DocumentClient p1 = cc.document("person1");
         p1.upsert(new Person("person1", "person1", 20, new Address("Paris", 75000)));
         Assertions.assertTrue(p1.find(Person.class).isPresent());
-        Assertions.assertFalse(p1.findSubDocument("address", Address.class).isEmpty());
+        Assertions.assertTrue(p1.findSubDocument("address", Address.class).isPresent());
         // When
         p1.deleteSubDocument("address");
         // Then
-        Assertions.assertTrue(p1.findSubDocument("address", Address.class).isEmpty());
+        Assertions.assertFalse(p1.findSubDocument("address", Address.class).isPresent());
     }
 }
