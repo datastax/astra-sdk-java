@@ -92,6 +92,8 @@ public class TableClient {
         this.keyspaceClient = keyspaceClient;
         this.tableName      = tableName;
         this.http           = HttpApisClient.getInstance();
+        Assert.notNull(keyspaceClient, "keyspaceClient");
+        Assert.hasLength(tableName,    "tableName");   
     }
     
     // ---------------------------------
@@ -128,6 +130,7 @@ public class TableClient {
      */
      public void create(CreateTable tcr) {
          tcr.setName(tableName);
+         Assert.notNull(tcr, "CreateTable");
          http.POST(getEndPointSchemaTables(), marshall(tcr));
      }
      

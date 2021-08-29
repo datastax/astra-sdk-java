@@ -98,6 +98,13 @@ public class RolePolicy implements Serializable {
     public void setActions(List<String> actions) {
         this.actions = actions;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return "RolePolicy [description=" + description + ", effect=" + effect + ", resources=" + resources + ", actions="
+                + actions + "]";
+    }
     
     
 

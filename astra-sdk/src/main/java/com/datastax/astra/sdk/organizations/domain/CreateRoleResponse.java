@@ -24,7 +24,7 @@ public class CreateRoleResponse implements Serializable {
     private String roleName;
     
     @JsonProperty("Policy")
-    private String policy;
+    private RolePolicy policy;
     
     @JsonProperty("LastUpdateDateTime")
     private String lastUpdateDateTime;
@@ -100,7 +100,7 @@ public class CreateRoleResponse implements Serializable {
      * @return
      *       current value of 'policy'
      */
-    public String getPolicy() {
+    public RolePolicy getPolicy() {
         return policy;
     }
 
@@ -109,7 +109,7 @@ public class CreateRoleResponse implements Serializable {
      * @param policy
      * 		new value for 'policy '
      */
-    public void setPolicy(String policy) {
+    public void setPolicy(RolePolicy policy) {
         this.policy = policy;
     }
 

@@ -48,6 +48,7 @@ public class StreamingClient {
      */
     public StreamingClient(HttpApisClient client) {
         this.http = client;
+        Assert.notNull(client, "Http Client");
         this.bearerAuthToken = client.getToken();
     }
     
@@ -60,6 +61,7 @@ public class StreamingClient {
     public StreamingClient(String bearerAuthToken) {
        this.bearerAuthToken = bearerAuthToken;
        this.http = HttpApisClient.getInstance();
+       Assert.hasLength(bearerAuthToken, "bearerAuthToken");
        http.setToken(bearerAuthToken);
     } 
     

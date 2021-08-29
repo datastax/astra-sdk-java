@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.hc.client5.http.auth.StandardAuthScheme;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
 import org.apache.hc.client5.http.classic.methods.HttpPatch;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
@@ -130,6 +131,17 @@ public class HttpApisClient implements ApiConstants {
         httpGet.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
         httpGet.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
         return executeHttp(httpGet, false);
+    }
+    
+    public ApiResponseHttp HEAD(String url) {
+        HttpHead httpHead = new HttpHead(url);
+        httpHead.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
+        httpHead.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
+        httpHead.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
+        httpHead.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
+        httpHead.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
+        httpHead.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        return executeHttp(httpHead, false);
     }
     
     public ApiResponseHttp POST(String url) {

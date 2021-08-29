@@ -2,6 +2,7 @@ package com.datastax.astra.sdk;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
+import com.datastax.astra.sdk.organizations.RoleClient;
+import com.datastax.astra.sdk.organizations.UserClient;
 import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
@@ -37,7 +40,9 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
         printYellow("=          DevopsAPI IAM              =");
         printYellow("=======================================");
         createDbAndKeyspaceIfNotExist(TEST_DBNAME, WORKING_KEYSPACE);
-        clientOrg = new OrganizationsClient(client.getToken().get());
+        if (clientOrg ==null) {
+            clientOrg = new OrganizationsClient(client.getToken().get());
+        }
     }
         
     @Test
@@ -51,6 +56,9 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
         Assertions.assertThrows(IllegalArgumentException.class, 
                 () -> new OrganizationsClient((HttpApisClient)null));
     }
+    
+    // ------ Working with Roles --------------------
+    
     
     @Test
     @Order(2)
@@ -77,6 +85,7 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
         Optional<Role> role = clientOrg.findRoleByName(DefaultRoles.DATABASE_ADMINISTRATOR.getName());
         // Then (it is a default role, should be there)
         Assertions.assertTrue(role.isPresent());
+        printOK("Role found");
     }
     
     @Test
@@ -87,63 +96,68 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
         Optional<Role> role = clientOrg.role(DefaultRoles.DATABASE_ADMINISTRATOR).find();
         // Then (it is a default role, should be there)
         Assertions.assertTrue(role.isPresent());
+        printOK("Role found");
     }
     
     @Test
     @Order(5)
     public void should_find_role_byId() {
-        printYellow("Connection with AstraClient");
-        Assertions.assertTrue(client.getToken().isPresent());
-        System.out.println(new OrganizationsClient(client.getToken().get())
-            .role("1faa93f2-b889-4190-9585-4bc6e3c3595a")
-            .find()
-            .get()
-            .getName());
+        printYellow("Find a role by its idsxs");
+        Optional<Role> role = clientOrg.role(DefaultRoles.DATABASE_ADMINISTRATOR).find();
+        
+        Optional<Role> role2 = new OrganizationsClient(client.getToken().get())
+            .role(role.get().getId())
+            .find();
+        Assertions.assertTrue(role2.isPresent());
+        printOK("Role found");
     }
+    
+    private static String customRole;
+    private static String customRoleId;
     
     @Test
     @Order(6)
     public void should_create_a_role() {
         System.out.println(ANSI_YELLOW + "- Creating a role" + ANSI_RESET);
         
+        customRole = "sdk_java_junit_role" + UUID.randomUUID().toString().substring(0,7);
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         
         RoleDefinition cr = RoleDefinition.builder(iamClient.organizationId())
-                  .name("My New Role")
+                  .name(customRole)
                   .description("Only the brave")
                   .addPermision(Permission.db_all_keyspace_create)
                   .addResourceAllDatabases()
                   .addResourceAllKeyspaces()
                   .addResourceAllTables()
                   .build();
-        
         CreateRoleResponse res = iamClient.createRole(cr);
-        
-        System.out.println(res.getRoleId());
+        customRoleId = res.getRoleId();
+        Assertions.assertTrue(clientOrg.role(customRoleId).find().isPresent());
+        printOK("Role created name=" + customRole + ", id=" + customRoleId);
     }
     
     @Test
-    @Order(5)
+    @Order(7)
     public void should_delete_a_role() {
         System.out.println(ANSI_YELLOW + "- Deleting a role" + ANSI_RESET);
         // Given
-        String roleId= "74b847fe-6804-407f-b2d2-e748103ee851";
-        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        Assertions.assertTrue(iamClient.role(roleId).exist());
+        RoleClient rc = clientOrg.role(customRoleId);
+        Assertions.assertTrue(rc.exist());
+        printOK("Role found");
         // When
-        iamClient.role(roleId).delete();
+        rc.delete();
         // Then
-        Assertions.assertFalse(iamClient.role(roleId).exist());
+        Assertions.assertFalse(rc.exist());
+        printOK("Role deleted name=" + customRole + ", id=" + customRoleId);
     }
     
     @Test
-    @Order(6)
+    @Order(8)
     public void should_update_a_role() {
         System.out.println(ANSI_YELLOW + "- Deleting a role" + ANSI_RESET);
-        // Given
-        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         // When
-        CreateRoleResponse res = iamClient.createRole(RoleDefinition.builder(iamClient.organizationId())
+        CreateRoleResponse res = clientOrg.createRole(RoleDefinition.builder(clientOrg.organizationId())
                 .name("RoleTMP")
                 .description("Only the brave")
                 .addPermision(Permission.db_all_keyspace_create)
@@ -152,80 +166,96 @@ public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
                 .addResourceAllTables()
                 .build());
         // Then
-        Assertions.assertTrue(iamClient.role(res.getRoleId()).exist());
+        RoleClient roleTmp = clientOrg.role(res.getRoleId());
+        Assertions.assertTrue(roleTmp.exist());
+        printOK("RoleTMP created");
         // When
-        iamClient.role(res.getRoleId())
-                 .update(RoleDefinition.builder(iamClient.organizationId())
+        roleTmp.update(RoleDefinition.builder(clientOrg.organizationId())
                                    .name("RoleTMP")
                                    .description("updated descriptiom")
                                    .addPermision(Permission.db_cql)
                                    .build()
                 );
+        Role r = roleTmp.find().get();
+        Assertions.assertTrue(r.getPolicy().getActions().contains(Permission.db_cql.getCode()));
+        Assertions.assertTrue(r.getPolicy().getDescription().equals("updated descriptiom"));
+        printOK("Role updated");
+        roleTmp.delete();
+        printOK("Role deleted");
     }
     
-    @Test
-    @Order(7)
-    public void should_list_tokens() {
-        // Given
-        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        iamClient.tokens().forEach(t->System.out.println(t.getRoles()));
-    }
+    // ------ Working with Tokens --------------------
     
-    @Test
-    @Order(8)
-    public void should_create_token() {
-        System.out.println(ANSI_YELLOW + "- Creating a Token" + ANSI_RESET);
-        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        CreateTokenResponse res = iamClient.createToken("write");
-        System.out.println(res.getClientId());
-        Assert.assertTrue(iamClient.token(res.getClientId()).exist());
-    }
-    
-    @Test
-    @Order(9)
-    public void should_delete_token() {
-        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        // Given
-        String token = "rmuoZHiMPejnZoBSBeAHFIid";
-        Assert.assertTrue(iamClient.token(token).exist());
-        // When
-        iamClient.token(token).delete();
-        // Then
-        Assert.assertFalse(iamClient.token(token).exist());
-    }
+    private static String tmpClientId;
     
     @Test
     @Order(10)
-    public void should_list_users() {
-        // Given
+    public void should_create_token() {
+        System.out.println(ANSI_YELLOW + "- Creating a Token" + ANSI_RESET);
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        iamClient.users().forEach(u -> {
-            System.out.println(u.getEmail() + "=" + u.getUserId());
-        });
+        CreateTokenResponse res = iamClient.createToken(DefaultRoles.DATABASE_ADMINISTRATOR.getName());
+        tmpClientId = res.getClientId();
+        printOK("Token created " + tmpClientId);
+        Assert.assertTrue(iamClient.token(res.getClientId()).exist());
+        printOK("Token exist ");
     }
+    
     
     @Test
     @Order(11)
-    public void should_find_user() {
-        // Given
+    public void should_delete_token() {
+        System.out.println(ANSI_YELLOW + "- Deleting a Token" + ANSI_RESET);
+        
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
-        Assert.assertTrue(iamClient.findUserByEmail("cedrick.lunven@gmail.com").isPresent());
-        Assert.assertFalse(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da318").exist());
-        //Assert.assertTrue(iamClient.findRoleByName(Role.ORGANIZATION_ADMINISTRATOR).isPresent());
+        // Given
+        Assert.assertTrue(iamClient.token(tmpClientId).exist());
+        // When
+        iamClient.token(tmpClientId).delete();
+        printOK("Token deleted ");
+        // Then
+        Assert.assertFalse(iamClient.token(tmpClientId).exist());
+        printOK("Token does not exist ");
     }
+    
+    // ------ Working with Users --------------------
+    
+    private static String tmpUserid;
+    private static String tmpUserEmail;
     
     @Test
     @Order(12)
+    public void should_list_users() {
+        // Given
+        System.out.println(ANSI_YELLOW + "- List users" + ANSI_RESET);
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
+        List<User> users = iamClient.users().collect(Collectors.toList());
+        printOK("Users retrieved ");
+        Assertions.assertTrue(users.size() >0);
+        tmpUserid = users.get(0).getUserId();
+        tmpUserEmail = users.get(0).getEmail();
+    }
+    
+    @Test
+    @Order(13)
+    public void should_find_user() {
+        // Given
+        System.out.println(ANSI_YELLOW + "- Find users" + ANSI_RESET);
+        OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
+        Assert.assertTrue(iamClient.user(tmpUserid).exist());
+        printOK("User retrieved (by ID)");
+        Assert.assertTrue(iamClient.findUserByEmail(tmpUserEmail).isPresent());
+        printOK("User retrieved (by email)");
+    }
+    
+    @Test
+    @Order(14)
     public void should_addRoles() {
         // Given
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        Assert.assertTrue(iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").exist());
-        
-        User u1 = iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315").find().get();
-        u1.getRoles().stream().forEach(r -> System.out.println(r.getName() + "=" + r.getId()));
-        
-        //iamClient.user("825bd3d3-82ae-404b-9aad-bbb4c53da315")
-        //         .updateRoles(Role.ORGANIZATION_ADMINISTRATOR, Role.USER_ADMIN_API);
+        UserClient uc = iamClient.user(tmpUserid);
+        Assert.assertTrue(uc.exist());
+        uc.updateRoles(
+               DefaultRoles.DATABASE_ADMINISTRATOR.getName(), 
+               DefaultRoles.ORGANIZATION_ADMINISTRATOR.getName());
     }
 }

@@ -1,11 +1,20 @@
 package com.datastax.astra.sdk.streaming;
 
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
+
+import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
+import com.datastax.astra.sdk.streaming.domain.TenantLimit;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Cedrick LUNVEN (@clunven)
@@ -20,6 +29,10 @@ public class TenantClient {
     
     /** Streaming client. */
     private final StreamingClient streamClient;
+    
+    /** Load Database responses. */
+    private static final TypeReference<List<TenantLimit>> TYPE_LIST_LIMIT =  
+            new TypeReference<List<TenantLimit>>(){};
    
     /**
      * Default constructor.
@@ -35,6 +48,10 @@ public class TenantClient {
        this.tenantId  = tenantId;
        Assert.hasLength(tenantId, "tenantId");
     }
+    
+    // ---------------------------------
+    // ----       CRUD              ----
+    // ---------------------------------
     
     /**
      * Find a tenant from ids name.
@@ -55,7 +72,7 @@ public class TenantClient {
      *      if the tenant exist
      */
     public boolean exist() {
-        return find().isPresent();
+        return http.HEAD(getEndpointTenant()).getCode() == HttpURLConnection.HTTP_OK;
     }
     
     /**
@@ -65,7 +82,9 @@ public class TenantClient {
      *      tenant creation request
      */
     public void create(CreateTenant ct) {
-        throw new RuntimeException("This function is not yet implemented");
+        Assert.notNull(ct, "Create Tenant request");
+        ct.setTenantName(tenantId);
+        http.POST(StreamingClient.getApiDevopsEndpointTenants(), marshall(ct));
     }
     
     /**
@@ -74,11 +93,21 @@ public class TenantClient {
      * @param clusterId
      *      cluster identifier
      */
-    public void delete(String clusterId) {
-        if (!exist()) {
+    public void delete() {
+        Optional< Tenant > opt = find();
+        if (!opt.isPresent()) {
             throw new RuntimeException("Tenant '"+ tenantId + "' has not been found");
         }
-        http.DELETE(getEndpointTenant() + "/clusters/" + clusterId);
+        http.DELETE(getEndpointCluster(opt.get().getClusterName()));
+    }
+    
+    /**
+     * FIXME This endpoint does not work on ASTRA
+     * @return
+     */
+    public Stream<TenantLimit> limits() {
+        ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits");
+        return unmarshallType(res.getBody(), TYPE_LIST_LIMIT).stream();
     }
     
     // ---------------------------------
@@ -93,6 +122,16 @@ public class TenantClient {
      */
     public String getEndpointTenant() {
         return getEndpointTenant(tenantId);
+    }
+    
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointCluster(String clusterId) {
+        return getEndpointTenant() + "/clusters/" + clusterId;
     }
     
     /**

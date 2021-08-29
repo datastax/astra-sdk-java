@@ -88,6 +88,7 @@ public class OrganizationsClient {
      */
     public OrganizationsClient(HttpApisClient client) {
         this.http = client;
+        Assert.notNull(client, "Http Client");
         this.bearerAuthToken = client.getToken();
     }
     
@@ -100,6 +101,7 @@ public class OrganizationsClient {
     public OrganizationsClient(String bearerAuthToken) {
        this.bearerAuthToken = bearerAuthToken;
        this.http = HttpApisClient.getInstance();
+       Assert.hasLength(bearerAuthToken, "bearerAuthToken");
        http.setToken(bearerAuthToken);
     } 
     

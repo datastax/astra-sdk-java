@@ -47,7 +47,6 @@ import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
 import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;
 import com.datastax.stargate.sdk.rest.domain.TableOptions;
-import com.datastax.stargate.sdk.utils.Assert;
 
 /**
  * DATASET
