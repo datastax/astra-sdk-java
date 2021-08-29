@@ -24,6 +24,23 @@ public class CreateType implements Serializable {
     private List<TypeFieldDefinition> fields = new ArrayList<>();
 
     /**
+     * Default Constructor
+     */
+    public CreateType() {}
+    
+    /**
+     * Create and populate.
+     * @param name
+     *      type name
+     * @param ifNotExist
+     *      use if not exist at cql
+     */
+    public CreateType(String name, boolean ifNotExist) {
+        this.name        = name;
+        this.ifNotExists = ifNotExist;
+    }
+    
+    /**
      * Getter accessor for attribute 'name'.
      *
      * @return

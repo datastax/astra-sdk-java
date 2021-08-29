@@ -172,7 +172,7 @@ public class KeyspaceClient {
      */
     public Stream<TypeDefinition> types() {
         // Access API
-        ApiResponseHttp res = http.GET(getEndPointTypes());
+        ApiResponseHttp res = http.GET(getEndPointSchemaTypes());
         // Marshall returned objects
         return unmarshallType(res.getBody(), RESPONSE_TYPE_DEFINITIONS).getData().stream();
     }
@@ -219,7 +219,7 @@ public class KeyspaceClient {
      * @param tableName String
      * @return TableClient
      */
-    public TypeClient tyype(String typeName) {
+    public TypeClient type(String typeName) {
         Assert.hasLength(typeName, "typeName");
         if (!typesClient.containsKey(typeName)) {
             typesClient.put(typeName, new TypeClient(this, typeName));
@@ -297,5 +297,15 @@ public class KeyspaceClient {
      */
     public String getEndPointTypes() {
         return getEndPointKeyspace() + PATH_TYPES;
+    }
+    
+    /**
+     * Access to schema namespace.
+     * 
+     * @return
+     *      schema namespace
+     */
+    public String getEndPointSchemaTypes() {
+        return getEndPointSchemaKeyspace() + PATH_TYPES;
     }
 }

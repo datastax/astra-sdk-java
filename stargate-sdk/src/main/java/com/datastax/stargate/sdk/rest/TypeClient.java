@@ -112,7 +112,7 @@ public class TypeClient {
      * @return String
      */
     public String getEndPointSchemaType() {
-        return getEndPointSchemaTypes() + "/types/" + typeName;
+        return getEndPointSchemaTypes() + "/" + typeName;
     }
     
     /**

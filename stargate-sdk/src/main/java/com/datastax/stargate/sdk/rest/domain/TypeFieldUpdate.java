@@ -21,6 +21,14 @@ public class TypeFieldUpdate implements Serializable {
      * Default constructor.
      */
     public TypeFieldUpdate() {}
+    
+    /**
+     * Default constructor.
+     */
+    public TypeFieldUpdate(String from, String to) {
+        this.from = from;
+        this.to = to;
+    }
 
     /**
      * Getter accessor for attribute 'from'.

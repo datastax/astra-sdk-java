@@ -34,11 +34,14 @@ import com.datastax.astra.dto.Video;
 import com.datastax.astra.dto.VideoRowMapper;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.rest.KeyClient;
+import com.datastax.stargate.sdk.rest.KeyspaceClient;
 import com.datastax.stargate.sdk.rest.TableClient;
+import com.datastax.stargate.sdk.rest.TypeClient;
 import com.datastax.stargate.sdk.rest.domain.ClusteringExpression;
 import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
 import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 import com.datastax.stargate.sdk.rest.domain.CreateTable;
+import com.datastax.stargate.sdk.rest.domain.CreateType;
 import com.datastax.stargate.sdk.rest.domain.IndexDefinition;
 import com.datastax.stargate.sdk.rest.domain.Ordering;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
@@ -47,6 +50,9 @@ import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
 import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;
 import com.datastax.stargate.sdk.rest.domain.TableOptions;
+import com.datastax.stargate.sdk.rest.domain.TypeFieldDefinition;
+import com.datastax.stargate.sdk.rest.domain.TypeFieldUpdate;
+import com.datastax.stargate.sdk.rest.domain.UpdateType;
 
 /**
  * DATASET
@@ -743,6 +749,106 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
                .build());
         
         Assertions.assertEquals(6, res3.getResults().size());
+        
+    }
+    
+    // ---- Working with User Defined Types ----
+    
+    @Test
+    @Order(28)
+    public void should_create_udt() {
+        System.out.println(ANSI_YELLOW + "\n Create a type" + ANSI_RESET);
+        KeyspaceClient ks1 = clientApiRest.keyspace(WORKING_KEYSPACE);
+        Assertions.assertTrue(ks1.exist());
+        printOK("Keyspace exist");
+        TypeClient address = ks1.type("address");
+        Assertions.assertFalse(address.exist());
+        printOK("UDT Address does not now exist");
+        CreateType ct = new CreateType("address", true);
+        ct.getFields().add(new TypeFieldDefinition("city", "text"));
+        ct.getFields().add(new TypeFieldDefinition("zipcode", "int"));
+        ct.getFields().add(new TypeFieldDefinition("street", "text"));
+        ct.getFields().add(new TypeFieldDefinition("phone", "list<text>"));
+        address.create(ct);
+        printOK("UDT Creation requested");
+        Assertions.assertTrue(address.exist());
+        printOK("UDT Address now exist");
+    }
+    
+    @Test
+    @Order(29)
+    public void should_update_udt() {
+        System.out.println(ANSI_YELLOW + "\n Create a type" + ANSI_RESET);
+        // Given
+        KeyspaceClient ks1 = clientApiRest.keyspace(WORKING_KEYSPACE);
+        TypeClient address = ks1.type("address");
+        Assertions.assertTrue(address.exist());
+        List<String> fields = address.find().get().getFields().stream()
+               .map(TypeFieldDefinition::getName).collect(Collectors.toList());
+        Assertions.assertFalse(fields.contains("country"));
+        Assertions.assertFalse(fields.contains("town"));
+        Assertions.assertTrue(fields.contains("city"));
+        // When
+        UpdateType ut= new UpdateType();
+        ut.getAddFields().add(new TypeFieldDefinition("country","text" ));
+        ut.getRenameFields().add(new TypeFieldUpdate("city", "town"));
+        address.update(ut);
+        printOK("UDT Address updated");
+        
+        // Then
+        fields = address.find().get().getFields().stream()
+                .map(TypeFieldDefinition::getName).collect(Collectors.toList());
+         Assertions.assertTrue(fields.contains("country"));
+         Assertions.assertTrue(fields.contains("town"));
+         Assertions.assertFalse(fields.contains("city"));
+    }
+    
+    @Test
+    @Order(30)
+    public void should_delete_udt() {
+        System.out.println(ANSI_YELLOW + "\n Delete a type" + ANSI_RESET);
+        // Given
+        KeyspaceClient ks1 = clientApiRest.keyspace(WORKING_KEYSPACE);
+        TypeClient address = ks1.type("address");
+        Assertions.assertTrue(address.exist());
+        address.delete();
+        Assertions.assertFalse(address.exist());
+        printOK("UDT Address DELETED");
+    }
+    
+    @Test
+    @Order(31)
+    public void shoud_use_udt() {
+        System.out.println(ANSI_YELLOW + "\n Use Case" + ANSI_RESET);
+        KeyspaceClient ks1 = clientApiRest.keyspace(WORKING_KEYSPACE);
+        
+        // (1) Create Address
+        TypeClient typeAddress = ks1.type("address");
+        CreateType ct = new CreateType("address", true);
+        ct.getFields().add(new TypeFieldDefinition("city", "text"));
+        ct.getFields().add(new TypeFieldDefinition("zipcode", "int"));
+        ct.getFields().add(new TypeFieldDefinition("street", "text"));
+        //typeAddress.create(ct);
+        //Assertions.assertTrue(typeAddress.exist());
+        
+        // (2) Create table person
+        TableClient tablePerson = ks1.table("person");
+        CreateTable tcr = new CreateTable();
+        tcr.setName("person");
+        tcr.setIfNotExists(true);
+        tcr.getColumnDefinitions().add(new ColumnDefinition("email", "text"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("firsname", "text"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("lastname", "int"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("addr", "frozen<address>"));
+        tcr.getPrimaryKey().getPartitionKey().add("email");
+        //tablePerson.create(tcr);
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("email", "cedrick.lunven@datastax.com");
+        data.put("firsname", "cedrick");
+        data.put("lastname", 123);
+        data.put("addr", "{ city:'PARIS', zipcode:75000, street: 'Champ' }");
+        tablePerson.upsert(data);
         
     }
     
