@@ -293,6 +293,7 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
         }
         Assertions.assertFalse(working_table.exist());
         
+        working_table = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE);
         // With a Builder
         working_table.create(CreateTable.builder()
                        .ifNotExist(true)
@@ -364,32 +365,43 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
     throws InterruptedException {
         System.out.println(ANSI_YELLOW + "\n#12 Delete a table" + ANSI_RESET);
         // Given
-        Assertions.assertTrue(clientApiRest
-                .keyspace(WORKING_KEYSPACE)
-                .exist());
-        Assertions.assertTrue(clientApiRest
-                .keyspace(WORKING_KEYSPACE)
-                .table(WORKING_TABLE + "_tmp")
-                .exist());
+        // Core Request
+        TableClient tc = clientApiRest.keyspace(WORKING_KEYSPACE).table(WORKING_TABLE + "_tmp");
+        CreateTable tcr = new CreateTable();
+        tcr.setName(WORKING_TABLE + "_tmp");
+        tcr.setIfNotExists(true);
+        tcr.getColumnDefinitions().add(new ColumnDefinition("genre", "text"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("year", "int"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("title", "text"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("upload", "timestamp"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("tags", "set<text>"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("frames", "list<int>"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("tuples", "tuple<text,text,text>"));
+        tcr.getColumnDefinitions().add(new ColumnDefinition("formats", "frozen<map <text,text>>"));
+        tcr.getPrimaryKey().getPartitionKey().add("genre");
+        tcr.getPrimaryKey().getClusteringKey().add("year");
+        tcr.getPrimaryKey().getClusteringKey().add("title");
+        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("year", Ordering.DESC));
+        tcr.getTableOptions().getClusteringExpression().add(new ClusteringExpression("title", Ordering.ASC));
+        tc.create(tcr);
+        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Creating table " + WORKING_TABLE + "_tmp");
+        int wait = 0;
+        while (wait++ < 10 && !tc.exist()) {
+            Thread.sleep(1000);
+        }
+        Assertions.assertTrue(tc.exist());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Target table exist");
         // When
-        clientApiRest
-            .keyspace(WORKING_KEYSPACE)
-            .table(WORKING_TABLE + "_tmp").delete();
+        tc.delete();
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Delete request sent");
         
-        int wait = 0;
-        while (wait++ < 10 && clientApiRest
-                .keyspace(WORKING_KEYSPACE)
-                .table(WORKING_TABLE + "_tmp").exist()) {
+        wait = 0;
+        while (wait++ < 10 && tc.exist()) {
             Thread.sleep(1000);
         }
         
         // Then
-        Assertions.assertFalse(clientApiRest
-                .keyspace(WORKING_KEYSPACE)
-                .table(WORKING_TABLE + "_tmp")
-                .exist());
+        Assertions.assertFalse(tc.exist());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Target table has been deleted");
         
     }
