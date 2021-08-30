@@ -1,9 +1,15 @@
 package com.datastax.stargate.sdk.utils;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+import java.util
+import java.util.concurrent.ConcurrentHashMap;.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import org.apache.hc.client5.http.auth.StandardAuthScheme;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
@@ -12,6 +18,7 @@ import org.apache.hc.client5.http.classic.methods.HttpHead;
 import org.apache.hc.client5.http.classic.methods.HttpPatch;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -27,6 +34,7 @@ import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.stargate.sdk.audit.ApiCallListener;
 import com.datastax.stargate.sdk.core.ApiConstants;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
@@ -46,6 +54,8 @@ public class HttpApisClient implements ApiConstants {
     /** default params */
     public static final int DEFAULT_TIMEOUT_REQUEST   = 20;
     public static final int DEFAULT_TIMEOUT_CONNECT   = 20;
+    
+    protected Map<String, ApiCallListener > repositoryListeners = new ConcurrentHashMap<>();
     
     /** Singleton pattern. */
     private static HttpApisClient _instance = null;
@@ -124,82 +134,57 @@ public class HttpApisClient implements ApiConstants {
     
     public ApiResponseHttp GET(String url) {
         HttpGet httpGet = new HttpGet(url);
-        httpGet.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpGet.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpGet.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpGet.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpGet.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpGet.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        addHeaders(httpGet);
         return executeHttp(httpGet, false);
     }
     
     public ApiResponseHttp HEAD(String url) {
         HttpHead httpHead = new HttpHead(url);
-        httpHead.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpHead.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpHead.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpHead.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpHead.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpHead.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
-        return executeHttp(httpHead, false);
+        addHeaders(httpHead);
+       return executeHttp(httpHead, false);
     }
     
     public ApiResponseHttp POST(String url) {
         HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpPost.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpPost.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpPost.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpPost.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpPost.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        addHeaders(httpPost);
         return executeHttp(httpPost, true);
     }
     
     public ApiResponseHttp POST(String url, String body) {
         HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpPost.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpPost.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpPost.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpPost.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpPost.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        addHeaders(httpPost);
         httpPost.setEntity(new StringEntity(body));
         return executeHttp(httpPost, true);
     }
     
     public ApiResponseHttp DELETE(String url) {
         HttpDelete httpDelete = new HttpDelete(url);
-        httpDelete.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpDelete.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpDelete.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpDelete.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpDelete.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpDelete.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        addHeaders(httpDelete);
         return executeHttp(httpDelete, true);
     }
     
     public ApiResponseHttp PUT(String url,  String body) {
         HttpPut httpPut = new HttpPut(url);
-        httpPut.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpPut.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpPut.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpPut.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpPut.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpPut.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        addHeaders(httpPut);
         httpPut.setEntity(new StringEntity(body));
         return executeHttp(httpPut, false);
     }
     
     public ApiResponseHttp PATCH(String url,  String body) {
         HttpPatch httpPatch = new HttpPatch(url);
-        httpPatch.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        httpPatch.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        httpPatch.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        httpPatch.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        httpPatch.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        httpPatch.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+        addHeaders(httpPatch);
         httpPatch.setEntity(new StringEntity(body));
         return executeHttp(httpPatch, true);
+    }
+    
+    private void addHeaders(HttpUriRequestBase req) {
+        req.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
+        req.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
+        req.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
+        req.addHeader(HEADER_REQUEST_ID, UUID.randomUUID().toString());
+        req.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
+        req.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
+        req.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
     }
     
     /**
@@ -308,6 +293,18 @@ public class HttpApisClient implements ApiConstants {
                     throw new RuntimeException("Error Code=" + res.getCode() + 
                     "Internal ERROR: " + res.getBody());
             }
+    }
+    
+    /** {@inheritDoc} */
+    public Stream<ApiCallListener> findAllListeners() {
+        return Stream.concat(repositoryListeners.values().stream(),
+                applicationListeners.values()
+                                    // Stream<Map<String, RepositoryListener>>
+                                    .stream() 
+                                    // Stream<List<RepositoryListener>>
+                                    .map(m -> new ArrayList<RepositoryListener>(m.values()))
+                                    // Stream<RepositoryListener>
+                                    .flatMap(ArrayList::stream));
     }
 
 }

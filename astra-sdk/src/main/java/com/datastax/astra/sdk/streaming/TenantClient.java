@@ -35,6 +35,12 @@ public class TenantClient {
     /** Streaming client. */
     private final StreamingClient streamClient;
     
+    /** we woudl like to use client and admin as singletong for a tenant. */
+    private PulsarClient pulsarClient;
+    
+    /** we woudl like to use client and admin as singletong for a tenant. */
+    private PulsarAdmin pulsarAdmin;
+    
     /** Load Database responses. */
     private static final TypeReference<List<TenantLimit>> TYPE_LIST_LIMIT =  
             new TypeReference<List<TenantLimit>>(){};
@@ -126,20 +132,21 @@ public class TenantClient {
      *      pulsar client.
      */
     public PulsarClient pulsarClient() {
-        Optional<Tenant> tenant = find();
-        if (!tenant.isPresent()) {
-            throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+        if (pulsarClient == null) {
+            Optional<Tenant> tenant = find();
+            if (!tenant.isPresent()) {
+                throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+            }
+            try {
+                pulsarClient = PulsarClient.builder()
+                        .serviceUrl(tenant.get().getBrokerServiceUrl())
+                        .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
+                        .build();
+            } catch (PulsarClientException e) {
+                throw new IllegalArgumentException("Cannot connect to pulsar", e); 
+            }
         }
-        PulsarClient client;
-        try {
-            client = PulsarClient.builder()
-                    .serviceUrl(tenant.get().getBrokerServiceUrl())
-                    .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
-                    .build();
-        } catch (PulsarClientException e) {
-            throw new IllegalArgumentException("Cannot connect to pulsar", e); 
-        }
-        return client;
+        return pulsarClient;
     }
     
     // ---------------------------------
@@ -153,26 +160,27 @@ public class TenantClient {
      *      pulsar admin
      */
     public PulsarAdmin pulsarAdmin() {
-        Optional<Tenant> tenant = find();
-        if (!tenant.isPresent()) {
-            throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+        if (pulsarAdmin == null) {
+            Optional<Tenant> tenant = find();
+            if (!tenant.isPresent()) {
+                throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+            }
+            try {
+                pulsarAdmin = PulsarAdmin.builder()
+                   .allowTlsInsecureConnection(false)
+                   .enableTlsHostnameVerification(true)
+                   .useKeyStoreTls(false)
+                   .tlsTrustStoreType("JKS")
+                   .tlsTrustStorePath("")
+                   .tlsTrustStorePassword("")
+                   .serviceHttpUrl(tenant.get().getWebServiceUrl())
+                   .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
+                   .build();
+            } catch (PulsarClientException e) {
+                throw new IllegalArgumentException("Cannot use Pulsar admin", e);
+            }
         }
-        PulsarAdmin admin;
-        try {
-            admin = PulsarAdmin.builder()
-               .allowTlsInsecureConnection(false)
-               .enableTlsHostnameVerification(true)
-               .useKeyStoreTls(false)
-               .tlsTrustStoreType("JKS")
-               .tlsTrustStorePath("")
-               .tlsTrustStorePassword("")
-               .serviceHttpUrl(tenant.get().getWebServiceUrl())
-               .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
-               .build();
-        } catch (PulsarClientException e) {
-            throw new IllegalArgumentException("Cannot use Pulsar admin", e);
-        }
-        return admin;
+        return pulsarAdmin;
     }
     
     // ---------------------------------
@@ -210,8 +218,6 @@ public class TenantClient {
     public static String getEndpointTenant(String tenant) {
         return StreamingClient.getApiDevopsEndpointTenants() + "/" + tenant;
     }
-    
-    
     
 
 }

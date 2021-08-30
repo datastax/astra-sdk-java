@@ -158,7 +158,7 @@ public class NamespaceClient {
      * @return CollectionClient
      */
     public CollectionClient collection(String collectionName) {
-        return new CollectionClient(docClient, this, collectionName);
+        return new CollectionClient(this, collectionName);
     }
 
     /**

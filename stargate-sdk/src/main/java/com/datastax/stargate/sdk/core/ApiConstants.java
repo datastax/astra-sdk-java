@@ -6,6 +6,7 @@ public interface ApiConstants {
     
     String HEADER_ACCEPT            = "Accept";
     String HEADER_CASSANDRA         = "X-Cassandra-Token";
+    String HEADER_REQUEST_ID        = "X-Cassandra-Request-Id";
     String HEADER_CONTENT_TYPE      = "Content-Type";
     String HEADER_AUTHORIZATION     = "Authorization";
     String HEADER_USER_AGENT        = "User-Agent";

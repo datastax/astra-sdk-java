@@ -15,10 +15,23 @@ import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
  * @param <DOC>
  *      current document bean.
  */
-public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DOC>{
+public class StargateDocumentRepository <DOC> {
     
     /** Reference to underlying collection client. **/
     private final CollectionClient collectionClient;
+    
+    /** Keep ref to the generic. */
+    private final Class<DOC> docClass;
+    
+    /**
+     *Deafult constructor
+     * @param col
+     * @param clazz
+     */
+    public StargateDocumentRepository(CollectionClient col, Class<DOC> clazz) {
+        this.collectionClient = col;
+        this.docClass        = clazz;
+    }
     
     /**
      * Constructor from {@link StargateClient}.
@@ -28,12 +41,31 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      * @param namespace
      *      working namespace identifier
      */
-    public StargateDocumentRepository(StargateClient stargateClient, String namespace) {
-        this.collectionClient = new CollectionClient(
-                stargateClient.apiDocument(), 
-                stargateClient.apiDocument().namespace(namespace),
-                getCollectionIdFromBean());
+    public StargateDocumentRepository(NamespaceClient nc, Class<DOC> clazz) {
+        this.docClass = clazz;
+        this.collectionClient = new CollectionClient(nc, getCollectionName(clazz));
     } 
+    
+    /*
+    count, delete, deleteAll, deleteAll, deleteAllById, deleteById, existsById, findAllById, findById, save
+    count, exists, findAll, findOne
+    findAll
+    FindAll(Sort_)inser<Iterablt
+    insert
+    saveALL<Iterable?
+    */
+     
+    
+    
+    /**
+     * Evaluation on which collection we are working.
+     *
+     * @return
+     *      collection identifier
+     */
+    public String getCollectionName() {
+        return collectionClient.getCollectionName();
+    }
     
     /**
      * Create a new document an generating identifier.
@@ -43,7 +75,7 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      * @return
      *      an unique identifier for the document
      */
-    public String create(DOC p) {
+    public String insert(DOC p) {
         return collectionClient.create(p);
     }
     
@@ -55,7 +87,7 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      * @return
      */
     public Optional<DOC> find(String docId) {
-        return collectionClient.document(docId).find(getGenericClass());
+        return collectionClient.document(docId).find(docClass);
     }
     
     /**
@@ -78,7 +110,7 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      *      result page
      */
     public DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query) {
-        return collectionClient.searchPageable(query, getGenericClass());
+        return collectionClient.searchPageable(query, docClass);
     }
     
     /**
@@ -88,7 +120,7 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      *      every document of the collection
      */
     public Stream<ApiDocument<DOC>> search(SearchDocumentQuery query) {
-        return collectionClient.search(query, getGenericClass());
+        return collectionClient.search(query, docClass);
     }
     /**
      * Retrieve all documents from the collection.
@@ -97,19 +129,36 @@ public class StargateDocumentRepository <DOC> extends AbstractDocumentSupport<DO
      *      every document of the collection
      */
     public Stream<ApiDocument<DOC>> findAll() {
-        return collectionClient.findAll(getGenericClass());
+        return collectionClient.findAll(docClass);
     }
     
     public DocumentResultPage<DOC> findAllPageable() {
-        return collectionClient.findAllPageable(getGenericClass());
+        return collectionClient.findAllPageable(docClass);
     }
     
     public DocumentResultPage<DOC> findAllPageable(int pageSize){
-        return collectionClient.findAllPageable(getGenericClass(), pageSize);
+        return collectionClient.findAllPageable(docClass, pageSize);
     }
     
     public DocumentResultPage<DOC> findAllPageable(int pageSize, String pageingState){
-        return collectionClient.findAllPageable(getGenericClass(), pageSize, pageingState);
+        return collectionClient.findAllPageable(docClass, pageSize, pageingState);
+    }
+    
+    /**
+     * Read Collection Name.
+     * 
+     * @param myClass
+     *      my current class
+     * @return
+     *      name of the collection
+     */
+    private String getCollectionName(Class<DOC> myClass) {
+        Collection ann = myClass.getAnnotation(Collection.class);
+        if (null != ann && ann.value() !=null && !ann.value().equals("")) {
+            return ann.value();
+        } else {
+            return myClass.getSimpleName().toLowerCase();
+        }
     }
     
 }  

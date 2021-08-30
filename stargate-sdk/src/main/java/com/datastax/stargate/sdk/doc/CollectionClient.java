@@ -54,16 +54,13 @@ public class CollectionClient {
     /** Wrapper handling header and error management as a singleton. */
     private final HttpApisClient http;
     
-    /** Astra Client. */
-    protected final ApiDocumentClient docClient;
-    
     /** Namespace. */
     protected final NamespaceClient namespaceClient;
     
     /** Collection name. */
     protected String collectionName;
     
-    
+    /* Mapping type. */
     private static TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>> RESPONSE_SEARCH =  
             new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){};
     
@@ -74,8 +71,7 @@ public class CollectionClient {
      * @param namespaceClient NamespaceClient
      * @param collectionName String
      */
-    public CollectionClient(ApiDocumentClient docClient,  NamespaceClient namespaceClient,  String collectionName) {
-        this.docClient     = docClient;
+    public CollectionClient(NamespaceClient namespaceClient,  String collectionName) {
         this.namespaceClient = namespaceClient;
         this.collectionName  = collectionName;
         this.http            = HttpApisClient.getInstance();
