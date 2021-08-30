@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.streaming;
 
 import java.util.List;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -13,12 +14,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import com.datastax.astra.sdk.streaming.StreamingClient;
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class T07_DevopsStreamingIntegrationTest extends AbstractAstraIntegrationTest {
+public class StreamingIntegrationTest extends AbstractAstraIntegrationTest {
     
     @Test
     @Order(1)
@@ -80,6 +82,32 @@ public class T07_DevopsStreamingIntegrationTest extends AbstractAstraIntegration
     
     @Test
     @Order(6)
+    public void should_work_withTenant() throws Exception {
+        System.out.println(ANSI_YELLOW + "- Access pulsar admin" + ANSI_RESET);
+        
+        AstraClient astraClient = client;
+        
+        try(PulsarAdmin admin = astraClient.streaming()
+                .tenant(tmpTenant)
+                .pulsarAdmin()) {
+            Assert.assertTrue(admin
+                 .namespaces()
+                 .getNamespaces(tmpTenant).size() > 0);
+            printOK("Pulsar admin is OK");
+        }
+        /*
+        try(Consumer<Person> consumer = astraClient.streaming()
+                   .tenant("postman_tenant_2")
+                   .pulsarClient()
+                   .newConsumer(JSONSchema.of(Person.class))
+                   .topic("postman_tenant_2/default/topc1")
+                   .subscriptionName("my-subscription")
+                   .subscribe()) {
+        }*/
+    }
+    
+    @Test
+    @Order(7)
     public void should_delete_tenant() throws InterruptedException {
         //tmpTenant = "sdk_java_junit_32defeb";
         StreamingClient sc  = new StreamingClient(client.getToken().get());
@@ -100,5 +128,7 @@ public class T07_DevopsStreamingIntegrationTest extends AbstractAstraIntegration
         // Service not available in private beta
     }
     
+   
+     
 
 }

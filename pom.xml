@@ -30,6 +30,7 @@
 		<jackson.version>2.12.1</jackson.version>
 		<httpclient.version>5.1</httpclient.version>
 		<graphql-java.version>16.2</graphql-java.version>
+		<pulsar.version>2.7.2</pulsar.version>
 		<junit-platform.version>1.7.0</junit-platform.version>
 		<junit-jupiter.version>5.7.0</junit-jupiter.version>
 		<maven-compiler-plugin.source>1.8</maven-compiler-plugin.source>
@@ -108,6 +109,17 @@
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-java</artifactId>
 				<version>${graphql-java.version}</version>
+			</dependency>
+			<!-- ASTRA STREAMING -->
+			<dependency>
+	    		<groupId>org.apache.pulsar</groupId>
+	    		<artifactId>pulsar-client-admin</artifactId>
+	    		<version>${pulsar.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.pulsar</groupId>
+			    <artifactId>pulsar-client</artifactId>
+			   <version>${pulsar.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>

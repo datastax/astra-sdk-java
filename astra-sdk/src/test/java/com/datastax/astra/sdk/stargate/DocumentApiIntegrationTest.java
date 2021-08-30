@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.stargate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,6 +32,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.dto.Address;
 import com.datastax.astra.dto.Person;
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.doc.ApiDocument;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
@@ -46,7 +48,7 @@ import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class T03_StargateDocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
+public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
     
     /** TEST CONSTANTS. */
     private static final String TEST_DBNAME          = "sdk_test_api_stargate";

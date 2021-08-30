@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.stargate;
 
 import java.util.stream.Collectors;
 
@@ -22,12 +22,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
+import com.datastax.astra.sdk.AstraClient;
+
 /**
  * Multiple Connectivity mode for eacj parameters.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class T02_ConnectivityIntegrationTest extends AbstractAstraIntegrationTest {
+public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
     
     @Test
     @DisplayName("Connect Cassandra with CqlSession using clientId/ClientSecret")

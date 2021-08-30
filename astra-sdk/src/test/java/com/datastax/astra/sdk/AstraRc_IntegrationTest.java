@@ -32,7 +32,7 @@ import com.datastax.astra.sdk.utils.AstraRc;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class T00_AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
+public class AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
     
     @Test
     @Order(1)

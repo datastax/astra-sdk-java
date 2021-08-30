@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.stargate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +32,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.dto.Video;
 import com.datastax.astra.dto.VideoRowMapper;
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.rest.KeyClient;
 import com.datastax.stargate.sdk.rest.KeyspaceClient;
@@ -59,7 +61,7 @@ import com.datastax.stargate.sdk.rest.domain.UpdateType;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegrationTest {
+public class DataApiIntegrationTest extends AbstractAstraIntegrationTest {
   
     private static final String TEST_DBNAME      = "sdk_test_api_stargate";
     private static final String WORKING_KEYSPACE = "ks1";
@@ -828,8 +830,8 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
         ct.getFields().add(new TypeFieldDefinition("city", "text"));
         ct.getFields().add(new TypeFieldDefinition("zipcode", "int"));
         ct.getFields().add(new TypeFieldDefinition("street", "text"));
-        //typeAddress.create(ct);
-        //Assertions.assertTrue(typeAddress.exist());
+        typeAddress.create(ct);
+        Assertions.assertTrue(typeAddress.exist());
         
         // (2) Create table person
         TableClient tablePerson = ks1.table("person");
@@ -841,8 +843,10 @@ public class T04_StargateDataApiIntegrationTest extends AbstractAstraIntegration
         tcr.getColumnDefinitions().add(new ColumnDefinition("lastname", "int"));
         tcr.getColumnDefinitions().add(new ColumnDefinition("addr", "frozen<address>"));
         tcr.getPrimaryKey().getPartitionKey().add("email");
-        //tablePerson.create(tcr);
+        tablePerson.create(tcr);
+        Assertions.assertTrue(tablePerson.exist());
         
+        // (3) Insert some bean
         Map<String, Object> data = new HashMap<>();
         data.put("email", "cedrick.lunven@datastax.com");
         data.put("firsname", "cedrick");

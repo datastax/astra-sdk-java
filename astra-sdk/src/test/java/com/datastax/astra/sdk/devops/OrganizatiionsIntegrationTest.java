@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.devops;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.RoleClient;
 import com.datastax.astra.sdk.organizations.UserClient;
@@ -27,7 +28,7 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
 import graphql.Assert;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class T06_DevopsIamIntegrationTest extends AbstractAstraIntegrationTest {
+public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest {
     
     // Client Test
     private static final String TEST_DBNAME       = "sdk_test_api_devops";

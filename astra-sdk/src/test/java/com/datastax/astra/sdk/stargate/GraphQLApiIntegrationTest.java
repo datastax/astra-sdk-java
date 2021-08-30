@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.stargate;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +34,7 @@ import org.junit.jupiter.api.TestMethodOrder;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class T05_StargateGraphQLApiIntegrationTest extends AbstractAstraIntegrationTest {
+public class GraphQLApiIntegrationTest extends AbstractAstraIntegrationTest {
     
     private static final String TEST_DBNAME      = "sdk_test_api_stargate";
     private static final String WORKING_KEYSPACE = "ks2";

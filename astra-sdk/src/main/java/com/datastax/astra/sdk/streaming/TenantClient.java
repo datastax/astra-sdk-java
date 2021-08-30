@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.pulsar.client.admin.PulsarAdmin;
+import org.apache.pulsar.client.api.AuthenticationFactory;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.PulsarClientException;
+
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
 import com.datastax.astra.sdk.streaming.domain.TenantLimit;
@@ -108,6 +113,66 @@ public class TenantClient {
     public Stream<TenantLimit> limits() {
         ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits");
         return unmarshallType(res.getBody(), TYPE_LIST_LIMIT).stream();
+    }
+    
+    // ---------------------------------
+    // ----      PulsarClient       ----
+    // ---------------------------------
+    
+    /**
+     * Create a client.
+     * 
+     * @return
+     *      pulsar client.
+     */
+    public PulsarClient pulsarClient() {
+        Optional<Tenant> tenant = find();
+        if (!tenant.isPresent()) {
+            throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+        }
+        PulsarClient client;
+        try {
+            client = PulsarClient.builder()
+                    .serviceUrl(tenant.get().getBrokerServiceUrl())
+                    .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
+                    .build();
+        } catch (PulsarClientException e) {
+            throw new IllegalArgumentException("Cannot connect to pulsar", e); 
+        }
+        return client;
+    }
+    
+    // ---------------------------------
+    // ----      Pulsar Admin       ----
+    // ---------------------------------
+    
+    /**
+     * Create pulsar admin.
+     *
+     * @return
+     *      pulsar admin
+     */
+    public PulsarAdmin pulsarAdmin() {
+        Optional<Tenant> tenant = find();
+        if (!tenant.isPresent()) {
+            throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+        }
+        PulsarAdmin admin;
+        try {
+            admin = PulsarAdmin.builder()
+               .allowTlsInsecureConnection(false)
+               .enableTlsHostnameVerification(true)
+               .useKeyStoreTls(false)
+               .tlsTrustStoreType("JKS")
+               .tlsTrustStorePath("")
+               .tlsTrustStorePassword("")
+               .serviceHttpUrl(tenant.get().getWebServiceUrl())
+               .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
+               .build();
+        } catch (PulsarClientException e) {
+            throw new IllegalArgumentException("Cannot use Pulsar admin", e);
+        }
+        return admin;
     }
     
     // ---------------------------------

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.sdk;
+package com.datastax.astra.sdk.devops;
 
 import java.io.File;
 import java.util.List;
@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.Database;
@@ -41,7 +42,7 @@ import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class T01_DevopsDatabasesIntegrationTest extends AbstractAstraIntegrationTest {
+public class DatabasesIntegrationTest extends AbstractAstraIntegrationTest {
     
     // Test Keys
     private static final String TEST_DBNAME      = "sdk_test_api_devops_db";

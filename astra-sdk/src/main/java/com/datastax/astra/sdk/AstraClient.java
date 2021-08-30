@@ -279,7 +279,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public StreamingClient apiDevopsStreaming() {
+    public StreamingClient streaming() {
         if (apiDevopsStreaming == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");

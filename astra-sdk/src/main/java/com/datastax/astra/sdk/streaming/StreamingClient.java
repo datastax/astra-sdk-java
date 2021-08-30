@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.datastax.astra.sdk.streaming.domain.Cluster;
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
 import com.datastax.astra.sdk.utils.ApiLocator;
@@ -27,13 +28,17 @@ public class StreamingClient {
     public static final String PATH_STREAMING  = "/streaming";
     public static final String PATH_TENANTS    = "/tenants";
     public static final String PATH_PROVIDERS  = "/providers";
+    public static final String PATH_CLUSTERS   = "/clusters";
     
-    // MAP TENANT
-    private Map<String, TenantClient> cacheTenants = new HashMap<>();
-    
+    /** Marshalling beans */
     private static final TypeReference<List<Tenant>> TYPE_LIST_TENANTS = 
             new TypeReference<List<Tenant>>(){};
+    private static final TypeReference<List<Cluster>> TYPE_LIST_CLUSTERS = 
+                    new TypeReference<List<Cluster>>(){};
     
+    /** Singletong for tenants. */
+    private Map<String, TenantClient> cacheTenants = new HashMap<>();
+                    
     /** Wrapper handling header and error management as a singleton. */
     private final HttpApisClient http;
     
@@ -64,6 +69,10 @@ public class StreamingClient {
        Assert.hasLength(bearerAuthToken, "bearerAuthToken");
        http.setToken(bearerAuthToken);
     } 
+    
+    // ---------------------------------
+    // ----         Tenants         ----
+    // ---------------------------------
     
     /**
      * Operations on tenants.
@@ -102,6 +111,10 @@ public class StreamingClient {
         tenant(ct.getTenantName()).create(ct);
     }
     
+    // ---------------------------------
+    // ----       Providers         ----
+    // ---------------------------------
+    
     /**
      * Operations on providers.
      * 
@@ -112,6 +125,34 @@ public class StreamingClient {
     public Map<String, List<String>> providers() {
         ApiResponseHttp res = http.GET(getApiDevopsEndpointProviders());
         return unmarshallBean(res.getBody(), Map.class);
+    }
+    
+    // ---------------------------------
+    // ----       Clusters          ----
+    // ---------------------------------
+    
+    /**
+     * Operations on clusters.
+     * 
+     * @return
+     *      list  clusters.
+     */
+    public Stream<Cluster> clusters() {
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointClusters());
+        return unmarshallType(res.getBody(), TYPE_LIST_CLUSTERS).stream();
+    }
+    
+    /**
+     * Operations on tenants.
+     * 
+     * @param tenantName
+     *      current tenant identifier
+     * @return
+     *      client specialized for the tenant
+     */
+    public ClusterClient cluster(String clusterName) {
+        Assert.hasLength(clusterName, "tenantName");
+        return new ClusterClient(this, clusterName); 
     }
     
     // ---------------------------------
@@ -146,6 +187,16 @@ public class StreamingClient {
      */
     public static String getApiDevopsEndpointProviders() {
         return getApiDevopsEndpointStreaming() + PATH_PROVIDERS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointClusters() {
+        return getApiDevopsEndpointStreaming() + PATH_CLUSTERS;
     }
     
     /**
