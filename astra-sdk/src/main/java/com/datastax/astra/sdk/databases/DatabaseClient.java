@@ -37,8 +37,6 @@ public class DatabaseClient {
     /**
      * Default constructor.
      *
-     * @param bearerAuthToken
-     *          authentication token
      * @param databaseId
      *          uniique database identifier
      */
@@ -223,7 +221,10 @@ public class DatabaseClient {
     // ---------------------------------    
     
     /**
-     * TODO Add a region
+     * TODO Add a region to the DB.
+     * 
+     * @param regionName
+     *      name of the region
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/addDatacenters
      */
@@ -233,7 +234,10 @@ public class DatabaseClient {
     
     
     /**
-     * TODO Deletes a region
+     * TODO Delete a region to the DB.
+     * 
+     * @param regionName
+     *      name of the region
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/terminateDatacenter
      */
@@ -310,7 +314,10 @@ public class DatabaseClient {
     }
     
     /**
-     * TODO  Get info about private endpoints in a region
+     * TODO  Get info about private endpoints in a region.
+     *
+     * @param region
+     *      current region where add the private link
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinksForDatacenter
      */
@@ -321,6 +328,8 @@ public class DatabaseClient {
     /**
      * TODO Add an allowed principal to the service.
      * 
+     * @param region
+     *       region where add the principal
      * Configure a private endpoint connection by providing the allowed principal to connect with
      */
     public void addPrincipal(String region) {
@@ -329,6 +338,9 @@ public class DatabaseClient {
     
     /**
      * TODO Accept a private endpoint connection.
+     * 
+     * @param region
+     *       region where add the private endpoint
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AcceptEndpointToService
      */
@@ -340,6 +352,13 @@ public class DatabaseClient {
      * TODO Get a specific endpoint.
      *
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinkEndpoint
+     * 
+     * @param region
+     *      current region
+     * @param endpointId
+     *      endpoint id fo the region
+     * @return
+     *      the private endpoint of exist
      */
     public Optional<Object> findPrivateEndpoint(String region, String endpointId) {
         throw new RuntimeException("This function is not yet implemented");
@@ -347,7 +366,14 @@ public class DatabaseClient {
     
     /**
      * TODO Update private endpoint description.
-     *
+     * 
+     * @param region
+     *      current region
+     * @param endpointId
+     *      endpoint id fo the region
+     * @param endpoint
+     *      new value for the endpoint
+     *     
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpdateEndpoint
      */
     public void updatePrivateEndpoint(String region, String endpointId, Object endpoint) {
@@ -357,6 +383,11 @@ public class DatabaseClient {
     /**
      * TODO Delete private endpoint connection.
      *
+     * @param region
+     *      current region
+     * @param endpointId
+     *      endpoint id fo the region
+     * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteEndpoint
      */
     public void deletePrivateEndpoint(String region, String endpointId) {
@@ -402,7 +433,8 @@ public class DatabaseClient {
     }
     
     /**
-     *  Endpoint to access keyspace. (static)
+     * Endpoint to access keyspace. (static).
+     * 
      * @param dbId
      *      database identifer
      * @param keyspace
@@ -415,7 +447,7 @@ public class DatabaseClient {
     }
     
     /**
-     * Mutualization of 202 code validation
+     * Mutualization of 202 code validation.
      * 
      * @param res
      *      current response

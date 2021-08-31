@@ -19,6 +19,8 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 
 /**
+ * Work with the user resource.
+ *
  * @author Cedrick LUNVEN (@clunven)
  */
 public class UserClient{
@@ -35,10 +37,10 @@ public class UserClient{
     /**
      * Default constructor.
      *
-     * @param http
-     *      client
-     * @param roleId
-     *      current role identifier
+     * @param org
+     *      organization client
+     * @param userId
+     *      current user identifier
      */
     public UserClient(OrganizationsClient org, String userId) {
         this.userId = userId;
@@ -132,10 +134,10 @@ public class UserClient{
     /**
      * Endpoint to access dbs (static)
      *
-     * @param dbId
-     *      database identifer
+     * @param user
+     *      user identifer
      * @return
-     *      database endpoint
+     *      user endpoint
      */
     public static String getEndpointUser(String user) {
         return OrganizationsClient.getApiDevopsEndpointUsers() + "/" + user;

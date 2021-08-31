@@ -29,9 +29,8 @@ public class TypeClient {
     /**
      * Full constructor.
      * 
-     * @param restClient ApiRestClient
      * @param keyspaceClient KeyspaceClient
-     * @param tableName String
+     * @param typeName String
      */
     public TypeClient(KeyspaceClient keyspaceClient,  String typeName) {
         this.keyspaceClient = keyspaceClient;
@@ -77,7 +76,7 @@ public class TypeClient {
      /**
       * updateOptions
       * 
-      * @param to TableOptions
+      * @param update to TableOptions
       */
      public void update(UpdateType update) {
          Assert.notNull(update, "updateQuery");

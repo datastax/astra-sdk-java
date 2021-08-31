@@ -24,9 +24,12 @@ public class StargateDocumentRepository <DOC> {
     private final Class<DOC> docClass;
     
     /**
-     *Deafult constructor
+     * Default constructor.
+     *
      * @param col
+     *      collection client parent
      * @param clazz
+     *      working bean class
      */
     public StargateDocumentRepository(CollectionClient col, Class<DOC> clazz) {
         this.collectionClient = col;
@@ -36,9 +39,9 @@ public class StargateDocumentRepository <DOC> {
     /**
      * Constructor from {@link StargateClient}.
      *
-     * @param stargateClient
+     * @param nc
      *      reference to the StargateClient
-     * @param namespace
+     * @param clazz
      *      working namespace identifier
      */
     public StargateDocumentRepository(NamespaceClient nc, Class<DOC> clazz) {
@@ -46,25 +49,36 @@ public class StargateDocumentRepository <DOC> {
         this.collectionClient = new CollectionClient(nc, getCollectionName(clazz));
     } 
     
-    /*
-    count, delete, deleteAll, deleteAll, deleteAllById, deleteById, existsById, findAllById, findById, save
-    count, exists, findAll, findOne
-    findAll
-    FindAll(Sort_)inser<Iterablt
-    insert
-    saveALL<Iterable?
-    */
-     
-    
+    /**
+     * Count items in the collection.
+     * 
+     * @return
+     *      number of records.
+     */
+    public int count() {
+        return collectionClient.count();
+    }
     
     /**
-     * Evaluation on which collection we are working.
+     * Delete a document from its iid.
      *
-     * @return
-     *      collection identifier
+     * @param docId
+     *          document identifier
      */
-    public String getCollectionName() {
-        return collectionClient.getCollectionName();
+    public void delete(String docId) {
+        collectionClient.document(docId).delete();;
+    }
+    
+    /**
+     * Check existence of a document from its id.
+     * 
+     * @param docId
+     *      document identifier
+     * @return
+     *      existence status
+     */
+    public boolean exists(String docId) {
+        return collectionClient.document(docId).exist();
     }
     
     /**
@@ -80,11 +94,46 @@ public class StargateDocumentRepository <DOC> {
     }
     
     /**
+     * Create if not exist with defined ID.
+     *
+     * @param docId
+     *      expected document id
+     * @param doc
+     *      document
+     */
+    public void upsert(String docId, DOC doc) {
+        collectionClient.document(docId).upsert(doc);
+    }
+    
+    /**
+     * Update only if exists.
+     *
+     * @param docId
+     *      expected document id
+     * @param doc
+     *      document
+     */
+    public void update(String docId, DOC doc) {
+        collectionClient.document(docId).upsert(doc);
+    }
+    
+    /**
+     * Evaluation on which collection we are working.
+     *
+     * @return
+     *      collection identifier
+     */
+    public String getCollectionName() {
+        return collectionClient.getCollectionName();
+    }
+    
+    /**
      * Find a person from ids unique identifier.
      *
      * @param docId
      *      document Id
      * @return
+     *      the object only if present
      */
     public Optional<DOC> find(String docId) {
         return collectionClient.document(docId).find(docClass);
@@ -96,6 +145,7 @@ public class StargateDocumentRepository <DOC> {
      * @param docId
      *      document Id
      * @return
+     *      if the document exist 
      */
     public boolean exist(String docId) {
         return find(docId).isPresent();
@@ -115,7 +165,9 @@ public class StargateDocumentRepository <DOC> {
     
     /**
      * Retrieve all documents from the collection.
-     * 
+     *
+     * @param query
+     *      search query
      * @return
      *      every document of the collection
      */

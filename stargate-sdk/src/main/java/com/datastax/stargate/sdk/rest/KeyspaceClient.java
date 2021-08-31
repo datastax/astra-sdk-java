@@ -214,10 +214,10 @@ public class KeyspaceClient {
     }
     
     /**
-     * Move to the Table client
+     * Move to the Type client
      * 
-     * @param tableName String
-     * @return TableClient
+     * @param typeName String
+     * @return TypeClient
      */
     public TypeClient type(String typeName) {
         Assert.hasLength(typeName, "typeName");
@@ -274,6 +274,7 @@ public class KeyspaceClient {
      * Access Keyspace data.
      *
      * @return
+     *      the endpoint for keyspace
      */
     public String getEndPointKeyspace() {
         return restclient.getEndPointKeyspaces() + "/" + keyspace;

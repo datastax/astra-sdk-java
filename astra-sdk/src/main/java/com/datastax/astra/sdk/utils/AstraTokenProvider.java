@@ -16,6 +16,7 @@ public class AstraTokenProvider implements ApiTokenProvider {
      * Constructor with all parameters.
      *
      * @param token
+     *      authentication token
      */
     public AstraTokenProvider(String token) {
         this.astraToken = token;

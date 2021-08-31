@@ -67,8 +67,7 @@ public class KeyClient {
     
     /**
      * Full constructor.
-     * 
-     * @param token String
+     *
      * @param tableClient TableClient
      * @param keys Object
      */
@@ -90,7 +89,6 @@ public class KeyClient {
      * @param query QueryWithKey
      * @return RowResultPage
      */
-    // GET
     public RowResultPage find(QueryWithKey query) {
         // Parameter validatioons
         Objects.requireNonNull(query);

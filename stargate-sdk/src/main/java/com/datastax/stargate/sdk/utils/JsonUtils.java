@@ -51,6 +51,9 @@ public class JsonUtils {
                 .setSerializationInclusion(Include.NON_NULL)
                 .setAnnotationIntrospector(new JacksonAnnotationIntrospector());
     
+    /**
+     * Default constructor
+     */
     private JsonUtils() {
     }
     
@@ -217,6 +220,7 @@ public class JsonUtils {
      * @param ref
      *      type Reference to map the result
      * @return
+     *      expected object
      */
     public static <T> T unmarshallType(String body, TypeReference<T> ref) {
         try {
@@ -238,6 +242,7 @@ public class JsonUtils {
      * @param ref
      *      type Reference to map the result
      * @return
+     *       expected objects
      */
     public static <T> T unmarshallBean(String body, Class<T> ref) {
         try {

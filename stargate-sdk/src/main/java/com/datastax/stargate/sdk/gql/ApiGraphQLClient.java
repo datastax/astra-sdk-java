@@ -40,7 +40,7 @@ public class ApiGraphQLClient {
     private final String endPointApiGraphQL;
     
     /**
-     * Initialized document API with an URL and a token.
+     * Initialized graphQL API with an URL and a token.
      * 
      * @param endpoint
      *      http endpoint
@@ -56,12 +56,14 @@ public class ApiGraphQLClient {
         LOGGER.info("+ GraphQL API:  {}, ", endPointApiGraphQL);
     }
     
+
     /**
-     * Invoked when working with StandAlone Stargate.
-     * @param username
-     * @param password
-     * @param endPointAuthentication
-     * @param endPointApiDocument
+     * Initiialized GraphQL client API.
+     * 
+     * @param endpoint
+     *      list endpoint
+     * @param tokenProvider
+     *      provide token
      */
     public ApiGraphQLClient(String endpoint, ApiTokenProvider tokenProvider) {
         Assert.hasLength(endpoint, "endpoint");

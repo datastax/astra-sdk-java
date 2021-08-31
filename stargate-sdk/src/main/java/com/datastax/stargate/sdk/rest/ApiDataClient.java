@@ -48,6 +48,7 @@ public class ApiDataClient {
     public static final String PATH_SCHEMA     = "/schemas";
     public static final String PATH_V2         = "/v2";
     
+    /** Marshalling type. */
     private static final TypeReference<ApiResponse<List<Keyspace>>> RESPONSE_LIST_KEYSPACE = 
             new TypeReference<ApiResponse<List<Keyspace>>>(){};
             
@@ -73,13 +74,13 @@ public class ApiDataClient {
         http.setToken(token);
         LOGGER.info("+ Data API:  {}, ", endPointApiRest);
     }
-    
     /**
-     * Invoked when working with StandAlone Stargate.
-     * @param username
-     * @param password
-     * @param endPointAuthentication
-     * @param endPointApiDocument
+     * Initialized document API with an URL and a token.
+     * 
+     * @param endpoint
+     *      http endpoint
+     * @param tokenProvider
+     *      provide a token
      */
     public ApiDataClient(String endpoint, ApiTokenProvider tokenProvider) {
         Assert.hasLength(endpoint, "endpoint");
@@ -105,7 +106,7 @@ public class ApiDataClient {
      * Return list of Namespace (keyspaces) names available.
      *
      * @see Namespace
-     * @return String
+     * @return stream of keyspace
      */
     public Stream<String> keyspaceNames() {
         return keyspaces().map(Keyspace::getName);
@@ -139,12 +140,21 @@ public class ApiDataClient {
     }
     
     /**
-     * Endpoint to access schema for namespace.
+     * Endpoint to access schema for all keyspaces.
+     * 
+     * @return
+     *      url as String
      */
     public String getEndpointSchemaKeyspaces() {
         return getEndPointApiRest() + PATH_V2 + PATH_SCHEMA + PATH_KEYSPACES;
     }
     
+    /**
+     * Endpoint to access schema for one keyspace.
+     * 
+     * @return
+     *      url as String
+     */
     public String getEndPointKeyspaces() {
         return getEndPointApiRest() + PATH_V2 + PATH_KEYSPACES;
     }

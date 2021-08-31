@@ -1,5 +1,6 @@
 package com.datastax.astra.sdk.stargate;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -7,9 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.dto.Address;
-import com.datastax.astra.dto.Person;
+import com.datastax.astra.dto.PersonRepo;
 import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.AstraClient;
+import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -20,7 +22,7 @@ public class DocumentRepositoryIntegrationTest extends AbstractAstraIntegrationT
     private static final String WORKING_NAMESPACE = "ns1";
 
     // Client Test
-    private static StargateDocumentRepository<Person> personRepository;
+    private static StargateDocumentRepository<PersonRepo> personRepository;
     
     @BeforeAll
     public static void config() {
@@ -32,29 +34,46 @@ public class DocumentRepositoryIntegrationTest extends AbstractAstraIntegrationT
 
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                .appToken(client.getToken().get()).clientId(client.getClientId().get())
+                .appToken(client.getToken().get())
+                .clientId(client.getClientId().get())
                 .clientSecret(client.getClientSecret().get())
                 .keyspace(WORKING_NAMESPACE)
                 .databaseId(dbId)
                 .cloudProviderRegion("us-east-1")
                 .build();
 
-        personRepository = new StargateDocumentRepository<Person>(
+        // Delete the collection if exist
+        CollectionClient cc = client.apiStargateDocument()
+              .namespace(WORKING_NAMESPACE)
+              .collection("personrepo");
+        if (cc.exist()) {
+            cc.delete();
+        }
+        
+        personRepository = new StargateDocumentRepository<PersonRepo>(
                client.apiStargateDocument().namespace(WORKING_NAMESPACE), 
-                Person.class);
+               PersonRepo.class);
 
         printOK("Connection established to the DB");
     }
+    
+    private static String tmpDocId;
 
     @Test
     @Order(1)
-    public void save() {
+    public void insert_and_count() {
         printYellow("Create a document");
-        Person p1 = new Person("loulou", "loulou", 22, new Address("Paris", 75000));
-        String docId = personRepository.insert(p1);
-        printOK("Document created " + docId);
-
+        PersonRepo p1 = new PersonRepo("loulou", "loulou", 22, new Address("Paris", 75000));
+        tmpDocId = personRepository.insert(p1);
+        
+        Assertions.assertEquals(1, personRepository.count());
+        Assertions.assertTrue(personRepository.exist(tmpDocId));
+        printOK("Document created " + tmpDocId);
     }
+    
+    // TODO More unit tests
+    
+    
         
 
 }

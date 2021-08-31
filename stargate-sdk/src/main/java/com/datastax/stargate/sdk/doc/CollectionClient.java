@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,7 +68,6 @@ public class CollectionClient {
     /**
      * Full constructor.
      * 
-     * @param docClient ApiDocumentClient
      * @param namespaceClient NamespaceClient
      * @param collectionName String
      */
@@ -103,7 +103,7 @@ public class CollectionClient {
     /**
      * Check if the collection exist.
      * 
-     * @return boolean
+     * @return if the collection exists.
      */
     public boolean exist() {
         return namespaceClient.collectionNames()
@@ -151,6 +151,39 @@ public class CollectionClient {
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document id", e);
         }
+    }
+    
+
+    /**
+     * Count items in a collection, it can be slow as we iterate over pages limitating
+     * payload and marshalling as much as possible.
+     * 
+     * @return
+     *      number of record
+     */
+    public int count() {
+        AtomicInteger count = new AtomicInteger(0);
+        // Invalid field provided for list of ids only
+        SearchDocumentQuery query = SearchDocumentQuery
+                .builder().select("field_not_exist")
+                .withPageSize(2).build();
+        ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults;
+        do {
+            ApiResponseHttp res = http.GET(buildQueryUrl(query));
+            searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
+            if (null != searchResults && null != searchResults.getData()) {
+                count.addAndGet(searchResults.getData().size());
+            }
+            // Looking for next page
+            if (null != searchResults.getPageState())  {
+                query = SearchDocumentQuery
+                        .builder().select("field_not_exist")
+                        .withPageState(searchResults.getPageState())
+                        .withPageSize(20).build();
+            }
+        } while(searchResults.getPageState() != null);
+        
+        return count.get();
     }
     
     /**
@@ -210,6 +243,13 @@ public class CollectionClient {
      * 
      * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
      * fetching all pages until no more. 
+    
+     * @param <DOC>
+     *      generic for working bean
+     * @param beanClass
+     *      class for working bean 
+     * @return
+     *      all items in the the collection
      */
     public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
         List<ApiDocument<DOC>> documents = new ArrayList<>();

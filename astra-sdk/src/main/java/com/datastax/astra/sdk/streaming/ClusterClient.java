@@ -16,10 +16,10 @@ public class ClusterClient {
     /**
      * Default constructor.
      *
-     * @param bearerAuthToken
-     *          authentication token
-     * @param databaseId
-     *          uniique database identifier
+     * @param client
+     *         Streaming client
+     * @param clusterName
+     *          uniique cluster identifier
      */
     public ClusterClient(StreamingClient client, String clusterName) {
        this.streamClient = client;

@@ -35,12 +35,14 @@ import com.datastax.astra.dto.Person;
 import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.StargateClient;
+import com.datastax.stargate.sdk.audit.ApiCallListenerLog;
 import com.datastax.stargate.sdk.doc.ApiDocument;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.DocumentClient;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Test operations for the Document API operation
@@ -133,6 +135,8 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
     public void should_find_collection() throws InterruptedException {
         printYellow("should_find_collection");
         
+        HttpApisClient.getInstance().registerListener("audit", new ApiCallListenerLog());
+        
         Assertions.assertTrue(clientApiDoc
                 .namespace(WORKING_NAMESPACE)
                 .collectionNames()
@@ -184,6 +188,16 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
         Thread.sleep(1000);
         Assertions.assertTrue(collectionPersonAstra.document(docId).exist());
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document created");
+    }
+    
+    
+    @Test
+    @Order(5)
+    public void testCount() {
+        CollectionClient collectionPersonAstra = clientApiDoc
+                .namespace(WORKING_NAMESPACE)
+                .collection(COLLECTION_PERSON);
+        System.out.println(collectionPersonAstra.count());
     }
     
     @Test

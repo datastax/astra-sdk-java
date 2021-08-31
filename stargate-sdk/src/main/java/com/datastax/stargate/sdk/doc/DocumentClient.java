@@ -88,7 +88,6 @@ public class DocumentClient {
      */
     public <DOC> String update(DOC doc) {
         Assert.notNull(doc, "document");
-        Assert.notNull(doc, "document");
         ApiResponseHttp res = http.PATCH(getEndPointDocument(), marshall(doc));
         return marshallDocumentId(res.getBody());
     }

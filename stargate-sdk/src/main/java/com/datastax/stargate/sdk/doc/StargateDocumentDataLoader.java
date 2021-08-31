@@ -33,7 +33,7 @@ public class StargateDocumentDataLoader<DOC> implements Closeable {
    /**
     * Set up thread in parallel.
     *
-    * @param concurrentThread
+    * @param poolSize
     *       poolse
     */
    public StargateDocumentDataLoader(int poolSize) {
@@ -41,7 +41,10 @@ public class StargateDocumentDataLoader<DOC> implements Closeable {
    }
    
    /**
-    * Push thread in the queue for the document to be loaded
+    * Push thread in the queue for the document to be loaded.
+    *
+    * @param ccc
+    *       collection client parent
     * @param doc
     *       document to be saved
     * @return

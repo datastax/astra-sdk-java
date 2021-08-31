@@ -35,27 +35,38 @@ public class DatabaseCreationBuilder {
     /** */
     protected int capacityUnits = 1;
     
-    /** */
+    /** Region where to create theBD. */
     protected String region;
     
-    /** */
+    /** User name. */
     protected String user;
     
-    /** */
+    /** User password. */
     protected String password;
     
-    /** 
-     * 
-    */
+    /** Default constructor. */
     public DatabaseCreationBuilder() {}
     
+    /**
+     * Build from the name.
+     *
+     * @param name
+     *      target db name.
+     * @return
+     *      current instance
+     */
     public DatabaseCreationBuilder name(String name) {
         this.name = name;
         return this;
     }
     
     /**
-     * 
+     * Build from the keyspace.
+     *
+     * @param keyspace
+     *      targte db keyspace.
+     * @return
+     *      current instance
      */
     public DatabaseCreationBuilder keyspace(String keyspace) {
         this.keyspace = keyspace;
@@ -63,7 +74,12 @@ public class DatabaseCreationBuilder {
     }
     
     /**
-     * 
+     * Build from the cloudProvider.
+     *
+     * @param cloudProvider
+     *      target db cloudProvider.
+     * @return
+     *      current instance
      */
     public DatabaseCreationBuilder cloudProvider(CloudProviderType cloudProvider) {
         this.cloudProvider = cloudProvider;
@@ -71,7 +87,12 @@ public class DatabaseCreationBuilder {
     }
     
     /**
-     * 
+     * Build from the tier.
+     *
+     * @param tier
+     *      target db tier.
+     * @return
+     *      current instance
      */
     public DatabaseCreationBuilder tier(DatabaseTierType tier) {
         this.tier = tier;
@@ -79,7 +100,12 @@ public class DatabaseCreationBuilder {
     }
     
     /**
-     * 
+     * Build from the region.
+     *
+     * @param region
+     *      target db region.
+     * @return
+     *      current instance
      */
     public DatabaseCreationBuilder cloudRegion(String region) {
         this.region = region;
@@ -87,7 +113,12 @@ public class DatabaseCreationBuilder {
     }
     
     /**
-     * 
+     * Build from the username.
+     *
+     * @param username
+     *      target db username.
+     * @return
+     *      current instance
      */
     public DatabaseCreationBuilder username(String username) {
         this.user = username;
@@ -95,7 +126,12 @@ public class DatabaseCreationBuilder {
     }
     
     /**
-     * 
+     * Build from the password.
+     *
+     * @param password
+     *      target db password.
+     * @return
+     *      current instance
      */
     public DatabaseCreationBuilder password(String password) {
         this.password = password;
@@ -103,7 +139,10 @@ public class DatabaseCreationBuilder {
     }
     
     /**
-     * 
+     * Build the immutable beans.
+     *
+     * @return
+     *      the immutable instance
      */
     public DatabaseCreationRequest build() {
         return new DatabaseCreationRequest(this);

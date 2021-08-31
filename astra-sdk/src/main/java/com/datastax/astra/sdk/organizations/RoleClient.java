@@ -29,8 +29,6 @@ public class RoleClient {
     /**
      * Default constructor.
      *
-     * @param http
-     *      client
      * @param roleId
      *      current role identifier
      */
@@ -103,7 +101,7 @@ public class RoleClient {
     /**
      * Endpoint to access dbs (static)
      *
-     * @param dbId
+     * @param role
      *      database identifer
      * @return
      *      database endpoint

@@ -25,10 +25,10 @@ public class TokenClient {
     /**
      * Default constructor.
      *
-     * @param http
-     *      client
-     * @param roleId
-     *      current role identifier
+     * @param org
+     *      organization client
+     * @param tokenId
+     *      current token identifier
      */
     public TokenClient(OrganizationsClient org, String tokenId) {
         this.tokenId = tokenId;
@@ -51,6 +51,9 @@ public class TokenClient {
     
     /**
      * Check in inexistence of a token.
+     * 
+     * @return
+     *      if the provided token exist
      */
     public boolean exist() {
         return find().isPresent();
@@ -83,10 +86,10 @@ public class TokenClient {
     /**
      * Endpoint to access dbs (static)
      *
-     * @param dbId
-     *      database identifer
+     * @param tokenId
+     *      token identifer
      * @return
-     *      database endpoint
+     *      token endpoint
      */
     public static String getEndpointToken(String tokenId) {
         return OrganizationsClient.getApiDevopsEndpointTokens() + "/" + tokenId;

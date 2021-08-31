@@ -48,14 +48,15 @@ public class TenantClient {
     /**
      * Default constructor.
      *
-     * @param bearerAuthToken
-     *          authentication token
-     * @param databaseId
-     *          uniique database identifier
+     * @param client
+     *          streaming client
+     *        
+     * @param tenantId
+     *          unique tenantId identifier
      */
-    public TenantClient(StreamingClient client, HttpApisClient http, String tenantId) {
+    public TenantClient(StreamingClient client, String tenantId) {
        this.streamClient = client;
-       this.http         = http;
+       this.http         = HttpApisClient.getInstance();
        this.tenantId  = tenantId;
        Assert.hasLength(tenantId, "tenantId");
     }
@@ -100,9 +101,6 @@ public class TenantClient {
     
     /**
      * Deleting a tenant and cluster.
-     *
-     * @param clusterId
-     *      cluster identifier
      */
     public void delete() {
         Optional< Tenant > opt = find();
@@ -115,6 +113,7 @@ public class TenantClient {
     /**
      * FIXME This endpoint does not work on ASTRA
      * @return
+     *      the list of limits
      */
     public Stream<TenantLimit> limits() {
         ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits");
@@ -198,8 +197,11 @@ public class TenantClient {
     }
     
     /**
-     * Endpoint to access dbs.
+     * Endpoint to access cluster.
      *
+     * @param clusterId
+     *      identifier for the cluster.
+     *     
      * @return
      *      database endpoint
      */
@@ -210,8 +212,8 @@ public class TenantClient {
     /**
      * Endpoint to access dbs (static)
      *
-     * @param dbId
-     *      database identifer
+     * @param tenant
+     *      tenant identifer
      * @return
      *      database endpoint
      */

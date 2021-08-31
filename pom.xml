@@ -35,6 +35,7 @@
 		<junit-jupiter.version>5.7.0</junit-jupiter.version>
 		<maven-compiler-plugin.source>1.8</maven-compiler-plugin.source>
 		<maven-compiler-plugin.target>1.8</maven-compiler-plugin.target>
+		<maven-javadoc-plugin.source>8</maven-javadoc-plugin.source>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<maven-fmt-maven-plugin>2.2.0</maven-fmt-maven-plugin>
@@ -232,6 +233,9 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<source>${maven-javadoc-plugin.source}</source>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

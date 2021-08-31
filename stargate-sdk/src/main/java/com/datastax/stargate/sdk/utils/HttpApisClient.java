@@ -1,15 +1,16 @@
 package com.datastax.stargate.sdk.utils;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util
-import java.util.concurrent.ConcurrentHashMap;.Map;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.auth.StandardAuthScheme;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
@@ -26,7 +27,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.util.TimeValue;
@@ -34,6 +34,8 @@ import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
+import com.datastax.stargate.sdk.audit.ApiCallEvent;
 import com.datastax.stargate.sdk.audit.ApiCallListener;
 import com.datastax.stargate.sdk.core.ApiConstants;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
@@ -55,7 +57,8 @@ public class HttpApisClient implements ApiConstants {
     public static final int DEFAULT_TIMEOUT_REQUEST   = 20;
     public static final int DEFAULT_TIMEOUT_CONNECT   = 20;
     
-    protected Map<String, ApiCallListener > repositoryListeners = new ConcurrentHashMap<>();
+    /** Liisteners. */
+    protected Map<String, ApiCallListener > apiCallListeners = new ConcurrentHashMap<>();
     
     /** Singleton pattern. */
     private static HttpApisClient _instance = null;
@@ -75,9 +78,6 @@ public class HttpApisClient implements ApiConstants {
     /** Working with the token. */
     private ApiTokenProvider tokenProvider;
     
-    /** If enabled more logs. */
-    private boolean verbose = false;
-     
     /**
      * Hide default constructor
      */
@@ -85,6 +85,9 @@ public class HttpApisClient implements ApiConstants {
     
     /**
      * Singleton Pattern.
+     * 
+     * @return
+     *      singleton for the class
      */
     public static synchronized HttpApisClient getInstance() {
         if (_instance == null) {
@@ -104,16 +107,6 @@ public class HttpApisClient implements ApiConstants {
             LOGGER.info("+ HttpClient Initialized");
         }
         return _instance;
-    }
-    
-    /**
-     * Debugging HTTP CALLS.
-     *
-     * @param bool
-     *      response
-     */
-    public void setVerbose(boolean bool) {
-        this.verbose = true;
     }
     
     public void setTokenProvider(ApiTokenProvider tokenProvider) {
@@ -195,34 +188,26 @@ public class HttpApisClient implements ApiConstants {
      * @return
      */
     private ApiResponseHttp executeHttp(ClassicHttpRequest req, boolean mandatory) {
-        if (verbose) {
-            LOGGER.info("Executing {} on {}", req.getMethod(),req.getPath());
-            Arrays.asList(req.getHeaders()).stream().map(Header::toString).forEach(LOGGER::info);
-        }
         ApiResponseHttp res = null;
+        ApiCallEvent event = new ApiCallEvent(req);
         try (CloseableHttpResponse response = getHttpClient().execute(req)) {
+            event.setResponseTimestamp(System.currentTimeMillis());
+            event.setResponseCode(response.getCode());
             
             Map<String, String > headers = new HashMap<>();
             Arrays.asList(response.getHeaders())
                   .stream()
                   .forEach(h -> headers.put(h.getName(), h.getValue()));
+            event.setResponseHeaders(headers);
             
             // Parse body if present
             String body = null;
             if (null != response.getEntity()) {
                 body = EntityUtils.toString(response.getEntity());
-                if (verbose) {
-                    LOGGER.info("Response {} on {}", response.getCode(),body);
-                } 
                 EntityUtils.consume(response.getEntity());
             }
+            event.setResponseBody(body);
             
-            if (verbose) {
-                LOGGER.error("+ request_method={}", req.getMethod());
-                LOGGER.error("+ request_url={}", req.getUri().toString());
-                LOGGER.error("+ response_code={}", response.getCode());
-                LOGGER.error("+ response_body={}", body);
-            }
             // Mapping respoonse
             res = new ApiResponseHttp(body, response.getCode(), headers);
             if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode() && !mandatory) {
@@ -238,16 +223,28 @@ public class HttpApisClient implements ApiConstants {
             }
             return res;
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            event.setErrorClass(IllegalArgumentException.class.getName());
+            event.setErrorMessage(e.getMessage());
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            event.setErrorClass(Exception.class.getName());
+            event.setErrorMessage(e.getMessage());
             throw new IllegalArgumentException("Error in HTTP Request", e);
+        } finally {
+            CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onCall(event)));
         }
     }
     
     public CloseableHttpClient getHttpClient() {
         return httpClient;
+    }
+    
+    public void registerListener(String name, ApiCallListener listener) {
+        apiCallListeners.put(name, listener);
+    }
+    
+    public Optional<ApiCallListener> getListener(String name) {
+        return Optional.ofNullable(apiCallListeners.get(name));
     }
     
     /**
@@ -295,16 +292,11 @@ public class HttpApisClient implements ApiConstants {
             }
     }
     
-    /** {@inheritDoc} */
-    public Stream<ApiCallListener> findAllListeners() {
-        return Stream.concat(repositoryListeners.values().stream(),
-                applicationListeners.values()
-                                    // Stream<Map<String, RepositoryListener>>
-                                    .stream() 
-                                    // Stream<List<RepositoryListener>>
-                                    .map(m -> new ArrayList<RepositoryListener>(m.values()))
-                                    // Stream<RepositoryListener>
-                                    .flatMap(ArrayList::stream));
+    public CompletionStage<Void> notifyAsync(Consumer<ApiCallListener> lambda) {
+        return CompletableFutures.allDone(apiCallListeners.values().stream()
+                .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
+                .collect(Collectors.toList()));
     }
+   
 
 }

@@ -17,7 +17,7 @@ public class CreateType implements Serializable {
     /** Identifier. */
     private String name;
 
-    /** if not exists> */
+    /** if not exists. */
     private boolean ifNotExists = false;
     
     /** list of fields. */
@@ -30,6 +30,7 @@ public class CreateType implements Serializable {
     
     /**
      * Create and populate.
+     * 
      * @param name
      *      type name
      * @param ifNotExist

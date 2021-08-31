@@ -20,9 +20,12 @@ public class ApiResponseHttp {
     private Map<String, String> headers = new HashMap<>();
     
     /**
-     * Results
+     * Defaut constructor.
+     * 
      * @param body
+     *      request body
      * @param code
+     *      request code
      */
     public ApiResponseHttp(String body, int code) {
         this.body = body;
@@ -30,9 +33,14 @@ public class ApiResponseHttp {
     }
     
     /**
-     * Results
+     * Full constructor.
+     * 
      * @param body
+     *      request body
      * @param code
+     *      request code
+     * @param headers
+     *      request headers      
      */
     public ApiResponseHttp(String body, int code, Map<String, String> headers) {
         this.body = body;

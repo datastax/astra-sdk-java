@@ -84,7 +84,6 @@ public class TableClient {
     /**
      * Full constructor.
      * 
-     * @param restClient ApiRestClient
      * @param keyspaceClient KeyspaceClient
      * @param tableName String
      */

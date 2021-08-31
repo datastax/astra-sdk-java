@@ -48,8 +48,8 @@ public class StreamingClient {
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param authToken
-     *      authenticated token
+     * @param client
+     *      Http Client
      */
     public StreamingClient(HttpApisClient client) {
         this.http = client;
@@ -60,7 +60,7 @@ public class StreamingClient {
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param authToken
+     * @param bearerAuthToken
      *      authenticated token
      */
     public StreamingClient(String bearerAuthToken) {
@@ -85,7 +85,7 @@ public class StreamingClient {
     public TenantClient tenant(String tenantName) {
         Assert.hasLength(tenantName, "tenantName");
         if (!cacheTenants.containsKey(tenantName)) {
-            cacheTenants.put(tenantName, new TenantClient(this, http, tenantName));
+            cacheTenants.put(tenantName, new TenantClient(this, tenantName));
         }
         return cacheTenants.get(tenantName); 
     }
@@ -145,8 +145,8 @@ public class StreamingClient {
     /**
      * Operations on tenants.
      * 
-     * @param tenantName
-     *      current tenant identifier
+     * @param clusterName
+     *      current cluster identifier
      * @return
      *      client specialized for the tenant
      */

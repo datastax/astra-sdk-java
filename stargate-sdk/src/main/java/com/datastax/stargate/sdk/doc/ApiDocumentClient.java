@@ -45,8 +45,11 @@ public class ApiDocumentClient {
     
     /** Resource for document API schemas. */
     public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
+    
+    /** Resource for document API schemas. */
     public static final String PATH_SCHEMA            = "/v2/schemas";
     
+    /** Marshalling types. */
     private static final TypeReference<ApiResponse<List<Namespace>>> RESPONSE_LIST_NAMESPACE = 
             new TypeReference<ApiResponse<List<Namespace>>>(){};
     
@@ -75,10 +78,11 @@ public class ApiDocumentClient {
     
     /**
      * Invoked when working with StandAlone Stargate.
-     * @param username
-     * @param password
-     * @param endPointAuthentication
-     * @param endPointApiDocument
+     * 
+     * @param endpoint
+     *      provide the URL
+     * @param tokenProvider
+     *      how to load the token
      */
     public ApiDocumentClient(String endpoint, ApiTokenProvider tokenProvider) {
         Assert.hasLength(endpoint, "endpoint");
@@ -91,7 +95,7 @@ public class ApiDocumentClient {
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
-     * s
+     * 
      * @return Stream
      */
     public Stream<Namespace> namespaces() {
@@ -102,8 +106,8 @@ public class ApiDocumentClient {
     /**
      * Return list of Namespace (keyspaces) names available.
      *
-     * @see Namespace
      * @return Stream
+     *      stream of the namespaces
      */
     public Stream<String> namespaceNames() {
         return namespaces().map(Keyspace::getName);
@@ -131,6 +135,9 @@ public class ApiDocumentClient {
 
     /**
      * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      url to build schema for namespaces
      */
     public String getEndpointSchemaNamespaces() {
         return getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;

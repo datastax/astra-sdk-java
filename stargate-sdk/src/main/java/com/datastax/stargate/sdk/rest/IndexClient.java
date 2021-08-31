@@ -48,10 +48,6 @@ public class IndexClient {
     /**
      * Constructor focusing on a single Column
      *
-     * @param restClient
-     *      working with rest
-     * @param keyspaceClient
-     *      keyspace resource client
      * @param tableClient
      *       table resource client
      * @param indexName

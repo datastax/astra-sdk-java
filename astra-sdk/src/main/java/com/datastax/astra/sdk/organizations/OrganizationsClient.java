@@ -83,7 +83,7 @@ public class OrganizationsClient {
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param authToken
+     * @param client
      *      authenticated token
      */
     public OrganizationsClient(HttpApisClient client) {
@@ -95,7 +95,7 @@ public class OrganizationsClient {
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param authToken
+     * @param bearerAuthToken
      *      authenticated token
      */
     public OrganizationsClient(String bearerAuthToken) {
@@ -254,7 +254,7 @@ public class OrganizationsClient {
     /**
      * Retrieve a suer from his email.
      * 
-     * @param roleName
+     * @param role
      *      role name
      * @return
      *      user iif exist
@@ -330,6 +330,9 @@ public class OrganizationsClient {
     /**
      * TODO Get access list template
      * 
+     * @return
+     *      access lists template
+     * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetAccessListTemplate
      */
     public Object accessListTemplate() {
@@ -338,7 +341,9 @@ public class OrganizationsClient {
     
     /**
      * TODO Validate structure of an access list
-     * 
+     *
+     * @return
+     *      validateAccessList
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ValidateAccessList
      */
     public Object validateAccessList() {
@@ -405,6 +410,11 @@ public class OrganizationsClient {
     
     /**
      * Helper to find default Roles
+     *
+     * @param role
+     *      list of roles
+     * @return
+     *      role client
      */
     public RoleClient role(DefaultRoles role) {
         Assert.notNull(role, "Role  should not be null nor empty");

@@ -14,6 +14,7 @@ public class TokenProviderStatic implements ApiTokenProvider {
      * Constructor with all parameters.
      *
      * @param token
+     *      static token to be used
      */
     public TokenProviderStatic(String token) {
         this.token = token;

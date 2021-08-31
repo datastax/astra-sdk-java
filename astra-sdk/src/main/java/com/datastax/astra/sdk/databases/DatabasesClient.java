@@ -47,8 +47,8 @@ public class DatabasesClient {
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param authToken
-     *      authenticated token
+     * @param client
+     *      client
      */
     public DatabasesClient(HttpApisClient client) {
         this.http = client;
@@ -59,7 +59,7 @@ public class DatabasesClient {
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param authToken
+     * @param bearerAuthToken
      *      authenticated token
      */
     public DatabasesClient(String bearerAuthToken) {
@@ -170,6 +170,7 @@ public class DatabasesClient {
      * 
      * @param dbName
      *          name for a database
+     * @return DatabaseClient
      */
     public DatabaseClient databaseByName(String dbName) {
         Assert.hasLength(dbName, "Database Id should not be null nor empty");
