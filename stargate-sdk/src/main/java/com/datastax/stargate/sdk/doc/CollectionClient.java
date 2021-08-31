@@ -16,36 +16,29 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
-import static com.datastax.stargate.sdk.core.ApiSupport.getObjectMapper;
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
-import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_COLLECTIONS;
-import static com.datastax.stargate.sdk.doc.NamespaceClient.PATH_NAMESPACES;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URLEncoder;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.datastax.stargate.sdk.core.ApiResponse;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery.SearchDocumentQueryBuilder;
-import com.datastax.stargate.sdk.doc.exception.CollectionNotFoundException;
-import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -59,8 +52,8 @@ public class CollectionClient {
     /** Read document id. */
     public static final String DOCUMENT_ID = "documentId";
     
-    /** Astra Client. */
-    protected final ApiDocumentClient docClient;
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
     
     /** Namespace. */
     protected final NamespaceClient namespaceClient;
@@ -68,17 +61,20 @@ public class CollectionClient {
     /** Collection name. */
     protected String collectionName;
     
+    /* Mapping type. */
+    private static TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>> RESPONSE_SEARCH =  
+            new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){};
+    
     /**
      * Full constructor.
      * 
-     * @param docClient ApiDocumentClient
      * @param namespaceClient NamespaceClient
      * @param collectionName String
      */
-    public CollectionClient(ApiDocumentClient docClient,  NamespaceClient namespaceClient,  String collectionName) {
-        this.docClient     = docClient;
+    public CollectionClient(NamespaceClient namespaceClient,  String collectionName) {
         this.namespaceClient = namespaceClient;
         this.collectionName  = collectionName;
+        this.http            = HttpApisClient.getInstance();
     }
     
     /**
@@ -88,7 +84,7 @@ public class CollectionClient {
      * @return DocumentClient
      */
     public DocumentClient document(String docId) {
-        return new DocumentClient(docClient, namespaceClient, this, docId);
+        return new DocumentClient(this, docId);
     }
     
     /**
@@ -107,7 +103,7 @@ public class CollectionClient {
     /**
      * Check if the collection exist.
      * 
-     * @return boolean
+     * @return if the collection exists.
      */
     public boolean exist() {
         return namespaceClient.collectionNames()
@@ -118,66 +114,23 @@ public class CollectionClient {
      * Create the collection
      */
     public void create() {
-        String createColEndpoint = docClient.getEndPointApiDocument() 
-                + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                + PATH_COLLECTIONS;
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient()
-                    .send(startRequest(createColEndpoint, docClient.getToken())
-                            .POST(BodyPublishers.ofString("{\"name\":\"" + collectionName + "\"}"))
-                            .build(), BodyHandlers.ofString()); 
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create new collection " + collectionName, e);
-        }
-        handleError(response);
+        http.POST(namespaceClient.getEndPointCollections(), 
+             "{\"name\":\"" + collectionName + "\"}");
+        
     }
     
     /**
      * Deleting the collection
      */
     public void delete() {
-        String delColEndpoint = docClient.getEndPointApiDocument() 
-                + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                + PATH_COLLECTIONS + "/" + collectionName;
-        
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(delColEndpoint, docClient.getToken()).DELETE().build(), 
-                    BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot delete collection " + collectionName, e);
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-            throw new CollectionNotFoundException(collectionName);
-        }
-        handleError(response);
+        http.DELETE(getEndPointCollection());
     }
     
     /**
      * Upgrading collection to use SAI index
      */
     public void upgrade() {
-        Assert.hasLength(collectionName, "collectionName");
-        String updateColEndpoint = docClient.getEndPointApiDocument() 
-                + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                + PATH_COLLECTIONS + "/" + collectionName 
-                + "/upgrade";
-        HttpResponse<String> response;
-        try {
-            response = getHttpClient().send(
-                    startRequest(updateColEndpoint, docClient.getToken())
-                     .POST(BodyPublishers.noBody()).build(), 
-                    BodyHandlers.ofString());
-            
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot update collection " + collectionName, e);
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-            throw new CollectionNotFoundException(collectionName);
-        }
-        handleError(response);
+        http.POST(getEndPointCollection() + "/upgrade", "");
     }
     
     /**
@@ -191,30 +144,46 @@ public class CollectionClient {
      *          created document id
      */
     public <DOC> String create(DOC doc) {
-        Objects.requireNonNull(doc);
-        String saveDocEndPoint = docClient.getEndPointApiDocument() 
-                + PATH_NAMESPACES  + "/" + namespaceClient.getNamespace() 
-                + PATH_COLLECTIONS + "/" + collectionName;
-        HttpResponse<String> response;
+        ApiResponseHttp res = http.POST(getEndPointCollection(), marshall(doc));
         try {
-            String reqBody =  getObjectMapper().writeValueAsString(doc);
-            response = getHttpClient().send(
-                    startRequest(saveDocEndPoint, docClient.getToken())
-                     .POST(BodyPublishers.ofString(reqBody)).build(), 
-                    BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot save document ", e);
-        }
-        
-        handleError(response);
-        
-        try {
-            return (String) getObjectMapper()
-                        .readValue(response.body(), Map.class)
-                        .get(DOCUMENT_ID);
+            return (String) unmarshallBean(res.getBody(), Map.class)
+                    .get(DOCUMENT_ID);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document id", e);
         }
+    }
+    
+
+    /**
+     * Count items in a collection, it can be slow as we iterate over pages limitating
+     * payload and marshalling as much as possible.
+     * 
+     * @return
+     *      number of record
+     */
+    public int count() {
+        AtomicInteger count = new AtomicInteger(0);
+        // Invalid field provided for list of ids only
+        SearchDocumentQuery query = SearchDocumentQuery
+                .builder().select("field_not_exist")
+                .withPageSize(2).build();
+        ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults;
+        do {
+            ApiResponseHttp res = http.GET(buildQueryUrl(query));
+            searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
+            if (null != searchResults && null != searchResults.getData()) {
+                count.addAndGet(searchResults.getData().size());
+            }
+            // Looking for next page
+            if (null != searchResults.getPageState())  {
+                query = SearchDocumentQuery
+                        .builder().select("field_not_exist")
+                        .withPageState(searchResults.getPageState())
+                        .withPageSize(20).build();
+            }
+        } while(searchResults.getPageState() != null);
+        
+        return count.get();
     }
     
     /**
@@ -274,6 +243,13 @@ public class CollectionClient {
      * 
      * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
      * fetching all pages until no more. 
+    
+     * @param <DOC>
+     *      generic for working bean
+     * @param beanClass
+     *      class for working bean 
+     * @return
+     *      all items in the the collection
      */
     public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
         List<ApiDocument<DOC>> documents = new ArrayList<>();
@@ -293,27 +269,13 @@ public class CollectionClient {
     
     //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
     public <DOC> DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query, Class<DOC> beanClass) {
-        HttpResponse<String> response;
         try {
-             // Invoke as JSON
-            response = getHttpClient().send(startRequest(
-                            buildQueryUrl(query), docClient.getToken()).GET().build(), 
-                            BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot search for documents ", e);
-        }   
-        
-        handleError(response);
-         
-        try {
-             // Marshalling (using LinkedHashMap DOC was a bit to much Generics for Jackson here)
-             ApiResponse<Map<String, LinkedHashMap<?,?>>> result = getObjectMapper()
-                     .readValue(response.body(), 
-                             new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){});
-           
-            return new DocumentResultPage<DOC>(query.getPageSize(), result.getPageState(), result.getData()
+            ApiResponseHttp res = http.GET(buildQueryUrl(query));
+            ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
+            return new DocumentResultPage<DOC>(query.getPageSize(), 
+                    searchResults.getPageState(), searchResults.getData()
                     .entrySet().stream()
-                    .map(doc -> new ApiDocument<DOC>(doc.getKey(), getObjectMapper().convertValue(doc.getValue(), beanClass)))
+                    .map(doc -> new ApiDocument<DOC>(doc.getKey(), JsonUtils.getObjectMapper().convertValue(doc.getValue(), beanClass)))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
@@ -338,16 +300,9 @@ public class CollectionClient {
         return documents.stream();
     }
     
-    
-    
     private String buildQueryUrl(SearchDocumentQuery query) {
         try {
-            StringBuilder sbUrl = new StringBuilder(docClient.getEndPointApiDocument());
-            // Navigate to Namespace
-            sbUrl.append(NamespaceClient.PATH_NAMESPACES  + "/" + namespaceClient.getNamespace()); 
-            // Navigate to collection
-            sbUrl.append(NamespaceClient.PATH_COLLECTIONS + "/" + collectionName);
-            // Add query Params
+            StringBuilder sbUrl = new StringBuilder(getEndPointCollection());
             sbUrl.append("?page-size=" + query.getPageSize());
             // Depending on query you forge your URL
             if (query.getPageState().isPresent()) {
@@ -378,5 +333,14 @@ public class CollectionClient {
         return collectionName;
     }
     
+    /**
+     * Access to schema namespace.
+     * 
+     * @return
+     *      schema namespace
+     */
+    public String getEndPointCollection() {
+        return namespaceClient.getEndPointCollections() +  "/" + collectionName;
+    }
     
 }

@@ -16,21 +16,18 @@
 
 package com.datastax.stargate.sdk.rest;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.getHttpClient;
-import static com.datastax.stargate.sdk.core.ApiSupport.getObjectMapper;
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
-import static com.datastax.stargate.sdk.core.ApiSupport.startRequest;
+
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Optional;
 
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 import com.datastax.stargate.sdk.rest.domain.IndexDefinition;
 import com.datastax.stargate.sdk.rest.exception.IndexNotFoundException;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Working with indices in the classes.
@@ -38,15 +35,12 @@ import com.datastax.stargate.sdk.utils.Assert;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class IndexClient {
-
-    /** Astra Client. */
-    private final ApiRestClient restClient;
-    
-    /** Namespace. */
-    private final KeyspaceClient keyspaceClient;
     
     /** Namespace. */
     private final TableClient tableClient;
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
     
     /** Unique document identifer. */
     private final String indexName;
@@ -54,31 +48,16 @@ public class IndexClient {
     /**
      * Constructor focusing on a single Column
      *
-     * @param restClient
-     *      working with rest
-     * @param keyspaceClient
-     *      keyspace resource client
      * @param tableClient
      *       table resource client
      * @param indexName
      *      current index identifier
      */
-    public IndexClient(ApiRestClient restClient, KeyspaceClient keyspaceClient, TableClient tableClient, String indexName) {
-        this.restClient     = restClient;
-        this.keyspaceClient = keyspaceClient;
+    public IndexClient(TableClient tableClient, String indexName) {
         this.tableClient    = tableClient;
-        this.indexName       = indexName;
-    }
-    
-    /**
-     * Syntax sugar
-     * 
-     * @return String
-     */
-    public String getEndPointSchemaCurrentIndex() {
-        return keyspaceClient.getEndPointSchemaKeyspace() 
-                + "/tables/"  + tableClient.getTableName()
-                + "/indexes/" + indexName;
+        this.indexName      = indexName;
+        this.http           = HttpApisClient.getInstance();
+        Assert.hasLength(indexName, "indexName");
     }
     
     /**
@@ -112,38 +91,29 @@ public class IndexClient {
     public void create(CreateIndex ci) {
         Assert.notNull(ci, "CreateIndex");
         ci.setName(indexName);
-        HttpResponse<String> response;
-        try {
-           String reqBody = getObjectMapper().writeValueAsString(ci);
-           System.out.println(reqBody);
-           response = getHttpClient().send(startRequest(
-                           keyspaceClient.getEndPointSchemaKeyspace() 
-                           + "/tables/"  + tableClient.getTableName()
-                           + "/indexes", restClient.getToken())
-                   .POST(BodyPublishers.ofString(reqBody)).build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create a new index:", e);
-        }
-        handleError(response);
+        http.POST(tableClient.getEndPointSchemaIndexes(), marshall(ci));
     }
     
     /**
      * Delete an index.
      */
     public void delete() {
-        HttpResponse<String> response;
-        try {
-            // Invoke
-            response = getHttpClient().send(
-                    startRequest(getEndPointSchemaCurrentIndex(), restClient.getToken())
-                    .DELETE().build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot retrieve table list", e);
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
+        ApiResponseHttp res = http.DELETE(getEndPointSchemaCurrentIndex());
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             throw new IndexNotFoundException(indexName);
         }
-        handleError(response);
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Syntax sugar
+     * 
+     * @return String
+     */
+    public String getEndPointSchemaCurrentIndex() {
+        return tableClient.getEndPointSchemaIndexes() + "/" + indexName;
     }
 }

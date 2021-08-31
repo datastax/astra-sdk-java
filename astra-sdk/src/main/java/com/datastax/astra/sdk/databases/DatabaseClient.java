@@ -1,42 +1,54 @@
 package com.datastax.astra.sdk.databases;
 
+import static java.net.HttpURLConnection.HTTP_ACCEPTED;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import java.net.HttpURLConnection;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.Utils;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.datastax.stargate.sdk.utils.JsonUtils;
+import com.datastax.stargate.sdk.utils.Utils;;
+
 /**
  * Working with the Database part of the devop API.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class DatabaseClient extends ApiDevopsSupport {
+public class DatabaseClient {
     
-    /** Constants. */
-    public static final String PATH_DATABASES  = "/databases";
+    /** Logger for our Client. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseClient.class);
     
     /** unique db identifier. */
     private final String databaseId;
     
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
     /**
      * Default constructor.
      *
-     * @param bearerAuthToken
-     *          authentication token
      * @param databaseId
      *          uniique database identifier
      */
-    public DatabaseClient(String bearerAuthToken, String databaseId) {
-        super(bearerAuthToken);
-        Assert.hasLength(databaseId, "databaseId");
-        this.databaseId = databaseId;
+    public DatabaseClient(String databaseId) {
+       this.databaseId = databaseId;
+       this.http = HttpApisClient.getInstance();
+       Assert.hasLength(databaseId, "databaseId");
     }
+    
+    // ---------------------------------
+    // ----       CRUD              ----
+    // ---------------------------------
     
     /**
      * Retrieve a DB by its id.
@@ -47,27 +59,12 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
      */
     public Optional<Database> find() {
-        Assert.hasLength(databaseId, "Database identifier");
-        // Api Call
-        HttpResponse<String> response;
-        try {
-           response = http()
-                   .send(req(PATH_DATABASES + "/" + databaseId).GET()
-                   .build(), BodyHandlers.ofString());
-           
-           // Mashallinging 
-           if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-               return Optional.ofNullable(om().readValue(response.body(),Database.class));
-           } else if (HttpURLConnection.HTTP_NOT_FOUND == response.statusCode()) {
-               return Optional.empty();
-           }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        
-        // Specializing error
-        LOGGER.error("Error in 'findDatabaseById', with id={}", databaseId);
-        throw processErrors(response);
+       ApiResponseHttp res = http.GET(getEndpointDatabase());
+       if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
+           return Optional.empty();
+       } else {
+           return Optional.of(JsonUtils.unmarshallBean(res.getBody(), Database.class));
+       }
     }
     
     /**
@@ -82,6 +79,11 @@ public class DatabaseClient extends ApiDevopsSupport {
         return find().isPresent();
     }
     
+    public boolean isActive() {
+        Optional<Database> db = find();
+        return db.isPresent() && (DatabaseStatusType.ACTIVE == db.get().getStatus());
+    }
+    
     /**
      * Create a new keyspace in a DB.
      * 
@@ -91,23 +93,8 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace
      */
     public void createKeyspace(String keyspace) {
-        Assert.hasLength(keyspace, "Namespace");
-        // HTTP CALL
-        HttpResponse<String> response;
-        try {
-            response =  http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/keyspaces/" + keyspace)
-                    .POST(BodyPublishers.noBody())
-                    .build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        
-        // If not 201, process errors
-        if (HttpURLConnection.HTTP_CREATED != response.statusCode()) {
-            LOGGER.error("Error in 'createKeyspace', with id={} and keyspace={}, errorCode={}", databaseId, keyspace, response.statusCode());
-            throw processErrors(response);
-        }
+        Assert.hasLength(keyspace, "keyspace");
+        http.POST(getEndpointKeyspace(keyspace));
     }
     
     /**
@@ -123,23 +110,42 @@ public class DatabaseClient extends ApiDevopsSupport {
     }
     
     /**
+     * Download SecureBundle.
+     * 
+     * @param destination
+     *      file to save the securebundle
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
+     */
+    public void downloadSecureConnectBundle(String destination) {
+        if (isActive() ) {
+            // Parameter validation
+            Assert.hasLength(destination, "destination");
+            // Invoke
+            ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL");
+            // Check response coode
+            Assert.isTrue(HTTP_OK == res.getCode(), "Error in 'downloadSecureConnectBundle', with id=" +databaseId);
+            // Read file url to download
+            String url = (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
+            // Download binary in target folder
+            Utils.downloadFile(url, destination);
+        } else {
+            LOGGER.warn("DB "+ databaseId + " is not active, no download");
+        }
+    }
+    
+    // ---------------------------------
+    // ----       MAINTENANCE       ----
+    // ---------------------------------
+    
+    /**
      * Parks a database
      */
     public void park() {
-        HttpResponse<String> response;
-        try {
-            response = http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/park")
-                    .POST(BodyPublishers.noBody())
-                    .build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot park a database", e);
-        }
-        
-        if (HttpURLConnection.HTTP_ACCEPTED != response.statusCode()) {
-            LOGGER.error("Error in 'parkDatabase', with id={}", databaseId);
-            throw processErrors(response);
-        }
+        // Invoke Http endpoint
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park");
+        // Check response code
+        checkResponse(res, "park");
     }
     
     /**
@@ -148,19 +154,10 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
      */
     public void unpark() {
-        HttpResponse<String> response;
-        try {
-            response = http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/unpark")
-                    .POST(BodyPublishers.noBody())
-                    .build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot unpark DB", e);
-        }
-        if (HttpURLConnection.HTTP_ACCEPTED != response.statusCode()) {
-            LOGGER.error("Error in 'unparkDatabase', with id={}", databaseId);
-            throw processErrors(response);
-        }
+        // Invoke Http endpoint
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark");
+        // Check response code
+        checkResponse(res, "unpark");
     }
     
     /**
@@ -169,23 +166,11 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
      */
     public void delete() {
-        HttpResponse<String> response;
-        try {
-            // Invocation
-            response = http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/terminate")
-                    .POST(BodyPublishers.noBody())
-                    .build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot terminate DB", e);
-        }
-        
-        if (HttpURLConnection.HTTP_ACCEPTED != response.statusCode()) {
-            LOGGER.error("Error in 'terminateDatabase', with id={}", databaseId);
-            throw processErrors(response);
-        }
+        // Invoke Http endpoint
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate");
+        // Check response code
+        checkResponse(res, "terminate");
     }
-    
 
     /**
      * Resizes a database.
@@ -196,21 +181,14 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase
      */
     public void resize(int capacityUnits) {
+        // Parameter validations
         Assert.isTrue(capacityUnits>0, "Capacity Unit");
-        HttpResponse<String> response;
-        try {
-            response = http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/resize")
-                    .POST(BodyPublishers.ofString("{ \"capacityUnits\":" + capacityUnits + "}"))
-                    .build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot Resize DB ", e);
-        }
-        
-        if (HttpURLConnection.HTTP_ACCEPTED != response.statusCode()) {
-            LOGGER.error("Error in 'resizeDatase', with id={} and capacity={}", databaseId, capacityUnits);
-            throw processErrors(response);
-        }
+        // Build request
+        String body = "{ \"capacityUnits\":" + capacityUnits + "}";
+        // Invoke Http endpoint
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", body);
+        // Check response code
+        checkResponse(res, "resize");
     }
     
     /**
@@ -224,60 +202,265 @@ public class DatabaseClient extends ApiDevopsSupport {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword
      */
     public void resetPassword(String username, String password) {
-        HttpResponse<String> response;
-        try {
-            response = http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/resetPassword")
-                    .POST(BodyPublishers.ofString("{ "
-                            + "\"username\": \"" + username + "\", "
-                            + "\"password\": \"" + password + "\"  }"))
-                    .build(), BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot rerset password", e);
-        }
-        
-        if (HttpURLConnection.HTTP_ACCEPTED != response.statusCode()) {
-            LOGGER.error("Error in 'resetPassword', with id={} and username={}", databaseId, username);
-            throw processErrors(response);
-        }
+        // Parameter validations
+        Assert.hasLength(username, "username");
+        Assert.hasLength(password, "password");
+        // Build body
+        String body = new StringBuilder("{")
+                .append("\"username\": \"").append(username).append("\", ")
+                .append("\"password\": \"").append(password).append( "\"  }")
+                .toString();
+        // Invoke
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", body);
+        // Check response code
+        checkResponse(res, "resetPassword");
+    }
+    
+    // ---------------------------------
+    // ----       Regions           ----
+    // ---------------------------------    
+    
+    /**
+     * TODO Add a region to the DB.
+     * 
+     * @param regionName
+     *      name of the region
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/addDatacenters
+     */
+    public void addRegion(String regionName) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    
+    /**
+     * TODO Delete a region to the DB.
+     * 
+     * @param regionName
+     *      name of the region
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/terminateDatacenter
+     */
+    public void deleteRegion(String regionName) {
+        throw new RuntimeException("This function is not yet implemented");
     }
     
     /**
-     * Download SecureBundle.
+     * TODO List all database regions
      * 
-     * @param destination
-     *      file to save the securebundle
-     * 
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/listAvailableRegions
      */
-    public void downloadSecureConnectBundle(String destination) {
-        Assert.hasLength(destination, "destination");
-        
-        // HTTP CALL
-        HttpResponse<String> response;
-        try {
-            response = http()
-                    .send(req(PATH_DATABASES + "/" + databaseId + "/secureBundleURL")
-                    .POST(BodyPublishers.noBody())
-                    .build(), BodyHandlers.ofString()); 
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        
-        // If not 200, specializing errors
-        if (HttpURLConnection.HTTP_OK != response.statusCode()) {
-            LOGGER.error("Error in 'downloadSecureConnectBundle', with id={}", databaseId);
-            throw processErrors(response);
-        }
-        
-        // Download binary in target folder
-        try {
-             Utils.downloadFile((String) om()
-                  .readValue(response.body(), Map.class)
-                  .get("downloadURL"), destination);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+    public void regions() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    // ---------------------------------
+    // ----       Access List       ----
+    // ---------------------------------
+    
+    /**
+     * TODO Get access list for a database
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetAccessListForDatabase
+     */
+    public void accessLists() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Replace access list for your database.
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase
+     */
+    public void replaceAccessLists() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Update existing fields in access list for database
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpsertAccessListForDatabase
+     */
+    public void updateccessLists() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Add addresses to access list for a database
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase
+     */
+    public void addAccessList() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Delete addresses or access list for database
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteAddressesOrAccessListForDatabase
+     */
+    public void deleteAccessList() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    // ---------------------------------
+    // ----       Private Links     ----
+    // ---------------------------------
+    
+    /**
+     * TODO Get info about all private endpoint connections for a specific database
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ListPrivateLinksForOrg
+     */
+    public void privateLinks() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO  Get info about private endpoints in a region.
+     *
+     * @param region
+     *      current region where add the private link
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinksForDatacenter
+     */
+    public void privateLinks(String region) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Add an allowed principal to the service.
+     * 
+     * @param region
+     *       region where add the principal
+     * Configure a private endpoint connection by providing the allowed principal to connect with
+     */
+    public void addPrincipal(String region) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Accept a private endpoint connection.
+     * 
+     * @param region
+     *       region where add the private endpoint
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AcceptEndpointToService
+     */
+    public void addPrivateEndpoint(String region) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Get a specific endpoint.
+     *
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinkEndpoint
+     * 
+     * @param region
+     *      current region
+     * @param endpointId
+     *      endpoint id fo the region
+     * @return
+     *      the private endpoint of exist
+     */
+    public Optional<Object> findPrivateEndpoint(String region, String endpointId) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Update private endpoint description.
+     * 
+     * @param region
+     *      current region
+     * @param endpointId
+     *      endpoint id fo the region
+     * @param endpoint
+     *      new value for the endpoint
+     *     
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpdateEndpoint
+     */
+    public void updatePrivateEndpoint(String region, String endpointId, Object endpoint) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * TODO Delete private endpoint connection.
+     *
+     * @param region
+     *      current region
+     * @param endpointId
+     *      endpoint id fo the region
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteEndpoint
+     */
+    public void deletePrivateEndpoint(String region, String endpointId) {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointDatabase() {
+        return getEndpointDatabase(databaseId);
+    }
+    
+    /**
+     * Endpoint to access dbs (static)
+     *
+     * @param dbId
+     *      database identifer
+     * @return
+     *      database endpoint
+     */
+    public static String getEndpointDatabase(String dbId) {
+        return DatabasesClient.getApiDevopsEndpointDatabases() + "/" + dbId;
+    }
+    
+    /**
+     * Endpoint to access keyspace.
+     *
+     * @param keyspace
+     *      keyspace identifier
+     * @return
+     *      endpoint
+     */
+    public String getEndpointKeyspace(String keyspace) {
+        return getEndpointKeyspace(databaseId, keyspace);
+    }
+    
+    /**
+     * Endpoint to access keyspace. (static).
+     * 
+     * @param dbId
+     *      database identifer
+     * @param keyspace
+     *      keyspace identifier
+     * @return
+     *      endpoint
+     */
+    public static String getEndpointKeyspace(String dbId, String keyspace) {
+        return getEndpointDatabase(dbId) + "/keyspaces/" + keyspace;
+    }
+    
+    /**
+     * Mutualization of 202 code validation.
+     * 
+     * @param res
+     *      current response
+     * @param action
+     *      action taken
+     */
+    private void checkResponse(ApiResponseHttp res, String action) {
+        String errorMsg = new StringBuilder()
+                .append(" Cannot " + action)
+                .append(" db=" + databaseId )
+                .append(" code=" + res.getCode() )
+                .append(" msg=" + res.getBody()).toString();
+        Assert.isTrue(HTTP_ACCEPTED == res.getCode(), errorMsg);
     }
     
 }

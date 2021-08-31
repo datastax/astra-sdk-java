@@ -16,11 +16,8 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import static com.datastax.stargate.sdk.utils.Assert.hasLength;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
-import java.net.HttpURLConnection;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,9 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.stargate.sdk.core.ApiResponse;
-import com.datastax.stargate.sdk.core.ApiSupport;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
+import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.rest.domain.Keyspace;
+import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -38,13 +38,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-/**
- * Class to TODO
- *
- * @author Cedrick LUNVEN (@clunven)
- *
- */
-public class ApiDocumentClient extends ApiSupport {
+public class ApiDocumentClient {
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDocumentClient.class);
@@ -52,28 +46,51 @@ public class ApiDocumentClient extends ApiSupport {
     /** Resource for document API schemas. */
     public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
     
+    /** Resource for document API schemas. */
+    public static final String PATH_SCHEMA            = "/v2/schemas";
+    
+    /** Marshalling types. */
+    private static final TypeReference<ApiResponse<List<Namespace>>> RESPONSE_LIST_NAMESPACE = 
+            new TypeReference<ApiResponse<List<Namespace>>>(){};
+    
     /** This the endPoint to invoke to work with different API(s). */
-    protected String endPointApiDocument;
+    private final String endPointApiDocument;
+    
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+   
+    /**
+     * Initialized document API with an URL and a token.
+     * 
+     * @param endpoint
+     *      http endpoint
+     * @param token
+     *      authentication token
+     */
+    public ApiDocumentClient(String endpoint, String token) {
+        Assert.hasLength(endpoint, "endpoint");
+        Assert.hasLength(token, "token");
+        this.endPointApiDocument =  endpoint;
+        this.http = HttpApisClient.getInstance();
+        http.setToken(token);
+        LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
+    }
     
     /**
-     * Constructor for ASTRA.
+     * Invoked when working with StandAlone Stargate.
      * 
-     * @param username String
-     * @param password String
-     * @param endPointAuthentication String
-     * @param appToken String
-     * @param endPointApiDocument String
+     * @param endpoint
+     *      provide the URL
+     * @param tokenProvider
+     *      how to load the token
      */
-    public ApiDocumentClient(String username, String password, String endPointAuthentication, String appToken, String endPointApiDocument) {
-        hasLength(endPointApiDocument, "endPointApiDocument");
-        hasLength(username, "username");
-        hasLength(password, "password");
-        this.appToken               = appToken;
-        this.username               = username;
-        this.password               = password;
-        this.endPointAuthentication = endPointAuthentication;
-        this.endPointApiDocument    = endPointApiDocument;
-        LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
+    public ApiDocumentClient(String endpoint, ApiTokenProvider tokenProvider) {
+        Assert.hasLength(endpoint, "endpoint");
+        Assert.notNull(tokenProvider, "tokenProvider");
+        this.endPointApiDocument =  endpoint;
+        this.http = HttpApisClient.getInstance();
+        http.setTokenProvider(tokenProvider);
+        LOGGER.info("+ API(s) Document is [ENABLED] {}", endPointApiDocument);
     }
     
     /**
@@ -82,38 +99,15 @@ public class ApiDocumentClient extends ApiSupport {
      * @return Stream
      */
     public Stream<Namespace> namespaces() {
-        String endpoint = endPointApiDocument + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
-        
-        // Build and execute HTTP CALL
-        HttpResponse<String> response;
-        try {
-           response = httpClient.send(
-                   startRequest(endpoint, getToken()).GET().build(),
-                   BodyHandlers.ofString());
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot list namespaces", e);
-        }
-        
-        // Http Call maybe successfull returning error code
-        if (HttpURLConnection.HTTP_OK != response.statusCode()) {
-            LOGGER.error("Error in 'namespaces()' code={}", response.statusCode());
-            handleError(response);
-        } 
-        
-        // Response is 200, marshalling
-        try {
-            return objectMapper.readValue(response.body(), 
-                        new TypeReference<ApiResponse<List<Namespace>>>(){}).getData().stream();
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot Marshall output in 'namespaces()' body=" + response.body(), e);
-        } 
+        ApiResponseHttp res = http.GET(getEndpointSchemaNamespaces());
+        return unmarshallType(res.getBody(), RESPONSE_LIST_NAMESPACE).getData().stream();
     }
     
     /**
      * Return list of Namespace (keyspaces) names available.
      *
-     * @see Namespace
      * @return Stream
+     *      stream of the namespaces
      */
     public Stream<String> namespaceNames() {
         return namespaces().map(Keyspace::getName);
@@ -137,6 +131,16 @@ public class ApiDocumentClient extends ApiSupport {
      */
     public String getEndPointApiDocument() {
         return endPointApiDocument;
+    }
+
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      url to build schema for namespaces
+     */
+    public String getEndpointSchemaNamespaces() {
+        return getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
     }
 
 }

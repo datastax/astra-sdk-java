@@ -5,11 +5,29 @@ package com.datastax.astra.sdk.streaming.domain;
  */
 public class CreateTenant {
     
-    private String cloudProvider;
-    private String cloudRegion;
-    private String plan;
+    private String cloudProvider = "aws";
+    private String cloudRegion   = "useast2";
+    private String plan          = "free";
     private String tenantName;
     private String userEmail;
+    
+    /**
+     * Default Constructor.
+     */
+    public CreateTenant() {}
+    
+    /**
+     * Provide tenant Name and email.
+     * @param tenantName
+     *      tenant identifier
+     * @param email
+     *      email
+     */
+    public CreateTenant(String tenantName, String email) {
+        this.userEmail = email;
+        this.tenantName = tenantName;
+    }
+    
     /**
      * Getter accessor for attribute 'cloudProvider'.
      *

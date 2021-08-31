@@ -16,8 +16,21 @@
 
 package com.datastax.stargate.sdk.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 /**
  * Custom implementation of serialization : faster + no jackson dependency
@@ -26,6 +39,21 @@ import java.util.Map;
  */
 public class JsonUtils {
     
+    /** Object to Json marshaller as a Jackson Mapper. */
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+                .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+                .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+                .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+                .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                .setDateFormat(new SimpleDateFormat("dd/MM/yyyy"))
+                .setSerializationInclusion(Include.NON_NULL)
+                .setAnnotationIntrospector(new JacksonAnnotationIntrospector());
+    
+    /**
+     * Default constructor
+     */
     private JsonUtils() {
     }
     
@@ -153,5 +181,76 @@ public class JsonUtils {
         }
         json.append("}");
         return json.toString();
+    }
+    
+    /**
+     * Access the singletong ObjectMapper.
+     *
+     * @return
+     *      object mapper
+     */
+    public static ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+    
+    /**
+     * Transform object as a String.
+     * 
+     * @param o
+     *      object to be serialized.
+     * @return
+     *      body as String
+     */
+    public static String marshall(Object o) {
+        Objects.requireNonNull(o);
+        try {
+            return getObjectMapper().writeValueAsString(o);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall object " + o, e);
+        } 
+    }
+    
+    /**
+     * Load body as expected object.
+     * 
+     * @param <T>
+     *      parameter
+     * @param body
+     *      response body as String
+     * @param ref
+     *      type Reference to map the result
+     * @return
+     *      expected object
+     */
+    public static <T> T unmarshallType(String body, TypeReference<T> ref) {
+        try {
+            return getObjectMapper().readValue(body, ref);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException("Cannot unmarshall object " + body, e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot unmarshall object " + body, e);
+        }
+    }
+    
+    /**
+     * Load body as expected object.
+     * 
+     * @param <T>
+     *      parameter
+     * @param body
+     *      response body as String
+     * @param ref
+     *      type Reference to map the result
+     * @return
+     *       expected objects
+     */
+    public static <T> T unmarshallBean(String body, Class<T> ref) {
+        try {
+            return getObjectMapper().readValue(body, ref);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException("Cannot unmarshall object " + body, e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot unmarshall object " + body, e);
+        }
     }
 }

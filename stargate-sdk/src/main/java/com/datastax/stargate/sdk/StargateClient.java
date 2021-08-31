@@ -30,10 +30,14 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.datastax.stargate.sdk.core.ApiTokenProvider;
+import com.datastax.stargate.sdk.core.TokenProviderDefault;
+import com.datastax.stargate.sdk.core.TokenProviderStatic;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
-import com.datastax.stargate.sdk.graphql.ApiGraphQLClient;
-import com.datastax.stargate.sdk.rest.ApiRestClient;
+import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
+import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.Utils;
 
 /**
@@ -62,6 +66,14 @@ public class StargateClient implements Closeable {
     public static final String STARGATE_KEYSPACE         = "STARGATE_KEYSPACE";
     public static final String STARGATE_ENABLE_CQL       = "STARGATE_ENABLE_CQL";
     
+    public static final String DEFAULT_REST_URL          = "http://localhost:8082";
+    public static final String DEFAULT_GRAPHQL_URL       = "http://localhost:8080";
+   
+    public static final String DEFAULT_CONTACT_POINT     = "localhost:9042";
+    public static final String DEFAULT_DATACENTERNAME    = "dc1";
+  
+    public static final int    DEFAULT_TIMEOUT_TOKEN     = 300;
+    
     // -----------------------------------------------
     // Attributes to be populated by BUILDER
     // Api(s) to initialize based on those values
@@ -71,7 +83,7 @@ public class StargateClient implements Closeable {
     private ApiDocumentClient apiDoc;
     
     /** Hold a reference for the ApiRest. */
-    private ApiRestClient apiRest;
+    private ApiDataClient apiRest;
     
     /** Hold a reference for the ApiGraphQL. */
     private ApiGraphQLClient apiGraphQL;
@@ -91,7 +103,7 @@ public class StargateClient implements Closeable {
      * Accessing Rest API
      * @return ApiRestClient
      */
-    public ApiRestClient apiRest() {
+    public ApiDataClient apiRest() {
         return apiRest;
     }
     
@@ -112,35 +124,32 @@ public class StargateClient implements Closeable {
     }
     
     /**
-     * You can create on of {@link ApiDocumentClient}, {@link ApiRestClient}, {@link ApiDevopsClient}, {@link ApiCqlClient} with
+     * You can create on of {@link ApiDocumentClient}, {@link ApiDataClient}, {@link ApiDevopsClient}, {@link ApiCqlClient} with
      * a constructor. The full flegde constructor would took 12 pararms.
      */
     private StargateClient(StargateClientBuilder builder) {
         LOGGER.info("Initializing [StargateClient]");
         
-        if (Utils.paramsProvided(builder.username, builder.password, builder.endPointRest)) {
-            
-            apiDoc = new ApiDocumentClient(builder.username, 
-                    builder.password, 
-                    builder.endPointAuthentication, 
-                    builder.appToken,
-                    builder.endPointRest);
-        
-            apiRest = new ApiRestClient(builder.username, 
-                    builder.password, 
-                    builder.endPointAuthentication,
-                    builder.appToken,
-                    builder.endPointRest);
+        // Base on provided parameters we choose token provider
+        ApiTokenProvider tokenProvider = null; 
+        if (Utils.paramsProvided(builder.username, builder.password, builder.endPointAuthentication)) {
+            tokenProvider = new TokenProviderDefault(builder.username, builder.password, builder.endPointAuthentication);
         }
-        
-        if (Utils.paramsProvided(builder.username, builder.password, builder.endPointGraphQL)) {
-            apiGraphQL = new ApiGraphQLClient(builder.username, 
-                    builder.password, 
-                    builder.endPointAuthentication, 
-                    builder.appToken,
-                    builder.endPointGraphQL);
-        }   
-        
+        if (Utils.paramsProvided(builder.appToken)) {
+            tokenProvider = new TokenProviderStatic(builder.appToken);
+        }
+        if (tokenProvider != null) {
+            HttpApisClient.getInstance().setTokenProvider(tokenProvider);
+        }
+        // Document API and Data API
+        if (tokenProvider != null && builder.endPointRest != null) {
+            apiDoc  = new ApiDocumentClient(builder.endPointRest, tokenProvider);
+            apiRest = new ApiDataClient(builder.endPointRest, tokenProvider);
+        }
+        // GraphQL API
+        if (tokenProvider != null && builder.endPointGraphQL != null) {
+            apiGraphQL = new ApiGraphQLClient(builder.endPointGraphQL,tokenProvider);
+        }
         // For security reason you want to disable CQL
         if (builder.enableCql) {
             if (Utils.paramsProvided(builder.username, builder.password)) {
@@ -149,7 +158,6 @@ public class StargateClient implements Closeable {
                         .withAuthCredentials(builder.username, builder.password);
                 
                 if (Utils.paramsProvided(builder.keyspaceName)) {
-                    LOGGER.info("Using Keyspace {}", builder.keyspaceName);
                     cqlSessionBuilder = cqlSessionBuilder.withKeyspace(builder.keyspaceName);
                 }
                 // Overriding contactPoints/LocalDataCenter when using ASTRA settings
@@ -168,7 +176,10 @@ public class StargateClient implements Closeable {
                 
                 // Sanity Check query
                 cqlSession.execute("SELECT data_center from system.local");
-                LOGGER.info("+ Cql API: Enabled");
+                LOGGER.info("+ API(s) Cql is [ENABLED]");
+                if (cqlSession.getKeyspace().isPresent()) {
+                    LOGGER.info("+ Keyspace {}", cqlSession.getKeyspace().get());
+                }
                 
                 // As we opened a cqlSession we may want to close it properly at application shutdown.
                 Runtime.getRuntime().addShutdownHook(new Thread() { 
@@ -181,7 +192,7 @@ public class StargateClient implements Closeable {
                 });
             }
         } else {
-            LOGGER.info("+ Cql API: Disabled");
+            LOGGER.info("+ API(s) Cql is [DISABLED]");
         }
         LOGGER.info("[StargateClient] has been initialized");
     }
@@ -218,28 +229,29 @@ public class StargateClient implements Closeable {
      * Builder pattern
      */
     public static class StargateClientBuilder {
-        /** Username - required all the time */
-        private String username = "cassandra";
-        /** Password - required all the time */
-        private String password = "cassandra";
+        public String username = TokenProviderDefault.DEFAULT_USERNAME;
+        /** This the endPoint to invoke to work with different API(s). */
+        public String password = TokenProviderDefault.DEFAULT_PASSWORD;
+        /** This the endPoint to invoke to work with different API(s). */
+        public String endPointAuthentication = TokenProviderDefault.DEFAULT_AUTH_URL;
         /** if provided the authentication URL is not use to get token. */
-        private String appToken = null;
+        public String appToken = null;
         /** This the endPoint to invoke to work with different API(s). */
-        private String endPointAuthentication = "http://localhost:8081";
+        public String endPointRest = DEFAULT_REST_URL;
         /** This the endPoint to invoke to work with different API(s). */
-        private String endPointRest = "http://localhost:8082";
-        /** This the endPoint to invoke to work with different API(s). */
-        private String endPointGraphQL = "http://localhost:8080";
+        public String endPointGraphQL = DEFAULT_GRAPHQL_URL;
         /** If this flag is disabled no CQL session will be created. */
-        private boolean enableCql = true;
+        public boolean enableCql = true;
         /** working with local Cassandra. */
-        private List<String> endPointCql = new ArrayList<>(Arrays.asList("localhost:9042"));
+        public List<String> endPointCql = new ArrayList<>(Arrays.asList(DEFAULT_CONTACT_POINT));
         /** Local data center. */
-        private String localDataCenter = "dc1";
+        public String localDataCenter = DEFAULT_DATACENTERNAME;
         /** Optional Keyspace to enable CqlSession. */
-        private String keyspaceName; 
+        public String keyspaceName; 
         /** SecureCloudBundle (ASTRA ONLY) overriding. */
-        private String astraCloudSecureBundle = null;
+        public String astraCloudSecureBundle = null;
+        /** Token timeout in seconds (not used with Astra). */
+        public int tokenTimeToLiveSeconds = DEFAULT_TIMEOUT_TOKEN;
           
         /**
          * Load defaults from Emvironment variables
@@ -313,7 +325,7 @@ public class StargateClient implements Closeable {
             this.localDataCenter = localDc;
             return this;
         }
-        public StargateClientBuilder keypace(String keyspace) {
+        public StargateClientBuilder keyspace(String keyspace) {
             Assert.hasLength(keyspace, "keyspace");
             this.keyspaceName = keyspace;
             return this;
@@ -336,6 +348,11 @@ public class StargateClient implements Closeable {
         public StargateClientBuilder astraCloudSecureBundle(String bundle) {
             Assert.hasLength(bundle, "bundle");
             this.astraCloudSecureBundle = bundle;
+            return this;
+        }
+        public StargateClientBuilder tokenTimeToLive(int timeout) {
+            Assert.isTrue(timeout>0,  "Timeout should be a positive number");
+            this.tokenTimeToLiveSeconds = timeout;
             return this;
         }
         

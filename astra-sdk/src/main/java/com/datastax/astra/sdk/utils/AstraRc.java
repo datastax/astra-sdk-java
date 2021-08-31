@@ -17,9 +17,12 @@
 package com.datastax.astra.sdk.utils;
 
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_APPLICATION_TOKEN;
+import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_CLIENT_ID;
+import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_CLIENT_SECRET;
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_ID;
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_KEYSPACE;
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_REGION;
+import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_SECURE_BUNDLE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,16 +33,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.databases.domain.DatabaseFilter;
-import com.datastax.astra.sdk.databases.domain.DatabaseFilter.Include;
 
 /**
  * Utility class to load/save .astrarc file. This file is used to store
@@ -60,7 +61,7 @@ public class AstraRc {
     public static final String ENV_USER_HOME      = "user.home";
     public static final String ENV_LINE_SEPERATOR = "line.separator";
     
-    /** Sections in the file. [sectionName] key/Value. */
+    /** Sections in the file. [sectionName] -> key=Value. */
     private final Map <String, Map<String, String>> sections;
     
     /**
@@ -255,6 +256,7 @@ public class AstraRc {
      */
     private static String generateFileContent(Map <String, Map<String, String>> astraRc) {
         StringBuilder sb = new StringBuilder();
+        // Put 'default' at first position in the file
         if (astraRc.containsKey(ASTRARC_DEFAULT)) {
             sb.append("[" + ASTRARC_DEFAULT + "]");
             sb.append(System.getProperty(ENV_LINE_SEPERATOR));
@@ -280,27 +282,23 @@ public class AstraRc {
     }
    
     /**
-     * Generate expecting key in the file
+     * Use Astra Devops Api to list databases.
      * 
      * @param devopsClient ApiDevopsClient
      */
     private static Map <String, Map<String, String>> extractDatabasesInfos(DatabasesClient devopsClient) {
-        // Look for 'all' (limit 100), non terminated DB
-        List<Database> dbs = devopsClient.searchDatabases(DatabaseFilter.builder()
-                .limit(100)
-                .provider(CloudProviderType.ALL)
-                .include(Include.NON_TERMINATED)
-                .build()).collect(Collectors.toList());
+        // Look for 'non terminated DB' (limit 100), 
+        List<Database> dbs = devopsClient.databasesNonTerminated().collect(Collectors.toList());
         
         // [default]
         Map <String, Map<String, String>> result = new HashMap<>();
-        result.put(ASTRARC_DEFAULT, new HashMap<>());
+        result.put(ASTRARC_DEFAULT, new TreeMap<>());
         result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getToken());
         if (dbs.size() > 0) {
             result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getToken()));
         }
         // Loop on each database
-        dbs.stream().forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getToken())));
+        dbs.forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getToken())));
         return result;
     }
     
@@ -317,6 +315,9 @@ public class AstraRc {
         dbKeys.put(ASTRA_DB_REGION, db.getInfo().getRegion());
         dbKeys.put(ASTRA_DB_KEYSPACE, db.getInfo().getKeyspace());
         dbKeys.put(ASTRA_DB_APPLICATION_TOKEN, token);
+        dbKeys.put(ASTRA_DB_CLIENT_ID, "");
+        dbKeys.put(ASTRA_DB_CLIENT_SECRET, "");
+        dbKeys.put(ASTRA_DB_SECURE_BUNDLE, "");
         return dbKeys;
     }
 

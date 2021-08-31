@@ -23,22 +23,24 @@ import java.util.Optional;
  */
 public class DatabaseFilter {
     
-    /** */
+    /** default limit */
     public static final int DEFAULT_LIMIT = 25;
     
-    /** */
+    /** limit. */
     private final int limit;
     
-    /** */
+    /** param offset. */
     private final String startingAfterDbId;
     
-    /** */
+    /** should include non terminated.. */
     private final Include include;
     
-    /** */
+    /** the providers to include. */
     private final CloudProviderType provider;
     
-    /** */
+    /**
+     * Default constructor.
+     */
     public DatabaseFilter() {
         DatabaseFilter f = DatabaseFilter.builder().build();
         if (f.getStartingAfterDbId().isPresent()) {
@@ -50,9 +52,18 @@ public class DatabaseFilter {
         this.include           = f.getInclude();
         this.provider          = f.getProvider();
     }
-    
+   
     /**
+     * Full constructor.
      * 
+     * @param limit
+     *      limit to the number of db returned
+     * @param i
+     *      which db to inclue
+     * @param p
+     *      which cloud providers to provide
+     * @param startingAfter
+     *      when to start
      */
     public DatabaseFilter(int limit, Include i, CloudProviderType p, String startingAfter) {
         this.startingAfterDbId = startingAfter;
@@ -61,15 +72,19 @@ public class DatabaseFilter {
         this.provider          = p;
     }
     
+  
     /**
-     * 
+     * Build the URL based on current parameters.
+     *
+     * @return
+     *      target url to retrieved databases.
      */
     public String urlParams() {
-        StringBuilder sbURL = new StringBuilder("/databases?")
+        StringBuilder sbURL = new StringBuilder("?")
                 .append("include=" + getInclude().name().toLowerCase())
                 .append("&provider=" + getProvider().name().toLowerCase())
                 .append("&limit=" + getLimit());
-        if (!getStartingAfterDbId().isEmpty()) {
+        if (getStartingAfterDbId().isPresent()) {
             sbURL.append("&starting_after=" + getStartingAfterDbId().get());
         }
         return sbURL.toString();
@@ -86,14 +101,20 @@ public class DatabaseFilter {
         RESIZING,ERROR,MAINTENANCE;
     }
     
+    
     /**
-     * 
+     * Helper to create a builder.
+     *
+     * @return
+     *      an instance of the builder
      */
     public static DatabaseFilterBuilder builder() {
         return new DatabaseFilterBuilder();
     }
     
-    /** 
+    /**
+     * Builder.
+     *
      * @author Cedrick LUNVEN (@clunven)
      */
     public static class DatabaseFilterBuilder {
@@ -108,16 +129,27 @@ public class DatabaseFilter {
         
         public DatabaseFilterBuilder() {}
         
+       
         /**
-         * 
+         * Define the limit.
+         *
+         * @param l
+         *      the value for limit
+         * @return
+         *      this instance.
          */
         public DatabaseFilterBuilder limit(int l) {
             this.limit = l;
             return this;
         }
-
+        
         /**
-         * 
+         * Define the dbId.
+         *
+         * @param dbId
+         *      the value for dbId
+         * @return
+         *      this instance.
          */
         public DatabaseFilterBuilder startingAfterDbId(String dbId) {
             this.startingAfterDbId = dbId;
@@ -125,7 +157,12 @@ public class DatabaseFilter {
         }
 
         /**
-         * 
+         * Define the CloudProviderType.
+         *
+         * @param p
+         *      the value for CloudProviderType
+         * @return
+         *      this instance.
          */
         public DatabaseFilterBuilder provider(CloudProviderType p) {
             this.provider = p;
@@ -133,15 +170,24 @@ public class DatabaseFilter {
         }
 
         /**
-         * 
+         * Define the Include.
+         *
+         * @param i
+         *      the value for Include
+         * @return
+         *      this instance.
          */
         public DatabaseFilterBuilder include(Include i) {
             this.include = i;
             return this;
         }
 
+        
         /**
-         * 
+         * Builld the immutable instance.
+         *
+         * @return
+         *      an instance of Database filter
          */
         public DatabaseFilter build() {
             return new DatabaseFilter(limit, include, provider, startingAfterDbId);

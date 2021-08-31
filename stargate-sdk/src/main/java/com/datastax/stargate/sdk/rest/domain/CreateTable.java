@@ -46,6 +46,7 @@ public class CreateTable implements Serializable {
     
     private CreateTable(CreateTableBuilder builder) {
         this.ifNotExists = builder.ifNotExists;
+        this.name        = builder.name;
         builder.pk.entrySet().stream().forEach(pk -> {
             columnDefinitions.add(pk.getValue());
             primaryKey.getPartitionKey().add(pk.getKey());
@@ -69,6 +70,8 @@ public class CreateTable implements Serializable {
      */
     public static class CreateTableBuilder {
         
+        private String name;
+        
         private boolean ifNotExists = false;
         
         private Map<String, ColumnDefinition> pk = new HashMap<>();
@@ -78,6 +81,11 @@ public class CreateTable implements Serializable {
         private Map<String, Ordering>  ccOrder = new HashMap<>();
         
         private Map<String, ColumnDefinition> cols = new HashMap<>();
+        
+        public CreateTableBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
         
         public CreateTableBuilder ifNotExist(boolean ine) {
             this.ifNotExists = ine;

@@ -1,17 +1,20 @@
 package com.datastax.astra.sdk.streaming;
 
-import java.net.HttpURLConnection;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.datastax.astra.sdk.streaming.domain.Cluster;
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.utils.ApiLocator;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -19,24 +22,57 @@ import com.fasterxml.jackson.core.type.TypeReference;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StreamingClient extends ApiDevopsSupport {
+public class StreamingClient {
 
     /** Constants. */
     public static final String PATH_STREAMING  = "/streaming";
     public static final String PATH_TENANTS    = "/tenants";
     public static final String PATH_PROVIDERS  = "/providers";
+    public static final String PATH_CLUSTERS   = "/clusters";
     
-    // MAP TENANT
+    /** Marshalling beans */
+    private static final TypeReference<List<Tenant>> TYPE_LIST_TENANTS = 
+            new TypeReference<List<Tenant>>(){};
+    private static final TypeReference<List<Cluster>> TYPE_LIST_CLUSTERS = 
+                    new TypeReference<List<Cluster>>(){};
+    
+    /** Singletong for tenants. */
     private Map<String, TenantClient> cacheTenants = new HashMap<>();
+                    
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** hold a reference to the bearer token. */
+    private final String bearerAuthToken;
     
     /**
-     * Full constructor.
-     * @param token
-     *      authenticated user
+     * As immutable object use builder to initiate the object.
+     * 
+     * @param client
+     *      Http Client
      */
-    public StreamingClient(String token) {
-       super(token);
+    public StreamingClient(HttpApisClient client) {
+        this.http = client;
+        Assert.notNull(client, "Http Client");
+        this.bearerAuthToken = client.getToken();
     }
+    
+    /**
+     * As immutable object use builder to initiate the object.
+     * 
+     * @param bearerAuthToken
+     *      authenticated token
+     */
+    public StreamingClient(String bearerAuthToken) {
+       this.bearerAuthToken = bearerAuthToken;
+       this.http = HttpApisClient.getInstance();
+       Assert.hasLength(bearerAuthToken, "bearerAuthToken");
+       http.setToken(bearerAuthToken);
+    } 
+    
+    // ---------------------------------
+    // ----         Tenants         ----
+    // ---------------------------------
     
     /**
      * Operations on tenants.
@@ -49,7 +85,7 @@ public class StreamingClient extends ApiDevopsSupport {
     public TenantClient tenant(String tenantName) {
         Assert.hasLength(tenantName, "tenantName");
         if (!cacheTenants.containsKey(tenantName)) {
-            cacheTenants.put(tenantName, new TenantClient(bearerAuthToken, tenantName));
+            cacheTenants.put(tenantName, new TenantClient(this, tenantName));
         }
         return cacheTenants.get(tenantName); 
     }
@@ -61,22 +97,8 @@ public class StreamingClient extends ApiDevopsSupport {
      *      list of tenants.
      */
     public Stream<Tenant> tenants() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http()
-                    .send(req(PATH_STREAMING + PATH_TENANTS)
-                    .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om()
-                        .readValue(res.body(), new TypeReference<List<Tenant>>(){})
-                        .stream();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'Tenants'");
-        throw processErrors(res);
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointTenants());
+        return unmarshallType(res.getBody(), TYPE_LIST_TENANTS).stream();
     }
     
     /**
@@ -89,6 +111,10 @@ public class StreamingClient extends ApiDevopsSupport {
         tenant(ct.getTenantName()).create(ct);
     }
     
+    // ---------------------------------
+    // ----       Providers         ----
+    // ---------------------------------
+    
     /**
      * Operations on providers.
      * 
@@ -97,20 +123,89 @@ public class StreamingClient extends ApiDevopsSupport {
      */
     @SuppressWarnings("unchecked")
     public Map<String, List<String>> providers() {
-        HttpResponse<String> res;
-        try {
-            // Invocation (no marshalling yet)
-            res = http()
-                    .send(req(PATH_STREAMING + PATH_PROVIDERS)
-                    .GET().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_OK == res.statusCode()) {
-                return om()
-                        .readValue(res.body(), Map.class);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        LOGGER.error("Error in 'providers'");
-        throw processErrors(res);
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointProviders());
+        return unmarshallBean(res.getBody(), Map.class);
+    }
+    
+    // ---------------------------------
+    // ----       Clusters          ----
+    // ---------------------------------
+    
+    /**
+     * Operations on clusters.
+     * 
+     * @return
+     *      list  clusters.
+     */
+    public Stream<Cluster> clusters() {
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointClusters());
+        return unmarshallType(res.getBody(), TYPE_LIST_CLUSTERS).stream();
+    }
+    
+    /**
+     * Operations on tenants.
+     * 
+     * @param clusterName
+     *      current cluster identifier
+     * @return
+     *      client specialized for the tenant
+     */
+    public ClusterClient cluster(String clusterName) {
+        Assert.hasLength(clusterName, "tenantName");
+        return new ClusterClient(this, clusterName); 
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointStreaming() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_STREAMING;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointTenants() {
+        return getApiDevopsEndpointStreaming() + PATH_TENANTS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointProviders() {
+        return getApiDevopsEndpointStreaming() + PATH_PROVIDERS;
+    }
+    
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointClusters() {
+        return getApiDevopsEndpointStreaming() + PATH_CLUSTERS;
+    }
+    
+    /**
+     * Access to the current authentication token.
+     *
+     * @return
+     *      authentication token
+     */
+    public String getToken() {
+       return bearerAuthToken;
     }
 }

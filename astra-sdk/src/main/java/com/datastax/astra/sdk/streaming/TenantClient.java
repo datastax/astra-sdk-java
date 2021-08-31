@@ -1,44 +1,69 @@
 package com.datastax.astra.sdk.streaming;
 
-import static com.datastax.stargate.sdk.core.ApiSupport.handleError;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.net.HttpURLConnection;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.apache.pulsar.client.admin.PulsarAdmin;
+import org.apache.pulsar.client.api.AuthenticationFactory;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.PulsarClientException;
 
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
-import com.datastax.astra.sdk.utils.ApiDevopsSupport;
+import com.datastax.astra.sdk.streaming.domain.TenantLimit;
+import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Cedrick LUNVEN (@clunven)
  */
-public class TenantClient extends ApiDevopsSupport {
-
-    /** Constants. */
-    public static final String PATH_TENANT     = "/tenants";
+public class TenantClient {
     
+    /** Tenant Identifier. */
     private final String tenantId;
     
-    @SuppressWarnings("unused")
-    private final String resourceSuffix;
+    /** Wrapper handling header and error management as a singleton. */
+    private final HttpApisClient http;
+    
+    /** Streaming client. */
+    private final StreamingClient streamClient;
+    
+    /** we woudl like to use client and admin as singletong for a tenant. */
+    private PulsarClient pulsarClient;
+    
+    /** we woudl like to use client and admin as singletong for a tenant. */
+    private PulsarAdmin pulsarAdmin;
+    
+    /** Load Database responses. */
+    private static final TypeReference<List<TenantLimit>> TYPE_LIST_LIMIT =  
+            new TypeReference<List<TenantLimit>>(){};
    
     /**
-     * Full constructor.
-     * 
-     * @param token
-     *      token
-     * @param tenant
-     *      tenant
+     * Default constructor.
+     *
+     * @param client
+     *          streaming client
+     *        
+     * @param tenantId
+     *          unique tenantId identifier
      */
-    public TenantClient(String token, String tenant) {
-       super(token);
-       this.tenantId = tenant;
-       this.resourceSuffix = StreamingClient.PATH_STREAMING + PATH_TENANT + "/" + tenantId;
-       Assert.hasLength(tenantId, "tenantName");
+    public TenantClient(StreamingClient client, String tenantId) {
+       this.streamClient = client;
+       this.http         = HttpApisClient.getInstance();
+       this.tenantId  = tenantId;
+       Assert.hasLength(tenantId, "tenantId");
     }
+    
+    // ---------------------------------
+    // ----       CRUD              ----
+    // ---------------------------------
     
     /**
      * Find a tenant from ids name.
@@ -47,10 +72,9 @@ public class TenantClient extends ApiDevopsSupport {
      *      tenant
      */
     public Optional<Tenant> find() {
-        return new StreamingClient(bearerAuthToken)
-                        .tenants()
-                        .filter(t -> t.getTenantName().equalsIgnoreCase(tenantId))
-                        .findFirst();
+        return streamClient.tenants()
+                           .filter(t -> t.getTenantName().equalsIgnoreCase(tenantId))
+                           .findFirst();
     }
     
     /**
@@ -60,40 +84,141 @@ public class TenantClient extends ApiDevopsSupport {
      *      if the tenant exist
      */
     public boolean exist() {
-        return find().isPresent();
+        return http.HEAD(getEndpointTenant()).getCode() == HttpURLConnection.HTTP_OK;
     }
     
     /**
-     * Create a new tenant.
+     * TODO Create a new tenant.
      *
      * @param ct
      *      tenant creation request
      */
     public void create(CreateTenant ct) {
-        // TODO
+        Assert.notNull(ct, "Create Tenant request");
+        ct.setTenantName(tenantId);
+        http.POST(StreamingClient.getApiDevopsEndpointTenants(), marshall(ct));
     }
     
     /**
      * Deleting a tenant and cluster.
-     *
-     * @param clusterId
-     *      cluster identifier
      */
-    public void delete(String clusterId) {
-        if (!exist()) {
+    public void delete() {
+        Optional< Tenant > opt = find();
+        if (!opt.isPresent()) {
             throw new RuntimeException("Tenant '"+ tenantId + "' has not been found");
         }
-        HttpResponse<String> response;
-        try {
-            response = http().send(req(resourceSuffix + "/clusters/" + clusterId)
-                     .DELETE().build(), BodyHandlers.ofString());
-            if (HttpURLConnection.HTTP_NO_CONTENT == response.statusCode()) {
-                return;
+        http.DELETE(getEndpointCluster(opt.get().getClusterName()));
+    }
+    
+    /**
+     * FIXME This endpoint does not work on ASTRA
+     * @return
+     *      the list of limits
+     */
+    public Stream<TenantLimit> limits() {
+        ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits");
+        return unmarshallType(res.getBody(), TYPE_LIST_LIMIT).stream();
+    }
+    
+    // ---------------------------------
+    // ----      PulsarClient       ----
+    // ---------------------------------
+    
+    /**
+     * Create a client.
+     * 
+     * @return
+     *      pulsar client.
+     */
+    public PulsarClient pulsarClient() {
+        if (pulsarClient == null) {
+            Optional<Tenant> tenant = find();
+            if (!tenant.isPresent()) {
+                throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot invoke API to delete a tenant", e);
+            try {
+                pulsarClient = PulsarClient.builder()
+                        .serviceUrl(tenant.get().getBrokerServiceUrl())
+                        .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
+                        .build();
+            } catch (PulsarClientException e) {
+                throw new IllegalArgumentException("Cannot connect to pulsar", e); 
+            }
         }
-        handleError(response);
+        return pulsarClient;
+    }
+    
+    // ---------------------------------
+    // ----      Pulsar Admin       ----
+    // ---------------------------------
+    
+    /**
+     * Create pulsar admin.
+     *
+     * @return
+     *      pulsar admin
+     */
+    public PulsarAdmin pulsarAdmin() {
+        if (pulsarAdmin == null) {
+            Optional<Tenant> tenant = find();
+            if (!tenant.isPresent()) {
+                throw new IllegalArgumentException("Tenant " + tenantId + " cannot be found");
+            }
+            try {
+                pulsarAdmin = PulsarAdmin.builder()
+                   .allowTlsInsecureConnection(false)
+                   .enableTlsHostnameVerification(true)
+                   .useKeyStoreTls(false)
+                   .tlsTrustStoreType("JKS")
+                   .tlsTrustStorePath("")
+                   .tlsTrustStorePassword("")
+                   .serviceHttpUrl(tenant.get().getWebServiceUrl())
+                   .authentication(AuthenticationFactory.token(tenant.get().getPulsarToken()))
+                   .build();
+            } catch (PulsarClientException e) {
+                throw new IllegalArgumentException("Cannot use Pulsar admin", e);
+            }
+        }
+        return pulsarAdmin;
+    }
+    
+    // ---------------------------------
+    // ----       Utilities         ----
+    // ---------------------------------
+    
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointTenant() {
+        return getEndpointTenant(tenantId);
+    }
+    
+    /**
+     * Endpoint to access cluster.
+     *
+     * @param clusterId
+     *      identifier for the cluster.
+     *     
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointCluster(String clusterId) {
+        return getEndpointTenant() + "/clusters/" + clusterId;
+    }
+    
+    /**
+     * Endpoint to access dbs (static)
+     *
+     * @param tenant
+     *      tenant identifer
+     * @return
+     *      database endpoint
+     */
+    public static String getEndpointTenant(String tenant) {
+        return StreamingClient.getApiDevopsEndpointTenants() + "/" + tenant;
     }
     
 
