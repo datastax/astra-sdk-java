@@ -207,7 +207,6 @@ public class DatabasesIntegrationTest extends AbstractAstraIntegrationTest {
     @Test
     @Order(8)
     public void should_create_keyspaces() {
-        client.apiDevopsDatabases().database("your_id").createKeyspace("ks2");
         printYellow("[POST] Adds keyspace into database");
         // Given
         DatabasesClient cli = new DatabasesClient(client.getToken().get());

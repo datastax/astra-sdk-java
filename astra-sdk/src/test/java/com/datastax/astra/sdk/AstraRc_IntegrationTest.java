@@ -45,7 +45,7 @@ public class AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
         Assertions.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
         printOK("File Deleted if exist");
         // When
-        AstraRc.create(client.apiDevopsDatabases());
+        AstraRc.create(client.getToken().get());
         printOK("File Created");
         // Then
         Assertions.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());

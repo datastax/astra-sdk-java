@@ -136,8 +136,18 @@ public class AstraRc {
      *
      * @param devopsClient ApiDevopsClient
      */
-    public static void create(DatabasesClient devopsClient) {
-        save(extractDatabasesInfos(devopsClient));
+    public static void create(String token) {
+        save(extractDatabasesInfos(token));
+    }
+    
+    /**
+     * Generate astrarc based on values in DB using devops API.
+     *
+     * @param devopsClient ApiDevopsClient
+     * @param destination  output to save the values
+     */
+    public static void create(String token, File destination) {
+        save(extractDatabasesInfos(token), destination);
     }
   
     /**
@@ -161,8 +171,7 @@ public class AstraRc {
      * @param astraRc
      *      update .astrarc file. 
      */
-    public static void save(Map <String, Map<String, String>> astraRc) {
-        LOGGER.info("Updating .astrarc file");
+    public static void save(Map <String, Map<String, String>> astraRc, File destination) {
         // This map is empty if file does not exist
         Map <String, Map<String, String>> targetAstraRc = astraRc;
         
@@ -181,16 +190,12 @@ public class AstraRc {
                 LOGGER.info("+ updating [" + dbName + "]");
             }
         }
-            
-        // Generate expected file
-        File outFile = new File(System.getProperty(ENV_USER_HOME) 
-                + File.separator 
-                + ASTRARC_FILENAME);
+       
         FileWriter out = null;
         try {
-            out = new FileWriter(outFile);
+            out = new FileWriter(destination);
             out.write(generateFileContent(targetAstraRc));
-            LOGGER.info("File {} has been successfully updated.", outFile.getAbsolutePath());
+            LOGGER.info("File {} has been successfully updated.", destination.getAbsolutePath());
         } catch (IOException e) {
             throw new IllegalStateException("Cannot save astrarc file", e);
         } finally {
@@ -198,6 +203,19 @@ public class AstraRc {
                 try { out.close(); } catch (IOException e) {}
             }
         }
+    }
+    
+    /**
+     * Create the file from a list of key, merging with existing
+     *
+     * @param astraRc
+     *      update .astrarc file. 
+     */
+    public static void save(Map <String, Map<String, String>> astraRc) {
+        LOGGER.info("Updating .astrarc file");
+        save(astraRc, new File(System.getProperty(ENV_USER_HOME) 
+                + File.separator 
+                + ASTRARC_FILENAME)); 
     }
     
     /*
@@ -286,19 +304,20 @@ public class AstraRc {
      * 
      * @param devopsClient ApiDevopsClient
      */
-    private static Map <String, Map<String, String>> extractDatabasesInfos(DatabasesClient devopsClient) {
+    private static Map <String, Map<String, String>> extractDatabasesInfos(String token) {
         // Look for 'non terminated DB' (limit 100), 
-        List<Database> dbs = devopsClient.databasesNonTerminated().collect(Collectors.toList());
+        
+        List<Database> dbs = new DatabasesClient(token).databasesNonTerminated().collect(Collectors.toList());
         
         // [default]
         Map <String, Map<String, String>> result = new HashMap<>();
         result.put(ASTRARC_DEFAULT, new TreeMap<>());
-        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, devopsClient.getToken());
+        result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, token);
         if (dbs.size() > 0) {
-            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), devopsClient.getToken()));
+            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0),token));
         }
         // Loop on each database
-        dbs.forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, devopsClient.getToken())));
+        dbs.forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, token)));
         return result;
     }
     

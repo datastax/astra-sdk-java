@@ -27,6 +27,8 @@ public enum DatabaseStatusType {
     /** */
     ERROR,
     /** */
+    HIBERNATED,
+    /** */
     INITIALIZING,
     /** */
     MAINTENANCE,
