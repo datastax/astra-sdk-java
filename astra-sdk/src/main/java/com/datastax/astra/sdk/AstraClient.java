@@ -380,10 +380,20 @@ public class AstraClient implements Closeable {
             } else if (Utils.hasLength(System.getenv(ASTRA_DB_CLIENT_SECRET))) {
                 this.clientSecret = System.getenv(ASTRA_DB_CLIENT_SECRET);
             }
-        }   
+        } 
         
         /**
-         * astraRc
+         * Load the default ~/.astrarc file and load section X.
+         *
+         * @param sectionName
+         * @return
+         */
+        public AstraClientBuilder astraRc(String sectionName) {
+            return astraRc(AstraRc.load(), sectionName);
+        }
+        
+        /**
+         * Some settings can be loaded from ~/.astrarc in you machine.
          * 
          * @param arc AstraRc
          * @param sectionName String
