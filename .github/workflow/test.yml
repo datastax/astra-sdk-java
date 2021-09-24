@@ -2,7 +2,7 @@ name: SDK Tests
 on:
   pull_request:
     branches:
-      - master
+      - main
 jobs:
   sdk-tests:
     env:
