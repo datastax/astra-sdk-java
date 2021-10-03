@@ -185,6 +185,68 @@ public class CollectionClient {
         
         return count.get();
     }
+
+    /**
+     * This function will retrieve all documents in the Collection.
+     * 
+     * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     * 
+     * @param <DOC>
+     *      generic for working bean
+     * @param beanClass
+     *      class for working bean 
+     * @return
+     *      all items in the the collection
+     */
+    public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
+        List<ApiDocument<DOC>> documents = new ArrayList<>();
+        // Loop on pages up to no more pages (could be done)
+        String pageState = null;
+        do {
+            DocumentResultPage<DOC> pageX = findPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
+            if (pageX.getPageState().isPresent())  {
+                pageState = pageX.getPageState().get();
+            } else {
+                pageState = null;
+            }
+            documents.addAll(pageX.getResults());
+        } while(pageState != null);
+        return documents.stream();
+    }
+    
+    /**
+     * Find all document matching the query.
+     * 
+     *  <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     * 
+     * @param <DOC>
+     *       generic for working bean
+     * @param query
+     *          list of filters
+     * @param beanClass
+     *          class for working bean  
+     * @return
+     *          all items matchin criteria
+     */
+    public <DOC> Stream<ApiDocument<DOC>> findAll(SearchDocumentQuery query, Class<DOC> beanClass) {
+        List<ApiDocument<DOC>> documents = new ArrayList<>();
+        // Loop on pages up to no more pages (could be done)
+        String pageState = null;
+        do {
+            DocumentResultPage<DOC> pageX = findPage(query, beanClass);
+            if (pageX.getPageState().isPresent())  {
+                pageState = pageX.getPageState().get();
+            } else {
+                pageState = null;
+            }
+            documents.addAll(pageX.getResults());
+            // Reuissing query for next page
+            query.setPageState(pageState);
+        } while(pageState != null);
+        return documents.stream();
+    }
     
     /**
      * List all items of a collection without filters.
@@ -199,9 +261,10 @@ public class CollectionClient {
      * @return
      *      a page of results
      */
-    public <DOC> DocumentResultPage<DOC> findAllPageable(Class<DOC> beanClass) {
-        return findAllPageable(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
+    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass) {
+        return findFirstPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
     }
+    
     /**
      * Find a page
      * @param <DOC>
@@ -213,9 +276,10 @@ public class CollectionClient {
      * @return
      *      a page of results
      */
-    public <DOC> DocumentResultPage<DOC> findAllPageable(Class<DOC> beanClass, int pageSize) {
-        return findAllPageable(beanClass, pageSize, null);
+    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass, int pageSize) {
+        return findPage(beanClass, pageSize, null);
     }
+    
     /**
      * Search for a page.
      *
@@ -230,45 +294,28 @@ public class CollectionClient {
      * @return
      *      a page of results
      */
-    public <DOC> DocumentResultPage<DOC> findAllPageable(Class<DOC> beanClass, int pageSize, String pageState) {
+    public <DOC> DocumentResultPage<DOC> findPage(Class<DOC> beanClass, int pageSize, String pageState) {
         SearchDocumentQueryBuilder builder = SearchDocumentQuery.builder().withPageSize(pageSize);
         if (null != pageState) {
             builder.withPageState(pageState);
         }
-        return searchPageable(builder.build(), beanClass);
+        return findPage(builder.build(), beanClass);
     }
     
     /**
-     * This function will retrieve all documents in the Collection.
-     * 
-     * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
-     * fetching all pages until no more. 
-    
+     * Find a page given some search.
+     *
      * @param <DOC>
      *      generic for working bean
+     * @param query
+     *      filters for the query
      * @param beanClass
      *      class for working bean 
      * @return
-     *      all items in the the collection
+     *      a page of results
+     * @see https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
      */
-    public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
-        List<ApiDocument<DOC>> documents = new ArrayList<>();
-        // Loop on pages up to no more pages (could be done)
-        String pageState = null;
-        do {
-            DocumentResultPage<DOC> pageX = findAllPageable(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
-            if (pageX.getPageState().isPresent())  {
-                pageState = pageX.getPageState().get();
-            } else {
-                pageState = null;
-            }
-            documents.addAll(pageX.getResults());
-        } while(pageState != null);
-        return documents.stream();
-    }
-    
-    //https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
-    public <DOC> DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query, Class<DOC> beanClass) {
+    public <DOC> DocumentResultPage<DOC> findPage(SearchDocumentQuery query, Class<DOC> beanClass) {
         try {
             ApiResponseHttp res = http.GET(buildQueryUrl(query));
             ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
@@ -282,24 +329,15 @@ public class CollectionClient {
         }
     }
     
-    public <DOC> Stream<ApiDocument<DOC>> search(SearchDocumentQuery query, Class<DOC> beanClass) {
-        List<ApiDocument<DOC>> documents = new ArrayList<>();
-        // Loop on pages up to no more pages (could be done)
-        String pageState = null;
-        do {
-            DocumentResultPage<DOC> pageX = searchPageable(query, beanClass);
-            if (pageX.getPageState().isPresent())  {
-                pageState = pageX.getPageState().get();
-            } else {
-                pageState = null;
-            }
-            documents.addAll(pageX.getResults());
-            // Reuissing query for next page
-            query.setPageState(pageState);
-        } while(pageState != null);
-        return documents.stream();
-    }
     
+    /**
+     * Build the filters based on values in the query.
+     *
+     * @param query
+     *      current query
+     * @return
+     *      the URL
+     */
     private String buildQueryUrl(SearchDocumentQuery query) {
         try {
             StringBuilder sbUrl = new StringBuilder(getEndPointCollection());

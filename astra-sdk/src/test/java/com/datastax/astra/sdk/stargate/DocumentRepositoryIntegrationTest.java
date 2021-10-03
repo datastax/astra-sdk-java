@@ -11,6 +11,7 @@ import com.datastax.astra.dto.Address;
 import com.datastax.astra.dto.PersonRepo;
 import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.AstraClient;
+import com.datastax.stargate.sdk.doc.ApiDocument;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
 
@@ -66,8 +67,10 @@ public class DocumentRepositoryIntegrationTest extends AbstractAstraIntegrationT
         PersonRepo p1 = new PersonRepo("loulou", "loulou", 22, new Address("Paris", 75000));
         tmpDocId = personRepository.insert(p1);
         
+        personRepository.findAll().map(ApiDocument::getDocument).map(PersonRepo::getFirstname).forEach(System.out::println);
+        
         Assertions.assertEquals(1, personRepository.count());
-        Assertions.assertTrue(personRepository.exist(tmpDocId));
+        Assertions.assertTrue(personRepository.exists(tmpDocId));
         printOK("Document created " + tmpDocId);
     }
     

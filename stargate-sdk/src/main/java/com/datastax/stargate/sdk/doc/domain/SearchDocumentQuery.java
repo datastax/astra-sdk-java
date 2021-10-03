@@ -182,6 +182,22 @@ public class SearchDocumentQuery {
          */
         public SearchDocumentWhere where(String fieldName) {
             Assert.hasLength(fieldName, "fieldName");
+            if (!filters.isEmpty()) {
+                throw new IllegalArgumentException("Invalid query please use and() as a where clause has been provided");
+            }
+            return new SearchDocumentWhere(this, fieldName);
+        }
+        
+        /**
+         * Only return those fields if provided
+         * @param fieldName String
+         * @return SearchDocumentWhere
+         */
+        public SearchDocumentWhere and(String fieldName) {
+            Assert.hasLength(fieldName, "fieldName");
+            if (filters.isEmpty()) {
+                throw new IllegalArgumentException("Invalid query please use where() as you first condition");
+            }
             return new SearchDocumentWhere(this, fieldName);
         }
         
@@ -191,7 +207,7 @@ public class SearchDocumentQuery {
          * @return String
          */
         public String getWhereClause() {
-            // Explicit values will got primer on filters
+            // Explicit values (withWhereClause(0) will got priority on filters
             if (Utils.hasLength(whereClause)) {
                 return whereClause;
             }

@@ -18,6 +18,11 @@ package com.datastax.astra.sdk;
 
 import java.io.Closeable;
 import java.io.File;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,14 +32,17 @@ import org.slf4j.LoggerFactory;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.streaming.StreamingClient;
-import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.sdk.utils.ApiLocator;
+import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.StargateClient.StargateClientBuilder;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
+import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -50,26 +58,44 @@ public class AstraClient implements Closeable {
     
     /** Initialize parameters from Environment variables. */
     public static final String ASTRA_DB_ID                = "ASTRA_DB_ID";
-    /** */
+    /** ENV VAR to get current or default region (local datacenter). */
     public static final String ASTRA_DB_REGION            = "ASTRA_DB_REGION";
-    /** */
-    public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
-    /** */
+    /** ENV VAR to get regions list. */
+    public static final String ASTRA_DB_REGIONS           = "ASTRA_DB_REGIONS";
+    /** ENV VAR to get part of the token: client Id. */
     public static final String ASTRA_DB_CLIENT_ID         = "ASTRA_DB_CLIENT_ID";
-    /** */
+    /** ENV VAR to get part of the token: client Secret. */
     public static final String ASTRA_DB_CLIENT_SECRET     = "ASTRA_DB_CLIENT_SECRET";
-    /** */
+    /** ENV VAR to get part of the token: application token. */
+    public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
+    /** ENV VAR to get the keyspace to be selected. */
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
-    /** */
-    public static final String ASTRA_DB_SECURE_BUNDLE     = "ASTRA_DB_SECURE_BUNDLE";
-    /** */
-    public static final String ENV_USER_HOME          = "user.home";
-    /** */
-    public static final String SECURE_CONNECT         = "secure_connect_bundle_";
+    /** SECURE BUNDLE FOR EACH RECGIONS. */
+    public static final String ASTRA_DB_SECURE_BUNDLES    = "ASTRA_DB_SECURE_BUNDLES";
     
-    /** Stargate client wrapping DOC, REST,GraphQL and CQL APis. */
+    /** */
+    public static final String ENV_USER_HOME              = "user.home";
+    /** */
+    public static final String SECURE_CONNECT             = "secure_connect_bundle_";
+    /** */
+    public static final int DEFAULT_POLLING               = 30;
+    
+    /** 
+     * Stargate client wrapping DOC, REST,GraphQL and CQL APis. 
+     * 
+     * It will handle all instances of Stargates doing load balancing 
+     * in between the instances in same DC and fail-over cross region 
+     * using Ribbon and hystrix.
+     * */
     private StargateClient stargateClient;
    
+    // -----------------------------------------------------
+    // --------- Devops API Endpoints  ---------------------
+    // -----------------------------------------------------
+
+    /** Hold a reference for the authentication token. */
+    private final String token;
+    
     /** Hold a reference for the Api Devops. */
     private DatabasesClient apiDevopsDatabases;
     
@@ -78,9 +104,16 @@ public class AstraClient implements Closeable {
     
     /** Hold a reference for the Api Devops. */
     private StreamingClient apiDevopsStreaming;
+
+    // -----------------------------------------------------
+    // --------- Stargate APIs Settings --------------------
+    // -----------------------------------------------------
     
-    /** Hold a reference for the authentication token. */
-    private final String token;
+    /** LOOKUP: If enable the client will invoke Astra to get notified on region creation. */
+    private boolean enableLookupForRegion = true;
+    
+    /** LOOKUP: Define how much time in between 2 calls. */
+    private int lookupForRegionPollingIntervalInSeconds = DEFAULT_POLLING;
     
     /** Hold a reference for clientId. */
     private final String clientId;
@@ -92,16 +125,21 @@ public class AstraClient implements Closeable {
     private final String databaseId;
     
     /** Hold a reference for databaseId. */
-    private final String databaseRegion;
+    private final List<String> databaseRegions;
+    
+    /** Hold a reference on current region used for the Failover. */
+    private String currentDatabaseRegion;
     
     /**
      * You can create on of {@link ApiDocumentClient}, {@link ApiDataClient}, {@link DatabasesClient}, {@link ApiCqlClient} with
      * a constructor. The full flegde constructor would took 12 pararms.
      */
     private AstraClient(AstraClientBuilder b) {
+        LOGGER.info("+ Initializing Astra Client");
         
-        LOGGER.info("+ Load Builder parameters");
-        
+        /** 
+         * Astra Credentials.
+         */
         this.token          = b.appToken;
         this.clientId       = b.clientId;
         this.clientSecret   = b.clientSecret;
@@ -116,36 +154,38 @@ public class AstraClient implements Closeable {
             apiDevopsOrganizations  = new OrganizationsClient(b.appToken);
             apiDevopsDatabases      = new DatabasesClient(b.appToken);  
             apiDevopsStreaming      = new StreamingClient(b.appToken);
-            LOGGER.info("+ API(s) Devops is [ENABLED]");
+            LOGGER.info("+ API(s) Devops [" + AnsiUtils.green("ENABLED")+ "]");
         } else {
-            LOGGER.info("+ API(s) Devops is [DISABLED]");
+            LOGGER.info("+ API(s) Devops [" + AnsiUtils.red("DISABLED")+ "]");
         }
        
         if (Utils.paramsProvided(b.astraDatabaseId)) {
-            this.databaseId     = b.astraDatabaseId;
-            this.databaseRegion = b.astraDatabaseRegion;
+            this.databaseId      = b.astraDatabaseId;
+            this.databaseRegions = b.astraDatabaseRegions;
+            this.currentDatabaseRegion = b.astraDatabaseCurrentRegion;
             /*
              * -----
              * ENABLE CQL API
              *
              * Stargate: 
              *  - username/password
-             *  - contactPoints if neede
+             *  - contactPoints if needed
              * Astra: 
              *  - clientId/clientSecret or 'token'/appToken
-             *  - will download secure bundle if possible
+             *  - will download secure bundle for each region if possible
              * -----
              */
             String cloudSecureBundle = null;
             String pathAstraFolder       = System.getProperty(ENV_USER_HOME) + File.separator + ".astra";
             String pathAstraSecureBundle = pathAstraFolder + File.separator + SECURE_CONNECT + b.astraDatabaseId + ".zip";
-            // #1. A path has been provided for secureConnectBundle => use it
-            if (Utils.paramsProvided(b.secureConnectBundle)) {
-                if (!new File(b.secureConnectBundle).exists()) {
+            // #1. Path has been provided for secureConnectBundle => use it
+            if (!b.secureConnectBundles.isEmpty()) {
+                
+                if (!new File(b.secureConnectBundles).exists()) {
                     throw new IllegalArgumentException("Cannot read file " 
-                            + b.secureConnectBundle + " provided for the cloud bundle");
+                            + b.secureConnectBundles + " provided for the cloud bundle");
                 }
-                cloudSecureBundle = b.secureConnectBundle;
+                cloudSecureBundle = b.secureConnectBundles;
     
             // #2. LOOK IN ~/.astra/secure_connect_bundle_${dbid}.zip
             } else if (new File(pathAstraSecureBundle).exists()) {
@@ -170,7 +210,7 @@ public class AstraClient implements Closeable {
              * You must have provided user/passwd/dbId/bbRegion
              * -----
              */
-            if (Utils.paramsProvided(b.astraDatabaseId, b.astraDatabaseRegion, b.appToken)) {
+            if (Utils.paramsProvided(b.astraDatabaseId, b.appToken) && !b.astraDatabaseRegions.isEmpty()) {
                 String username = "token";
                 String password = b.appToken;
                 if (Utils.paramsProvided(b.clientId, b.clientSecret)) {
@@ -184,17 +224,55 @@ public class AstraClient implements Closeable {
                 /* 
                  * The Stargate in Astra is setup to use SSO. You generate a token from the
                  * user interface and use 'token' as username all the time
+                 * 
+                 * datastax-java-driver {
+                 *   
+                 *   basic {
+                 *     request {
+                 *       timeout     = 10 seconds
+                 *       consistency = LOCAL_QUORUM
+                 *       page-size   = 5000
+                 *     }
+                 *   }
+                 *   
+                 *   advanced {
+                 *     connection {
+                 *       init-query-timeout = 10 seconds
+                 *       set-keyspace-timeout = 10 seconds
+                 *     }
+                 *     control-connection.timeout = 10 seconds
+                 *   }
+                 *   
+                 * }
                  */
                 StargateClientBuilder sBuilder = StargateClient.builder()
-                              .endPointRest(ApiLocator.getApiRestEndpoint(b.astraDatabaseId, b.astraDatabaseRegion))
-                              .endPointGraphQL(ApiLocator.getApiGraphQLEndPoint(b.astraDatabaseId, b.astraDatabaseRegion))
-                              // Used for CqlSession
-                              .username(username)
-                              .password(password)
+                              .withAuthCredentials(username, password)
+                              .withLocalDatacenter(b.astraDatabaseCurrentRegion)
+                              // Settings of CqlSession to work with Astra (extends timeouts)
+                              .withCqlDriverOption(TypedDriverOption.REQUEST_CONSISTENCY, ConsistencyLevel.LOCAL_QUORUM.name())
+                              .withCqlDriverOption(TypedDriverOption.REQUEST_TIMEOUT, Duration.ofSeconds(10))
+                              .withCqlDriverOption(TypedDriverOption.REQUEST_PAGE_SIZE, 100)
+                              .withCqlDriverOption(TypedDriverOption.CONNECTION_CONNECT_TIMEOUT, Duration.ofSeconds(10))
+                              .withCqlDriverOption(TypedDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofSeconds(10))
+                              .withCqlDriverOption(TypedDriverOption.CONNECTION_SET_KEYSPACE_TIMEOUT, Duration.ofSeconds(10))
+                              .withCqlDriverOption(TypedDriverOption.CONTROL_CONNECTION_TIMEOUT, Duration.ofSeconds(10))
+                              // Create dedicated execution profiles per DC changing scb and localDC
+                              .withCqlOption("DC1", TypedDriverOption.CONTROL_CONNECTION_TIMEOUT, Duration.ofSeconds(10))
+                              
+                              
+                
+                
+                              // Add a StargadeNode per DC (load balancing is already OK)
+                              .withApiToken(b.appToken);
+                              
+                
+                
+                              //.endPointRest(ApiLocator.getApiRestEndpoint(b.astraDatabaseId, b.astraDatabaseRegions.get(0)))
+                              //.endPointGraphQL(ApiLocator.getApiGraphQLEndPoint(b.astraDatabaseId,  b.astraDatabaseRegions.get(0)))
                               // Use for HTTP Calls, required for Astra.
-                              .appToken(b.appToken);
+                              //.appToken(b.appToken);
                 if (Utils.paramsProvided(b.keyspace)) {
-                    sBuilder = sBuilder.keyspace(b.keyspace);
+                    sBuilder = sBuilder.withKeyspace(b.keyspace);
                 }
                 if (null != cloudSecureBundle) {
                     sBuilder = sBuilder.astraCloudSecureBundle(cloudSecureBundle);
@@ -314,32 +392,39 @@ public class AstraClient implements Closeable {
      */
     public static class AstraClientBuilder {
         
-        /** */
-        private String  astraDatabaseId;
-        /** */
-        private String  astraDatabaseRegion;
-        
-        /** */
+        /** Astra Credentials. */
         private String  clientId;
-        /** */
+        
+        /** Astra Credentials. */
         private String  clientSecret;
         
-        /** */
+        /** Astra Credentials. */
         private String  appToken;
-        /** */
-        private String  secureConnectBundle;
-        /** */
+        
+        /** Database ids. */
+        private String  astraDatabaseId;
+        
+        /** Default region when you connect. */
+        private String astraDatabaseCurrentRegion;
+        
+        /** A Database can now live in multilple regions*/
+        private List<String> astraDatabaseRegions = new ArrayList<>();
+        
+        /** Associate a SCB for each region. */
+        private Map<String, String>  secureConnectBundles;
+        
+        /** CqlSession target keyspace. */
         private String  keyspace;
           
         /**
          * Load defaults from Emvironment variables
          */
         protected AstraClientBuilder() {
-            LOGGER.info("Initializing [AstraClient]");
+            LOGGER.info("Initializing [" + AnsiUtils.green("AstraClient") + "]");
             
-            // Configuration File
+            // Loading configuration File 
             if (AstraRc.exists()) {
-                LOGGER.info("+ Load ~/.astrarc");
+                LOGGER.info("+ Loading ~/.astrarc section {}", AstraRc.ASTRARC_DEFAULT);
                 astraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
             }
             
@@ -351,19 +436,24 @@ public class AstraClient implements Closeable {
                 this.astraDatabaseId = System.getenv(ASTRA_DB_ID);
             }
             if (Utils.hasLength(System.getProperty(ASTRA_DB_REGION))) {
-                this.astraDatabaseRegion = System.getProperty(ASTRA_DB_REGION);
+                this.astraDatabaseCurrentRegion = System.getProperty(ASTRA_DB_REGION);
             } else if (Utils.hasLength(System.getenv(ASTRA_DB_REGION))) {
-                this.astraDatabaseRegion = System.getenv(ASTRA_DB_REGION);
+                this.astraDatabaseCurrentRegion = System.getenv(ASTRA_DB_REGION);
+            }
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_REGIONS))) {
+                this.astraDatabaseRegions = Arrays.asList(System.getProperty(ASTRA_DB_REGIONS).split(","));
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_REGIONS))) {
+                this.astraDatabaseRegions = Arrays.asList(System.getenv(ASTRA_DB_REGIONS).split(","));
             }
             if (Utils.hasLength(System.getProperty(ASTRA_DB_APPLICATION_TOKEN))) {
                 this.appToken = System.getProperty(ASTRA_DB_APPLICATION_TOKEN);
             } else if (Utils.hasLength(System.getenv(ASTRA_DB_APPLICATION_TOKEN))) {
                 this.appToken = System.getenv(ASTRA_DB_APPLICATION_TOKEN);
             }
-            if (Utils.hasLength(System.getProperty(ASTRA_DB_SECURE_BUNDLE))) {
-                this.secureConnectBundle = System.getProperty(ASTRA_DB_SECURE_BUNDLE);
-            } else if (Utils.hasLength(System.getenv(ASTRA_DB_SECURE_BUNDLE))) {
-                this.secureConnectBundle = System.getenv(ASTRA_DB_SECURE_BUNDLE);
+            if (Utils.hasLength(System.getProperty(ASTRA_DB_SECURE_BUNDLES))) {
+                setSCB(System.getProperty(ASTRA_DB_SECURE_BUNDLES));
+            } else if (Utils.hasLength(System.getenv(ASTRA_DB_SECURE_BUNDLES))) {
+                setSCB(System.getenv(ASTRA_DB_SECURE_BUNDLES));
             }
             if (Utils.hasLength(System.getProperty(ASTRA_DB_KEYSPACE))) {
                 this.keyspace = System.getProperty(ASTRA_DB_KEYSPACE);
@@ -380,7 +470,24 @@ public class AstraClient implements Closeable {
             } else if (Utils.hasLength(System.getenv(ASTRA_DB_CLIENT_SECRET))) {
                 this.clientSecret = System.getenv(ASTRA_DB_CLIENT_SECRET);
             }
-        } 
+        }
+        
+        /**
+         * Mutualizing code to parse the secure connect bundles.
+         *
+         * @param bundles
+         *      list of bundles
+         */
+        private void setSCB(String bundleKey) {
+            String[] bundles = bundleKey.split(",");
+            if (bundles.length != astraDatabaseRegions.size()) {
+                throw new IllegalArgumentException("You need to provide a SCB for each region regionCount="
+                        + astraDatabaseRegions.size() + "but bundles count=" + bundles.length);
+            }
+            for(int i=0;i<astraDatabaseRegions.size();i++) {
+                this.secureConnectBundles.put(astraDatabaseRegions.get(i), bundles[i]);
+            } 
+        }
         
         /**
          * Load the default ~/.astrarc file and load section X.
@@ -405,8 +512,11 @@ public class AstraClient implements Closeable {
                 if (null == astraDatabaseId) {
                     astraDatabaseId = section.get(ASTRA_DB_ID);
                 }
-                if (null == astraDatabaseRegion) {
-                    astraDatabaseRegion = section.get(ASTRA_DB_REGION);
+                if (null == astraDatabaseCurrentRegion) {
+                    astraDatabaseCurrentRegion = section.get(ASTRA_DB_REGION);
+                }
+                if (null == astraDatabaseRegions) {
+                    astraDatabaseRegions = Arrays.asList(section.get(ASTRA_DB_REGIONS).split(","));
                 }
                 if (null == clientId) {
                     clientId = section.get(ASTRA_DB_CLIENT_ID);
@@ -417,8 +527,8 @@ public class AstraClient implements Closeable {
                 if (null == appToken) {
                     appToken = section.get(ASTRA_DB_APPLICATION_TOKEN);
                 }
-                if (null == secureConnectBundle) {
-                    secureConnectBundle = section.get(ASTRA_DB_SECURE_BUNDLE);
+                if (null == secureConnectBundles) {
+                    setSCB(section.get(ASTRA_DB_SECURE_BUNDLES));
                 }
                 if (null == keyspace) {
                     keyspace = section.get(ASTRA_DB_KEYSPACE);
@@ -445,9 +555,27 @@ public class AstraClient implements Closeable {
          * @param region String
          * @return AstraClientBuilder
          */
+        @Deprecated
         public AstraClientBuilder cloudProviderRegion(String region) {
             Assert.hasLength(region, "astraDatabaseRegion");
-            this.astraDatabaseRegion = region;
+            this.astraDatabaseCurrentRegion = region;
+            this.astraDatabaseRegions       = Collections.singletonList(region);
+            return this;
+        }
+        
+        /**
+         * Provide the list of regions.
+         *
+         * @param regions
+         *      list of regions
+         * @return
+         *      self reference
+         */
+        public AstraClientBuilder databaseRegions(String... regions) {
+            Assert.notNull(regions, "Region list");
+            Assert.isTrue(regions.length>0, "Region should not be null");
+            this.astraDatabaseCurrentRegion = regions[0];
+            this.astraDatabaseRegions = Arrays.asList(regions);
             return this;
         }
 
@@ -462,16 +590,21 @@ public class AstraClient implements Closeable {
             this.appToken = token;
             return this;
         }
-
+       
         /**
-         * secureConnectBundle
-         * 
-         * @param secureConnectBundle String
-         * @return AstraClientBuilder
+         * Add the secure bundle for the region.
+         *
+         * @param region
+         *      astra region
+         * @param scb
+         *      path of secure connect bundle
+         * @return
+         *      self reference
          */
-        public AstraClientBuilder secureConnectBundle(String secureConnectBundle) {
-            Assert.hasLength(secureConnectBundle, "secureConnectBundle");
-            this.secureConnectBundle = secureConnectBundle;
+        public AstraClientBuilder secureConnectBundle(String region, String scb) {
+            Assert.hasLength(region, "region");
+            Assert.hasLength(scb, "scb");
+            this.secureConnectBundles.put(region, scb);
             return this;
         }
 
@@ -575,8 +708,18 @@ public class AstraClient implements Closeable {
      * @return
      *       current value of 'databaseRegion'
      */
-    public Optional<String> getDatabaseRegion() {
-        return Optional.ofNullable(databaseRegion);
+    public List<String> getDatabaseRegions() {
+        return databaseRegions;
+    }
+    
+    /**
+     * Getter accessor for attribute 'currentDatabaseRegion'.
+     *
+     * @return
+     *       current value of 'currentDatabaseRegion'
+     */
+    public String getCurrentDatabaseRegion() {
+        return currentDatabaseRegion;
     }
     
     /**

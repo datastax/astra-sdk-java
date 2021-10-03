@@ -101,19 +101,19 @@ public class StargateDocumentRepository <DOC> {
      * @param doc
      *      document
      */
-    public void upsert(String docId, DOC doc) {
+    public void insert(String docId, DOC doc) {
         collectionClient.document(docId).upsert(doc);
     }
     
     /**
-     * Update only if exists.
+     * Create if not exist with defined ID.
      *
      * @param docId
      *      expected document id
      * @param doc
      *      document
      */
-    public void update(String docId, DOC doc) {
+    public void save(String docId, DOC doc) {
         collectionClient.document(docId).upsert(doc);
     }
     
@@ -138,19 +138,7 @@ public class StargateDocumentRepository <DOC> {
     public Optional<DOC> find(String docId) {
         return collectionClient.document(docId).find(docClass);
     }
-    
-    /**
-     * Find a person from ids unique identifier.
-     *
-     * @param docId
-     *      document Id
-     * @return
-     *      if the document exist 
-     */
-    public boolean exist(String docId) {
-        return find(docId).isPresent();
-    }
-    
+   
     /**
      * Search document with attributes.
      * 
@@ -159,8 +147,8 @@ public class StargateDocumentRepository <DOC> {
      * @return
      *      result page
      */
-    public DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query) {
-        return collectionClient.searchPageable(query, docClass);
+    public DocumentResultPage<DOC> findPage(SearchDocumentQuery query) {
+        return collectionClient.findPage(query, docClass);
     }
     
     /**
@@ -171,8 +159,8 @@ public class StargateDocumentRepository <DOC> {
      * @return
      *      every document of the collection
      */
-    public Stream<ApiDocument<DOC>> search(SearchDocumentQuery query) {
-        return collectionClient.search(query, docClass);
+    public Stream<ApiDocument<DOC>> findAll(SearchDocumentQuery query) {
+        return collectionClient.findAll(query, docClass);
     }
     /**
      * Retrieve all documents from the collection.
@@ -184,16 +172,16 @@ public class StargateDocumentRepository <DOC> {
         return collectionClient.findAll(docClass);
     }
     
-    public DocumentResultPage<DOC> findAllPageable() {
-        return collectionClient.findAllPageable(docClass);
+    public DocumentResultPage<DOC> findFirstPage() {
+        return collectionClient.findFirstPage(docClass);
     }
     
-    public DocumentResultPage<DOC> findAllPageable(int pageSize){
-        return collectionClient.findAllPageable(docClass, pageSize);
+    public DocumentResultPage<DOC> findFirstPage(int pageSize){
+        return collectionClient.findFirstPage(docClass, pageSize);
     }
     
-    public DocumentResultPage<DOC> findAllPageable(int pageSize, String pageingState){
-        return collectionClient.findAllPageable(docClass, pageSize, pageingState);
+    public DocumentResultPage<DOC> findPage(int pageSize, String pageingState){
+        return collectionClient.findPage(docClass, pageSize, pageingState);
     }
     
     /**

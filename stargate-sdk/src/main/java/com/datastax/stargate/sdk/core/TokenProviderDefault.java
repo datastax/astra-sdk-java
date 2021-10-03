@@ -1,6 +1,9 @@
 package com.datastax.stargate.sdk.core;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -8,6 +11,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+import com.datastax.stargate.sdk.loadbalancer.Loadbalancer;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
@@ -19,13 +23,13 @@ import com.datastax.stargate.sdk.utils.JsonUtils;
  *
  */
 public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
-
+    
     /** Default values for authentication. */
     public static final String DEFAULT_USERNAME      = "cassandra";
     public static final String DEFAULT_PASSWORD      = "cassandra";
     public static final String DEFAULT_AUTH_URL      = "http://localhost:8081";
     public static final int    DEFAULT_TIMEOUT_TOKEN = 300;
-
+    
     /** Username - required all the time */
     private final String username;
 
@@ -34,15 +38,15 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
     
     /** Authentication token, time to live. */
     private final Duration tokenttl;
-
-    /** This the endPoint to invoke to work with different API(s). */
-    private final String endPointAuthentication;
     
     /** Mark the token update. */
     private long tokenCreatedtime = 0;
     
     /** Storing an authentication token to speed up queries. */
     private String token;
+    
+    /** Load balancer. */
+    private Loadbalancer<String> endPointAuthenticationLB;
     
     /**
      * Using defautls
@@ -73,7 +77,21 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      * @param url
      *      endpoint to authenticate.
      */
-    public TokenProviderDefault(String username, String password, String url) {
+    public TokenProviderDefault(String username, String password, String... url) {
+        this(username, password, Arrays.asList(url), DEFAULT_TIMEOUT_TOKEN);
+    }
+    
+    /**
+     * Credentials and auth url customize.
+     * 
+     * @param username
+     *      username
+     * @param password
+     *      password
+     * @param url
+     *      endpoint to authenticate.
+     */
+    public TokenProviderDefault(String username, String password, List<String> url) {
         this(username, password, url, DEFAULT_TIMEOUT_TOKEN);
     }
     
@@ -90,14 +108,31 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      *      token time to live
      */
     public TokenProviderDefault(String username, String password, String url, int ttlSecs) {
+        this(username, password, Collections.singletonList(url), ttlSecs);
+    }
+    
+    /**
+     * Full fledge constructor.
+     *
+     * @param username
+     *      username
+     * @param password
+     *      password
+     * @param url
+     *      endpoint to authenticate.
+     * @param ttlSecs
+     *      token time to live
+     */
+    public TokenProviderDefault(String username, String password, List<String> url, int ttlSecs) {
         Assert.hasLength(username, "username");
         Assert.hasLength(password, "password");
-        Assert.hasLength(url, "password");
         Assert.isTrue(ttlSecs>0, "time to live");
-        this.username = username;
-        this.password = password;
-        this.endPointAuthentication = url;
-        this.tokenttl = Duration.ofSeconds(ttlSecs);
+        Assert.notNull(url, "Url list shoudl not be null");
+        Assert.isTrue(url.size()>0, "Url list should not be empty");
+        this.username                 = username;
+        this.password                 = password;
+        this.tokenttl                 = Duration.ofSeconds(ttlSecs);
+        this.endPointAuthenticationLB = new Loadbalancer<String>(url);
     }
     
     /**
@@ -121,7 +156,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      */
     private String renewToken() {
         try {
-            HttpPost httpPost = new HttpPost(endPointAuthentication + "/v1/auth");
+            HttpPost httpPost = new HttpPost(endPointAuthenticationLB.get() + "/v1/auth");
             httpPost.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
             httpPost.setEntity(new StringEntity(new StringBuilder("{")
                     .append("\"username\":").append(JsonUtils.valueAsJson(username))

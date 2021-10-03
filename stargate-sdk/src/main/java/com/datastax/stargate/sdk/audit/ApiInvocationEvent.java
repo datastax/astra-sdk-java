@@ -1,34 +1,41 @@
 package com.datastax.stargate.sdk.audit;
 
-import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+
+import com.datastax.stargate.sdk.core.ApiConstants;
 
 /**
- * Class to TODO
+ * Event triggered for Api Invocation with input/output tracing.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiCallEvent {
+public class ApiInvocationEvent implements ApiConstants {
     
+    /** epoch time of the event generation. */
     private long timestamp;
     
+    /** Client machine using the SDK. */
     private String host;
     
     // --- Request ---
 
+    /** Unique identifier for a request. */
+    private String requestId;
+    
+    /** Request HTTP method. */
     private String requestMethod;
     
     private String requestUrl;
     
-    private String requestBody;
-    
-    private String requestId;
-    
     private Map<String, String> requestHeaders = new HashMap<>();
+    
+    private String requestBody;
     
     // --- Response ---
     
@@ -38,11 +45,13 @@ public class ApiCallEvent {
     
     private String responseBody;
     
-    private long payloadSize;
-    
     private long responseTime;
     
     private long responseTimestamp;
+    
+    private long responseElapsedTime;
+    
+    private int totalTries;
     
     // --- Error ---
     
@@ -50,20 +59,88 @@ public class ApiCallEvent {
     
     private String errorMessage;
     
-    public ApiCallEvent() {
-        timestamp = System.currentTimeMillis();
-    }
+    private Exception lastException;
     
-    public ApiCallEvent(ClassicHttpRequest req) {
-        this();
-        this.requestMethod  = req.getMethod();
+    /**
+     * Getter accessor for attribute 'responseElapsedTime'.
+     *
+     * @return
+     *       current value of 'responseElapsedTime'
+     */
+    public long getResponseElapsedTime() {
+        return responseElapsedTime;
+    }
+
+    /**
+     * Setter accessor for attribute 'responseElapsedTime'.
+     * @param responseElapsedTime
+     * 		new value for 'responseElapsedTime '
+     */
+    public void setResponseElapsedTime(long responseElapsedTime) {
+        this.responseElapsedTime = responseElapsedTime;
+    }
+  
+    /**
+     * Getter accessor for attribute 'totalTries'.
+     *
+     * @return
+     *       current value of 'totalTries'
+     */
+    public int getTotalTries() {
+        return totalTries;
+    }
+
+    /**
+     * Setter accessor for attribute 'totalTries'.
+     * @param totalTries
+     * 		new value for 'totalTries '
+     */
+    public void setTotalTries(int totalTries) {
+        this.totalTries = totalTries;
+    }
+
+    /**
+     * Getter accessor for attribute 'lastException'.
+     *
+     * @return
+     *       current value of 'lastException'
+     */
+    public Exception getLastException() {
+        return lastException;
+    }
+
+    /**
+     * Setter accessor for attribute 'lastException'.
+     * @param lastException
+     * 		new value for 'lastException '
+     */
+    public void setLastException(Exception lastException) {
+        this.lastException = lastException;
+    }
+
+    public ApiInvocationEvent(ClassicHttpRequest req) {
+        this.timestamp = System.currentTimeMillis();
         try {
-            this.requestUrl = req.getUri().toString();
-        } catch (URISyntaxException e) {}
-        Arrays.asList(req.getHeaders())
-              .stream()
-              .forEach(h -> requestHeaders.put(h.getName(), h.getValue()));
-        
+            this.host      = InetAddress.getLocalHost().getHostName();
+            if (req.containsHeader(HEADER_REQUEST_ID)) {
+                this.requestId = req.getHeader(HEADER_REQUEST_ID).getValue();
+            }
+            this.requestMethod = req.getMethod();
+            this.requestUrl    = req.getUri().toString();
+            for(Header h : req.getHeaders()) {
+                if (h.getName().equalsIgnoreCase(HEADER_AUTHORIZATION) || 
+                    h.getName().equalsIgnoreCase(HEADER_CASSANDRA)) {
+                    this.requestHeaders.put(h.getName(), "***");
+                } else {
+                    this.requestHeaders.put(h.getName(), h.getValue());
+                }
+            }
+            if (req.getEntity() != null) {
+                this.requestBody = EntityUtils.toString(req.getEntity());
+            }
+        } catch (Exception pe) {
+            // Ignore errors in the monitoring process
+        }
     }
     
     /**
@@ -255,26 +332,7 @@ public class ApiCallEvent {
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
     }
-
-    /**
-     * Getter accessor for attribute 'payloadSize'.
-     *
-     * @return
-     *       current value of 'payloadSize'
-     */
-    public long getPayloadSize() {
-        return payloadSize;
-    }
-
-    /**
-     * Setter accessor for attribute 'payloadSize'.
-     * @param payloadSize
-     * 		new value for 'payloadSize '
-     */
-    public void setPayloadSize(long payloadSize) {
-        this.payloadSize = payloadSize;
-    }
-
+    
     /**
      * Getter accessor for attribute 'responseTime'.
      *

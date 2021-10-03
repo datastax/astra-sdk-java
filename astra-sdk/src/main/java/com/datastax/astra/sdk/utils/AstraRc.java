@@ -21,8 +21,8 @@ import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_CLIENT_ID;
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_CLIENT_SECRET;
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_ID;
 import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_KEYSPACE;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_REGION;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_SECURE_BUNDLE;
+import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_REGIONS;
+import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_SECURE_BUNDLES;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -331,12 +331,12 @@ public class AstraRc {
     private static Map<String, String> dbKeys(Database db, String token) {
         Map<String, String> dbKeys = new HashMap<>();
         dbKeys.put(ASTRA_DB_ID, db.getId() );
-        dbKeys.put(ASTRA_DB_REGION, db.getInfo().getRegion());
+        dbKeys.put(ASTRA_DB_REGIONS, db.getInfo().getRegions());
         dbKeys.put(ASTRA_DB_KEYSPACE, db.getInfo().getKeyspace());
         dbKeys.put(ASTRA_DB_APPLICATION_TOKEN, token);
         dbKeys.put(ASTRA_DB_CLIENT_ID, "");
         dbKeys.put(ASTRA_DB_CLIENT_SECRET, "");
-        dbKeys.put(ASTRA_DB_SECURE_BUNDLE, "");
+        dbKeys.put(ASTRA_DB_SECURE_BUNDLES, "");
         return dbKeys;
     }
 

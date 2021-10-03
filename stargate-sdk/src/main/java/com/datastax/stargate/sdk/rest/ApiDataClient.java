@@ -18,6 +18,7 @@ package com.datastax.stargate.sdk.rest;
 
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,6 +34,8 @@ import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import static com.datastax.stargate.sdk.utils.AnsiUtils.*;
+
 /**
  * Working with REST API and part of schemas with tables and keyspaces;
  *
@@ -46,6 +49,7 @@ public class ApiDataClient {
     /** Schenma sub level. */
     public static final String PATH_KEYSPACES  = "/keyspaces";
     public static final String PATH_SCHEMA     = "/schemas";
+    public static final String PATH_HEALTH     = "/health";
     public static final String PATH_V2         = "/v2";
     
     /** Marshalling type. */
@@ -72,7 +76,7 @@ public class ApiDataClient {
         this.endPointApiRest =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setToken(token);
-        LOGGER.info("+ Data API:  {}, ", endPointApiRest);
+        LOGGER.info("+ API Data        :[" + cyan("{}") + "]", endPointApiRest);
     }
     /**
      * Initialized document API with an URL and a token.
@@ -88,7 +92,18 @@ public class ApiDataClient {
         this.endPointApiRest =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API(s) REST Data is [ENABLED] {}", endPointApiRest);
+        LOGGER.info("+ API(s) Data     :[" + cyan("{}") + "]", endPointApiRest);
+    }
+    
+    /**
+     * Invoke heath endpoint.
+     *
+     * @return
+     *      is the service is up.
+     */
+    public boolean isAlive() {
+        ApiResponseHttp res = http.GET(getEndPointHealth());
+        return HttpURLConnection.HTTP_OK == res.getCode();
     }
     
     /**
@@ -137,6 +152,15 @@ public class ApiDataClient {
      */
     public String getEndPointApiRest() {
         return endPointApiRest;
+    }
+    
+    /**
+     * Getter accessor for attribute 'endPointApiRest'.
+     *
+     * @return current value of 'endPointApiRest'
+     */
+    public String getEndPointHealth() {
+        return endPointApiRest + PATH_HEALTH;
     }
     
     /**

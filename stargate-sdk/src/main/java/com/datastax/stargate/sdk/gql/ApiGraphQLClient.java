@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
-
+import static com.datastax.stargate.sdk.utils.AnsiUtils.*;
 /**
  * Superclass to work with graphQL.
  *
@@ -53,7 +53,7 @@ public class ApiGraphQLClient {
         this.endPointApiGraphQL =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setToken(token);
-        LOGGER.info("+ GraphQL API:  {}, ", endPointApiGraphQL);
+        LOGGER.info("+ API(s) GraphQL  :[" + cyan("{}") + "]", endPointApiGraphQL);
     }
     
 
@@ -71,7 +71,7 @@ public class ApiGraphQLClient {
         this.endPointApiGraphQL =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API(s) GraphQL [ENABLED] {}", endPointApiGraphQL);
+        LOGGER.info("+ API(s) GraphQL  :[" + cyan("{}") + "]", endPointApiGraphQL);
     }
     
     /**

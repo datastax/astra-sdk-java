@@ -1,0 +1,43 @@
+
+# -------------------------------------
+# Distributed Stargate configuration
+# -------------------------------------
+
+stargate:
+  
+  cql:
+    basic.session-name: my_session
+    basic.session-keyspace: my_keyspace
+    basic.contact-points: [ "localhost:9042" ]
+    basic.config-reload-interval: 5 minutes
+    basic.consistency: LOCAL_ONE
+    basic.page-size: 5000
+    basic.load-balancing-policy.class: DefaultLoadBalancingPolicy
+    basic.load-balancing-policy.local-datacenter: datacenter1
+    advanced.connection.connect-timeout: 5 seconds
+    advanced.connection.init-query-timeout: 5 seconds
+    advanced.auth-provider.class: PlainTextAuthProvider
+    advanced.auth-provider.username: cassandra
+    advanced.auth-provider.password: cassandra
+    advanced.resolve-contact-points: false
+  
+  http:
+    timeoutConnection: 20
+    requests:
+      retryCount: 3
+      timeout: 20
+  
+  api_auth: 
+    class: com.datastax.stargate.sdk.core.TokenProviderDefault
+    params:
+      auth_endpoint: [ "localhost:8081/auth" ]
+      token_ttl: 100 # TTL is handle at Stargate level, the retry should work
+  
+  datacenters: 
+    - name: dc1
+      nodes: 
+        - host: localhost
+          rest_endpoint: http://localhost:8082/api/rest
+          graphql_endpoint: http://localhost:8082/api/graphql
+          
+       

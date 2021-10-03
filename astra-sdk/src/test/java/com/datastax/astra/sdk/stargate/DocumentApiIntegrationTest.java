@@ -35,7 +35,7 @@ import com.datastax.astra.dto.Person;
 import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.audit.ApiCallListenerLog;
+import com.datastax.stargate.sdk.audit.AnsiLoggerObserver;
 import com.datastax.stargate.sdk.doc.ApiDocument;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.doc.CollectionClient;
@@ -135,7 +135,7 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
     public void should_find_collection() throws InterruptedException {
         printYellow("should_find_collection");
         
-        HttpApisClient.getInstance().registerListener("audit", new ApiCallListenerLog());
+        HttpApisClient.getInstance().registerListener("audit", new AnsiLoggerObserver());
         
         Assertions.assertTrue(clientApiDoc
                 .namespace(WORKING_NAMESPACE)
@@ -305,7 +305,7 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
                 .collection(COLLECTION_PERSON);
         Assertions.assertTrue(collectionPersonAstra.exist());
         // When
-        DocumentResultPage<Person> results = collectionPersonAstra.findAllPageable(Person.class);
+        DocumentResultPage<Person> results = collectionPersonAstra.findFirstPage(Person.class);
         // Then
         Assert.assertNotNull(results);
         for (ApiDocument<Person> PersonAstra : results.getResults()) {
@@ -334,7 +334,7 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
         SearchDocumentQuery query = SearchDocumentQuery.builder().where("age").isGreaterOrEqualsThan(21).build();
 
         // Execute q query
-        DocumentResultPage<Person> results = collectionPersonAstra.searchPageable(query, Person.class);
+        DocumentResultPage<Person> results = collectionPersonAstra.findPage(query, Person.class);
         Assert.assertNotNull(results);
         for (ApiDocument<Person> PersonAstra : results.getResults()) {
             Assert.assertNotNull(PersonAstra);
@@ -467,7 +467,56 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
         });
         System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Validation OK");
     }
-    
+
+    @Test
+    @Order(16)
+    @DisplayName("Search Query")
+    public void should_test_search() {
+        CollectionClient collectionPersonAstra = clientApiDoc.namespace(WORKING_NAMESPACE).collection(COLLECTION_PERSON);
+        /*
+        // ADD 20 record in a collection 
+        for(int i =0; i<20; i++) {
+            Address a = new Address("Paris", 75000);
+            Person p1 = new Person("PersonAstra" + i, "PersonAstra1", 5*i, a);
+            collectionPersonAstra.create(p1);          
+        }
+        */
+        
+        //SearchDocumentQuery query = SearchDocumentQuery.builder()
+        //            .where("age").isGreaterOrEqualsThan(30)
+        //            .and("lastname").isEqualsTo("PersonAstra2")
+        //            .withPageSize(2).build();
+        
+        // Get ALL
+        //collectionPersonAstra.findAll(query, Person.class)
+        //                     .forEach(p -> System.out.println(p.getDocument().getFirstname()));
+        
+        // Get ony the first 2
+        
+        //DocumentResultPage<Person> currentPage = collectionPersonAstra.findPage(query,  Person.class);
+        
+       collectionPersonAstra
+                .document("e8c5021b-2c91-4015-aec6-14a16e449818")
+                .updateSubDocument("toto", new Address("hello", 1234));
+        
+        
+        //if (currentPage.getPageState().isPresent()) {
+        //    query.setPageState(currentPage.getPageState().get());
+        // }
+        
+        //DocumentResultPage nextPage = collectionPersonAstra.findPage(query,  Person.class);
+
+        // Create a query
+        //SearchDocumentQuery query = SearchDocumentQuery.builder().where("age").isGreaterOrEqualsThan(21).build();
+
+        // Execute q query
+        //DocumentResultPage<Person> results = collectionPersonAstra.searchPageable(query, Person.class);
+        //Assert.assertNotNull(results);
+        //for (ApiDocument<Person> PersonAstra : results.getResults()) {
+        //    Assert.assertNotNull(PersonAstra);
+        //}
+       //.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET + " - Document list found");
+    }
     
     /* KEYSPACE <=> NAMESPACE
      * manipulations will be done at devops API only 

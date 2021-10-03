@@ -100,6 +100,9 @@ public class CreateIndex implements Serializable {
         public CreateIndexBuilder sasi() {
             return type(TYPE_SASI);
         }
+        public CreateIndexBuilder sai() {
+            return type(TYPE_SAI);
+        }
         public CreateIndexBuilder column(String name) {
             this.column = name;
             return this;

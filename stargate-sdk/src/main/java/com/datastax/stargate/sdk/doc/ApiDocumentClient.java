@@ -33,6 +33,8 @@ import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import static com.datastax.stargate.sdk.utils.AnsiUtils.*;
+
 /**
  * Client for the Astra/Stargate document (collections) API.
  *
@@ -73,7 +75,7 @@ public class ApiDocumentClient {
         this.endPointApiDocument =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setToken(token);
-        LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
+        LOGGER.info("+ API Document    :[" + cyan("{}") + "]", endPointApiDocument);
     }
     
     /**
@@ -90,7 +92,7 @@ public class ApiDocumentClient {
         this.endPointApiDocument =  endpoint;
         this.http = HttpApisClient.getInstance();
         http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API(s) Document is [ENABLED] {}", endPointApiDocument);
+        LOGGER.info("+ API Document    :[" + cyan("{}") + "]", endPointApiDocument);
     }
     
     /**

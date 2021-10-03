@@ -27,6 +27,13 @@
   			<groupId>org.apache.httpcomponents.client5</groupId>
   			<artifactId>httpclient5-fluent</artifactId>
 		</dependency>
+		<!--  Implements retry HTTP CALLS -->
+		<dependency>
+		    <groupId>com.evanlennick</groupId>
+		    <artifactId>retry4j</artifactId>
+		    <version>0.15.0</version>
+		</dependency>
+
 		<!-- Support for JSON Api -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

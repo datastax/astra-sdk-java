@@ -1,11 +1,13 @@
 package com.datastax.stargate.sdk.utils;
 
 import java.net.HttpURLConnection;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,13 +37,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
-import com.datastax.stargate.sdk.audit.ApiCallEvent;
-import com.datastax.stargate.sdk.audit.ApiCallListener;
+import com.datastax.stargate.sdk.audit.ApiInvocationEvent;
+import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.core.ApiConstants;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.core.TokenProviderStatic;
 import com.datastax.stargate.sdk.exception.AuthenticationException;
+import com.evanlennick.retry4j.CallExecutorBuilder;
+import com.evanlennick.retry4j.Status;
+import com.evanlennick.retry4j.config.RetryConfig;
+import com.evanlennick.retry4j.config.RetryConfigBuilder;
 
 /**
  * Wrapping the HttpClient and provide helpers
@@ -53,30 +59,55 @@ public class HttpApisClient implements ApiConstants {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpApisClient.class);
     
-    /** default params */
+    /** Default settings in Request and Retry */
     public static final int DEFAULT_TIMEOUT_REQUEST   = 20;
     public static final int DEFAULT_TIMEOUT_CONNECT   = 20;
+    public static final int DEFAULT_RETRY_COUNT       = 3;
+    public static final Duration DEFAULT_RETRY_DELAY  = Duration.ofMillis(100);
     
-    /** Liisteners. */
-    protected Map<String, ApiCallListener > apiCallListeners = new ConcurrentHashMap<>();
+    /** . */
+    protected static Map<String, ApiInvocationObserver > apiInvocationsObserversMap = new ConcurrentHashMap<>();
+    
+    /** Default request configuration. */
+    protected static RequestConfig requestConfig = RequestConfig.custom()
+            .setCookieSpec(StandardCookieSpec.STRICT)
+            .setExpectContinueEnabled(true)
+            .setConnectionRequestTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_REQUEST))
+            .setConnectTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_CONNECT))
+            .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
+            .build();
+    
+    /** Default retry configuration. */
+    protected static RetryConfig retryConfig = new RetryConfigBuilder()
+            //.retryOnSpecificExceptions(ConnectException.class, IOException.class)
+            .retryOnAnyException()
+            .withDelayBetweenTries(DEFAULT_RETRY_DELAY)
+            .withExponentialBackoff()
+            .withMaxNumberOfTries(DEFAULT_RETRY_COUNT)
+            .build();
     
     /** Singleton pattern. */
     private static HttpApisClient _instance = null;
-    
-    /** This the endPoint to invoke to work with different API(s). */
-    private int connectionRequestTimeout = DEFAULT_TIMEOUT_REQUEST;
-    
-    /** This the endPoint to invoke to work with different API(s). */
-    private int connectionTimeout = DEFAULT_TIMEOUT_CONNECT;
-    
-    /** default request config. */
-    protected RequestConfig requestConfig = null;
     
     /** HhtpComponent5. */
     protected CloseableHttpClient httpClient = null;
     
     /** Working with the token. */
     private ApiTokenProvider tokenProvider;
+    
+    /**
+     * Update Retry configuration of the HTTPClient.
+     *
+     * @param conf
+     *      retryConfiguration
+     */
+    public static void withRetryConfig(RetryConfig conf) {
+        retryConfig= conf;
+    }
+    
+    public static void withRequestConfig(RequestConfig conf) {
+        requestConfig = conf;
+    }
     
     /**
      * Hide default constructor
@@ -92,19 +123,11 @@ public class HttpApisClient implements ApiConstants {
     public static synchronized HttpApisClient getInstance() {
         if (_instance == null) {
             _instance = new HttpApisClient();
-            _instance.requestConfig = RequestConfig.custom()
-                    .setCookieSpec(StandardCookieSpec.STRICT)
-                    .setExpectContinueEnabled(true)
-                    .setConnectionRequestTimeout(Timeout.ofSeconds(_instance.connectionRequestTimeout))
-                    .setConnectTimeout(Timeout.ofSeconds(_instance.connectionTimeout))
-                    .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
-                    .build();
             final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
             connManager.setValidateAfterInactivity(TimeValue.ofSeconds(10));
             connManager.setMaxTotal(100);
             connManager.setDefaultMaxPerRoute(10);
             _instance.httpClient = HttpClients.custom().setConnectionManager(connManager).build();
-            LOGGER.info("+ HttpClient Initialized");
         }
         return _instance;
     }
@@ -181,6 +204,43 @@ public class HttpApisClient implements ApiConstants {
     }
     
     /**
+     * Implementing retries.
+     *
+     * @param req
+     *      current request
+     * @return
+     *      the closeable response
+     */
+    @SuppressWarnings("unchecked")
+    public Status<CloseableHttpResponse> executeWithRetries(ClassicHttpRequest req) {
+        Callable<CloseableHttpResponse> executeRequest = () -> {
+            return getHttpClient().execute(req);
+        };
+        return new CallExecutorBuilder<String>()
+                .config(retryConfig)
+                .onSuccessListener(s -> {
+                    // No need to log anything on success
+                    //System.out.println("Success!");
+                    //System.out.println("Status: " + s);
+                })
+                .onCompletionListener(s -> {
+                    
+                    System.out.println("Retry execution complete!");
+                })
+                .onFailureListener(s -> {
+                    System.out.println("Failed!");
+                })
+                .afterFailedTryListener(s -> {
+                    System.out.println("Try failed! Will try again in 250ms.");
+                })
+                .beforeNextTryListener(s -> {
+                    System.out.println("Trying again...");
+                })
+                .build()
+                .execute(executeRequest);
+    }
+    
+    /**
      * Main Method executting HTTP Request.
      *
      * @param req
@@ -188,12 +248,19 @@ public class HttpApisClient implements ApiConstants {
      * @return
      */
     private ApiResponseHttp executeHttp(ClassicHttpRequest req, boolean mandatory) {
+        // Invoke with Retries (status get a lot of insights
+        System.out.println("OK");
+        ApiInvocationEvent event = new ApiInvocationEvent(req);
+        Status<CloseableHttpResponse> status = executeWithRetries(req);
+        // Evaluate output
         ApiResponseHttp res = null;
-        ApiCallEvent event = new ApiCallEvent(req);
-        try (CloseableHttpResponse response = getHttpClient().execute(req)) {
-            event.setResponseTimestamp(System.currentTimeMillis());
+       
+        event.setTotalTries(status.getTotalTries());
+        event.setLastException(status.getLastExceptionThatCausedRetry());
+        event.setResponseElapsedTime(status.getTotalElapsedDuration().toMillis());
+        try (CloseableHttpResponse response = status.getResult()) {
+            event.setResponseTimestamp(status.getEndTime());
             event.setResponseCode(response.getCode());
-            
             Map<String, String > headers = new HashMap<>();
             Arrays.asList(response.getHeaders())
                   .stream()
@@ -235,16 +302,50 @@ public class HttpApisClient implements ApiConstants {
         }
     }
     
+    /**
+     * Retrieve HttpClient from the instance.
+     *
+     * @return
+     *      httpclient
+     */
     public CloseableHttpClient getHttpClient() {
         return httpClient;
     }
     
-    public void registerListener(String name, ApiCallListener listener) {
-        apiCallListeners.put(name, listener);
+    /**
+     * Register a new listener.
+     *
+     * @param name
+     *      current name
+     * @param listener
+     *      current listener
+     */
+    public static void registerListener(String name, ApiInvocationObserver listener) {
+        apiInvocationsObserversMap.put(name, listener);
     }
     
-    public Optional<ApiCallListener> getListener(String name) {
-        return Optional.ofNullable(apiCallListeners.get(name));
+    /**
+     * Retrieve a listener from its name.
+     *
+     * @param name
+     *      listener name
+     * @return
+     *      get listener
+     */
+    public Optional<ApiInvocationObserver> getListener(String name) {
+        return Optional.ofNullable(apiInvocationsObserversMap.get(name));
+    }
+    
+    /**
+     * Unregister a listener for the calls.
+     *
+     * @param name
+     *          listener name
+     */
+    public void unRegisterListener(String name) {
+        if (apiInvocationsObserversMap.containsKey(name)) {
+            apiInvocationsObserversMap.remove(name);
+        }
     }
     
     /**
@@ -292,8 +393,8 @@ public class HttpApisClient implements ApiConstants {
             }
     }
     
-    public CompletionStage<Void> notifyAsync(Consumer<ApiCallListener> lambda) {
-        return CompletableFutures.allDone(apiCallListeners.values().stream()
+    public CompletionStage<Void> notifyAsync(Consumer<ApiInvocationObserver> lambda) {
+        return CompletableFutures.allDone(apiInvocationsObserversMap.values().stream()
                 .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
                 .collect(Collectors.toList()));
     }
