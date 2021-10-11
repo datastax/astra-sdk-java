@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ResultPage;
@@ -71,7 +72,7 @@ public class KeyClient {
      * @param tableClient TableClient
      * @param keys Object
      */
-    public KeyClient(TableClient tableClient, Object... keys) {
+    public KeyClient(StargateHttpClient stargateClient, TableClient tableClient, Object... keys) {
         this.tableClient    = tableClient;
         this.key            = new ArrayList<>(Arrays.asList(keys));
         this.http           = HttpApisClient.getInstance();

@@ -4,6 +4,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.util.Optional;
 
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.rest.domain.CreateType;
 import com.datastax.stargate.sdk.rest.domain.TypeDefinition;
 import com.datastax.stargate.sdk.rest.domain.UpdateType;
@@ -32,7 +33,7 @@ public class TypeClient {
      * @param keyspaceClient KeyspaceClient
      * @param typeName String
      */
-    public TypeClient(KeyspaceClient keyspaceClient,  String typeName) {
+    public TypeClient(StargateHttpClient stargateClient, KeyspaceClient keyspaceClient,  String typeName) {
         this.keyspaceClient = keyspaceClient;
         this.typeName      = typeName;
         this.http           = HttpApisClient.getInstance();

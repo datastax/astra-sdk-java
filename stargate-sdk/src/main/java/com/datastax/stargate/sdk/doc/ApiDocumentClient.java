@@ -16,24 +16,24 @@
 
 package com.datastax.stargate.sdk.doc;
 
+import static com.datastax.stargate.sdk.utils.AnsiUtils.cyan;
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.stargate.sdk.StargateClient;
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
-import com.datastax.stargate.sdk.core.ApiResponseHttp;
-import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.rest.domain.Keyspace;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
-
-import static com.datastax.stargate.sdk.utils.AnsiUtils.*;
 
 /**
  * Client for the Astra/Stargate document (collections) API.
@@ -45,54 +45,24 @@ public class ApiDocumentClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDocumentClient.class);
     
-    /** Resource for document API schemas. */
+    /** Schenma sub level. */
     public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
+    public static final String PATH_SCHEMA            = "/schemas";
+    public static final String PATH_V2                = "/v2";
     
-    /** Resource for document API schemas. */
-    public static final String PATH_SCHEMA            = "/v2/schemas";
-    
-    /** Marshalling types. */
-    private static final TypeReference<ApiResponse<List<Namespace>>> RESPONSE_LIST_NAMESPACE = 
-            new TypeReference<ApiResponse<List<Namespace>>>(){};
-    
-    /** This the endPoint to invoke to work with different API(s). */
-    private final String endPointApiDocument;
-    
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
-   
-    /**
-     * Initialized document API with an URL and a token.
-     * 
-     * @param endpoint
-     *      http endpoint
-     * @param token
-     *      authentication token
-     */
-    public ApiDocumentClient(String endpoint, String token) {
-        Assert.hasLength(endpoint, "endpoint");
-        Assert.hasLength(token, "token");
-        this.endPointApiDocument =  endpoint;
-        this.http = HttpApisClient.getInstance();
-        http.setToken(token);
-        LOGGER.info("+ API Document    :[" + cyan("{}") + "]", endPointApiDocument);
-    }
+    /** Get Topology of the nodes. */
+    private final StargateHttpClient stargateHttpClient;
     
     /**
-     * Invoked when working with StandAlone Stargate.
-     * 
-     * @param endpoint
-     *      provide the URL
-     * @param tokenProvider
-     *      how to load the token
+     * Constructor with StargateClient as argument.
+     *
+     * @param stargateClient
+     *      stargate client
      */
-    public ApiDocumentClient(String endpoint, ApiTokenProvider tokenProvider) {
-        Assert.hasLength(endpoint, "endpoint");
-        Assert.notNull(tokenProvider, "tokenProvider");
-        this.endPointApiDocument =  endpoint;
-        this.http = HttpApisClient.getInstance();
-        http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API Document    :[" + cyan("{}") + "]", endPointApiDocument);
+    public ApiDocumentClient(StargateHttpClient stargateHttpClient) {
+        Assert.notNull(stargateHttpClient, "stargate client reference. ");
+        this.stargateHttpClient = stargateHttpClient;
+        LOGGER.info("+ API Document :[" + cyan("{}") + "]", "ENABLED");
     }
     
     /**
@@ -101,8 +71,11 @@ public class ApiDocumentClient {
      * @return Stream
      */
     public Stream<Namespace> namespaces() {
-        ApiResponseHttp res = http.GET(getEndpointSchemaNamespaces());
-        return unmarshallType(res.getBody(), RESPONSE_LIST_NAMESPACE).getData().stream();
+        return unmarshallType(stargateClient
+                .GET(this.getEndpointSchemasNamespaces)
+                .getBody(), new TypeReference<ApiResponse<List<Namespace>>>(){})
+              .getData()
+              .stream();
     }
     
     /**
@@ -115,6 +88,10 @@ public class ApiDocumentClient {
         return namespaces().map(Keyspace::getName);
     }
     
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
     /**
      * Move the document API (namespace client)
      * 
@@ -125,24 +102,14 @@ public class ApiDocumentClient {
         return new NamespaceClient(this, namespace);
     }
     
+    // ---------------------------------
+    // ----   Build Resources URLS  ----
+    // ---------------------------------
+    
     /**
-     * Getter accessor for attribute 'endPointApiDocument'.
-     *
-     * @return
-     *       current value of 'endPointApiDocument'
+     * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
-    public String getEndPointApiDocument() {
-        return endPointApiDocument;
-    }
-
-    /**
-     * Endpoint to access schema for namespace.
-     *
-     * @return
-     *      url to build schema for namespaces
-     */
-    public String getEndpointSchemaNamespaces() {
-        return getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
-    }
-
+    public Function<StargateClientNode, String> getEndpointSchemasNamespaces = 
+            (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
+   
 }

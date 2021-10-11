@@ -22,6 +22,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 import java.net.HttpURLConnection;
 import java.util.Optional;
 
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 import com.datastax.stargate.sdk.rest.domain.IndexDefinition;
@@ -53,7 +54,7 @@ public class IndexClient {
      * @param indexName
      *      current index identifier
      */
-    public IndexClient(TableClient tableClient, String indexName) {
+    public IndexClient(StargateHttpClient stargateClient, TableClient tableClient, String indexName) {
         this.tableClient    = tableClient;
         this.indexName      = indexName;
         this.http           = HttpApisClient.getInstance();

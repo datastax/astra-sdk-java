@@ -26,8 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.DataCenter;
@@ -36,7 +39,6 @@ import com.datastax.stargate.sdk.rest.domain.Keyspace;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;
 import com.datastax.stargate.sdk.rest.domain.TypeDefinition;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -63,14 +65,15 @@ public class KeyspaceClient {
     private static final TypeReference<ApiResponse<List<TypeDefinition>>> RESPONSE_TYPE_DEFINITIONS = 
             new TypeReference<ApiResponse<List<TypeDefinition>>>(){};
             
-    /** Astra Client. */
-    private final ApiDataClient restclient;
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Reference for the resources. */
+    private ApiDataClient apiData = null;
+    
+    /** Get Topology of the nodes. */
+    private final StargateHttpClient stargateHttpClient;
     
     /** Namespace. */
-    private final String keyspace;
+    private String keyspace;
     
     /** Hold a reference to client to keep singletons.*/
     private Map <String, TableClient> tablesClient = new HashMap<>();
@@ -84,17 +87,17 @@ public class KeyspaceClient {
      * @param restclient ApiRestClient
      * @param keyspace String
      */
-    public KeyspaceClient(ApiDataClient restclient, String keyspace) {
-        this.restclient    = restclient;
-        this.keyspace      = keyspace;
-        this.http          = HttpApisClient.getInstance();
+    public KeyspaceClient(ApiDataClient apiData, String keyspace) {
+        this.apiData            = apiData;
+        this.keyspace           = keyspace;
+        this.stargateHttpClient = apiData.stargateHttpClient;
         Assert.hasLength(keyspace, "keyspace");
     }
     
     // ---------------------------------
     // ----        CRUD             ----
     // ---------------------------------
-    
+     
     /**
      * Find a namespace and its metadata based on its id
      * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspace
@@ -102,7 +105,7 @@ public class KeyspaceClient {
      * @return Keyspace
      */
     public Optional<Keyspace> find() {
-        ApiResponseHttp res = http.GET(getEndPointSchemaKeyspace());
+        ApiResponseHttp res = stargateHttpClient.GET(keyspaceSchemaResource);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -128,8 +131,9 @@ public class KeyspaceClient {
     public void create(DataCenter... datacenters) {
         Assert.notNull(datacenters, "datacenters");
         Assert.isTrue(datacenters.length > 0, "DataCenters are required");
-        http.POST(restclient.getEndpointSchemaKeyspaces(), 
-             marshall(new Keyspace(keyspace, Arrays.asList(datacenters))));
+        stargateHttpClient.POST(
+                apiData.keyspacesSchemaResource, 
+                marshall(new Keyspace(keyspace, Arrays.asList(datacenters))));
     }
     
     /**
@@ -139,8 +143,9 @@ public class KeyspaceClient {
      */
     public void createSimple(int replicas) {
         Assert.isTrue(replicas>0, "Replica number should be bigger than 0");
-        http.POST(restclient.getEndpointSchemaKeyspaces(),
-             marshall(new Keyspace(keyspace, replicas)));
+        stargateHttpClient.POST(
+                apiData.keyspacesSchemaResource, 
+                marshall(new Keyspace(keyspace, replicas)));
     }
     
     /**
@@ -148,7 +153,7 @@ public class KeyspaceClient {
      * https://stargate.io/docs/stargate/1.0/developers-guide/api_ref/openapi_rest_ref.html#_deletekeyspace
      */
     public void delete() {
-        http.DELETE(getEndPointSchemaKeyspace());
+        stargateHttpClient.DELETE(keyspaceSchemaResource);
     }
     
     /**
@@ -158,10 +163,10 @@ public class KeyspaceClient {
      * @return TableDefinition
      */
     public Stream<TableDefinition> tables() {
-        // Access API
-        ApiResponseHttp res = http.GET(getEndPointSchemaTables());
-        // Masharl returned objects
-        return unmarshallType(res.getBody(), RESPONSE_TABLE_DEFINITIONS).getData().stream();
+        return unmarshallType(
+                stargateHttpClient.GET(tablesSchemaResource).getBody(), 
+                RESPONSE_TABLE_DEFINITIONS)
+                .getData().stream();
     }
     
     /**
@@ -171,10 +176,10 @@ public class KeyspaceClient {
      *      list of types.
      */
     public Stream<TypeDefinition> types() {
-        // Access API
-        ApiResponseHttp res = http.GET(getEndPointSchemaTypes());
-        // Marshall returned objects
-        return unmarshallType(res.getBody(), RESPONSE_TYPE_DEFINITIONS).getData().stream();
+        return unmarshallType(
+                stargateHttpClient.GET(typesSchemaResource).getBody(), 
+                RESPONSE_TYPE_DEFINITIONS)
+                .getData().stream();
     }
         
     /**
@@ -208,7 +213,7 @@ public class KeyspaceClient {
     public TableClient table(String tableName) {
         Assert.hasLength(tableName, "tableName");
         if (!tablesClient.containsKey(tableName)) {
-            tablesClient.put(tableName, new TableClient(this, tableName));
+            tablesClient.put(tableName, new TableClient(stargateHttpClient, this, tableName));
         }
         return tablesClient.get(tableName);
     }
@@ -222,7 +227,7 @@ public class KeyspaceClient {
     public TypeClient type(String typeName) {
         Assert.hasLength(typeName, "typeName");
         if (!typesClient.containsKey(typeName)) {
-            typesClient.put(typeName, new TypeClient(this, typeName));
+            typesClient.put(typeName, new TypeClient(stargateHttpClient, this, typeName));
         }
         return typesClient.get(typeName);
     }
@@ -238,7 +243,7 @@ public class KeyspaceClient {
     }
     
     // ---------------------------------
-    // ----       Utilities         ----
+    // ----       Resources         ----
     // ---------------------------------
     
     /**
@@ -249,64 +254,41 @@ public class KeyspaceClient {
     public String getKeyspace() {
         return keyspace;
     }
+
+    /**
+     * /v2/keyspaces/{keyspace}
+     */
+    public Function<StargateClientNode, String> keyspaceResource = 
+             (node) -> apiData.keyspacesResource.apply(node) + "/" + keyspace;
     
     /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
+     * /v2/schemas/keyspaces/{keyspace}
      */
-    public String getEndPointSchemaKeyspace() {
-        return restclient.getEndpointSchemaKeyspaces() + "/" + keyspace;
-    }
+    public Function<StargateClientNode, String> keyspaceSchemaResource = 
+            (node) -> apiData.keyspacesSchemaResource.apply(node) + "/" + keyspace;
+   
+    /**
+     * /v2/keyspaces/{keyspace}/tables
+     */
+    public Function<StargateClientNode, String> tablesResource = 
+            (node) -> keyspaceResource.apply(node) + PATH_TABLES;
+
+    /**
+     * /v2/schemas/keyspaces/{keyspace}/tables
+     */
+    public Function<StargateClientNode, String> tablesSchemaResource = 
+            (node) -> keyspaceSchemaResource.apply(node) + PATH_TABLES;
     
     /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
+     * /v2/keyspaces/{keyspace}/types
      */
-    public String getEndPointSchemaTables() {
-        return getEndPointSchemaKeyspace() + PATH_TABLES;
-    }
-    
-    /**
-     * Access Keyspace data.
-     *
-     * @return
-     *      the endpoint for keyspace
+    public Function<StargateClientNode, String> typesResource = 
+            (node) -> keyspaceResource.apply(node) + PATH_TYPES;
+                       
+    /** 
+     * /v2/schemas/keyspaces/{keyspace}/types 
      */
-    public String getEndPointKeyspace() {
-        return restclient.getEndPointKeyspaces() + "/" + keyspace;
-    }
-    
-    /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
-     */
-    public String getEndPointTables() {
-        return getEndPointKeyspace() + PATH_TABLES;
-    }
-    
-    /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
-     */
-    public String getEndPointTypes() {
-        return getEndPointKeyspace() + PATH_TYPES;
-    }
-    
-    /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
-     */
-    public String getEndPointSchemaTypes() {
-        return getEndPointSchemaKeyspace() + PATH_TYPES;
-    }
+    public Function<StargateClientNode, String> typesSchemaResource = 
+            (node) -> keyspaceSchemaResource.apply(node) + PATH_TYPES;
+  
 }

@@ -1,10 +1,12 @@
 package com.datastax.stargate.sdk.loadbalancer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generic implementation of a client-side load balancer. It will handle
@@ -16,7 +18,10 @@ import java.util.List;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class Loadbalancer < RSC >  {
-
+    
+    /** Logger for our Client. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Loadbalancer.class);
+   
     /** Constants to compute percentage. **/
     private static final double HUNDRED = 100.0;
 
@@ -33,7 +38,7 @@ public class Loadbalancer < RSC >  {
     private int unavailableCount = 0;
 
     /** How much time a component should stay unvailable before another evaluation. **/
-    private int unavailabilityPeriod = 0;
+    private int unavailabilityPeriod = 10;
 
     /** Policy used. **/
     private final LoadBalancingPolicy lbPolicy;
@@ -47,8 +52,9 @@ public class Loadbalancer < RSC >  {
      * @param resources
      *      list of resources
      */
-    public Loadbalancer(List < RSC > resources) {
-        this(LoadBalancingPolicy.ROUND_ROBIN, resources);
+    @SuppressWarnings("unchecked")
+    public Loadbalancer(RSC... lst) {
+        this(LoadBalancingPolicy.ROUND_ROBIN, lst);
     }
     
     /**
@@ -59,10 +65,9 @@ public class Loadbalancer < RSC >  {
      * @param resources
      *          list of resources
      */
-    @SafeVarargs
-    public Loadbalancer(LoadBalancingPolicy policy,LoadBalancingResource < RSC >... resources) {
+    public Loadbalancer(LoadBalancingPolicy policy, List< LoadBalancingResource < RSC >> listRsc) {
         this.lbPolicy   = policy;
-        this.resources  = Arrays.asList(resources);
+        this.resources  = listRsc;
         Collections.sort(this.resources);
     }
     
@@ -74,7 +79,8 @@ public class Loadbalancer < RSC >  {
      * @param resources
      *          list of resources
      */
-    public Loadbalancer(LoadBalancingPolicy policy, List < RSC > resources) {
+    @SuppressWarnings("unchecked")
+    public Loadbalancer(LoadBalancingPolicy policy, RSC... resources) {
         this.lbPolicy   = policy;
         for (RSC rsc : resources) {
             LoadBalancingResource < RSC > lbRsc = new LoadBalancingResource<RSC>(rsc);
@@ -82,7 +88,7 @@ public class Loadbalancer < RSC >  {
             lbRsc.setNbUse(0);
             // Set coefficient all equals
             if (lbPolicy == LoadBalancingPolicy.ROUND_ROBIN) {
-                lbRsc.setDefaultWeigth(HUNDRED / resources.size());
+                lbRsc.setDefaultWeigth(HUNDRED / resources.length);
             }
             lbRsc.setCurrentWeight(lbRsc.getDefaultWeigth());
             this.resources.add(lbRsc);
@@ -112,6 +118,7 @@ public class Loadbalancer < RSC >  {
                     // if resource need to be reintroduced 
                     if (shouldEnableResource(rsc)) {
                         rsc.setAvailable(true);
+                        LOGGER.info("{} has reached ends of its unavailability period, putting it back in the pool", rsc.getId());
                         redistributeWeights();
                         return getLoadBalancedResource();
                     }
@@ -167,11 +174,18 @@ public class Loadbalancer < RSC >  {
         for (LoadBalancingResource < RSC > wrapper2 : resources) {
             if (wrapper2.isAvailable()) {
                 wrapper2.setCurrentWeight(wrapper2.getDefaultWeigth() + loadtoDistribute);
+            } else {
+                wrapper2.setCurrentWeight(0);
             }
             
         }
         /** Sorting with unavailable first to be tested. */
         Collections.sort(resources);
+        LOGGER.info("Resources status after weight computation:");
+        for (LoadBalancingResource < RSC > w : resources) {
+            LOGGER.info(" + " + w.getId() + ": " + w.getCurrentWeight() );
+        }
+        
     }
 
     /**
@@ -220,6 +234,7 @@ public class Loadbalancer < RSC >  {
     public final LoadBalancingResource < RSC > handleComponentError(
             final LoadBalancingResource < RSC > component, 
             final Throwable parentException) {
+        System.out.println("Disabling... " + component.getId());
         component.setAvailable(false);
         component.setUnavailabilityCause(parentException.getMessage());
         component.setUnavailabilityError(parentException);

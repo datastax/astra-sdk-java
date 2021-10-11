@@ -1,8 +1,11 @@
 package com.datastax.stargate.sdk;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
+import com.datastax.stargate.sdk.loadbalancer.LoadBalancingPolicy;
+import com.datastax.stargate.sdk.loadbalancer.LoadBalancingResource;
 import com.datastax.stargate.sdk.loadbalancer.Loadbalancer;
 
 /**
@@ -35,19 +38,21 @@ public class StargateClientDC {
     public StargateClientDC(String dcName, ApiTokenProvider tokenProvider, List<StargateClientNode> nodes) {
        this.tokenProvider   = tokenProvider;
        this.datacenterName  = dcName;
-       this.stargateNodesLB = new Loadbalancer<StargateClientNode>(nodes);
+       // Creating explicitely the LB resources to provide Identifiers 
+       List<LoadBalancingResource<StargateClientNode>> lbs = new ArrayList<>();
+       for (StargateClientNode n : nodes) {
+           LoadBalancingResource < StargateClientNode > lbRsc = new LoadBalancingResource<>(n);
+           lbRsc.setId(n.getNodeName());
+           lbRsc.setDefaultWeigth(100 / nodes.size());
+           lbRsc.setCurrentWeight(lbRsc.getDefaultWeigth());
+           lbRsc.setAvailable(true);
+           lbRsc.setNbUse(0);
+           lbs.add(lbRsc);
+       }
+       this.stargateNodesLB = new Loadbalancer<StargateClientNode>(LoadBalancingPolicy.ROUND_ROBIN, lbs);
     }
-    
    
-    /**
-     * Use the Load balancer to retrieve a node in the datacenter.
-     *
-     * @return
-     *      get a node in the datacenter
-     */
-    public StargateClientNode lookupNode() {
-        return stargateNodesLB.get();
-    }
+    
 
     /**
      * Getter accessor for attribute 'stargateNodesLB'.

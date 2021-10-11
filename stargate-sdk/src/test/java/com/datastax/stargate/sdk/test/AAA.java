@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.StargateClient.StargateNode;
-import com.datastax.stargate.sdk.audit.AnsiLoggerObserver;
+import com.datastax.stargate.sdk.audit.AnsiLoggerObserverLight;
+import com.datastax.stargate.sdk.config.StargateNodeConfig;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -39,14 +39,12 @@ public class AAA {
             sc.apiRest().keyspaceNames().forEach(System.out::println);
         }
     }
-    
-  
-    
+      
     @Test
-    public void initStargate() {
+    public void initStargate() throws InterruptedException {
         // RETRY and RETRY POOLICY
         // ASTRA MULTI REGION
-        
+        int times= 1000;
         try(StargateClient sc = StargateClient.builder()
                 // CQL 
                 .withAuthCredentials("cassandra","cassandra")
@@ -59,19 +57,15 @@ public class AAA {
                 //.withApiNode(new StargateNode("localhost"))
                 //.withApiNode(new StargateNode("127.0.0.1"))
                 .withoutCqlSession()
-                .withApiNodeDC("datacenter1", 
-                        new StargateNode("node11",  "http://localhost:8082",  "http://localhost:8080",  "http://localhost:8081"))
-                .addHttpObserver("logger", new AnsiLoggerObserver())
+                .withApiNodeDC("datacenter1", new StargateNodeConfig("node11", "http://localhost:8082",  "http://localhost:8080",  "http://localhost:8081"))
+                .withApiNodeDC("datacenter1", new StargateNodeConfig("node12", "http://localhost:9092",  "http://localhost:9090",  "http://localhost:9091"))
+                .addHttpObserver("logger", new AnsiLoggerObserverLight())
                 .build()) {
             
-            // I can access CQL
-            //System.out.println(sc.cqlSession().get()
-            //        .execute("SELECT data_center from system.local")
-            //       .one().getString("data_center"));
-            
-            // I can access REST
-            sc.apiRest().keyspaceNames().forEach(System.out::println);
-            
+           for(int idx=0;idx<times;idx++) {
+               sc.apiRest().keyspaceNames();
+               Thread.sleep(500);
+           } 
             // failover
             //sc.useDataCenter("datacenter1");
             
@@ -96,8 +90,8 @@ public class AAA {
                 + " ]"
                 + "}";
         
-        Map<String, List<StargateNode>> stargateNodes = JsonUtils.unmarshallType(var, 
-                    new TypeReference<Map<String, List<StargateNode>>>(){});
+        Map<String, List<StargateNodeConfig>> stargateNodes = JsonUtils.unmarshallType(var, 
+                    new TypeReference<Map<String, List<StargateNodeConfig>>>(){});
         System.out.println(stargateNodes);
     }
     

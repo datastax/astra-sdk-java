@@ -1,47 +1,64 @@
 package com.datastax.stargate.sdk;
 
-import com.datastax.stargate.sdk.core.ApiTokenProvider;
-import com.datastax.stargate.sdk.doc.ApiDocumentClient;
-import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
-import com.datastax.stargate.sdk.rest.ApiDataClient;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+
+import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
- * Represents an Instance of Stargate.
- * You will have multiple instances per DC and multiple DC in your Cassandra Cluster.
+ * Definition of a Stargate Node (multiple per DC, multiple DC)
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StargateClientNode {
+public class StargateClientNode implements Serializable {
+    
+    /** Serial. */
+    private static final long serialVersionUID = 1L;
+    
+    /** Node will be monitored with this endpoint. */
+    public static final String PATH_HEALTH = "/health";
     
     /** Node name. */
-    private String nodeName;
-    
-    /** Hold a reference for the ApiDocument. */
-    private ApiDocumentClient apiDoc;
+    private final String nodeName;
     
     /** Hold a reference for the ApiRest. */
-    private ApiDataClient apiRest;
+    private final String apiRestEndpoint;
     
     /** Hold a reference for the ApiGraphQL. */
-    private ApiGraphQLClient apiGraphQL;
-   
+    private final String apiGraphQLEndpoint;
+    
     /**
-     * Provide parameters to initialize the Stargate interfaces.
-     *
-     * @param tokenProvider
-     *          token provider (can be a static one)
-     * @param urlRest
-     *          endpoint for REST
-     * @param urlGraphQL
-     *          endpoint for graphQL
-     * @param cql
-     *          cqlSession initialized before (DC LEVEL)
+     * Full fledge constructor for a node. The host is not enough as a stargate node
+     * could have a load balancer on top of it changing the default host:8082...
+     * 
+     * @param nodeName
+     *      node identifier
+     * @param apiRestUrl
+     *      rest Api URL
+     * @param apiGraphQLUrl
+     *      graphQL Api URL
      */
-    public StargateClientNode(ApiTokenProvider tokenProvider, String name, String urlRest, String urlGraphQL) {
-        this.nodeName   = name;
-        this.apiDoc     = new ApiDocumentClient(urlRest, tokenProvider);
-        this.apiRest    = new ApiDataClient(urlRest, tokenProvider);
-        this.apiGraphQL = new ApiGraphQLClient(urlGraphQL, tokenProvider);
+    public StargateClientNode(String nodeName, String apiRestUrl, String apiGraphQLUrl) {
+        super();
+        this.nodeName           = nodeName;
+        this.apiRestEndpoint    = apiRestUrl;
+        this.apiGraphQLEndpoint = apiGraphQLUrl;
+    }
+
+    /**
+     * Invoke heath endpoint.
+     *
+     * @return
+     *      is the service is up.
+     */
+    public boolean isAlive() {
+        // The heartbit resource does not required any token, we can let it blank
+        return HttpURLConnection.HTTP_OK ==  HttpApisClient
+                .getInstance()
+                .executeHttp(new HttpGet(getApiRestEndpoint() + PATH_HEALTH), false)
+                .getCode();
     }
     
     /**
@@ -55,39 +72,23 @@ public class StargateClientNode {
     }
 
     /**
-     * Leveraging on the REST endpoint to evaluate a node as UP.
+     * Getter accessor for attribute 'apiRestEndpoint'.
      *
      * @return
-     *      status of the node
+     *       current value of 'apiRestEndpoint'
      */
-    public boolean isAlive() {
-        return apiRest.isAlive();
+    public String getApiRestEndpoint() {
+        return apiRestEndpoint;
     }
-    
+
     /**
-     * Accessing Document API
-     * @return ApiDocumentClient
+     * Getter accessor for attribute 'apiGraphQLEndpoint'.
+     *
+     * @return
+     *       current value of 'apiGraphQLEndpoint'
      */
-    public ApiDocumentClient apiDocument() {
-        return apiDoc;
+    public String getApiGraphQLEndpoint() {
+        return apiGraphQLEndpoint;
     }
-    
-    /**
-     * Accessing Rest API
-     * @return ApiRestClient
-     */
-    public ApiDataClient apiRest() {
-        return apiRest;
-    }
-    
-    /**
-     * Accessing Rest API
-     * @return ApiGraphQLClient
-     */
-    public ApiGraphQLClient apiGraphQL() {
-        return apiGraphQL;
-    }
-    
-    
 
 }

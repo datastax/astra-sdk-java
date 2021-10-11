@@ -20,6 +20,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.*;
 import java.net.HttpURLConnection;
 import java.util.Optional;
 
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
@@ -56,7 +57,7 @@ public class ColumnsClient {
      * @param columnId
      *      current column identifier
      */
-    public ColumnsClient(TableClient tableClient, String columnId) {
+    public ColumnsClient(StargateHttpClient stargateClient, TableClient tableClient, String columnId) {
         this.tableClient    = tableClient;
         this.columnId       = columnId;
         this.http           = HttpApisClient.getInstance();

@@ -27,10 +27,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ResultPage;
@@ -46,7 +49,6 @@ import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;
 import com.datastax.stargate.sdk.rest.domain.TableOptions;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -57,14 +59,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class TableClient {
     
-    /** Namespace. */
-    private final KeyspaceClient keyspaceClient;
+    public static final String PATH_COLUMNS  = "/columns";
+    public static final String PATH_INDEXES  = "/indexes";
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Http Client with load balancing anf failover. */
+    private final StargateHttpClient stargateHttpClient;
+    
+    /** Namespace. */
+    private KeyspaceClient keyspaceClient;
     
     /** Collection name. */
-    private final String tableName;
+    private String tableName;
     
     /** Hold a reference to client to keep singletons.*/
     private Map <String, ColumnsClient> columnsClient = new HashMap<>();
@@ -87,10 +92,10 @@ public class TableClient {
      * @param keyspaceClient KeyspaceClient
      * @param tableName String
      */
-    public TableClient(KeyspaceClient keyspaceClient,  String tableName) {
-        this.keyspaceClient = keyspaceClient;
-        this.tableName      = tableName;
-        this.http           = HttpApisClient.getInstance();
+    public TableClient(StargateHttpClient stargateClient, KeyspaceClient keyspaceClient,  String tableName) {
+        this.stargateHttpClient = stargateClient;
+        this.keyspaceClient     = keyspaceClient;
+        this.tableName          = tableName;
         Assert.notNull(keyspaceClient, "keyspaceClient");
         Assert.hasLength(tableName,    "tableName");   
     }
@@ -100,8 +105,9 @@ public class TableClient {
     // ---------------------------------
     
     /**
-     * Get metadata of the collection. There is no dedicated resources we
-     * use the list and filter with what we need.
+     * Get a table.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getTable">Reference Documentation</a>
      *
      * @return metadata of the collection if its exist or empty
      */
@@ -122,19 +128,22 @@ public class TableClient {
     }
     
     /**
-     * Create a table 
-     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
+     * Create a table.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createTable">Reference Documentation</a>
      * 
      * @param tcr creation request
      */
      public void create(CreateTable tcr) {
          tcr.setName(tableName);
          Assert.notNull(tcr, "CreateTable");
-         http.POST(getEndPointSchemaTables(), marshall(tcr));
+         stargateHttpClient.POST(keyspaceClient.tablesSchemaResource, marshall(tcr));
      }
      
      /**
-      * updateOptions
+      * Replace a table definition (table options only).
+      * 
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/replaceTable">Reference Documentation</a>
       * 
       * @param to TableOptions
       */
@@ -145,15 +154,16 @@ public class TableClient {
          ct.setColumnDefinitions(null);
          ct.setName(tableName);
          ct.setTableOptions(to);
-         http.PUT(getEndPointSchemaTable(), marshall(ct));
+         stargateHttpClient.PUT(tableSchemaResource, marshall(ct));
      }
      
      /*
-      * Delete a table
-      * https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
+      * Delete a table.
+      * 
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteTable">Reference Documentation</a>
       */
      public void delete() {
-         http.DELETE(getEndPointSchemaTable());
+         stargateHttpClient.DELETE(tableSchemaResource);
      }
      
      // ---------------------------------
@@ -161,27 +171,33 @@ public class TableClient {
      // ---------------------------------
      
      /**
-      * TODO: Can do better with a bean - SERIALIZATION + look at target column type
+      * Add Rows.
       * 
-      * @param record Map
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/addRows">Reference Documentation</a>
+      * 
+      * @param record 
+      *         map of recors
       */
      public void upsert(Map<String, Object> record) {
          Assert.notNull(record, "New Record");
          Assert.isTrue(!record.isEmpty(), "New record should not be empty");
-         http.POST(getEndPointTable(), marshall(record));
+         stargateHttpClient.POST(tableResource, marshall(record));
      }
      
      /**
-      * search
+      * Search a table.
       * 
-      * @param query SearchTableQuery
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/searchTable">Reference Documentation</a>
+      * 
+      * @param query
+      *         search params with filters and ordering
       * @return RowResultPage
       */
      public RowResultPage search(SearchTableQuery query) {
          // Parameters validation
          Assert.notNull(query, "query");
          // Invoke Http endpint
-         ApiResponseHttp res = http.GET(buildQueryUrl(query));
+         ApiResponseHttp res = stargateHttpClient.GET(tableResource, buildSearchUrlSuffix(query));
          // Marshall results
          ApiResponse<List<LinkedHashMap<String,?>>> result = unmarshallType(res.getBody(), TYPE_RESULTS);
          // Build result
@@ -223,9 +239,9 @@ public class TableClient {
       * @param query SearchTableQuery
       * @return String
       */
-     private String buildQueryUrl(SearchTableQuery query) {
+     private String buildSearchUrlSuffix(SearchTableQuery query) {
          try {
-             StringBuilder sbUrl = new StringBuilder(getEndPointTable());
+             StringBuilder sbUrl = new StringBuilder();
              // Add query Params
              sbUrl.append("?page-size=" + query.getPageSize());
              // Depending on query you forge your URL
@@ -344,7 +360,7 @@ public class TableClient {
     public ColumnsClient column(String columnId) {
         Assert.hasLength(columnId, "columnName");
         if (!columnsClient.containsKey(columnId)) {
-            columnsClient.put(columnId, new ColumnsClient(this, columnId));
+            columnsClient.put(columnId, new ColumnsClient(stargateHttpClient, this, columnId));
         }
         return columnsClient.get(columnId);
     }
@@ -358,7 +374,7 @@ public class TableClient {
     public IndexClient index(String indexName) {
         Assert.hasLength(indexName, "indexName");
         if (!indexsClient.containsKey(indexName)) {
-            indexsClient.put(indexName, new IndexClient(this, indexName));
+            indexsClient.put(indexName, new IndexClient(stargateHttpClient, this, indexName));
         }
         return indexsClient.get(indexName);
     }
@@ -371,59 +387,37 @@ public class TableClient {
      */
     public KeyClient key(Object... keys) {
         Assert.notNull(keys, "key");
-        return new KeyClient( this, keys);
+        return new KeyClient(stargateHttpClient, this, keys);
     }
-    
     
     // ---------------------------------
-    // ----       Utilities         ----
+    // ----       Resources         ----
     // ---------------------------------
+
+    /**
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}
+     */
+    public Function<StargateClientNode, String> tableSchemaResource = 
+             (node) -> keyspaceClient.tablesSchemaResource.apply(node) + "/" + tableName;
     
     /**
-     * Syntax sugar
-     * 
-     * @return String
+     * /v2/keyspaces/{keyspace}/tables/{tableName}
      */
-    public String getEndPointSchemaColumns() {
-        return getEndPointSchemaTable() + "/columns";
-    }
-    
+    public Function<StargateClientNode, String> tableResource = 
+             (node) -> keyspaceClient.tablesResource.apply(node) + "/" + tableName;
+  
     /**
-     * Syntax sugar
-     * 
-     * @return String
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}/columns
      */
-    public String getEndPointSchemaIndexes() {
-        return getEndPointSchemaTable() + "/indexes";
-    }
-    
+    public Function<StargateClientNode, String> columnsSchemaResource = 
+            (node) -> tableSchemaResource.apply(node) + PATH_COLUMNS;
+
     /**
-     * Syntax sugar
-     * 
-     * @return String
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}/indexes
      */
-    public String getEndPointSchemaTables() {
-        return keyspaceClient.getEndPointSchemaKeyspace() + "/tables";
-    }
-    
-    /**
-     * Syntax sugar
-     * 
-     * @return String
-     */
-    public String getEndPointSchemaTable() {
-        return getEndPointSchemaTables() + "/" + tableName;
-    }
-    
-    /**
-     * Syntax sugar
-     * 
-     * @return String
-     */
-    public String getEndPointTable() {
-        return keyspaceClient.getEndPointKeyspace() + "/" + tableName;
-    }
-    
+    public Function<StargateClientNode, String> indexesSchemaResource = 
+            (node) -> tableSchemaResource.apply(node) + PATH_INDEXES;
+     
     /**
      * Getter accessor for attribute 'tableName'.
      *

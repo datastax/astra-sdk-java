@@ -10,13 +10,18 @@ import java.util.function.Supplier;
  */
 public interface ApiTokenProvider extends Supplier<String> {
     
-
-    String getToken();
-    
     /** {@inheritDoc} */
     @Override
     default String get() {
         return getToken();
     }
+    
+    /**
+     * Building the token.
+     *
+     * @return
+     *      current token
+     */
+    String getToken();
 
 }

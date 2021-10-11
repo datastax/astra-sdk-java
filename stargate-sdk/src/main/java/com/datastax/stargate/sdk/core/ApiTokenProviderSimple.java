@@ -5,10 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import com.datastax.stargate.sdk.loadbalancer.Loadbalancer;
@@ -20,20 +19,25 @@ import com.datastax.stargate.sdk.utils.JsonUtils;
  * Using the authentication endpoint you shoud be able tp...
  *
  * @author Cedrick LUNVEN (@clunven)
- *
  */
-public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
+public class ApiTokenProviderSimple implements ApiTokenProvider, ApiConstants {
     
-    /** Default values for authentication. */
+    /** Default username for Cassandra. */
     public static final String DEFAULT_USERNAME      = "cassandra";
-    public static final String DEFAULT_PASSWORD      = "cassandra";
-    public static final String DEFAULT_AUTH_URL      = "http://localhost:8081";
-    public static final int    DEFAULT_TIMEOUT_TOKEN = 300;
     
-    /** Username - required all the time */
+    /** Default password for Cassandra. */
+    public static final String DEFAULT_PASSWORD      = "cassandra";
+    
+    /** Default URL for a Stargate node. */
+    public static final String DEFAULT_AUTH_URL      = "http://localhost:8081";
+    
+    /** Defualt Timeout for Stargate token (1800s). */
+    public static final int    DEFAULT_TIMEOUT_TOKEN = 1800;
+    
+    /** Credentials. */
     private final String username;
 
-    /** Password - required all the time */
+    /** Credentials. */
     private final String password;
     
     /** Authentication token, time to live. */
@@ -51,7 +55,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
     /**
      * Using defautls
      */
-    public TokenProviderDefault() {
+    public ApiTokenProviderSimple() {
         this(DEFAULT_USERNAME, DEFAULT_PASSWORD, DEFAULT_AUTH_URL, DEFAULT_TIMEOUT_TOKEN);
     }
     
@@ -63,7 +67,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      * @param password
      *      password
      */
-    public TokenProviderDefault(String username, String password) {
+    public ApiTokenProviderSimple(String username, String password) {
         this(username, password, DEFAULT_AUTH_URL, DEFAULT_TIMEOUT_TOKEN);
     }
     
@@ -77,7 +81,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      * @param url
      *      endpoint to authenticate.
      */
-    public TokenProviderDefault(String username, String password, String... url) {
+    public ApiTokenProviderSimple(String username, String password, String... url) {
         this(username, password, Arrays.asList(url), DEFAULT_TIMEOUT_TOKEN);
     }
     
@@ -91,7 +95,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      * @param url
      *      endpoint to authenticate.
      */
-    public TokenProviderDefault(String username, String password, List<String> url) {
+    public ApiTokenProviderSimple(String username, String password, List<String> url) {
         this(username, password, url, DEFAULT_TIMEOUT_TOKEN);
     }
     
@@ -107,7 +111,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      * @param ttlSecs
      *      token time to live
      */
-    public TokenProviderDefault(String username, String password, String url, int ttlSecs) {
+    public ApiTokenProviderSimple(String username, String password, String url, int ttlSecs) {
         this(username, password, Collections.singletonList(url), ttlSecs);
     }
     
@@ -123,7 +127,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
      * @param ttlSecs
      *      token time to live
      */
-    public TokenProviderDefault(String username, String password, List<String> url, int ttlSecs) {
+    public ApiTokenProviderSimple(String username, String password, List<String> url, int ttlSecs) {
         Assert.hasLength(username, "username");
         Assert.hasLength(password, "password");
         Assert.isTrue(ttlSecs>0, "time to live");
@@ -132,7 +136,7 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
         this.username                 = username;
         this.password                 = password;
         this.tokenttl                 = Duration.ofSeconds(ttlSecs);
-        this.endPointAuthenticationLB = new Loadbalancer<String>(url);
+        this.endPointAuthenticationLB = new Loadbalancer<String>(url.toArray(new String[0]));
     }
     
     /**
@@ -158,20 +162,21 @@ public class TokenProviderDefault implements ApiTokenProvider, ApiConstants {
         try {
             HttpPost httpPost = new HttpPost(endPointAuthenticationLB.get() + "/v1/auth");
             httpPost.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
+            httpPost.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
+            httpPost.addHeader(HEADER_REQUEST_ID, UUID.randomUUID().toString());
+            httpPost.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
             httpPost.setEntity(new StringEntity(new StringBuilder("{")
                     .append("\"username\":").append(JsonUtils.valueAsJson(username))
                     .append(", \"password\":").append(JsonUtils.valueAsJson(password))
                     .append("}").toString()
-            )); 
-            try (CloseableHttpResponse response = HttpApisClient.getInstance().getHttpClient().execute(httpPost)) {
-                String body = EntityUtils.toString(response.getEntity());
-                EntityUtils.consume(response.getEntity());
-                if (201 == response.getCode() || 200 == response.getCode()) {
-                    return (String) JsonUtils.unmarshallBean(body, Map.class).get("authToken");
-                } else {
-                    EntityUtils.consume(response.getEntity());
-                    throw new IllegalStateException("Cannot generate authentication token " + body);
-                }
+            ));
+            // Reuse Execute HTTP for the retry mechanism
+            ApiResponseHttp response = HttpApisClient.getInstance().executeHttp(httpPost, true);
+            
+            if (201 == response.getCode() || 200 == response.getCode()) {
+                return (String) JsonUtils.unmarshallBean(response.getBody(), Map.class).get("authToken");
+            } else {
+                throw new IllegalStateException("Cannot generate authentication token " + response.getBody());
             }
             
         } catch(Exception e)  {

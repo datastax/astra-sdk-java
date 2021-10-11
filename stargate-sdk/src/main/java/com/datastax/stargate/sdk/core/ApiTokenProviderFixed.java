@@ -5,7 +5,7 @@ package com.datastax.stargate.sdk.core;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class TokenProviderStatic implements ApiTokenProvider {
+public class ApiTokenProviderFixed implements ApiTokenProvider {
 
     /** Reference to token. */
     private String token;
@@ -16,7 +16,7 @@ public class TokenProviderStatic implements ApiTokenProvider {
      * @param token
      *      static token to be used
      */
-    public TokenProviderStatic(String token) {
+    public ApiTokenProviderFixed(String token) {
         this.token = token;
     }
     

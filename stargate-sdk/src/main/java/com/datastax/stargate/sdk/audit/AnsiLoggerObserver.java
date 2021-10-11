@@ -21,6 +21,7 @@ public class AnsiLoggerObserver implements ApiInvocationObserver {
     /** {@inheritDoc} */
     @Override
     public void onCall(ApiInvocationEvent event) {
+        LOGGER.info("------------ AnsiLogger ---------------");
         LOGGER.info("Request [" + yellow(event.getRequestId()) + "]");
         LOGGER.info("[" + yellow(event.getRequestId()) + "] Date             : [" + green(new Date(event.getTimestamp()).toString()) + "]");
         LOGGER.info("[" + yellow(event.getRequestId()) + "] Client           : [" + green(event.getHost()) + "]");
