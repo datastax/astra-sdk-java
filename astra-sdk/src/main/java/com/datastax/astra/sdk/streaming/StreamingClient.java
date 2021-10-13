@@ -12,7 +12,6 @@ import com.datastax.astra.sdk.streaming.domain.Cluster;
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
 import com.datastax.astra.sdk.utils.ApiLocator;
-import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -33,29 +32,18 @@ public class StreamingClient {
     /** Marshalling beans */
     private static final TypeReference<List<Tenant>> TYPE_LIST_TENANTS = 
             new TypeReference<List<Tenant>>(){};
+            
     private static final TypeReference<List<Cluster>> TYPE_LIST_CLUSTERS = 
                     new TypeReference<List<Cluster>>(){};
     
     /** Singletong for tenants. */
     private Map<String, TenantClient> cacheTenants = new HashMap<>();
-                    
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
     
     /** hold a reference to the bearer token. */
-    private final String bearerAuthToken;
+    protected final String bearerAuthToken;
     
-    /**
-     * As immutable object use builder to initiate the object.
-     * 
-     * @param client
-     *      Http Client
-     */
-    public StreamingClient(HttpApisClient client) {
-        this.http = client;
-        Assert.notNull(client, "Http Client");
-        this.bearerAuthToken = client.getToken();
-    }
+    /** Syntax sugar. */
+    private HttpApisClient http = HttpApisClient.getInstance();
     
     /**
      * As immutable object use builder to initiate the object.
@@ -65,9 +53,7 @@ public class StreamingClient {
      */
     public StreamingClient(String bearerAuthToken) {
        this.bearerAuthToken = bearerAuthToken;
-       this.http = HttpApisClient.getInstance();
        Assert.hasLength(bearerAuthToken, "bearerAuthToken");
-       http.setToken(bearerAuthToken);
     } 
     
     // ---------------------------------
@@ -97,8 +83,10 @@ public class StreamingClient {
      *      list of tenants.
      */
     public Stream<Tenant> tenants() {
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointTenants());
-        return unmarshallType(res.getBody(), TYPE_LIST_TENANTS).stream();
+        return unmarshallType(http
+                .GET(getApiDevopsEndpointTenants(), bearerAuthToken)
+                .getBody(), TYPE_LIST_TENANTS)
+                .stream();
     }
     
     /**
@@ -123,8 +111,9 @@ public class StreamingClient {
      */
     @SuppressWarnings("unchecked")
     public Map<String, List<String>> providers() {
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointProviders());
-        return unmarshallBean(res.getBody(), Map.class);
+        return unmarshallBean(http
+                .GET(getApiDevopsEndpointProviders(), bearerAuthToken)
+                .getBody(), Map.class);
     }
     
     // ---------------------------------
@@ -138,8 +127,10 @@ public class StreamingClient {
      *      list  clusters.
      */
     public Stream<Cluster> clusters() {
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointClusters());
-        return unmarshallType(res.getBody(), TYPE_LIST_CLUSTERS).stream();
+        return unmarshallType(http
+                .GET(getApiDevopsEndpointClusters(), bearerAuthToken)
+                .getBody(), TYPE_LIST_CLUSTERS)
+                .stream();
     }
     
     /**

@@ -38,7 +38,6 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.StargateClient.StargateClientBuilder;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
@@ -108,12 +107,6 @@ public class AstraClient implements Closeable {
     // -----------------------------------------------------
     // --------- Stargate APIs Settings --------------------
     // -----------------------------------------------------
-    
-    /** LOOKUP: If enable the client will invoke Astra to get notified on region creation. */
-    private boolean enableLookupForRegion = true;
-    
-    /** LOOKUP: Define how much time in between 2 calls. */
-    private int lookupForRegionPollingIntervalInSeconds = DEFAULT_POLLING;
     
     /** Hold a reference for clientId. */
     private final String clientId;

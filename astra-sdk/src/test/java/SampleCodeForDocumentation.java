@@ -18,11 +18,9 @@ public class SampleCodeForDocumentation {
         
         AstraClient astraClient = AstraClient.builder()
                 .databaseId("astra_cluster_id")           // Unique identifier for your database instance
-                .cloudProviderRegion("astra_db_region")   // Cloud Pr
+                .cloudProviderRegion("astra_db_region")
+                .build();   // Cloud Pr
                 
-                
-        
-        
         AstraClient astraClient = AstraClient.builder()
                 .databaseId("astra_cluster_id")           // Unique identifier for your database instance
                 .cloudProviderRegion("astra_db_region")   // Cloud Provider region picked for you instance

@@ -75,22 +75,10 @@ public class OrganizationsClient {
             new TypeReference<List<Role>>(){};
     
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private final HttpApisClient http = HttpApisClient.getInstance();
     
     /** hold a reference to the bearer token. */
-    private final String bearerAuthToken;
-    
-    /**
-     * As immutable object use builder to initiate the object.
-     * 
-     * @param client
-     *      authenticated token
-     */
-    public OrganizationsClient(HttpApisClient client) {
-        this.http = client;
-        Assert.notNull(client, "Http Client");
-        this.bearerAuthToken = client.getToken();
-    }
+    protected final String bearerAuthToken;
     
     /**
      * As immutable object use builder to initiate the object.
@@ -100,9 +88,7 @@ public class OrganizationsClient {
      */
     public OrganizationsClient(String bearerAuthToken) {
        this.bearerAuthToken = bearerAuthToken;
-       this.http = HttpApisClient.getInstance();
        Assert.hasLength(bearerAuthToken, "bearerAuthToken");
-       http.setToken(bearerAuthToken);
     } 
     
     // ------------------------------------------------------
@@ -117,7 +103,7 @@ public class OrganizationsClient {
      */
     public String organizationId() {
         // Invoke endpoint
-        ApiResponseHttp res = http.GET(getApiDevopsEndpoint()+ PATH_CURRENT_ORG);
+        ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_CURRENT_ORG, bearerAuthToken);
         // Parse response
         return (String) unmarshallBean(res.getBody(),  Map.class).get("id");
     }
@@ -130,7 +116,7 @@ public class OrganizationsClient {
      */
     public Stream<DatabaseRegion> regions() {
         // Invoke endpoint
-        ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_REGIONS);
+        ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_REGIONS, bearerAuthToken);
         // Marshall response
         return unmarshallType(res.getBody(), TYPE_LIST_REGION).stream();
     }
@@ -167,7 +153,7 @@ public class OrganizationsClient {
      */
     public Stream<User> users() {
         // Invoke endpoint
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointUsers());
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointUsers(), bearerAuthToken);
         // Marshall response
         return unmarshallBean(res.getBody(), ResponseAllUsers.class).getUsers().stream();
     }
@@ -216,7 +202,7 @@ public class OrganizationsClient {
         });
         
         // Invoke HTTP
-        http.PUT(getApiDevopsEndpointUsers(), marshall(inviteRequest));
+        http.PUT(getApiDevopsEndpointUsers(), bearerAuthToken, marshall(inviteRequest));
     }
     
     // ------------------------------------------------------
@@ -231,7 +217,7 @@ public class OrganizationsClient {
      */
     public Stream<Role> roles() {
         // Invoke endpoint
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointRoles());
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointRoles(), bearerAuthToken);
         // Mapping
         return unmarshallType(res.getBody(), TYPE_LIST_ROLES).stream();
     }
@@ -247,7 +233,7 @@ public class OrganizationsClient {
     public CreateRoleResponse createRole(RoleDefinition cr) {
         Assert.notNull(cr, "CreateRole request");
         // Invoke endpoint
-        ApiResponseHttp res = http.POST(getApiDevopsEndpointRoles(), marshall(cr));
+        ApiResponseHttp res = http.POST(getApiDevopsEndpointRoles(), bearerAuthToken, marshall(cr));
         return unmarshallBean(res.getBody(), CreateRoleResponse.class);
     }
     
@@ -288,7 +274,7 @@ public class OrganizationsClient {
      */
     public Stream<IamToken> tokens() {
         // Invoke endpoint
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointTokens());
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointTokens(), bearerAuthToken);
         // Marshall
         return unmarshallBean(res.getBody(), ResponseAllIamTokens.class).getClients().stream();
     }
@@ -306,7 +292,7 @@ public class OrganizationsClient {
         // Building request
         String body = "{ \"roles\": [ \"" + JsonUtils.escapeJson(role) + "\"]}";
         // Invoke endpoint
-        ApiResponseHttp res = http.POST(getApiDevopsEndpointTokens(), body);
+        ApiResponseHttp res = http.POST(getApiDevopsEndpointTokens(), bearerAuthToken, body);
         // Marshall response
         return unmarshallBean(res.getBody(), CreateTokenResponse.class);
     }
@@ -392,7 +378,7 @@ public class OrganizationsClient {
      *      rest client for a token
      */
     public TokenClient token(String tokenId) {
-        return new TokenClient(this , tokenId);
+        return new TokenClient(this, tokenId);
     }
     
     /**
@@ -405,7 +391,7 @@ public class OrganizationsClient {
      */
     public RoleClient role(String roleId) {
         Assert.hasLength(roleId, "Role Id should not be null nor empty");
-        return new RoleClient(roleId);
+        return new RoleClient(this, roleId);
     }
     
     /**

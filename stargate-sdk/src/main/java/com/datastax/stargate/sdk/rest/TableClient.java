@@ -218,10 +218,16 @@ public class TableClient {
      /**
       * Retrieve a set of Rows from Primary key value.
       * 
-      * @param <T> ResultPage
-      * @param query SearchTableQuery
-      * @param mapper RowMapper
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getRows">Reference Documentation</a>
+      * 
+      * @param <T> 
+      *     marshalling bean
+      * @param query 
+      *     SearchTableQuery
+      * @param mapper 
+      *     mapping result to bean with a mapper
       * @return ResultPage
+      *     pageable result
       */
      public <T> ResultPage<T> search(SearchTableQuery query, RowMapper<T> mapper) {
          RowResultPage rrp = search(query);
@@ -234,10 +240,12 @@ public class TableClient {
      }
      
      /**
-      * buildQueryUrl
+      * Build URL suffix from the filtered and sorted fields.
       * 
-      * @param query SearchTableQuery
-      * @return String
+      * @param query 
+      *     SearchTableQuery
+      * @return
+      *     suffix for the URL
       */
      private String buildSearchUrlSuffix(SearchTableQuery query) {
          try {
@@ -279,15 +287,30 @@ public class TableClient {
      
     /**
      * Retrieve All columns.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getColumns">Reference Documentation</a>
      *
      * @return
      *      Sream of {@link ColumnDefinition} to describe a table
      */
     public Stream<ColumnDefinition> columns() {
-        ApiResponseHttp res = http.GET(getEndPointSchemaColumns());
+        ApiResponseHttp res =  stargateHttpClient.GET(columnsSchemaResource);;
         return unmarshallType(res.getBody(), TYPE_LIST_COLUMNS)
                 .getData().stream()
                 .collect(Collectors.toSet()).stream();
+    }
+    
+    /**
+     * Create a Column.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createColumn">Reference Documentation</a>
+     *
+     * 
+     * @param colName String
+     * @param cd ColumnDefinition
+     */
+    public void createColumn(String colName, ColumnDefinition cd) {
+        column(colName).create(cd);
     }
     
     /**
@@ -300,23 +323,30 @@ public class TableClient {
         return columns().map(ColumnDefinition::getName);
     }
     
-    /**
-     * createColumn
-     * 
-     * @param colName String
-     * @param cd ColumnDefinition
-     */
-    public void createColumn(String colName, ColumnDefinition cd) {
-        column(colName).create(cd);
-    }
-    
     // ---------------------------------
     // ----       Indices           ----
     // ---------------------------------
     
     /**
-     * createIndex
+     * Retrieve All indexes for a table.
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getIndexes">Reference Documentation</a>
+     *
+     * @return
+     *      Stream of {@link IndexDefinition} to describe a table
+     */
+    public Stream<IndexDefinition> indexes() {
+        ApiResponseHttp res =  stargateHttpClient.GET(indexesSchemaResource);
+        return unmarshallType(res.getBody(), TYPE_LIST_INDEX)
+                    .stream()
+                    .collect(Collectors.toSet()).stream();
+    }
+    
+    /**
+     * Create an index.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createIndex">Reference Documentation</a>
+     *
      * @param idxName String
      * @param ci CreateIndex
      */
@@ -325,20 +355,7 @@ public class TableClient {
     }
     
     /**
-     * Retrieve All indexes for a table.
-     *
-     * @return
-     *      Stream of {@link IndexDefinition} to describe a table
-     */
-    public Stream<IndexDefinition> indexes() {
-        ApiResponseHttp res = http.GET(getEndPointSchemaIndexes());
-        return unmarshallType(res.getBody(), TYPE_LIST_INDEX)
-                    .stream()
-                    .collect(Collectors.toSet()).stream();
-    }
-    
-    /**
-     * Retrieve All column names.
+     * Retrieve All indexes names.
      * 
      * @return
      *      a list of columns names;

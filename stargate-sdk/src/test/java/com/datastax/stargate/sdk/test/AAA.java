@@ -40,6 +40,13 @@ public class AAA {
         }
     }
       
+    
+    
+    
+    
+    
+    
+    
     @Test
     public void initStargate() throws InterruptedException {
         // RETRY and RETRY POOLICY
@@ -57,8 +64,10 @@ public class AAA {
                 //.withApiNode(new StargateNode("localhost"))
                 //.withApiNode(new StargateNode("127.0.0.1"))
                 .withoutCqlSession()
-                .withApiNodeDC("datacenter1", new StargateNodeConfig("node11", "http://localhost:8082",  "http://localhost:8080",  "http://localhost:8081"))
-                .withApiNodeDC("datacenter1", new StargateNodeConfig("node12", "http://localhost:9092",  "http://localhost:9090",  "http://localhost:9091"))
+                .withApiNodeDC("datacenter1", new StargateNodeConfig("node11", 
+                        "http://localhost:8082",  "http://localhost:8080",  "http://localhost:8081"))
+                .withApiNodeDC("datacenter1", new StargateNodeConfig("node12", 
+                        "http://localhost:9092",  "http://localhost:9090",  "http://localhost:9091"))
                 .addHttpObserver("logger", new AnsiLoggerObserverLight())
                 .build()) {
             
@@ -73,6 +82,27 @@ public class AAA {
         }
         
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
    

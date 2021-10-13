@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
@@ -51,7 +50,7 @@ public class ApiDocumentClient {
     public static final String PATH_V2                = "/v2";
     
     /** Get Topology of the nodes. */
-    private final StargateHttpClient stargateHttpClient;
+    protected final StargateHttpClient stargateHttpClient;
     
     /**
      * Constructor with StargateClient as argument.
@@ -68,12 +67,13 @@ public class ApiDocumentClient {
     /**
      * Return list of {@link Namespace}(keyspaces) available.
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/getAllNamespaces">Reference Documentation</a>
+     * 
      * @return Stream
      */
     public Stream<Namespace> namespaces() {
-        return unmarshallType(stargateClient
-                .GET(this.getEndpointSchemasNamespaces)
-                .getBody(), new TypeReference<ApiResponse<List<Namespace>>>(){})
+        String res = stargateHttpClient.GET(this.namespacesSchemaResource).getBody();
+        return unmarshallType(res, new TypeReference<ApiResponse<List<Namespace>>>(){})
               .getData()
               .stream();
     }
@@ -99,7 +99,7 @@ public class ApiDocumentClient {
      * @return NamespaceClient
      */
     public NamespaceClient namespace(String namespace) {
-        return new NamespaceClient(this, namespace);
+        return new NamespaceClient(stargateHttpClient, this, namespace);
     }
     
     // ---------------------------------
@@ -109,7 +109,13 @@ public class ApiDocumentClient {
     /**
      * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
-    public Function<StargateClientNode, String> getEndpointSchemasNamespaces = 
+    public Function<StargateClientNode, String> namespacesSchemaResource = 
             (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
-   
+
+    /**
+     * Mapping from root URL to rest endpoint listing keyspaces definitions.
+     */
+    public Function<StargateClientNode, String> namespacesResource = 
+            (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA_NAMESPACES;
+            
 }

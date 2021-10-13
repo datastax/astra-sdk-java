@@ -156,6 +156,34 @@ public class HttpApisClient implements ApiConstants {
     // ---------- Working with HTTP --------------
     // -------------------------------------------
     
+    public ApiResponseHttp GET(String url, String token) {
+        return executeHttp(Method.GET, url, token, null, false);
+    }
+
+    public ApiResponseHttp HEAD(String url, String token) {
+        return executeHttp(Method.HEAD, url, token, null, false);
+    }
+    
+    public ApiResponseHttp POST(String url, String token) {
+        return executeHttp(Method.POST, url, token, null, true);
+    }
+    
+    public ApiResponseHttp POST(String url, String token, String body) {
+        return executeHttp(Method.POST, url, token, body, true);
+    }
+    
+    public ApiResponseHttp DELETE(String url, String token) {
+        return executeHttp(Method.DELETE, url, token, null, true);
+    }
+    
+    public ApiResponseHttp PUT(String url, String token, String body) {
+        return executeHttp(Method.PUT, url, token, body, false);
+    }
+    
+    public ApiResponseHttp PATCH(String url, String token, String body) {
+        return executeHttp(Method.PATCH, url, token, body, true);
+    }
+    
     /**
      * Main Method executting HTTP Request.
      *
@@ -207,6 +235,7 @@ public class HttpApisClient implements ApiConstants {
             event.setErrorMessage(e.getMessage());
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
             event.setErrorClass(e.getClass().getName());
             event.setErrorMessage(e.getMessage());
             throw new RuntimeException("Error in HTTP Request", e);
@@ -244,25 +273,25 @@ public class HttpApisClient implements ApiConstants {
                 event.setResponseCode(HttpURLConnection.HTTP_UNAVAILABLE);
                 res = new ApiResponseHttp("Response is empty, cannot contact endpoint, please check url", 
                         HttpURLConnection.HTTP_UNAVAILABLE, null);
-            }
-            event.setResponseCode(response.getCode());
+            } else {
+                event.setResponseCode(response.getCode());
+                Map<String, String > headers = new HashMap<>();
+                Arrays.asList(response.getHeaders())
+                          .stream()
+                          .forEach(h -> headers.put(h.getName(), h.getValue()));
+                event.setResponseHeaders(headers);
+    
+                // Parse body if present
+                String body = null;
+                if (null != response.getEntity()) {
+                     body = EntityUtils.toString(response.getEntity());
+                     EntityUtils.consume(response.getEntity());
+                }
+                event.setResponseBody(body);
             
-            Map<String, String > headers = new HashMap<>();
-            Arrays.asList(response.getHeaders())
-                      .stream()
-                      .forEach(h -> headers.put(h.getName(), h.getValue()));
-            event.setResponseHeaders(headers);
-
-            // Parse body if present
-            String body = null;
-            if (null != response.getEntity()) {
-                 body = EntityUtils.toString(response.getEntity());
-                 EntityUtils.consume(response.getEntity());
+                // Mapping respoonse
+                res = new ApiResponseHttp(body, response.getCode(), headers);
             }
-            event.setResponseBody(body);
-            
-            // Mapping respoonse
-            res = new ApiResponseHttp(body, response.getCode(), headers);
         }
         return res;
     }

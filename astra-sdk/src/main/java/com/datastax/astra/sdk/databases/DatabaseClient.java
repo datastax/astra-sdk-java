@@ -32,7 +32,10 @@ public class DatabaseClient {
     private final String databaseId;
     
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private final HttpApisClient http = HttpApisClient.getInstance();
+    
+    /** Reference to upper resource. */
+    private final DatabasesClient databasesClient;
     
     /**
      * Default constructor.
@@ -40,10 +43,11 @@ public class DatabaseClient {
      * @param databaseId
      *          uniique database identifier
      */
-    public DatabaseClient(String databaseId) {
-       this.databaseId = databaseId;
-       this.http = HttpApisClient.getInstance();
+    public DatabaseClient(DatabasesClient databasesClient, String databaseId) {
+       Assert.notNull(databasesClient,"databasesClient");
        Assert.hasLength(databaseId, "databaseId");
+       this.databaseId = databaseId;
+       this.databasesClient = databasesClient;
     }
     
     // ---------------------------------
@@ -59,7 +63,7 @@ public class DatabaseClient {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
      */
     public Optional<Database> find() {
-       ApiResponseHttp res = http.GET(getEndpointDatabase());
+       ApiResponseHttp res = http.GET(getEndpointDatabase(), databasesClient.bearerAuthToken);
        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
            return Optional.empty();
        } else {
@@ -94,7 +98,7 @@ public class DatabaseClient {
      */
     public void createKeyspace(String keyspace) {
         Assert.hasLength(keyspace, "keyspace");
-        http.POST(getEndpointKeyspace(keyspace));
+        http.POST(getEndpointKeyspace(keyspace), databasesClient.bearerAuthToken);
     }
     
     /**
@@ -122,7 +126,7 @@ public class DatabaseClient {
             // Parameter validation
             Assert.hasLength(destination, "destination");
             // Invoke
-            ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL");
+            ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL", databasesClient.bearerAuthToken);
             // Check response coode
             Assert.isTrue(HTTP_OK == res.getCode(), "Error in 'downloadSecureConnectBundle', with id=" +databaseId);
             // Read file url to download
@@ -143,7 +147,7 @@ public class DatabaseClient {
      */
     public void park() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park");
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park", databasesClient.bearerAuthToken);
         // Check response code
         checkResponse(res, "park");
     }
@@ -155,7 +159,7 @@ public class DatabaseClient {
      */
     public void unpark() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark");
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark", databasesClient.bearerAuthToken);
         // Check response code
         checkResponse(res, "unpark");
     }
@@ -167,7 +171,7 @@ public class DatabaseClient {
      */
     public void delete() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate");
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate", databasesClient.bearerAuthToken);
         // Check response code
         checkResponse(res, "terminate");
     }
@@ -186,7 +190,7 @@ public class DatabaseClient {
         // Build request
         String body = "{ \"capacityUnits\":" + capacityUnits + "}";
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", body);
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", databasesClient.bearerAuthToken, body);
         // Check response code
         checkResponse(res, "resize");
     }
@@ -211,7 +215,7 @@ public class DatabaseClient {
                 .append("\"password\": \"").append(password).append( "\"  }")
                 .toString();
         // Invoke
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", body);
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", databasesClient.bearerAuthToken, body);
         // Check response code
         checkResponse(res, "resetPassword");
     }

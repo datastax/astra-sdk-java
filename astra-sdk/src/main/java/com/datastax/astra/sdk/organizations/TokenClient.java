@@ -17,10 +17,10 @@ public class TokenClient {
     private final String tokenId;
     
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private final HttpApisClient http = HttpApisClient.getInstance();
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final OrganizationsClient org;
+    /** reference to organization. */
+    private final OrganizationsClient orgClient;
     
     /**
      * Default constructor.
@@ -31,9 +31,8 @@ public class TokenClient {
      *      current token identifier
      */
     public TokenClient(OrganizationsClient org, String tokenId) {
-        this.tokenId = tokenId;
-        this.org     = org;
-        this.http    = HttpApisClient.getInstance();
+        this.tokenId   = tokenId;
+        this.orgClient = org;
         Assert.hasLength(tokenId, "tokenId");
     }
     
@@ -44,9 +43,9 @@ public class TokenClient {
      *      role informations
      */
     public Optional<IamToken> find() {
-        return org.tokens()
-                  .filter(t -> t.getClientId().equalsIgnoreCase(tokenId))
-                  .findFirst();
+        return orgClient.tokens()
+                        .filter(t -> t.getClientId().equalsIgnoreCase(tokenId))
+                        .findFirst();
     }
     
     /**
@@ -66,7 +65,7 @@ public class TokenClient {
         if (!exist()) {
             throw new RuntimeException("Token '"+ tokenId + "' has not been found");
         }
-        http.DELETE(getEndpointToken());
+        http.DELETE(getEndpointToken(), orgClient.bearerAuthToken);
     }
     
     // ---------------------------------

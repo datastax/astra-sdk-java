@@ -99,8 +99,9 @@ public class KeyspaceClient {
     // ---------------------------------
      
     /**
-     * Find a namespace and its metadata based on its id
-     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspace
+     * Find a namespace and its metadata based on its id.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getKeyspace">Reference Documentation</a>
      * 
      * @return Keyspace
      */
@@ -124,7 +125,8 @@ public class KeyspaceClient {
     
     /**
      * Create a keyspace providing the replications per Datacenter.
-     * - IF NOT EXIST is always applied.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createKeyspace">Reference Documentation</a>
      * 
      * @param datacenters DataCenter
      */
@@ -137,7 +139,9 @@ public class KeyspaceClient {
     }
     
     /**
-     * Create a namespace.
+     * Create a keyspace.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createKeyspace">Reference Documentation</a>
      * 
      * @param replicas int
      */
@@ -150,7 +154,8 @@ public class KeyspaceClient {
     
     /**
      * Delete a keyspace.
-     * https://stargate.io/docs/stargate/1.0/developers-guide/api_ref/openapi_rest_ref.html#_deletekeyspace
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteKeyspace">Reference Documentation</a>
      */
     public void delete() {
         stargateHttpClient.DELETE(keyspaceSchemaResource);
@@ -158,7 +163,8 @@ public class KeyspaceClient {
     
     /**
      * List tablenames in keyspace.
-     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getTables
+     *
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getTables">Reference Documentation</a>
      * 
      * @return TableDefinition
      */
@@ -172,6 +178,8 @@ public class KeyspaceClient {
     /**
      * List types in the keyspace.
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getTypes">Reference Documentation</a>
+     *
      * @return
      *      list of types.
      */
@@ -234,6 +242,8 @@ public class KeyspaceClient {
     
     /**
      * Syntax sugar more easier to understand in a fluent API.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createTable">Reference Documentation</a>
      * 
      * @param tableName tableName
      * @param ct CreateTable

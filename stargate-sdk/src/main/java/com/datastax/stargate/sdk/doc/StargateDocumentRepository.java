@@ -46,7 +46,7 @@ public class StargateDocumentRepository <DOC> {
      */
     public StargateDocumentRepository(NamespaceClient nc, Class<DOC> clazz) {
         this.docClass = clazz;
-        this.collectionClient = new CollectionClient(nc, getCollectionName(clazz));
+        this.collectionClient = new CollectionClient(nc.stargateHttpClient, nc, getCollectionName(clazz));
     } 
     
     /**

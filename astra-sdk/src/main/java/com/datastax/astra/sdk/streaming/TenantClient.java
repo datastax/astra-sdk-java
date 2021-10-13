@@ -29,9 +29,6 @@ public class TenantClient {
     /** Tenant Identifier. */
     private final String tenantId;
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
-    
     /** Streaming client. */
     private final StreamingClient streamClient;
     
@@ -40,6 +37,9 @@ public class TenantClient {
     
     /** we woudl like to use client and admin as singletong for a tenant. */
     private PulsarAdmin pulsarAdmin;
+    
+    /** Syntax sugar. */
+    private HttpApisClient http = HttpApisClient.getInstance();
     
     /** Load Database responses. */
     private static final TypeReference<List<TenantLimit>> TYPE_LIST_LIMIT =  
@@ -55,9 +55,8 @@ public class TenantClient {
      *          unique tenantId identifier
      */
     public TenantClient(StreamingClient client, String tenantId) {
-       this.streamClient = client;
-       this.http         = HttpApisClient.getInstance();
-       this.tenantId  = tenantId;
+       this.streamClient    = client;
+       this.tenantId        = tenantId;
        Assert.hasLength(tenantId, "tenantId");
     }
     
@@ -84,7 +83,9 @@ public class TenantClient {
      *      if the tenant exist
      */
     public boolean exist() {
-        return http.HEAD(getEndpointTenant()).getCode() == HttpURLConnection.HTTP_OK;
+        return HttpApisClient.getInstance()
+                .HEAD(getEndpointTenant(), streamClient.bearerAuthToken)
+                .getCode() == HttpURLConnection.HTTP_OK;
     }
     
     /**
@@ -96,7 +97,7 @@ public class TenantClient {
     public void create(CreateTenant ct) {
         Assert.notNull(ct, "Create Tenant request");
         ct.setTenantName(tenantId);
-        http.POST(StreamingClient.getApiDevopsEndpointTenants(), marshall(ct));
+        http.POST(StreamingClient.getApiDevopsEndpointTenants(), streamClient.bearerAuthToken, marshall(ct));
     }
     
     /**
@@ -107,7 +108,7 @@ public class TenantClient {
         if (!opt.isPresent()) {
             throw new RuntimeException("Tenant '"+ tenantId + "' has not been found");
         }
-        http.DELETE(getEndpointCluster(opt.get().getClusterName()));
+        http.DELETE(getEndpointCluster(opt.get().getClusterName()), streamClient.bearerAuthToken);
     }
     
     /**
@@ -116,7 +117,7 @@ public class TenantClient {
      *      the list of limits
      */
     public Stream<TenantLimit> limits() {
-        ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits");
+        ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits", streamClient.bearerAuthToken);
         return unmarshallType(res.getBody(), TYPE_LIST_LIMIT).stream();
     }
     

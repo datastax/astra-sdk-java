@@ -173,7 +173,7 @@ public class ApiTokenProviderSimple implements ApiTokenProvider, ApiConstants {
             // Reuse Execute HTTP for the retry mechanism
             ApiResponseHttp response = HttpApisClient.getInstance().executeHttp(httpPost, true);
             
-            if (201 == response.getCode() || 200 == response.getCode()) {
+            if (response != null && 201 == response.getCode() || 200 == response.getCode()) {
                 return (String) JsonUtils.unmarshallBean(response.getBody(), Map.class).get("authToken");
             } else {
                 throw new IllegalStateException("Cannot generate authentication token " + response.getBody());

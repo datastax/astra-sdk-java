@@ -16,9 +16,9 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
-import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
 import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -29,16 +29,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery.SearchDocumentQueryBuilder;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -52,11 +54,11 @@ public class CollectionClient {
     /** Read document id. */
     public static final String DOCUMENT_ID = "documentId";
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Get Topology of the nodes. */
+    private final StargateHttpClient stargateHttpClient;
     
     /** Namespace. */
-    protected final NamespaceClient namespaceClient;
+    protected NamespaceClient namespaceClient;
     
     /** Collection name. */
     protected String collectionName;
@@ -64,32 +66,24 @@ public class CollectionClient {
     /* Mapping type. */
     private static TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>> RESPONSE_SEARCH =  
             new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){};
-    
+
     /**
      * Full constructor.
      * 
      * @param namespaceClient NamespaceClient
      * @param collectionName String
      */
-    public CollectionClient(NamespaceClient namespaceClient,  String collectionName) {
-        this.namespaceClient = namespaceClient;
-        this.collectionName  = collectionName;
-        this.http            = HttpApisClient.getInstance();
-    }
-    
-    /**
-     * Move to document Resource
-     * 
-     * @param docId String
-     * @return DocumentClient
-     */
-    public DocumentClient document(String docId) {
-        return new DocumentClient(this, docId);
+    public CollectionClient(StargateHttpClient stargateHttpClient, NamespaceClient namespaceClient,  String collectionName) {
+        this.namespaceClient    = namespaceClient;
+        this.collectionName     = collectionName;
+        this.stargateHttpClient = stargateHttpClient;
     }
     
     /**
      * Get metadata of the collection. There is no dedicated resources we
      * use the list and filter with what we need.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/getCollection">Reference Documentation</a>
      *
      * @return
      *      metadata of the collection if its exist or empty
@@ -111,31 +105,30 @@ public class CollectionClient {
     }
     
     /**
-     * Create the collection
+     * Create the collection.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/createCollection">Reference Documentation</a>
      */
     public void create() {
-        http.POST(namespaceClient.getEndPointCollections(), 
+        stargateHttpClient.POST(collectionResource, 
              "{\"name\":\"" + collectionName + "\"}");
         
     }
     
     /**
      * Deleting the collection
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/deleteCollectionSchema">Reference Documentation</a>
      */
     public void delete() {
-        http.DELETE(getEndPointCollection());
+        stargateHttpClient.DELETE(collectionResource);
     }
     
     /**
-     * Upgrading collection to use SAI index
-     */
-    public void upgrade() {
-        http.POST(getEndPointCollection() + "/upgrade", "");
-    }
-    
-    /**
-     * Create a new document from any serializable object
-   
+     * Create a new document from any serializable object.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/addDoc">Reference Documentation</a>
+     * 
      * @param <DOC>
      *          working bean type
      * @param doc
@@ -144,7 +137,7 @@ public class CollectionClient {
      *          created document id
      */
     public <DOC> String create(DOC doc) {
-        ApiResponseHttp res = http.POST(getEndPointCollection(), marshall(doc));
+        ApiResponseHttp res = stargateHttpClient.POST(collectionResource, marshall(doc));
         try {
             return (String) unmarshallBean(res.getBody(), Map.class)
                     .get(DOCUMENT_ID);
@@ -152,7 +145,6 @@ public class CollectionClient {
             throw new RuntimeException("Cannot marshall document id", e);
         }
     }
-    
 
     /**
      * Count items in a collection, it can be slow as we iterate over pages limitating
@@ -169,7 +161,7 @@ public class CollectionClient {
                 .withPageSize(2).build();
         ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults;
         do {
-            ApiResponseHttp res = http.GET(buildQueryUrl(query));
+            ApiResponseHttp res = stargateHttpClient.GET(collectionResource, buildSuffixQueryUrl(query));
             searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
             if (null != searchResults && null != searchResults.getData()) {
                 count.addAndGet(searchResults.getData().size());
@@ -317,7 +309,7 @@ public class CollectionClient {
      */
     public <DOC> DocumentResultPage<DOC> findPage(SearchDocumentQuery query, Class<DOC> beanClass) {
         try {
-            ApiResponseHttp res = http.GET(buildQueryUrl(query));
+            ApiResponseHttp res = stargateHttpClient.GET(collectionResource, buildSuffixQueryUrl(query));
             ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
             return new DocumentResultPage<DOC>(query.getPageSize(), 
                     searchResults.getPageState(), searchResults.getData()
@@ -329,7 +321,6 @@ public class CollectionClient {
         }
     }
     
-    
     /**
      * Build the filters based on values in the query.
      *
@@ -338,9 +329,9 @@ public class CollectionClient {
      * @return
      *      the URL
      */
-    private String buildQueryUrl(SearchDocumentQuery query) {
+    private String buildSuffixQueryUrl(SearchDocumentQuery query) {
         try {
-            StringBuilder sbUrl = new StringBuilder(getEndPointCollection());
+            StringBuilder sbUrl = new StringBuilder();
             sbUrl.append("?page-size=" + query.getPageSize());
             // Depending on query you forge your URL
             if (query.getPageState().isPresent()) {
@@ -361,6 +352,24 @@ public class CollectionClient {
         }
     }
     
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
+    /**
+     * Move to document Resource
+     * 
+     * @param docId String
+     * @return DocumentClient
+     */
+    public DocumentClient document(String docId) {
+        return new DocumentClient(stargateHttpClient, this, docId);
+    }
+    
+    // ---------------------------------
+    // ----       Resources         ----
+    // ---------------------------------
+    
     /**
      * Getter accessor for attribute 'collectionName'.
      *
@@ -371,14 +380,10 @@ public class CollectionClient {
         return collectionName;
     }
     
-    /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
+    /** 
+     * /v2/schemas/namespaces/{namespace}/collections/{collection} 
      */
-    public String getEndPointCollection() {
-        return namespaceClient.getEndPointCollections() +  "/" + collectionName;
-    }
+    public Function<StargateClientNode, String> collectionResource = 
+            (node) -> namespaceClient.collectionsResource.apply(node) +  "/" + collectionName;
     
 }

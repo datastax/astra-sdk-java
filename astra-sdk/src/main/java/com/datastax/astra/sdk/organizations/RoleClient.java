@@ -24,7 +24,10 @@ public class RoleClient {
     private final String roleId;
   
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private final HttpApisClient http = HttpApisClient.getInstance();
+    
+    /** reference to organization. */
+    private final OrganizationsClient orgClient;
     
     /**
      * Default constructor.
@@ -32,9 +35,9 @@ public class RoleClient {
      * @param roleId
      *      current role identifier
      */
-    public RoleClient(String roleId) {
-        this.roleId = roleId;
-        this.http   = HttpApisClient.getInstance();
+    public RoleClient(OrganizationsClient org, String roleId) {
+        this.roleId    = roleId;
+        this.orgClient = org;
         Assert.hasLength(roleId, "roleId");
     }
     
@@ -45,7 +48,7 @@ public class RoleClient {
      *      role informations
      */
     public Optional<Role> find() {
-        ApiResponseHttp res = http.GET(getEndpointRole());
+        ApiResponseHttp res = http.GET(getEndpointRole(), orgClient.bearerAuthToken);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -70,7 +73,7 @@ public class RoleClient {
         if (!exist()) {
             throw new RuntimeException("Role '"+ roleId + "' has not been found");
         }
-        http.DELETE(getEndpointRole());
+        http.DELETE(getEndpointRole(), orgClient.bearerAuthToken);
         
     }
     
@@ -81,7 +84,7 @@ public class RoleClient {
      *      role definition
      */
     public void update(RoleDefinition cr) {
-        http.PUT(getEndpointRole(), marshall(cr));
+        http.PUT(getEndpointRole(), orgClient.bearerAuthToken, marshall(cr));
     }
     
     // ---------------------------------

@@ -67,7 +67,8 @@ public class ApiDataClient {
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
-     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getAllKeyspaces">Reference Documentation</a>
      * 
      * @return Keyspace
      */

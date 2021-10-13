@@ -3,13 +3,14 @@ package com.datastax.stargate.sdk.rest;
 import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.util.Optional;
+import java.util.function.Function;
 
+import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.rest.domain.CreateType;
 import com.datastax.stargate.sdk.rest.domain.TypeDefinition;
 import com.datastax.stargate.sdk.rest.domain.UpdateType;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Working with UDT.
@@ -18,14 +19,14 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
  */
 public class TypeClient {
     
-    /** Namespace. */
-    private final KeyspaceClient keyspaceClient;
+    /** Http Client with load balancing anf failover. */
+    private final StargateHttpClient stargateHttpClient;
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Namespace. */
+    private KeyspaceClient keyspaceClient;
     
     /** Collection name. */
-    private final String typeName;
+    private String typeName;
     
     /**
      * Full constructor.
@@ -34,9 +35,11 @@ public class TypeClient {
      * @param typeName String
      */
     public TypeClient(StargateHttpClient stargateClient, KeyspaceClient keyspaceClient,  String typeName) {
-        this.keyspaceClient = keyspaceClient;
-        this.typeName      = typeName;
-        this.http           = HttpApisClient.getInstance();
+        this.keyspaceClient     = keyspaceClient;
+        this.stargateHttpClient = stargateClient;
+        this.typeName           = typeName;
+        Assert.notNull(keyspaceClient, "keyspaceClient");
+        Assert.hasLength(typeName,    "typeName");   
     }
     
     // ---------------------------------
@@ -65,56 +68,54 @@ public class TypeClient {
     }
     
     /**
-     * Create a table 
-     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/createTable
+     * Create a type.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createType">Reference Documentation</a>
      * 
      * @param tcr creation request
      */
      public void create(CreateType tcr) {
-         http.POST(getEndPointSchemaTypes(), marshall(tcr));
+         stargateHttpClient.POST(keyspaceClient.typesSchemaResource, marshall(tcr));
      }
      
      /**
       * updateOptions
+      * 
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/updateType">Reference Documentation</a>
       * 
       * @param update to TableOptions
       */
      public void update(UpdateType update) {
          Assert.notNull(update, "updateQuery");
          update.setName(typeName);
-         http.PUT(getEndPointSchemaTypes(), marshall(update));
+         stargateHttpClient.PUT(keyspaceClient.typesSchemaResource, marshall(update));
      }
      
      /*
       * Delete a type
-      * https://docs.astra.datastax.com/reference#delete_api-rest-v2-schemas-keyspaces-keyspace-id-tables-table-id-1
-      */
-    public void delete() {
-         http.DELETE(getEndPointSchemaType());
+      * 
+      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteType">Reference Documentation</a>
+     */
+     public void delete() {
+        stargateHttpClient.DELETE(typeSchemaResource);
     }
     
     // ---------------------------------
     // ----       Utilities         ----
     // ---------------------------------
+
+    /**
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}
+     */
+    public Function<StargateClientNode, String> typeSchemaResource = 
+             (node) -> keyspaceClient.typesSchemaResource.apply(node) + "/" + typeName;
     
     /**
-     * Syntax sugar
-     * 
-     * @return String
+     * /v2/keyspaces/{keyspace}/tables/{tableName}
      */
-    public String getEndPointSchemaTypes() {
-        return keyspaceClient.getEndPointSchemaKeyspace() + "/types";
-    }
-    
-    /**
-     * Syntax sugar
-     * 
-     * @return String
-     */
-    public String getEndPointSchemaType() {
-        return getEndPointSchemaTypes() + "/" + typeName;
-    }
-    
+    public Function<StargateClientNode, String> typeResource = 
+             (node) -> keyspaceClient.typesResource.apply(node) + "/" + typeName;
+   
     /**
      * Getter accessor for attribute 'tableName'.
      *

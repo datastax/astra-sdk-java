@@ -29,10 +29,10 @@ public class UserClient{
     private final String userId;
     
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private final HttpApisClient http = HttpApisClient.getInstance();
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final OrganizationsClient org;
+    /** reference to organization. */
+    private final OrganizationsClient orgClient;
     
     /**
      * Default constructor.
@@ -43,9 +43,8 @@ public class UserClient{
      *      current user identifier
      */
     public UserClient(OrganizationsClient org, String userId) {
-        this.userId = userId;
-        this.org    = org;
-        this.http   = HttpApisClient.getInstance();
+        this.userId    = userId;
+        this.orgClient = org;
         Assert.hasLength(userId, "userId");
     }
     
@@ -56,7 +55,7 @@ public class UserClient{
      *      user informations
      */
     public Optional<User> find() {
-        ApiResponseHttp res = http.GET(getEndpointUser());
+        ApiResponseHttp res = http.GET(getEndpointUser(), orgClient.bearerAuthToken);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -81,7 +80,7 @@ public class UserClient{
         if (!exist()) {
             throw new RuntimeException("User '"+ userId + "' has not been found");
         }
-        http.DELETE(getEndpointUser());
+        http.DELETE(getEndpointUser(), orgClient.bearerAuthToken);
     }
     
     /**
@@ -105,7 +104,7 @@ public class UserClient{
             if (IdUtils.isUUID(currentRole)) {
                 mapRoles.get("roles").add(currentRole);
             } else {
-                Optional<Role> opt = org.findRoleByName(currentRole);
+                Optional<Role> opt = orgClient.findRoleByName(currentRole);
                 if (opt.isPresent()) {
                     mapRoles.get("roles").add(opt.get().getId());
                 } else {
@@ -114,7 +113,7 @@ public class UserClient{
             }
          });
         
-        http.PUT(getEndpointUser() + "/roles", marshall(mapRoles));
+        http.PUT(getEndpointUser() + "/roles", orgClient.bearerAuthToken, marshall(mapRoles));
     }
     
     // ---------------------------------

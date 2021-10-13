@@ -39,22 +39,10 @@ public class DatabasesClient {
             new TypeReference<List<Database>>(){};
     
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
-    
+    private final HttpApisClient http = HttpApisClient.getInstance();
+            
     /** hold a reference to the bearer token. */
-    private final String bearerAuthToken;
-    
-    /**
-     * As immutable object use builder to initiate the object.
-     * 
-     * @param client
-     *      client
-     */
-    public DatabasesClient(HttpApisClient client) {
-        this.http = client;
-        Assert.notNull(client, "Http Client");
-        this.bearerAuthToken = client.getToken();
-    }
+    protected final String bearerAuthToken;
     
     /**
      * As immutable object use builder to initiate the object.
@@ -64,8 +52,6 @@ public class DatabasesClient {
      */
     public DatabasesClient(String bearerAuthToken) {
        this.bearerAuthToken = bearerAuthToken;
-       this.http = HttpApisClient.getInstance();
-       http.setToken(bearerAuthToken);
        Assert.hasLength(bearerAuthToken, "bearerAuthToken");
     } 
     
@@ -123,7 +109,7 @@ public class DatabasesClient {
      */
     public Stream<Database> searchDatabases(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointDatabases() + filter.urlParams());
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointDatabases() + filter.urlParams(), bearerAuthToken);
         return unmarshallType(res.getBody(), RESPONSE_DATABASES).stream();
     }
     
@@ -139,7 +125,7 @@ public class DatabasesClient {
      */
     public String createDatabase(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");
-        ApiResponseHttp res = http.POST(getApiDevopsEndpointDatabases(), marshall(dbCreationRequest));
+        ApiResponseHttp res = http.POST(getApiDevopsEndpointDatabases(), bearerAuthToken, marshall(dbCreationRequest));
         
         if (HttpURLConnection.HTTP_CREATED != res.getCode()) {
             throw new IllegalStateException("Expected code 201 to create db but got " 
@@ -162,7 +148,7 @@ public class DatabasesClient {
      */
     public DatabaseClient database(String dbId) {
         Assert.hasLength(dbId, "Database Id should not be null nor empty");
-        return new DatabaseClient(dbId);
+        return new DatabaseClient(this, dbId);
     }
     
     /**
@@ -176,7 +162,7 @@ public class DatabasesClient {
         Assert.hasLength(dbName, "Database Id should not be null nor empty");
         List<Database> dbs = databasesNonTerminatedByName(dbName).collect(Collectors.toList());
         if (1 == dbs.size()) {
-            return new DatabaseClient(dbs.get(0).getId());
+            return new DatabaseClient(this, dbs.get(0).getId());
         }
         throw new IllegalArgumentException("Cannot retrieve database from its name "
                 + "(matching count=" + dbs.size() + ")");

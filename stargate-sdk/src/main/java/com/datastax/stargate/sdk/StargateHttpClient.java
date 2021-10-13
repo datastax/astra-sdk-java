@@ -161,6 +161,18 @@ public class StargateHttpClient {
     
     /**
      * Syntaxic sugar.
+     * 
+     * @param mapper
+     *      mapper for the URL
+     * @return
+     *       http response
+     */
+    public ApiResponseHttp DELETE(Function<StargateClientNode, String> mapper, String suffix) {
+        return http(mapper, Method.DELETE, null, suffix, true);
+    }
+    
+    /**
+     * Syntaxic sugar.
      *
      * @param mapper
      *       mapper for the URL
@@ -175,6 +187,20 @@ public class StargateHttpClient {
     
     /**
      * Syntaxic sugar.
+     *
+     * @param mapper
+     *       mapper for the URL
+     * @param body
+     *      provide a request body      
+     * @return
+     *      http response
+     */
+    public ApiResponseHttp PUT(Function<StargateClientNode, String> mapper, String body, String suffix) {
+        return http(mapper, Method.PUT, body, suffix, false);
+    }
+    
+    /**
+     * Syntaxic sugar.
      * 
      * @param mapper
      *       mapper for the URL
@@ -185,6 +211,20 @@ public class StargateHttpClient {
      */
     public ApiResponseHttp PATCH(Function<StargateClientNode, String> mapper, String body) {
         return http(mapper, Method.PATCH, body, null, true);
+    }
+    
+    /**
+     * Syntaxic sugar.
+     * 
+     * @param mapper
+     *       mapper for the URL
+     * @param body
+     *      provide a request body      
+     * @return
+     *      http response
+     */
+    public ApiResponseHttp PATCH(Function<StargateClientNode, String> mapper, String body, String suffix) {
+        return http(mapper, Method.PATCH, body, suffix, true);
     }
     
     /**

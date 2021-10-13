@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.Database;
+import com.datastax.astra.sdk.databases.domain.Datacenter;
 
 /**
  * Utility class to load/save .astrarc file. This file is used to store
@@ -331,7 +332,10 @@ public class AstraRc {
     private static Map<String, String> dbKeys(Database db, String token) {
         Map<String, String> dbKeys = new HashMap<>();
         dbKeys.put(ASTRA_DB_ID, db.getId() );
-        dbKeys.put(ASTRA_DB_REGIONS, db.getInfo().getRegions());
+        dbKeys.put(ASTRA_DB_REGIONS, String.join(",", 
+                db.getInfo().getDatacenters()
+                  .stream().map(Datacenter::getRegion)
+                  .collect(Collectors.toSet())));
         dbKeys.put(ASTRA_DB_KEYSPACE, db.getInfo().getKeyspace());
         dbKeys.put(ASTRA_DB_APPLICATION_TOKEN, token);
         dbKeys.put(ASTRA_DB_CLIENT_ID, "");
