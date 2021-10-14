@@ -16,7 +16,7 @@
 
 package com.datastax.stargate.sdk.rest;
 
-import static com.datastax.stargate.sdk.utils.AnsiUtils.cyan;
+import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.util.List;
@@ -62,7 +62,7 @@ public class ApiDataClient {
     public ApiDataClient(StargateHttpClient stargateHttoClient) {
         Assert.notNull(stargateHttoClient, "stargate client reference. ");
         this.stargateHttpClient = stargateHttoClient;
-        LOGGER.info("+ API Data     :[" + cyan("{}") + "]", "ENABLED");
+        LOGGER.info("+ API Data     :[" + green("{}") + "]", "ENABLED");
     }
     
     /**

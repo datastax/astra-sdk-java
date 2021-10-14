@@ -30,10 +30,11 @@ import org.slf4j.LoggerFactory;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
-import com.datastax.stargate.sdk.config.StargateClientConfiguration;
+import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
+import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -81,8 +82,8 @@ public class StargateClient implements Closeable {
      * @param config
      *      current builder.
      */
-    public StargateClient(StargateClientConfiguration config) {
-        LOGGER.info("Initializing StargateClient...");
+    public StargateClient(StargateClientConfig config) {
+        LOGGER.info("Initializing [" + AnsiUtils.yellow("StargateClient") + "]");
         // Local DataCenter
         if (!Utils.hasLength(config.getLocalDC())) {
             throw new IllegalArgumentException("Local Datacenter is required");
@@ -106,10 +107,13 @@ public class StargateClient implements Closeable {
         
         // Testing CqlSession upfront
         if (cqlSession != null) {
-            LOGGER.info("Cql [" + green("ENABLED") + "]");
             cqlSession.execute("SELECT data_center from system.local");
             if (cqlSession.getKeyspace().isPresent()) {
-                LOGGER.info("+ Keyspace        : [" + cyan("{}") + "]", cqlSession.getKeyspace().get());
+                LOGGER.info("+ CqlSession is [" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"]",  cqlSession.getKeyspace().get());
+                
+            } else {
+                LOGGER.info("+ CqlSession is [" + green("ENABLED") + "]");
+                
             }
             
             // As we opened a cqlSession we may want to close it properly at application shutdown.
@@ -122,9 +126,8 @@ public class StargateClient implements Closeable {
                   } 
             });
         } else {
-            LOGGER.info("Cql [" + red("DISABLED") + "]");
+            LOGGER.info("+ CqlSession is  [" + red("DISABLED") + "]");
         }
-        LOGGER.info("+ Local DC        : [" + cyan("{}") + "]", currentDatacenter);
        
         // Initializing Apis
         this.apiDataClient     = new ApiDataClient(stargateHttpClient);
@@ -149,8 +152,8 @@ public class StargateClient implements Closeable {
      * Builder Pattern
      * @return StargateClientBuilder
      */
-    public static final StargateClientConfiguration builder() {
-        return new StargateClientConfiguration();
+    public static final StargateClientConfig builder() {
+        return new StargateClientConfig();
     }
     
     // ------------------------------------------------

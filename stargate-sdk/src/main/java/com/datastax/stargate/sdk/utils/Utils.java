@@ -53,7 +53,7 @@ public class Utils {
      * @param lStr String
      * @return boolean
      */
-    public static boolean paramsProvided(String... lStr) {
+    public static boolean hasAllLength(String... lStr) {
         if (null == lStr) return false;
         return Arrays.stream(lStr).allMatch(Utils::hasLength);
     }

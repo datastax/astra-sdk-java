@@ -39,7 +39,6 @@ import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
 import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
 import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class DatabasesIntegrationTest extends AbstractAstraIntegrationTest {
@@ -59,18 +58,16 @@ public class DatabasesIntegrationTest extends AbstractAstraIntegrationTest {
         printYellow("Parameter validation");
         Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient((String) null));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient((HttpApisClient) null));
     }
     
     @Test
     @Order(2)
     public void should_connect_with_AstraClient() throws InterruptedException {
         printYellow("Connection with AstraClient");
-        Assertions.assertTrue(client.getToken().isPresent());
-        HttpApisClient.getInstance().setToken(client.getToken().get());
         Assertions.assertNotNull(client
                     .apiDevopsOrganizations()
-                    .regions().collect(Collectors.toList()).size() > 1);
+                    .regions()
+                    .collect(Collectors.toList()).size() > 1);
         printOK("Can connect to ASTRA with AstraClient");
     }
    

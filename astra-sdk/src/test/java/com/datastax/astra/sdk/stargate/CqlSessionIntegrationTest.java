@@ -37,16 +37,16 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
     public void should_enable_cqlSession_with_clientId_clientSecret() {
         // Given
         System.out.println(ANSI_YELLOW + "- Connect Cassandra with CqlSession using clientId/ClientSecret" + ANSI_RESET);
-        Assertions.assertTrue(client.getDatabaseId().isPresent());
-        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
-        Assertions.assertTrue(client.getClientId().isPresent());
-        Assertions.assertTrue(client.getClientSecret().isPresent());
+        Assertions.assertNotNull(client.getConfig().getDatabaseId());
+        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
+        Assertions.assertNotNull(client.getConfig().getClientId());
+        Assertions.assertNotNull(client.getConfig().getClientSecret());
         // When (autocloseable)
         try(AstraClient astraClient = AstraClient.builder()
-                .databaseId(client.getDatabaseId().get())
-                .cloudProviderRegion(client.getDatabaseRegion().get())
-                .clientId(client.getClientId().get())
-                .clientSecret(client.getClientSecret().get())
+                .withDatabaseId(client.getConfig().getDatabaseId())
+                .withDatabaseRegion(client.getConfig().getDatabaseRegion())
+                .withClientId(client.getConfig().getClientId())
+                .withClientSecret(client.getConfig().getClientSecret())
                 .build()) {
             // Then
             Assertions.assertNotNull(astraClient
@@ -61,16 +61,15 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
     @DisplayName("Connect Cassandra with CqlSession using token/appToken")
     public void should_enable_cqlSession_with_token() {
         System.out.println(ANSI_YELLOW + "- Connect Cassandra with CqlSession using token/appToken" + ANSI_RESET);
-        
         // Given
-        Assertions.assertTrue(client.getDatabaseId().isPresent());
-        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
-        Assertions.assertTrue(client.getToken().isPresent());
+        Assertions.assertNotNull(client.getConfig().getDatabaseId());
+        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
+        Assertions.assertNotNull(client.getConfig().getToken());
         // When (autocloseable)
         try(AstraClient astraClient = AstraClient.builder()
-                .databaseId(client.getDatabaseId().get())
-                .cloudProviderRegion(client.getDatabaseRegion().get())
-                .appToken(client.getToken().get())
+                .withDatabaseId(client.getConfig().getDatabaseId())
+                .withDatabaseRegion(client.getConfig().getDatabaseRegion())
+                .withToken(client.getConfig().getToken())
                 .build()) {
             // Then
             Assertions.assertNotNull(astraClient
@@ -85,16 +84,15 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
     @DisplayName("Invoke Document Api providing dbId,cloudRegion,appToken")
     public void should_enable_documentApi_withToken() {
         System.out.println(ANSI_YELLOW + "- Invoke Document Api providing dbId,cloudRegion,appToken" + ANSI_RESET);
-        
         // Given
-        Assertions.assertTrue(client.getDatabaseId().isPresent());
-        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
-        Assertions.assertTrue(client.getToken().isPresent());
+        Assertions.assertNotNull(client.getConfig().getDatabaseId());
+        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
+        Assertions.assertNotNull(client.getConfig().getToken());
         // When
         try(AstraClient astraClient = AstraClient.builder()
-                .databaseId(client.getDatabaseId().get())
-                .cloudProviderRegion(client.getDatabaseRegion().get())
-                .appToken(client.getToken().get())
+                .withDatabaseId(client.getConfig().getDatabaseId())
+                .withDatabaseRegion(client.getConfig().getDatabaseRegion())
+                .withToken(client.getConfig().getToken())
                 .build()) {
                 // Then
                 Assertions.assertTrue(astraClient
@@ -109,14 +107,14 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
         System.out.println(ANSI_YELLOW + "- Invoke REST Api providing dbId,cloudRegion,appToken" + ANSI_RESET);
         
         // Given
-        Assertions.assertTrue(client.getDatabaseId().isPresent());
-        Assertions.assertTrue(client.getDatabaseRegion().isPresent());
-        Assertions.assertTrue(client.getToken().isPresent());
+        Assertions.assertNotNull(client.getConfig().getDatabaseId());
+        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
+        Assertions.assertNotNull(client.getConfig().getToken());
         // When
         try(AstraClient astraClient = AstraClient.builder()
-                .databaseId(client.getDatabaseId().get())
-                .cloudProviderRegion(client.getDatabaseRegion().get())
-                .appToken(client.getToken().get())
+                .withDatabaseId(client.getConfig().getDatabaseId())
+                .withDatabaseRegion(client.getConfig().getDatabaseRegion())
+                .withToken(client.getConfig().getToken())
                 .build()) {
                 // Then
             Assertions.assertTrue(astraClient
@@ -133,9 +131,7 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
         // Given
         Assertions.assertTrue(client.getToken().isPresent());
         // When
-        try(AstraClient cli = AstraClient.builder()
-                .appToken(client.getToken().get())
-                .build()) {
+        try(AstraClient cli = AstraClient.builder().withToken(client.getToken().get()).build()) {
           
             // Then
             Assertions.assertNotNull(cli

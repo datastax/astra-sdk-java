@@ -16,7 +16,7 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import static com.datastax.stargate.sdk.utils.AnsiUtils.cyan;
+import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.util.List;
@@ -61,7 +61,7 @@ public class ApiDocumentClient {
     public ApiDocumentClient(StargateHttpClient stargateHttpClient) {
         Assert.notNull(stargateHttpClient, "stargate client reference. ");
         this.stargateHttpClient = stargateHttpClient;
-        LOGGER.info("+ API Document :[" + cyan("{}") + "]", "ENABLED");
+        LOGGER.info("+ API Document :[" + green("{}") + "]", "ENABLED");
     }
     
     /**

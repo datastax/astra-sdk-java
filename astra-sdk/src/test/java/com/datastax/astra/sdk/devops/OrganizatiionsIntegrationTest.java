@@ -23,7 +23,6 @@ import com.datastax.astra.sdk.organizations.domain.Permission;
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.organizations.domain.User;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 import graphql.Assert;
 
@@ -54,8 +53,6 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
                 () -> new OrganizationsClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, 
                 () -> new OrganizationsClient((String)null));
-        Assertions.assertThrows(IllegalArgumentException.class, 
-                () -> new OrganizationsClient((HttpApisClient)null));
     }
     
     // ------ Working with Roles --------------------

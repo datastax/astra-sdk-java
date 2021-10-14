@@ -16,7 +16,7 @@
 
 package com.datastax.stargate.sdk.gql;
 
-import static com.datastax.stargate.sdk.utils.AnsiUtils.cyan;
+import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class ApiGraphQLClient {
     public ApiGraphQLClient(StargateHttpClient stargateClient) {
         Assert.notNull(stargateClient, "stargate client reference. ");
         this.stargateHttpClient =  stargateClient;
-        LOGGER.info("+ API GraphQL  :[" + cyan("{}") + "]", "ENABLED");
+        LOGGER.info("+ API GraphQL  :[" + green("{}") + "]", "ENABLED");
     }
     
     /**

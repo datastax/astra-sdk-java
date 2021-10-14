@@ -13,7 +13,7 @@ import org.apache.hc.core5.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.stargate.sdk.config.StargateClientConfiguration;
+import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.loadbalancer.LoadBalancingResource;
@@ -58,11 +58,10 @@ public class StargateHttpClient {
      * @param config
      *      configuration
      */
-    protected StargateHttpClient(StargateClient sc, StargateClientConfiguration config) {
+    protected StargateHttpClient(StargateClient sc, StargateClientConfig config) {
         // Initializing nodes per datacenter based on StargateNodeConfig
         for(String dc : config.getStargateNodes().keySet()) {
             ApiTokenProvider apitokenDC = config.getApiTokenProvider(dc);
-            LOGGER.info("Intializing DC: [" + cyan(dc) + "]");
             datacenters.put(dc, new StargateClientDC(dc, apitokenDC, 
              config.getStargateNodes()
                     .get(dc).stream()
@@ -70,12 +69,10 @@ public class StargateHttpClient {
                     .collect(Collectors.toList())));
         }
         // Logging topology
-        if (LOGGER.isInfoEnabled()) {
-            datacenters.entrySet().stream().forEach(e -> {
-                LOGGER.info("- [" + cyan("{}") + "] with [" + cyan("{}") + "] Stargate nodes", 
-                        e.getKey(), e.getValue().getStargateNodesLB().getResourceList().size());
-            });
-        }
+        datacenters.entrySet().stream().forEach(e -> {
+                LOGGER.info("+ Stargate nodes #[" + cyan("{}") + "] in [" + cyan("{}") + "]", 
+                        e.getValue().getStargateNodesLB().getResourceList().size(), e.getKey());
+        });
         this.sc = sc;
     }
     

@@ -4,34 +4,28 @@ import java.io.File;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.utils.AstraRc;
-import com.datastax.oss.driver.api.core.metadata.schema.IndexKind;
 import com.datastax.stargate.sdk.core.DataCenter;
 import com.datastax.stargate.sdk.doc.NamespaceClient;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
-import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 
 public class SampleCodeForDocumentation {
-
     
     public void init() {
         
         AstraClient astraClient = AstraClient.builder()
-                .databaseId("astra_cluster_id")           // Unique identifier for your database instance
-                .cloudProviderRegion("astra_db_region")
+                .withDatabaseId("astra_cluster_id")           // Unique identifier for your database instance
+                .withDatabaseRegion("astra_db_region")
                 .build();   // Cloud Pr
                 
-        AstraClient astraClient = AstraClient.builder()
-                .databaseId("astra_cluster_id")           // Unique identifier for your database instance
-                .cloudProviderRegion("astra_db_region")   // Cloud Provider region picked for you instance
-                .keyspace("ks1")                          // (optional) Set your keyspace
-                .astraRc(null, null)
-                
-                .appToken("AstraCS:......")               // App Token will be used as ApiKey for Devops, Docs and REST Api.
-                .clientId("TWRvjlcrgfZYfhcxGZhUlAAA")     // Will be used as your username
-                .clientSecret("7xKSrZPLbWxDJ0WXyj..")     // Will be used as your password
-
-                .secureConnectBundle("/tmp/sec.zip")      // (optional) if not provided download in ~/.astra
+        AstraClient astraClient2 = AstraClient.builder()
+                .withDatabaseId("astra_cluster_id")           // Unique identifier for your database instance
+                .withDatabaseRegion("astra_db_region")   // Cloud Provider region picked for you instance
+                .withKeyspace("ks1")                          // (optional) Set your keyspace
+                .withToken("AstraCS:......")               // App Token will be used as ApiKey for Devops, Docs and REST Api.
+                .withClientId("TWRvjlcrgfZYfhcxGZhUlAAA")     // Will be used as your username
+                .withClientSecret("7xKSrZPLbWxDJ0WXyj..")     // Will be used as your password
+                .withSecureConnectBundleFolder("/tmp")      // (optional) if not provided download in ~/.astra
                 .build();
         
         AstraRc arc = AstraRc.load(null);

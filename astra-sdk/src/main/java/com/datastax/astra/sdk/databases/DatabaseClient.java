@@ -1,8 +1,10 @@
 package com.datastax.astra.sdk.databases;
 
+import static com.datastax.astra.sdk.config.AstraClientConfig.buildScbFileName;
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.Optional;
@@ -114,7 +116,7 @@ public class DatabaseClient {
     }
     
     /**
-     * Download SecureBundle.
+     * Download SecureBundle for a specific data center
      * 
      * @param destination
      *      file to save the securebundle
@@ -126,6 +128,7 @@ public class DatabaseClient {
             // Parameter validation
             Assert.hasLength(destination, "destination");
             // Invoke
+            
             ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL", databasesClient.bearerAuthToken);
             // Check response coode
             Assert.isTrue(HTTP_OK == res.getCode(), "Error in 'downloadSecureConnectBundle', with id=" +databaseId);
@@ -136,6 +139,29 @@ public class DatabaseClient {
         } else {
             LOGGER.warn("DB "+ databaseId + " is not active, no download");
         }
+    }
+    
+    /**
+     * Download SecureBundle.
+     * 
+     * @param dcName
+     *      datacenter name
+     * @param destination
+     *      file to save the securebundle
+     */
+    public void downloadAllSecureConnectBundles(String destination) {
+        Optional<Database> odb = find();
+        // Validation
+        Assert.hasLength(destination, "destination");
+        Assert.isTrue(new File(destination).exists(), "Destination folder");
+        Assert.isTrue(odb.isPresent(), "Database id");
+        odb.get().getInfo().getDatacenters().stream().forEach(dc -> {
+            String fileName = destination + File.separator + buildScbFileName(odb.get().getId(), dc.getRegion());
+            if (!new File(fileName).exists()) {
+                Utils.downloadFile(dc.getSecureBundleUrl(), fileName);
+                LOGGER.info("+ Downloading file: {}", fileName);
+            }
+        });
     }
     
     // ---------------------------------

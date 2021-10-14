@@ -16,13 +16,13 @@
 
 package com.datastax.astra.sdk.utils;
 
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_APPLICATION_TOKEN;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_CLIENT_ID;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_CLIENT_SECRET;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_ID;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_KEYSPACE;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_REGIONS;
-import static com.datastax.astra.sdk.AstraClient.ASTRA_DB_SECURE_BUNDLES;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_CLIENT_ID;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_CLIENT_SECRET;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_ID;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_KEYSPACE;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_REGION;
+import static com.datastax.astra.sdk.config.AstraClientConfig.ASTRA_DB_SCB_FOLDER;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.databases.domain.Datacenter;
+import com.datastax.stargate.sdk.utils.Utils;
 
 /**
  * Utility class to load/save .astrarc file. This file is used to store
@@ -332,16 +333,31 @@ public class AstraRc {
     private static Map<String, String> dbKeys(Database db, String token) {
         Map<String, String> dbKeys = new HashMap<>();
         dbKeys.put(ASTRA_DB_ID, db.getId() );
-        dbKeys.put(ASTRA_DB_REGIONS, String.join(",", 
-                db.getInfo().getDatacenters()
-                  .stream().map(Datacenter::getRegion)
-                  .collect(Collectors.toSet())));
+        dbKeys.put(ASTRA_DB_REGION, db.getInfo().getRegion());
         dbKeys.put(ASTRA_DB_KEYSPACE, db.getInfo().getKeyspace());
         dbKeys.put(ASTRA_DB_APPLICATION_TOKEN, token);
         dbKeys.put(ASTRA_DB_CLIENT_ID, "");
         dbKeys.put(ASTRA_DB_CLIENT_SECRET, "");
-        dbKeys.put(ASTRA_DB_SECURE_BUNDLES, "");
+        dbKeys.put(ASTRA_DB_SCB_FOLDER, "");
         return dbKeys;
+    }
+    
+    /**
+     * Syntaxic sugar to read environment variables.
+     *
+     * @param key
+     *      environment variable
+     * @return
+     *      if the value is there
+     */
+    public static Optional<String> readRcVariable(AstraRc arc, String key, String sectionName) {
+        Map<String,String> section = arc.getSections().get(sectionName);
+        if (section != null && 
+            section.containsKey(key) && 
+            Utils.hasLength(section.get(key))) {
+            return Optional.ofNullable(section.get(key));
+        }
+        return Optional.empty();
     }
 
 }
