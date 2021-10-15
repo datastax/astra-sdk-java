@@ -35,14 +35,12 @@ import com.datastax.astra.dto.Person;
 import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.audit.AnsiLoggerObserver;
 import com.datastax.stargate.sdk.doc.ApiDocument;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.DocumentClient;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Test operations for the Document API operation
@@ -70,13 +68,13 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
         
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                  .appToken(client.getToken().get())
-                  .clientId(client.getClientId().get())
-                  .clientSecret(client.getClientSecret().get())
-                  .keyspace(WORKING_NAMESPACE)
-                  .databaseId(dbId)
-                  .cloudProviderRegion("us-east-1")
-                  .build();
+                .withToken(client.getToken().get())
+                .withClientId(client.getConfig().getClientId())
+                .withClientSecret(client.getConfig().getClientSecret())
+                .withKeyspace(WORKING_NAMESPACE)
+                .withDatabaseId(dbId)
+                .withDatabaseRegion("us-east-1")
+                .build();
         clientApiDoc = client.apiStargateDocument();
         printOK("Connection established to the DB");
     }
@@ -88,17 +86,17 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
         printYellow("builderParams_should_not_be_empty");
         Assertions.assertAll("Required parameters",
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().databaseId(null); }),
+                        () -> { AstraClient.builder().withDatabaseId(null); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().databaseId(""); }),
+                        () -> { AstraClient.builder().withDatabaseId(""); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().cloudProviderRegion(""); }),
+                        () -> { AstraClient.builder().withDatabaseRegion(""); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().cloudProviderRegion(null); }),
+                        () -> { AstraClient.builder().withDatabaseRegion(null); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().appToken(""); }),
+                        () -> { AstraClient.builder().withToken(""); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().appToken(null); })
+                        () -> { AstraClient.builder().withToken(null); })
         );
         printOK("Required parameters are tested");
     }
@@ -134,9 +132,6 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
     @DisplayName("Find Collection")
     public void should_find_collection() throws InterruptedException {
         printYellow("should_find_collection");
-        
-        HttpApisClient.getInstance().registerListener("audit", new AnsiLoggerObserver());
-        
         Assertions.assertTrue(clientApiDoc
                 .namespace(WORKING_NAMESPACE)
                 .collectionNames()
@@ -430,7 +425,7 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
     public void testInvalidDoc() {
         printYellow("testInvalidDoc");
         DocumentClient dc = StargateClient.builder()
-                .disableCQL().build()
+                .withoutCqlSession().build()
                 .apiDocument().namespace("n").collection("c")
                 .document("??a=&invalid??");
 

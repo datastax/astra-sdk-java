@@ -35,14 +35,14 @@ public class DocumentRepositoryIntegrationTest extends AbstractAstraIntegrationT
 
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                .appToken(client.getToken().get())
-                .clientId(client.getClientId().get())
-                .clientSecret(client.getClientSecret().get())
-                .keyspace(WORKING_NAMESPACE)
-                .databaseId(dbId)
-                .cloudProviderRegion("us-east-1")
+                .withToken(client.getToken().get())
+                .withClientId(client.getConfig().getClientId())
+                .withClientSecret(client.getConfig().getClientSecret())
+                .withKeyspace(WORKING_NAMESPACE)
+                .withDatabaseId(dbId)
+                .withDatabaseRegion("us-east-1")
                 .build();
-
+       
         // Delete the collection if exist
         CollectionClient cc = client.apiStargateDocument()
               .namespace(WORKING_NAMESPACE)

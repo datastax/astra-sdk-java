@@ -11,6 +11,7 @@ import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
 
 public class SampleCodeForDocumentation {
     
+    @SuppressWarnings("unused")
     public void init() {
         
         AstraClient astraClient = AstraClient.builder()
@@ -18,6 +19,7 @@ public class SampleCodeForDocumentation {
                 .withDatabaseRegion("astra_db_region")
                 .build();   // Cloud Pr
                 
+       
         AstraClient astraClient2 = AstraClient.builder()
                 .withDatabaseId("astra_cluster_id")           // Unique identifier for your database instance
                 .withDatabaseRegion("astra_db_region")   // Cloud Provider region picked for you instance

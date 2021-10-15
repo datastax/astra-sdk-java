@@ -50,13 +50,14 @@ public class GraphQLApiIntegrationTest extends AbstractAstraIntegrationTest {
         client.cqlSession().close();
         
         // Connect the client to the new created DB
+        // Connect the client to the new created DB
         client = AstraClient.builder()
-                  .appToken(client.getToken().get())
-                  .clientId(client.getClientId().get())
-                  .clientSecret(client.getClientSecret().get())
-                  .keyspace(WORKING_KEYSPACE)
-                  .databaseId(dbId)
-                  .cloudProviderRegion("us-east-1")
+                  .withToken(client.getToken().get())
+                  .withClientId(client.getConfig().getClientId())
+                  .withClientSecret(client.getConfig().getClientSecret())
+                  .withKeyspace(WORKING_KEYSPACE)
+                  .withDatabaseId(dbId)
+                  .withDatabaseRegion("us-east-1")
                   .build();
         clientGraphQL = client.apiStargateGraphQL();
         printOK("Connection established to the DB");
@@ -66,24 +67,23 @@ public class GraphQLApiIntegrationTest extends AbstractAstraIntegrationTest {
     @Order(1)
     @DisplayName("Parameter validations should through IllegalArgumentException(s)")
     public void builderParams_should_not_be_empty() {
-        printYellow("Checking required parameters " + ANSI_RESET);
+        printYellow("builderParams_should_not_be_empty");
         Assertions.assertAll("Required parameters",
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().databaseId(null); }),
+                        () -> { AstraClient.builder().withDatabaseId(null); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().databaseId(""); }),
+                        () -> { AstraClient.builder().withDatabaseId(""); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().cloudProviderRegion(""); }),
+                        () -> { AstraClient.builder().withDatabaseRegion(""); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().cloudProviderRegion(null); }),
+                        () -> { AstraClient.builder().withDatabaseRegion(null); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().appToken(""); }),
+                        () -> { AstraClient.builder().withToken(""); }),
                 () -> Assertions.assertThrows(IllegalArgumentException.class, 
-                        () -> { AstraClient.builder().appToken(null); })
+                        () -> { AstraClient.builder().withToken(null); })
         );
-       printOK("Validation OK");
+        printOK("Required parameters are tested");
     }
-    
     
    
 }
