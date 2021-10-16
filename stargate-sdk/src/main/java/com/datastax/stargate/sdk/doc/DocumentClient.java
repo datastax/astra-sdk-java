@@ -48,6 +48,7 @@ public class DocumentClient {
     /**
      * Full constructor.
      * 
+     * @param stargateHttpClient stargateHttpClient
      * @param collectionClient CollectionClient
      * @param docId String
      */

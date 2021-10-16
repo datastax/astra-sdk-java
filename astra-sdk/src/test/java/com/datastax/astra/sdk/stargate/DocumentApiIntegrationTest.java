@@ -424,8 +424,7 @@ public class DocumentApiIntegrationTest extends AbstractAstraIntegrationTest {
     @DisplayName("Invalid parameters")
     public void testInvalidDoc() {
         printYellow("testInvalidDoc");
-        DocumentClient dc = StargateClient.builder()
-                .withoutCqlSession().build()
+        DocumentClient dc = StargateClient.builder().withoutCqlSession().build()
                 .apiDocument().namespace("n").collection("c")
                 .document("??a=&invalid??");
 

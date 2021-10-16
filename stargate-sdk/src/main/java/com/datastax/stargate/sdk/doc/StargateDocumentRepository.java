@@ -172,14 +172,38 @@ public class StargateDocumentRepository <DOC> {
         return collectionClient.findAll(docClass);
     }
     
+    /**
+     * Find first page.
+     * 
+     * @return
+     *      first page of the collection
+     */
     public DocumentResultPage<DOC> findFirstPage() {
         return collectionClient.findFirstPage(docClass);
     }
     
+    /**
+     * Find first page.
+     * 
+     * @param pageSize
+     *      size of page
+     * @return
+     *      first page of the collection
+     */
     public DocumentResultPage<DOC> findFirstPage(int pageSize){
         return collectionClient.findFirstPage(docClass, pageSize);
     }
     
+    /**
+     * Find page.
+     * 
+     * @param pageSize
+     *      size of page
+     * @param pageingState
+     *      cursor to retrieve pages
+     * @return
+     *      first page of the collection
+     */
     public DocumentResultPage<DOC> findPage(int pageSize, String pageingState){
         return collectionClient.findPage(docClass, pageSize, pageingState);
     }

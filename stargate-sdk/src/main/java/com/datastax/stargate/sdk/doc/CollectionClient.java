@@ -69,7 +69,8 @@ public class CollectionClient {
 
     /**
      * Full constructor.
-     * 
+     *
+     * @param stargateHttpClient http client
      * @param namespaceClient NamespaceClient
      * @param collectionName String
      */
@@ -305,7 +306,6 @@ public class CollectionClient {
      *      class for working bean 
      * @return
      *      a page of results
-     * @see https://docs.astra.datastax.com/reference#get_api-rest-v2-namespaces-namespace-id-collections-collection-id-1
      */
     public <DOC> DocumentResultPage<DOC> findPage(SearchDocumentQuery query, Class<DOC> beanClass) {
         try {

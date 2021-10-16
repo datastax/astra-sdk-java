@@ -44,9 +44,13 @@ public class ApiDocumentClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDocumentClient.class);
     
-    /** Schenma sub level. */
+    /** Schema sub level. */
     public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
+    
+    /** Schema sub level. */
     public static final String PATH_SCHEMA            = "/schemas";
+    
+    /** Schema sub level. */
     public static final String PATH_V2                = "/v2";
     
     /** Get Topology of the nodes. */
@@ -55,8 +59,8 @@ public class ApiDocumentClient {
     /**
      * Constructor with StargateClient as argument.
      *
-     * @param stargateClient
-     *      stargate client
+     * @param stargateHttpClient
+     *      stargate http client
      */
     public ApiDocumentClient(StargateHttpClient stargateHttpClient) {
         Assert.notNull(stargateHttpClient, "stargate client reference. ");

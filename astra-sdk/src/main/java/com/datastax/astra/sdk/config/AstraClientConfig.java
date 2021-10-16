@@ -1,10 +1,13 @@
 package com.datastax.astra.sdk.config;
 
 import static com.datastax.astra.sdk.utils.AstraRc.readRcVariable;
+import static com.datastax.stargate.sdk.utils.Assert.hasLength;
+import static com.datastax.stargate.sdk.utils.Assert.notNull;
 import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Map;
 
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.slf4j.Logger;
@@ -12,9 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
+
 /**
  * Helper and configurer for Astra.
  *
@@ -103,6 +108,7 @@ public class AstraClientConfig implements Serializable {
      * @return self reference
      */
     public AstraClientConfig withToken(String applicationToken) {
+        hasLength(applicationToken, "applicationToken");
         this.token = applicationToken;
         this.stargateConfig.withApiToken(token);
         return this;
@@ -116,6 +122,7 @@ public class AstraClientConfig implements Serializable {
      * @return self reference
      */
     public AstraClientConfig withClientId(String clientId) {
+        hasLength(clientId, "clientId");
         this.clientId = clientId;
         return this;
     }
@@ -128,6 +135,7 @@ public class AstraClientConfig implements Serializable {
      * @return self reference
      */
     public AstraClientConfig withClientSecret(String clientSecret) {
+        hasLength(clientSecret, "clientSecret");
         this.clientSecret = clientSecret;
         return this;
     }
@@ -144,6 +152,7 @@ public class AstraClientConfig implements Serializable {
      * @return self reference
      */
     public AstraClientConfig withDatabaseId(String databaseId) {
+        hasLength(databaseId, "databaseId");
         this.databaseId = databaseId;
         return this;
     }
@@ -151,11 +160,12 @@ public class AstraClientConfig implements Serializable {
     /**
      * Provider database identifier
      *
-     * @param databaseId
-     *            databaseId
+     * @param databaseRegion
+     *            databaseRegion
      * @return self reference
      */
     public AstraClientConfig withDatabaseRegion(String databaseRegion) {
+        hasLength(databaseRegion, "databaseRegion");
         this.databaseRegion = databaseRegion;
         return this;
     }
@@ -179,8 +189,8 @@ public class AstraClientConfig implements Serializable {
     /**
      * Enable fine Grained configuration of the HTTP Retries.
      *
-     * @param reqConfig
-     *            request configuration
+     * @param retryConfig
+     *            retry configuration
      * @return self reference
      */
     public AstraClientConfig withHttpRetryConfig(RetryConfig retryConfig) {
@@ -188,9 +198,57 @@ public class AstraClientConfig implements Serializable {
         return this;
     }
     
+    /**
+     * Api Invocations trigger some events processed in observer.
+     * 
+     * @param name
+     *            unique identiier
+     * @param observer
+     *            instance of your Observer
+     * @return self reference
+     */
+    public AstraClientConfig addHttpObserver(String name, ApiInvocationObserver observer) {
+        stargateConfig.addHttpObserver(name, observer);
+        return this;
+    }
+    
+    /**
+     * Api Invocations trigger some events processed in observer.
+     * 
+     * @param observers
+     *           observers lists
+     * @return self reference
+     */
+    public AstraClientConfig withHttpObservers(Map<String, ApiInvocationObserver> observers) {
+        stargateConfig.withHttpObservers(observers);
+        return this;
+    }
+    
     // ------------------------------------------------
     // -------------- CqlSession ----------------------
     // ------------------------------------------------
+    
+    /**
+     * You want to keep the client stateless to be agile.
+     * 
+     * @return reference enforcing cqlsession disabled
+     */
+    public AstraClientConfig withoutCqlSession() {
+        stargateConfig.withoutCqlSession();
+        return this;
+    }
+    
+    /**
+     * Fill Application name.
+     *
+     * @param appName
+     *            appName
+     * @return current reference
+     */
+    public AstraClientConfig withApplicationName(String appName) {
+        stargateConfig.withApplicationName(appName);
+        return this;
+    }
     
     /**
      * Fill Keyspaces.
@@ -207,11 +265,12 @@ public class AstraClientConfig implements Serializable {
     /**
      * Provide clientSecret.
      *
-     * @param clientSecret
-     *            clientSecret
+     * @param scbPath
+     *            secure bundle
      * @return self reference
      */
     public AstraClientConfig withSecureConnectBundleFolder(String scbPath) {
+        hasLength(scbPath, "scbPath");
         this.secureConnectBundleFolder = scbPath;
         return this;
     }
@@ -242,6 +301,8 @@ public class AstraClientConfig implements Serializable {
      * @return AstraClientBuilder
      */
     public AstraClientConfig loadFromAstraRc(AstraRc arc, String sectionName) {
+        notNull(arc, "AstraRc");
+        hasLength(sectionName, "sectionName");
         readRcVariable(arc, ASTRA_DB_ID,            sectionName).ifPresent(this::withDatabaseId);
         readRcVariable(arc, ASTRA_DB_REGION,        sectionName).ifPresent(this::withDatabaseRegion);
         readRcVariable(arc, ASTRA_DB_APPLICATION_TOKEN, sectionName).ifPresent(this::withToken);
@@ -252,6 +313,11 @@ public class AstraClientConfig implements Serializable {
         return this;
     }
     
+    /**
+     * Final build.
+     * @return
+     *      return the target object
+     */
     public AstraClient build() {
         return new AstraClient(this);
     }

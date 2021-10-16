@@ -103,9 +103,9 @@ public class LoadBalancingResource < RSC > implements Comparable < LoadBalancing
         // Affichage de l'�tat du Composant
         StringBuilder strBuild = new StringBuilder();
         strBuild.append(this.id);
-        strBuild.append("(" + new Double(this.defaultWeigth).intValue() + "%)");
+        strBuild.append("(" + Double.valueOf(this.defaultWeigth).intValue() + "%)");
         if (isAvailable()) {
-            strBuild.append(" currentweight " + new Double(this.currentWeight).intValue() + "% " + resource.toString());
+            strBuild.append(" currentweight " + Double.valueOf(this.currentWeight).intValue() + "% " + resource.toString());
         } else {
             strBuild.append(" ---");
         }

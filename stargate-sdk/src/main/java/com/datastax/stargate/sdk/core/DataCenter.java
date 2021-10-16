@@ -22,13 +22,26 @@ package com.datastax.stargate.sdk.core;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class DataCenter {
-
+    
+    /** Name. */
     private String name;
     
+    /** Number of replicas. */
     private int replicas = 1;
     
+    /**
+     * Default constructor.
+     */
     public DataCenter() {}
     
+    /**
+     * Constructor working with params.
+     *
+     * @param name
+     *      name of the dc
+     * @param replicas
+     *      number of replicas
+     */
     public DataCenter(String name, int replicas) {
         super();
         this.name = name;

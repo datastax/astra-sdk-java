@@ -48,9 +48,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class KeyspaceClient {
     
-    /** Constants. */
+    /** URL parts. */
     public static final String PATH_KEYSPACES   = "/v2/keyspaces";
+    
+    /** URL parts. */
     public static final String PATH_TABLES      = "/tables";
+    
+    /** URL parts. */
     public static final String PATH_TYPES       = "/types";
     
     /** Marshalling {@link TypeReference}. */
@@ -84,7 +88,7 @@ public class KeyspaceClient {
     /**
      * Full constructor.
      * 
-     * @param restclient ApiRestClient
+     * @param apiData ApiDataClient
      * @param keyspace String
      */
     public KeyspaceClient(ApiDataClient apiData, String keyspace) {

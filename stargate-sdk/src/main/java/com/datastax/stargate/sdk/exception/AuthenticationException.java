@@ -26,20 +26,40 @@ public class AuthenticationException extends IllegalStateException {
     /** Serial. */
     private static final long serialVersionUID = -4491748257797687008L;
     
-    public AuthenticationException(String msg) {
-        super(msg);
-    }
-    
+    /**
+     * Default Constructor.
+     */
     public AuthenticationException() {
         this("Cannot authenticate, check token and/or credentials");
     }
-
-    public AuthenticationException(String msg, Throwable parent) {
-        super(msg, parent);
-    }
     
+    /**
+     * Constructor with message
+     * @param msg
+     *      message
+     */
+    public AuthenticationException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructor with exception
+     * @param parent
+     *      parent exception
+     */
     public AuthenticationException(Throwable parent) {
         this("Cannot authenticate, check token and/or credentials", parent);
+    }
+    
+    /**
+     * Constructor with message and exception
+     * @param msg
+     *      message
+     * @param parent
+     *      parent exception      
+     */
+    public AuthenticationException(String msg, Throwable parent) {
+        super(msg, parent);
     }
 
 }

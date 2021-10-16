@@ -24,8 +24,6 @@ import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.organizations.domain.User;
 
-import graphql.Assert;
-
 @TestMethodOrder(OrderAnnotation.class)
 public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest {
     
@@ -194,7 +192,7 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         CreateTokenResponse res = iamClient.createToken(DefaultRoles.DATABASE_ADMINISTRATOR.getName());
         tmpClientId = res.getClientId();
         printOK("Token created " + tmpClientId);
-        Assert.assertTrue(iamClient.token(res.getClientId()).exist());
+        Assertions.assertTrue(iamClient.token(res.getClientId()).exist());
         printOK("Token exist ");
     }
     
@@ -206,12 +204,12 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         // Given
-        Assert.assertTrue(iamClient.token(tmpClientId).exist());
+        Assertions.assertTrue(iamClient.token(tmpClientId).exist());
         // When
         iamClient.token(tmpClientId).delete();
         printOK("Token deleted ");
         // Then
-        Assert.assertFalse(iamClient.token(tmpClientId).exist());
+        Assertions.assertFalse(iamClient.token(tmpClientId).exist());
         printOK("Token does not exist ");
     }
     
@@ -239,9 +237,9 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         // Given
         System.out.println(ANSI_YELLOW + "- Find users" + ANSI_RESET);
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
-        Assert.assertTrue(iamClient.user(tmpUserid).exist());
+        Assertions.assertTrue(iamClient.user(tmpUserid).exist());
         printOK("User retrieved (by ID)");
-        Assert.assertTrue(iamClient.findUserByEmail(tmpUserEmail).isPresent());
+        Assertions.assertTrue(iamClient.findUserByEmail(tmpUserEmail).isPresent());
         printOK("User retrieved (by email)");
     }
     
@@ -251,7 +249,7 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         // Given
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         UserClient uc = iamClient.user(tmpUserid);
-        Assert.assertTrue(uc.exist());
+        Assertions.assertTrue(uc.exist());
         uc.updateRoles(
                DefaultRoles.DATABASE_ADMINISTRATOR.getName(), 
                DefaultRoles.ORGANIZATION_ADMINISTRATOR.getName());

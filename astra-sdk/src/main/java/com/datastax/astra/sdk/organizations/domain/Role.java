@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * Represent a role.
+ *
  * @author Cedrick LUNVEN (@clunven)
  */
 @JsonIgnoreProperties
@@ -16,12 +18,15 @@ public class Role implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -8104860806037524739L;
     
+    /** role id. */
     @JsonProperty("ID")
     private String id;
     
+    /** role name. */
     @JsonProperty("Name")
     private String name;
    
+    /** policy. */
     @JsonProperty("Policy")
     private RolePolicy policy;
     

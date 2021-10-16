@@ -40,14 +40,19 @@ public class IndexDefinition implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 460202584337456067L;
 
+    /** index name. */
     private String index_name;
     
+    /** table name. */
     private String table_name;
     
+    /** keyspace name. */
     private String keyspace_name;
     
+    /** index options. */
     private List<KVPair> options;
     
+    /** index type. */
     private String kind;
 
     /**

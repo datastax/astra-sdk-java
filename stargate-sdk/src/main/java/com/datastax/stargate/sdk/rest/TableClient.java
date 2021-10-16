@@ -59,7 +59,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class TableClient {
     
+    /** URL Parts. */
     public static final String PATH_COLUMNS  = "/columns";
+    
+    /** URL Parts. */
     public static final String PATH_INDEXES  = "/indexes";
     
     /** Http Client with load balancing anf failover. */
@@ -89,11 +92,15 @@ public class TableClient {
     /**
      * Full constructor.
      * 
-     * @param keyspaceClient KeyspaceClient
-     * @param tableName String
+     * @param stargateHttpClient 
+     *          stargateHttpClient
+     * @param keyspaceClient 
+     *          KeyspaceClient
+     * @param tableName 
+     *          name of the table
      */
-    public TableClient(StargateHttpClient stargateClient, KeyspaceClient keyspaceClient,  String tableName) {
-        this.stargateHttpClient = stargateClient;
+    public TableClient(StargateHttpClient stargateHttpClient, KeyspaceClient keyspaceClient,  String tableName) {
+        this.stargateHttpClient = stargateHttpClient;
         this.keyspaceClient     = keyspaceClient;
         this.tableName          = tableName;
         Assert.notNull(keyspaceClient, "keyspaceClient");
@@ -157,11 +164,11 @@ public class TableClient {
          stargateHttpClient.PUT(tableSchemaResource, marshall(ct));
      }
      
-     /*
-      * Delete a table.
-      * 
-      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteTable">Reference Documentation</a>
-      */
+    /**
+     * Delete a table.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteTable">Reference Documentation</a>
+     */
      public void delete() {
          stargateHttpClient.DELETE(tableSchemaResource);
      }
@@ -421,7 +428,7 @@ public class TableClient {
      * /v2/keyspaces/{keyspace}/tables/{tableName}
      */
     public Function<StargateClientNode, String> tableResource = 
-             (node) -> keyspaceClient.tablesResource.apply(node) + "/" + tableName;
+             (node) -> keyspaceClient.keyspaceResource.apply(node) + "/" + tableName;
   
     /**
      * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}/columns

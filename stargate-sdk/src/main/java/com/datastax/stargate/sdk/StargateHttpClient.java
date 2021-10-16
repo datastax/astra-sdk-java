@@ -161,6 +161,8 @@ public class StargateHttpClient {
      * 
      * @param mapper
      *      mapper for the URL
+     * @param suffix
+     *      URL suffix     
      * @return
      *       http response
      */
@@ -188,7 +190,9 @@ public class StargateHttpClient {
      * @param mapper
      *       mapper for the URL
      * @param body
-     *      provide a request body      
+     *      provide a request body
+     * @param suffix
+     *      URL suffix
      * @return
      *      http response
      */
@@ -216,7 +220,9 @@ public class StargateHttpClient {
      * @param mapper
      *       mapper for the URL
      * @param body
-     *      provide a request body      
+     *      provide a request body
+     * @param suffix
+     *      URL suffix      
      * @return
      *      http response
      */
@@ -233,6 +239,8 @@ public class StargateHttpClient {
      *      http method used
      * @param body
      *      request body (optional)
+     * @param suffix
+     *      URL suffix     
      * @param mandatory
      *      handling 404 error code, could raise exception or not
      * @return

@@ -55,14 +55,16 @@ public class ColumnsClient {
     /**
      * Constructor focusing on a single Column
      *
+     * @param stargateHttpClient 
+     *       stargateHttpClient
      * @param tableClient
      *       table resource client
      * @param columnId
      *      current column identifier
      */
-    public ColumnsClient(StargateHttpClient stargateClient, TableClient tableClient, String columnId) {
+    public ColumnsClient(StargateHttpClient stargateHttpClient, TableClient tableClient, String columnId) {
         this.tableClient    = tableClient;
-        this.stargateClient = stargateClient;
+        this.stargateClient = stargateHttpClient;
         this.columnId       = columnId;
         Assert.hasLength(columnId, "columnId");
     }

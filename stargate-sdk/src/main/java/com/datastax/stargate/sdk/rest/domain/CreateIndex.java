@@ -59,7 +59,9 @@ public class CreateIndex implements Serializable {
 
     /**
      * Constructor.
+     *
      * @param builder
+     *      current builder
      */
     private CreateIndex(CreateIndexBuilder builder) {
         this.name         = builder.name;
@@ -70,47 +72,145 @@ public class CreateIndex implements Serializable {
         this.options      = builder.options;
     }
     
+    /**
+     * Access to builder.
+     *
+     * @return
+     *      create index builder
+     */
     public static CreateIndexBuilder builder() {
         return new CreateIndexBuilder();
     }
     
+    /**
+     * Internal builder
+     *
+     * @author Cedrick LUNVEN (@clunven)
+     *
+     */
     public static class CreateIndexBuilder {
+        
+        /** attribute exist. */
         boolean ifNotExists = false;
+        
+        /** attribute name. */
         String name;
+        
+        /** attribute column. */
         String column;
+        
+        /** attribute type. */
         String type = null;
+        
+        /** attribute kind. */
         IndexKind kind = null;
+        
+        /** list of options. */
         Map<String, String> options = null;
         
+        /**
+         * Catalog to build.
+         * 
+         * @return
+         *      current instace.
+         */
         public CreateIndex build() {
             return new CreateIndex(this);
         }
+        
+        /**
+         * Helper for exists.
+         *
+         * @param ine
+         *      value for exists
+         * @return
+         *      self reference
+         */
         public CreateIndexBuilder ifNotExist(boolean ine) {
             this.ifNotExists = ine;
             return this;
         }
+        /**
+         * Helper for name.
+         * 
+         * @param name
+         *      name
+         * @return
+         *      self reference
+
+         */
         public CreateIndexBuilder name(String name) {
             this.name = name;
             return this;
         }
+        /**
+         * Helper for type.
+         * @param t
+         *          type
+         * @return
+         *      self reference
+
+         */
         public CreateIndexBuilder type(String t) {
             this.type = t;
             return this;
         }
+        
+        /**
+         * Helper for sasi.
+         *
+         * @return
+         *      self reference
+         */
         public CreateIndexBuilder sasi() {
             return type(TYPE_SASI);
         }
+        
+        /**
+         * Helper for SAI.
+         * 
+         * @return
+         *      self reference
+         */
         public CreateIndexBuilder sai() {
             return type(TYPE_SAI);
         }
+        
+        /**
+         * Helper for column.
+         *
+         * @param name
+         *      column name
+         * @return
+         *      self reference
+         */
         public CreateIndexBuilder column(String name) {
             this.column = name;
             return this;
         }
+        
+        /**
+         * Helper for kind.
+         * @param k
+         *          kind
+         * @return
+         *      self reference
+         */
         public CreateIndexBuilder kind(IndexKind k) {
             this.kind = k;
             return this;
         }
+        
+        /**
+         * Help for options.
+         * 
+         * @param key
+         *       key 
+         * @param value
+         *          value
+         * @return
+         *      self reference
+         */
         public CreateIndexBuilder addOption(String key, String value) {
             if (options == null) {
                 options = new HashMap<>();

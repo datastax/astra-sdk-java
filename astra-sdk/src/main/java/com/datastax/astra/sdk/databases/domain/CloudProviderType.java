@@ -22,28 +22,39 @@ package com.datastax.astra.sdk.databases.domain;
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum CloudProviderType {
-    /** */
+    
+    /** ALL. */
     ALL("ALL"), 
-    /** */
+    
+    /** GCP. */
     GCP("GCP"), 
-    /** */
+    
+    /** GCP_MARKETPLACE. */
     GCP_MARKETPLACE("GCP_MARKETPLACE"), 
-    /** */
+    
+    /** AZURE. */
     AZURE("AZURE"), 
-    /** */
+    
+    /** AWS. */
     AWS("AWS");
     /** */
     private String code;
     
     /**
+     * Cloud provider
      * 
+     * @param code
+     *      cloud provider code
      */
     private CloudProviderType(String code) {
         this.code = code;
     }
     
     /**
-     * 
+     * Get access to code.
+     *
+     * @return
+     *      code value.
      */
     public String getCode() {
         return code;

@@ -45,9 +45,13 @@ public class ApiDataClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDataClient.class);
     
-    /** Schenma sub level. */
+    /** URL part. */
     public static final String PATH_KEYSPACES  = "/keyspaces";
+    
+    /** URL part. */
     public static final String PATH_SCHEMA     = "/schemas";
+    
+    /** URL part. */
     public static final String PATH_V2         = "/v2";
     
     /** Get Topology of the nodes. */

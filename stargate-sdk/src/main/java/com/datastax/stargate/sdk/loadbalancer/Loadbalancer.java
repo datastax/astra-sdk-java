@@ -49,7 +49,7 @@ public class Loadbalancer < RSC >  {
     /**
      * Constructor with default policy LOAD BALACING.
      *
-     * @param resources
+     * @param lst
      *      list of resources
      */
     @SuppressWarnings("unchecked")
@@ -62,7 +62,7 @@ public class Loadbalancer < RSC >  {
      *
      * @param policy
      *          current policy
-     * @param resources
+     * @param listRsc
      *          list of resources
      */
     public Loadbalancer(LoadBalancingPolicy policy, List< LoadBalancingResource < RSC >> listRsc) {
@@ -167,7 +167,7 @@ public class Loadbalancer < RSC >  {
          * Load to be redistributed equally among remaining nodes (and NOT reapply proportions)
          */
         double loadtoDistribute = loadtoBalance
-                    / new Double(resources.size() - unavailableCount).doubleValue();
+                    / Double.valueOf(resources.size() - unavailableCount).doubleValue();
         /**
          * Add the load
          */
@@ -212,7 +212,7 @@ public class Loadbalancer < RSC >  {
             strBuildDer.append("\n" + wrapper.toString());
             if (wrapper.isAvailable()) {
                 strBuildDer.append(" currentUse "
-                        + new Double(HUNDRED * (wrapper.getNbUse() / totalCount)).intValue() + "%");
+                        + Double.valueOf(HUNDRED * (wrapper.getNbUse() / totalCount)).intValue() + "%");
             }
         }
         return strBuildDer.toString();

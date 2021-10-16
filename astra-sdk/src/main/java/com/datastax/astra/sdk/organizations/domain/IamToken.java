@@ -9,12 +9,18 @@ import java.util.List;
  */
 public class IamToken {
     
+    /** client id. */
     private String clientId;
     
+    /** roles list. */
     private List<String> roles;
     
+    /** generated date. */
     private String generatedOn;
 
+    /**
+     * Default constructor.
+     */
     public IamToken() {}
     
     /**

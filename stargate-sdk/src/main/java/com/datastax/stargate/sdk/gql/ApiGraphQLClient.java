@@ -39,8 +39,13 @@ public class ApiGraphQLClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiGraphQLClient.class);
     
+    /** URL part. */
     public static final String PATH_CQLFIRST_DDL = "-schema";
+    
+    /** URL part. */
     public static final String PATH_CQLFIRST_DML = "/";
+    
+    /** URL part. */
     public static final String PATH_GRAPQHFIRST  = "-admin";
     
     /** Get Topology of the nodes. */

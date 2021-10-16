@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
  * 
  * @author Cedrick Lunven (@clunven)
  */
+@SuppressWarnings("deprecation")
 public class JsonUtils {
     
     /** Object to Json marshaller as a Jackson Mapper. */

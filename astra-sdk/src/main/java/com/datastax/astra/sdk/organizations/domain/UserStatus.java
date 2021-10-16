@@ -1,8 +1,19 @@
 package com.datastax.astra.sdk.organizations.domain;
 
 /**
+ * User status in the db.
+ *
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum UserStatus {
-    invited,active;
+    
+    /**
+     * invited.
+     */
+    invited,
+    
+    /**
+     * active.
+     */
+    active;
 }

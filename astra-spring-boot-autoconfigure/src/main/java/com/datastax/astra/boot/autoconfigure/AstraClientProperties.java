@@ -18,6 +18,11 @@ package com.datastax.astra.boot.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * Load the client properties. 
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @ConfigurationProperties(prefix = "astra")
 public class AstraClientProperties {
     

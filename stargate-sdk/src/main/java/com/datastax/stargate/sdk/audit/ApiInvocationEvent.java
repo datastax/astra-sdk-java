@@ -118,6 +118,12 @@ public class ApiInvocationEvent implements ApiConstants {
         this.lastException = lastException;
     }
 
+    /**
+     * Contructor with an http request.
+     *
+     * @param req
+     *      current http request
+     */
     public ApiInvocationEvent(ClassicHttpRequest req) {
         this.timestamp = System.currentTimeMillis();
         try {

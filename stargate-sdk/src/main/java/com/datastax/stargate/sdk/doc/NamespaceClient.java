@@ -65,6 +65,7 @@ public class NamespaceClient {
     /**
      * Full constructor.
      * 
+     * @param stargateHttpClient stargateHttpClient
      * @param docClient ApiDocumentClient
      * @param namespace String
      */

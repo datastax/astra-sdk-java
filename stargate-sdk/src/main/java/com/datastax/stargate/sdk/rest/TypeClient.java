@@ -31,12 +31,13 @@ public class TypeClient {
     /**
      * Full constructor.
      * 
+     * @param stargateHttpClient stargateHttpClient
      * @param keyspaceClient KeyspaceClient
      * @param typeName String
      */
-    public TypeClient(StargateHttpClient stargateClient, KeyspaceClient keyspaceClient,  String typeName) {
+    public TypeClient(StargateHttpClient stargateHttpClient, KeyspaceClient keyspaceClient,  String typeName) {
         this.keyspaceClient     = keyspaceClient;
-        this.stargateHttpClient = stargateClient;
+        this.stargateHttpClient = stargateHttpClient;
         this.typeName           = typeName;
         Assert.notNull(keyspaceClient, "keyspaceClient");
         Assert.hasLength(typeName,    "typeName");   
@@ -91,12 +92,12 @@ public class TypeClient {
          stargateHttpClient.PUT(keyspaceClient.typesSchemaResource, marshall(update));
      }
      
-     /*
-      * Delete a type
-      * 
-      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteType">Reference Documentation</a>
+    /**
+     * Delete a type
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteType">Reference Documentation</a>
      */
-     public void delete() {
+    public void delete() {
         stargateHttpClient.DELETE(typeSchemaResource);
     }
     

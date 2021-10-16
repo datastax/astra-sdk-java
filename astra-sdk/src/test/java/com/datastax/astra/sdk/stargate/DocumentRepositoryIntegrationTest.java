@@ -67,16 +67,15 @@ public class DocumentRepositoryIntegrationTest extends AbstractAstraIntegrationT
         PersonRepo p1 = new PersonRepo("loulou", "loulou", 22, new Address("Paris", 75000));
         tmpDocId = personRepository.insert(p1);
         
-        personRepository.findAll().map(ApiDocument::getDocument).map(PersonRepo::getFirstname).forEach(System.out::println);
+        personRepository.findAll()
+                        .map(ApiDocument::getDocument)
+                        .map(PersonRepo::getFirstname)
+                        .forEach(System.out::println);
         
         Assertions.assertEquals(1, personRepository.count());
         Assertions.assertTrue(personRepository.exists(tmpDocId));
         printOK("Document created " + tmpDocId);
     }
-    
-    // TODO More unit tests
-    
-    
         
 
 }

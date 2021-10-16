@@ -18,7 +18,9 @@ package com.datastax.astra.sdk.databases.domain;
 
 import java.util.Optional;
 
-/** 
+/**
+ * Create a filter.
+ * 
  * @author Cedrick LUNVEN (@clunven)
  */
 public class DatabaseFilter {
@@ -71,7 +73,6 @@ public class DatabaseFilter {
         this.include           = i;
         this.provider          = p;
     }
-    
   
     /**
      * Build the URL based on current parameters.
@@ -91,16 +92,97 @@ public class DatabaseFilter {
     }
     
     /**
+     * Inclide Enum.
+     *
      * @author Cedrick LUNVEN (@clunven)
      */
     public static enum Include {
-        NON_TERMINATED,ALL,ACTIVE,PENDING,
-        PREPARING,PREPARED,INITIALIZING,
-        PARKING,PARKED,UNPARKING,
-        TERMINATING,TERMINATED,
-        RESIZING,ERROR,MAINTENANCE;
+        
+        /**
+         * NON_TERMINATED
+         */
+        NON_TERMINATED,
+        
+        /**
+         * ALL
+         */
+        ALL,
+        
+        /**
+         * ACTIVE
+         */
+        ACTIVE,
+        
+        /**
+         * PENDING
+         */
+        PENDING,
+       
+        /**
+         * PREPARING
+         */
+        PREPARING,
+        
+        /**
+         * PREPARED
+         */
+        PREPARED,
+        
+        /**
+         * INITIALIZING
+         */
+        INITIALIZING,
+        
+        /**
+         * PARKING
+         */
+        PARKING,
+        
+        /**
+         * PARKED
+         */
+        PARKED,
+        
+        /**
+         * UNPARKING
+         */
+        UNPARKING,
+        
+        /**
+         * TERMINATING
+         */
+        TERMINATING,
+        
+        /**
+         * TERMINATED
+         */
+        TERMINATED,
+        
+        /**
+         * RESIZING
+         */
+        RESIZING,
+        
+        /**
+         * ERROR
+         */
+        ERROR,
+        
+        /**
+         * MAINTENANCE
+         */
+        MAINTENANCE,
+        
+        /**
+         * HIBERNATING
+         */
+        HIBERNATING,
+        
+        /**
+         * HIBERNATED
+         */
+        HIBERNATED;
     }
-    
     
     /**
      * Helper to create a builder.
@@ -127,8 +209,10 @@ public class DatabaseFilter {
         /** */
         private Include include  = Include.NON_TERMINATED;
         
+        /**
+         * Default constructor.
+         */
         public DatabaseFilterBuilder() {}
-        
        
         /**
          * Define the limit.

@@ -22,6 +22,9 @@ public class TypeDefinition implements Serializable {
     /** Definition of the fields. */
     private List<TypeFieldDefinition> fields;
     
+    /**
+     * Default constructor.
+     */
     public TypeDefinition() {}
 
     /**

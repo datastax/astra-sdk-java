@@ -23,10 +23,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class StreamingClient {
 
-    /** Constants. */
+    /** URL part.. */
     public static final String PATH_STREAMING  = "/streaming";
+    
+    /** URL part.. */
     public static final String PATH_TENANTS    = "/tenants";
+    
+    /** URL part.. */
     public static final String PATH_PROVIDERS  = "/providers";
+    
+    /** URL part.. */
     public static final String PATH_CLUSTERS   = "/clusters";
     
     /** Marshalling beans */

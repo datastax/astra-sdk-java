@@ -26,16 +26,35 @@ import java.time.format.DateTimeFormatter;
  */
 public class TimeUtils {
     
+    /** should have a date. */
     private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
     
+    /** defaut value. */
     private static final long MAX_CQL_LONG_VALUE = ((1L << 32) - 1);
     
+    /** defaut value. */
     private static final long EPOCH_AS_CQL_LONG = (1L << 31);
     
+    /**
+     * Convert {@link LocalDate} to String.
+     *
+     * @param value
+     *      current date
+     * @return
+     *      formatted string
+     */
     public static String formatLocalDate(LocalDate value) {
       return DateTimeFormatter.ISO_LOCAL_DATE.format(value);
     }
     
+    /**
+     * Convert from String to date.
+     *
+     * @param value
+     *      current formatted string
+     * @return
+     * local date
+     */
     public static LocalDate parseLocaDate(String value) {
         try {
             return LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -44,11 +63,27 @@ public class TimeUtils {
       }
     }
 
+    /**
+     * Convert long to {@link LocalDate}.
+     *
+     * @param value
+     *      current epoch
+     * @return
+     *      local date
+     */
     public static LocalDate parseLocaDate(long value) {
       int days = cqlDateToDaysSinceEpoch(value);
       return EPOCH.plusDays(days);
     }
 
+    /**
+     * Convert from CQL to date.
+     *
+     * @param raw
+     *      cql value
+     * @return
+     *      epoch value
+     */
     private static int cqlDateToDaysSinceEpoch(long raw) {
       if (raw < 0 || raw > MAX_CQL_LONG_VALUE)
         throw new IllegalArgumentException(

@@ -37,6 +37,15 @@ public class Filter {
     /** Value, could be multiple value. */
     private final Object fieldValue;
 
+    /**
+     * Full fledge constructor
+     * @param fieldName
+     *      field to filter on 
+     * @param cond
+     *      condition for the filter
+     * @param val
+     *      value for the filter
+     */
     public Filter(String fieldName, FilterCondition cond, Object val) {
         this.fieldName = fieldName;
         this.condition = cond;

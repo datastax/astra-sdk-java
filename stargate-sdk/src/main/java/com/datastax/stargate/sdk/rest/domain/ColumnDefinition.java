@@ -57,6 +57,14 @@ public class ColumnDefinition implements Serializable {
         this.isStatic = isStatic;
     }
     
+    /**
+     * Constructor.
+     * 
+     * @param name
+     *      current name.
+     * @param type
+     *      current type
+     */
     public ColumnDefinition(String name, String type) {
         this.name = name;
         this.typeDefinition = type;

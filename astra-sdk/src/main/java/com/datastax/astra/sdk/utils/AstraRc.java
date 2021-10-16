@@ -57,10 +57,14 @@ public class AstraRc {
    
     /** Default filename we are looking for. */
     public static final String ASTRARC_FILENAME  = ".astrarc";
+    
+    /** Default filename we are looking for. */
     public static final String ASTRARC_DEFAULT   = "default";
     
     /** Environment variable coding user home. */
     public static final String ENV_USER_HOME      = "user.home";
+    
+    /** line separator. */
     public static final String ENV_LINE_SEPERATOR = "line.separator";
     
     /** Sections in the file. [sectionName] -> key=Value. */
@@ -136,7 +140,7 @@ public class AstraRc {
     /**
      * Generate astrarc based on values in DB using devops API.
      *
-     * @param devopsClient ApiDevopsClient
+     * @param token token
      */
     public static void create(String token) {
         save(extractDatabasesInfos(token));
@@ -145,7 +149,7 @@ public class AstraRc {
     /**
      * Generate astrarc based on values in DB using devops API.
      *
-     * @param devopsClient ApiDevopsClient
+     * @param token token
      * @param destination  output to save the values
      */
     public static void create(String token, File destination) {
@@ -172,6 +176,8 @@ public class AstraRc {
      *
      * @param astraRc
      *      update .astrarc file. 
+     * @param destination 
+     *      destination to save the file
      */
     public static void save(Map <String, Map<String, String>> astraRc, File destination) {
         // This map is empty if file does not exist
@@ -220,7 +226,7 @@ public class AstraRc {
                 + ASTRARC_FILENAME)); 
     }
     
-    /*
+    /**
      * Loading ~/.astrarc (if present).
      * 
      * @return AstraRc
@@ -304,7 +310,7 @@ public class AstraRc {
     /**
      * Use Astra Devops Api to list databases.
      * 
-     * @param devopsClient ApiDevopsClient
+     * @param token token
      */
     private static Map <String, Map<String, String>> extractDatabasesInfos(String token) {
         // Look for 'non terminated DB' (limit 100), 
@@ -345,8 +351,12 @@ public class AstraRc {
     /**
      * Syntaxic sugar to read environment variables.
      *
+     * @param arc
+     *      AstraRc
      * @param key
      *      environment variable
+     * @param sectionName
+     *      section Name
      * @return
      *      if the value is there
      */

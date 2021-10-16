@@ -91,8 +91,10 @@ public class SearchDocumentQuery {
         /** Page size. */ 
         protected int pageSize = DEFAULT_PAGING_SIZE;
         
+        /** Page state. */ 
         protected String pageState = null;
         
+        /** Fields to search. */ 
         protected Set<String> fields = null;
         
         /** 
@@ -118,6 +120,14 @@ public class SearchDocumentQuery {
             return new SearchDocumentQuery(this);
         }
         
+        /**
+         * Enable paging.
+         * 
+         * @param pageSize
+         *      page size
+         * @return
+         *      self reference
+         */
         public SearchDocumentQueryBuilder withPageSize(int pageSize) {
             if (pageSize < 1 || pageSize > PAGING_SIZE_MAX) {
                 throw new IllegalArgumentException("Page size should be between 1 and 100");
@@ -245,34 +255,113 @@ public class SearchDocumentQuery {
             this.builder   = builder;
             this.fieldName = fieldName;
         }
+        
+        /**
+         * Add a filter
+         * @param op
+         *      operation
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */
         private SearchDocumentQueryBuilder addFilter(FilterCondition op, Object value) {
             builder.filters.add(new Filter(fieldName,op, value));
             return builder;
         }
         
+        /**
+         * Add condition is less than.
+         *
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */
         public SearchDocumentQueryBuilder isLessThan(Object value) {
-            return addFilter(FilterCondition.LessThan, value);
+            return addFilter(FilterCondition.LESS_THAN, value);
         }
+        
+        /**
+         * Add condition is less than.
+         *
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */
         public SearchDocumentQueryBuilder isLessOrEqualsThan(Object value) {
-            return addFilter(FilterCondition.LessThanOrEqualsTo, value);
+            return addFilter(FilterCondition.LESS_THAN_OR_EQUALS_TO, value);
         }
+        
+        /**
+         * Add condition is less than.
+         *
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */        
         public SearchDocumentQueryBuilder isGreaterThan(Object value) {
-            return addFilter(FilterCondition.GreaterThan, value);
+            return addFilter(FilterCondition.GREATER_THAN, value);
         }
+        
+        /**
+         * Add condition is greater than.
+         *
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */        
         public SearchDocumentQueryBuilder isGreaterOrEqualsThan(Object value) {
-            return addFilter(FilterCondition.GreaterThenOrEqualsTo, value);
+            return addFilter(FilterCondition.GREATER_THAN_OR_EQUALS_TO, value);
         }
+        
+        /**
+         * Add condition is is equals to.
+         *
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */        
         public SearchDocumentQueryBuilder isEqualsTo(Object value) {
-            return addFilter(FilterCondition.EqualsTo, value);
+            return addFilter(FilterCondition.EQUALS_TO, value);
         }
+        
+        /**
+         * Add condition is not equals to.
+         *
+         * @param value
+         *      value
+         * @return
+         *      self reference
+         */        
         public SearchDocumentQueryBuilder isNotEqualsTo(Object value) {
-            return addFilter(FilterCondition.NotEqualsTo, value);
+            return addFilter(FilterCondition.NOT_EQUALS_TO, value);
         }
+        
+        /**
+         * Add condition exists.
+         *
+         * @return
+         *      self reference
+         */
         public SearchDocumentQueryBuilder exists() {
-            return addFilter(FilterCondition.Exists, null);
+            return addFilter(FilterCondition.EXISTS, null);
         }
+        
+        /**
+         * Add condition is isIn.
+         *
+         * @param values
+         *      values
+         * @return
+         *      self reference
+         */
         public SearchDocumentQueryBuilder isIn(Collection<Object> values) {
-            return addFilter(FilterCondition.In, values);
+            return addFilter(FilterCondition.IN, values);
         }
     }
 

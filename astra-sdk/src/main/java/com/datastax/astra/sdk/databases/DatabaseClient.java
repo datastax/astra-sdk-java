@@ -42,6 +42,8 @@ public class DatabaseClient {
     /**
      * Default constructor.
      *
+     * @param databasesClient
+     *          database client
      * @param databaseId
      *          uniique database identifier
      */
@@ -85,6 +87,12 @@ public class DatabaseClient {
         return find().isPresent();
     }
     
+    /**
+     * If the app is active.
+     *
+     * @return
+     *      tells if database is ACTIVE
+     */
     public boolean isActive() {
         Optional<Database> db = find();
         return db.isPresent() && (DatabaseStatusType.ACTIVE == db.get().getStatus());
@@ -142,10 +150,8 @@ public class DatabaseClient {
     }
     
     /**
-     * Download SecureBundle.
+     * Download all SecureBundle.
      * 
-     * @param dcName
-     *      datacenter name
      * @param destination
      *      file to save the securebundle
      */

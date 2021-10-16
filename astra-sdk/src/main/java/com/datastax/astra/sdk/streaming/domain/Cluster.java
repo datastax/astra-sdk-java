@@ -12,13 +12,25 @@ public class Cluster implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 7245105195981994526L;
     
-    /** Fields. */
+    /** Cluster name. */
     private String clusterName;
+    
+    /** Cloud Provider. */
     private String cloudProvider;
+    
+    /** Cloud Region. */
     private String cloudRegion;
+    
+    /** Cluster type. */
     private String clusterType;
+    
+    /** Web service url. */
     private String webServiceUrl;
+    
+    /** Borker service url. */
     private String brokerServiceUrl;
+    
+    /** Web socker url */
     private String websocketUrl;
     
     /** Default constructor. */

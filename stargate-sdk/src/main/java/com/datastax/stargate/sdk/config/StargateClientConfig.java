@@ -1,5 +1,7 @@
 package com.datastax.stargate.sdk.config;
 
+import static com.datastax.stargate.sdk.utils.Assert.hasLength;
+import static com.datastax.stargate.sdk.utils.Assert.notNull;
 import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
 
 import java.io.File;
@@ -25,7 +27,6 @@ import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.core.ApiTokenProviderFixed;
 import com.datastax.stargate.sdk.core.ApiTokenProviderSimple;
-import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.datastax.stargate.sdk.utils.Utils;
 import com.evanlennick.retry4j.config.RetryConfig;
@@ -62,8 +63,8 @@ public class StargateClientConfig implements Serializable {
     public static String ENV_VAR_DRIVERCONFIG_FILE = "STARGATE_DRIVERCONFIG";
 
     /**
-     * Initializing Api Nodes with environment variables. Data needs a structure as you get multiple nodes and multiple DC
-     * Map<String, List<StargateNode> as a JSON. 
+     * Initializing Api Nodes with environment variables.
+     * 
      * { "dc1": [ 
      *    { "name": "dc1Stargate1", "restUrl": "http://127.0.0.1:8082", "graphqlUrl": "http://127.0.0.1:8080", "authUrl": "http://127.0.0.1:8081" }, 
      *    { "name": "dc1Stargate2", "restUrl": "http://127.0.0.2:8082", "graphqlUrl": "http://127.0.0.2:8080", "authUrl": "http://127.0.0.2:8081" } 
@@ -72,6 +73,12 @@ public class StargateClientConfig implements Serializable {
      * }
      **/
     public static String ENV_VAR_APINODES = "STARGATE_APINODES";
+    
+    /** if nothing provided, overriding. */
+    public static String DEFAULT_LOCALDC = "datacenter1";
+    
+    /** if nothing provided, overriding. */
+    public static String DEFAULT_CONTACTPOINT = "localhost:9042";
 
     /** Serial. */
     private static final long serialVersionUID = -4662012136342903695L;
@@ -202,6 +209,7 @@ public class StargateClientConfig implements Serializable {
      * @return self reference
      */
     public StargateClientConfig withHttpRequestConfig(RequestConfig reqConfig) {
+        notNull(reqConfig, "RequestConfig");
         this.requestConfig = reqConfig;
         return this;
     }
@@ -209,11 +217,12 @@ public class StargateClientConfig implements Serializable {
     /**
      * Enable fine Grained configuration of the HTTP Retries.
      *
-     * @param reqConfig
+     * @param retryConfig
      *            request configuration
      * @return self reference
      */
     public StargateClientConfig withHttpRetryConfig(RetryConfig retryConfig) {
+        notNull(retryConfig, "retryConfig");
         this.retryConfig = retryConfig;
         return this;
     }
@@ -228,7 +237,8 @@ public class StargateClientConfig implements Serializable {
      * @return self reference
      */
     public StargateClientConfig addHttpObserver(String name, ApiInvocationObserver observer) {
-        Assert.hasLength(name, "Observer name");
+        hasLength(name, "Observer name");
+        notNull(observer, "observer");
         if (this.observers.containsKey(name)) {
             throw new IllegalArgumentException("An observer with the same name already exists (type=" + 
                         this.observers.get(name).getClass().getName() + ")");
@@ -240,13 +250,12 @@ public class StargateClientConfig implements Serializable {
     /**
      * Api Invocations trigger some events processed in observer.
      * 
-     * @param name
-     *            unique identiier
-     * @param observer
+     * @param observers
      *            instance of your Observer
      * @return self reference
      */
     public StargateClientConfig withHttpObservers(Map<String, ApiInvocationObserver> observers) {
+        notNull(observers, "observers");
         this.observers = observers;
         return this;
     }
@@ -267,6 +276,7 @@ public class StargateClientConfig implements Serializable {
      * @param cql
      *            existing session
      * @return
+     *      self reference
      */
     public StargateClientConfig withCqlSession(CqlSession cql) {
         this.cqlSession = cql;
@@ -358,10 +368,10 @@ public class StargateClientConfig implements Serializable {
     }
 
     /**
-     * Fill Keyspaces.
+     * Fill contact points.
      *
-     * @param keyspace
-     *            keyspace name
+     * @param contactPoints
+     *           contact points
      * @return current reference
      */
     public StargateClientConfig withCqlContactPoints(String... contactPoints) {
@@ -375,8 +385,10 @@ public class StargateClientConfig implements Serializable {
     /**
      * Fill Keyspaces.
      *
-     * @param keyspace
-     *            keyspace name
+     * @param dc
+     *            datacenter name
+     * @param contactPoints
+     *           contact points
      * @return current reference
      */
     public StargateClientConfig withCqlContactPointsDC(String dc, String... contactPoints) {
@@ -414,6 +426,7 @@ public class StargateClientConfig implements Serializable {
      * @return current reference
      */
     public StargateClientConfig withCqlKeyspace(String keyspace) {
+        hasLength(keyspace, "keyspace");
         return withCqlDriverOption(TypedDriverOption.SESSION_KEYSPACE, keyspace);
     }
 
@@ -425,6 +438,7 @@ public class StargateClientConfig implements Serializable {
      * @return current reference
      */
     public StargateClientConfig withLocalDatacenter(String localDc) {
+        hasLength(localDc, "localDc");
         this.localDC = localDc;
         withCqlDriverOption(TypedDriverOption.LOAD_BALANCING_LOCAL_DATACENTER, localDc);
         withCqlDriverOption(TypedDriverOption.LOAD_BALANCING_DC_FAILOVER_ALLOW_FOR_LOCAL_CONSISTENCY_LEVELS, true);
@@ -439,6 +453,7 @@ public class StargateClientConfig implements Serializable {
      * @return current reference
      */
     public StargateClientConfig withApplicationName(String appName) {
+        hasLength(appName, "appName");
         return withCqlDriverOption(TypedDriverOption.APPLICATION_NAME, appName);
     }
 
@@ -450,6 +465,7 @@ public class StargateClientConfig implements Serializable {
      * @return current reference
      */
     public StargateClientConfig withCqlCloudSecureConnectBundle(String cloudConfigUrl) {
+        hasLength(cloudConfigUrl, "cloudConfigUrl");
         return withCqlDriverOption(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE, cloudConfigUrl);
     }
 
@@ -457,22 +473,23 @@ public class StargateClientConfig implements Serializable {
      * Providing SCB. (note it is one per Region), define per DC.
      *
      * @param dc
-     *            load dc
+     *      load dc
      * @param cloudConfigUrl
-     *            configuration
+     *      configuration
      * @return current reference
      */
     public StargateClientConfig withCqlCloudSecureConnectBundleDC(String dc, String cloudConfigUrl) {
+        hasLength(dc, "dc");
+        hasLength(cloudConfigUrl, "cloudConfigUrl");
         return withCqlDriverOptionDC(dc, TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE, cloudConfigUrl);
     }
 
     /**
      * You will get one token provider for a DC
      * 
-     * @param dc
-     *            datacenter name
-     * @param tokenProvider
-     *            token provider name
+     * @param url
+     *      list of URL for authentication
+     *      
      * @return slef reference
      */
     public StargateClientConfig withApiTokenProvider(String... url) {
@@ -484,16 +501,14 @@ public class StargateClientConfig implements Serializable {
      * 
      * @param dc
      *            datacenter name
-     * @param tokenProvider
-     *            token provider name
+     * @param url
+     *      list of URL for authentication
      * @return slef reference
      */
     public StargateClientConfig withApiTokenProviderDC(String dc, String... url) {
+        hasLength(dc, "dc");
         if (!Utils.hasLength(username)) {
             throw new IllegalStateException("Username is empty please .withAuthCredentials() before .withApiTokenProvider()");
-        }
-        if (!Utils.hasLength(dc)) {
-            throw new IllegalArgumentException("Datacenter name is required");
         }
         return withApiTokenProviderDC(dc, new ApiTokenProviderSimple(username, password, url));
     }
@@ -508,6 +523,7 @@ public class StargateClientConfig implements Serializable {
      * @return self reference
      */
     public StargateClientConfig withApiTokenProviderDC(String dc, ApiTokenProvider tokenProvider) {
+        hasLength(dc, "dc");
         apiTokenProviderDC.put(dc, tokenProvider);
         return this;
     }
@@ -520,6 +536,7 @@ public class StargateClientConfig implements Serializable {
      * @return self reference
      */
     public StargateClientConfig withApiToken(String token) {
+        hasLength(token, "token");
         this.appToken = token;
         return this;
     }
@@ -527,11 +544,12 @@ public class StargateClientConfig implements Serializable {
     /**
      * Adding all nodes to the local DC (frequently the only one).
      * 
-     * @param nodes
+     * @param node
      *            list of nodes
      * @return builder
      */
     public StargateClientConfig withApiNode(StargateNodeConfig node) {
+        notNull(node, "StargateNode");
         if (localDC == null || "".equals(localDC)) {
             throw new IllegalStateException(
                     "LocalDatacenter is empty please .withLocalDataCenter() before .withApiTokenProvider()");
@@ -544,11 +562,13 @@ public class StargateClientConfig implements Serializable {
      *
      * @param dc
      *            current dc
-     * @param nodes
+     * @param node
      *            node fully form
      * @return self reference
      */
     public StargateClientConfig withApiNodeDC(String dc, StargateNodeConfig node) {
+        hasLength(dc, "dc");
+        notNull(node, "StargateNode");
         if (!stargateNodes.containsKey(dc)) {
             stargateNodes.put(dc, new ArrayList<StargateNodeConfig>());
         }
@@ -569,6 +589,7 @@ public class StargateClientConfig implements Serializable {
      * Building a StargateClient from the values in the BUILDER
      *
      * @return
+     *     instance of the client
      */
     public StargateClient build() {
         return new StargateClient(this);

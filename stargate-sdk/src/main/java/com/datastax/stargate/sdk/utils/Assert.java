@@ -16,20 +16,53 @@
 
 package com.datastax.stargate.sdk.utils;
 
+/**
+ * Syntaxic sugar for common validations.
+ * 
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class Assert {
     
+    /**
+     * Hide default.
+     */
+    private Assert() {}
+    
+    /**
+     * Input string should not be empty.
+     *
+     * @param s
+     *      string value
+     * @param name
+     *      param name
+     */
     public static void hasLength(String s, String name) {
         if (s == null || "".equals(s)) {
             throw new IllegalArgumentException("Parameter '" + name + "' should be null nor empty");
         }
     }
     
+    /**
+     * Input object should not be null
+     * @param o
+     *      object value
+     * @param name
+     *      param name
+     */
     public static void notNull(Object o, String name) {
         if (o == null) {
             throw new IllegalArgumentException("Parameter '" + name + "' should be null nor empty");
         }
     }
     
+    /**
+     * Check condition at start.
+     *
+     * @param b
+     *      predicate should be true
+     * @param msg
+     *      error message
+     */
     public static void isTrue(Boolean b, String msg) {
         if (!b) {
             throw new IllegalArgumentException(msg);

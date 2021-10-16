@@ -34,8 +34,10 @@ public class ApiError implements Serializable {
     /** Error message. */
     private String message;
     
+    /**
+     * Defaulf contructor.
+     */
     public ApiError() {}
-    
     
     /** {@inheritDoc} */
     @Override

@@ -64,8 +64,14 @@ public class HttpApisClient implements ApiConstants {
     
     /** Default settings in Request and Retry */
     public static final int DEFAULT_TIMEOUT_REQUEST   = 20;
+    
+    /** Default settings in Request and Retry */
     public static final int DEFAULT_TIMEOUT_CONNECT   = 20;
+    
+    /** Default settings in Request and Retry */
     public static final int DEFAULT_RETRY_COUNT       = 3;
+    
+    /** Default settings in Request and Retry */
     public static final Duration DEFAULT_RETRY_DELAY  = Duration.ofMillis(100);
     
     // -------------------------------------------
@@ -78,7 +84,7 @@ public class HttpApisClient implements ApiConstants {
     /** HttpComponent5. */
     protected CloseableHttpClient httpClient = null;
     
-    /** . */
+    /** Observers. */
     protected static Map<String, ApiInvocationObserver > apiInvocationsObserversMap = new ConcurrentHashMap<>();
     
     /** Default request configuration. */
@@ -109,6 +115,12 @@ public class HttpApisClient implements ApiConstants {
         retryConfig= conf;
     }
     
+    /**
+     * Update RequestConfig configuration of the HTTPClient.
+     *
+     * @param conf
+     *      RequestConfig
+     */
     public static void withRequestConfig(RequestConfig conf) {
         requestConfig = conf;
     }
@@ -156,40 +168,125 @@ public class HttpApisClient implements ApiConstants {
     // ---------- Working with HTTP --------------
     // -------------------------------------------
     
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
     public ApiResponseHttp GET(String url, String token) {
         return executeHttp(Method.GET, url, token, null, false);
     }
 
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
     public ApiResponseHttp HEAD(String url, String token) {
         return executeHttp(Method.HEAD, url, token, null, false);
     }
     
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
     public ApiResponseHttp POST(String url, String token) {
         return executeHttp(Method.POST, url, token, null, true);
     }
     
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
     public ApiResponseHttp POST(String url, String token, String body) {
         return executeHttp(Method.POST, url, token, body, true);
     }
     
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
     public ApiResponseHttp DELETE(String url, String token) {
         return executeHttp(Method.DELETE, url, token, null, true);
     }
     
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
     public ApiResponseHttp PUT(String url, String token, String body) {
         return executeHttp(Method.PUT, url, token, body, false);
     }
     
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
     public ApiResponseHttp PATCH(String url, String token, String body) {
         return executeHttp(Method.PATCH, url, token, body, true);
     }
     
     /**
      * Main Method executting HTTP Request.
-     *
-     * @param req
-     *      http request
+     * 
+     * @param method
+     *      http method
+     * @param url
+     *      url
+     * @param token
+     *      authentication token
+     * @param reqBody
+     *      request body
+     * @param mandatory
+     *      allow 404 errors
      * @return
+     *      basic request
      */
     public ApiResponseHttp executeHttp(final Method method, final String url, final String token, String reqBody, boolean mandatory) {
         return executeHttp(buildRequest(method, url, token, reqBody), mandatory);
@@ -298,8 +395,11 @@ public class HttpApisClient implements ApiConstants {
     
     /**
      * Asynchronously send calls to listener for tracing.
+     *
      * @param lambda
+     *      operations to execute
      * @return
+     *      void
      */
     private CompletionStage<Void> notifyAsync(Consumer<ApiInvocationObserver> lambda) {
         return CompletableFutures.allDone(apiInvocationsObserversMap.values().stream()

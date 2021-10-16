@@ -50,14 +50,16 @@ public class IndexClient {
     /**
      * Constructor focusing on a single Column
      *
+     * @param stargateHttpClient 
+     *        stargateHttpClient
      * @param tableClient
      *       table resource client
      * @param indexName
      *      current index identifier
      */
-    public IndexClient(StargateHttpClient stargateClient, TableClient tableClient, String indexName) {
+    public IndexClient(StargateHttpClient stargateHttpClient, TableClient tableClient, String indexName) {
         this.tableClient    = tableClient;
-        this.stargateClient = stargateClient;
+        this.stargateClient = stargateHttpClient;
         this.indexName      = indexName;
         Assert.hasLength(indexName, "indexName");
     }

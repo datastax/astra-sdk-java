@@ -17,20 +17,37 @@ public class InviteUserRequest implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 5395030300409323177L;
 
+    /** organization id. */
     @JsonProperty("OrgID")
     private String orgId;
     
+    /** email. */
     @JsonProperty("email")
     private String email;
     
+    /** roles. */
     @JsonProperty("roles")
     private List<String> roles = new ArrayList<>();
     
+    /**
+     * Public constructor.
+     *
+     * @param orgId
+     *      organization id
+     * @param userEmail
+     *      user email
+     */
     public InviteUserRequest(String orgId, String userEmail) {
         this.orgId = orgId;
         this.email = userEmail;
     }
     
+    /**
+     * Add new roles.
+     *
+     * @param proles
+     *      add a role
+     */
     public void addRoles(String... proles) {
         if (proles != null) {
             roles.addAll(Arrays.asList(proles));

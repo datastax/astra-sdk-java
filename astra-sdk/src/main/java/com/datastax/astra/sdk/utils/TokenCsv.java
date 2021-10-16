@@ -28,6 +28,13 @@ public class TokenCsv {
      */
     private TokenCsv() {}
     
+    /**
+     * Parse the CSV file generated.
+     * @param file
+     *      current file
+     * @return
+     *      token
+     */
     public static final Token readCsvToken(String file) {
         return new Token("", "", "", "");
         

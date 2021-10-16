@@ -7,6 +7,12 @@ package com.datastax.stargate.sdk.audit;
  */
 public interface ApiInvocationObserver {
 
+    /**
+     * Process event.
+     * 
+     * @param event
+     *      api invocation event
+     */
     void onCall(ApiInvocationEvent event);
     
     

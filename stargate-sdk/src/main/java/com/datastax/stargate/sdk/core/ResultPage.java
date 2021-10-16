@@ -38,6 +38,9 @@ public class ResultPage<R> {
     /** list of results matchin the request. */
     private final List< R > results;
     
+    /**
+     * Default Constructor.
+     */
     public ResultPage() {
         this.pageSize  = 0;
         this.pageState = null;

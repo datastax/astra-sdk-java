@@ -28,7 +28,7 @@ public class Datacenter implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 8242671294103939311L;
 
-    /* unique identifier for the ring. */
+    /** unique identifier for the ring. */
     private String id;
     
     /** datacenter_name cassandra property. */

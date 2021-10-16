@@ -20,15 +20,25 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represent the PK in rest API
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class TablePrimaryKey implements Serializable {
 
     /** Serial. */
     private static final long serialVersionUID = -4506920292523388120L;
 
+    /** partition key. */
     private List<String> partitionKey = new ArrayList<>();
     
+    /** clustering columns */
     private List<String> clusteringKey = new ArrayList<>();
 
+    /**
+     * Default constructor.
+     */
     public TablePrimaryKey() {}
     
     /**

@@ -32,6 +32,8 @@ public class RoleClient {
     /**
      * Default constructor.
      *
+     * @param org
+     *      organization client 
      * @param roleId
      *      current role identifier
      */

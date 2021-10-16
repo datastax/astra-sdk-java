@@ -19,6 +19,9 @@ public class StargateNodeConfig {
     /** Authentication API URL. */
     private String authUrl;
     
+    /**
+     * Default constructor.
+     */
     public StargateNodeConfig() {}
     
     /**

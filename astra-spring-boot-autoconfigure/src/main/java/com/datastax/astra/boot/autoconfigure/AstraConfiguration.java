@@ -42,9 +42,18 @@ import com.datastax.oss.driver.api.core.CqlSession;
 @EnableConfigurationProperties(AstraClientProperties.class)
 public class AstraConfiguration {
 
+    /**
+     * reference to properties
+     */
     @Autowired
     private AstraClientProperties astraClientProperties;
     
+    /**
+     * Acessing astra client.
+     *
+     * @return
+     *      astra client
+     */
     @Bean
     @ConditionalOnMissingBean
     public AstraClient astraClient() {

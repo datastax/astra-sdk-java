@@ -21,6 +21,7 @@ import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 import static com.datastax.stargate.sdk.utils.AnsiUtils.red;
 
 import java.io.Closeable;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
+import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
@@ -84,9 +86,10 @@ public class StargateClient implements Closeable {
      */
     public StargateClient(StargateClientConfig config) {
         LOGGER.info("Initializing [" + AnsiUtils.yellow("StargateClient") + "]");
-        // Local DataCenter
+        // Local DataCenter (if no secureconnect bundle)
         if (!Utils.hasLength(config.getLocalDC())) {
-            throw new IllegalArgumentException("Local Datacenter is required");
+            config.withLocalDatacenter(StargateClientConfig.DEFAULT_LOCALDC);
+            LOGGER.warn("+ No local datacenter provided, using default {}", StargateClientConfig.DEFAULT_LOCALDC);
         }
         this.currentDatacenter = config.getLocalDC();
         
@@ -99,13 +102,22 @@ public class StargateClient implements Closeable {
                 // A CQL Session has been provided, we will reuse it
                 cqlSession = config.getCqlSession();
             }
+            // Check options and add default if needed
+            if (null == config.getOptions().get(TypedDriverOption.CONTACT_POINTS) || 
+                config.getOptions().get(TypedDriverOption.CONTACT_POINTS).isEmpty()) {
+                // Defaulting for contact points if no securebundle provided
+                if (null == config.getOptions().get(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE)) {
+                    LOGGER.info("+ No contact points provided, using default {}", StargateClientConfig.DEFAULT_CONTACTPOINT);
+                    config.getOptions().put(TypedDriverOption.CONTACT_POINTS, Arrays.asList(StargateClientConfig.DEFAULT_CONTACTPOINT));
+                }
+            }
             // Using a Config Map instead of CqlSessionBuilder to create Execution Profiles
             cqlSession = CqlSession.builder()
                                    .withConfigLoader(DriverConfigLoader.fromMap(config.getOptions()))
                                    .build();
         }
         
-        // Testing CqlSession upfront
+        // Testing CqlSession
         if (cqlSession != null) {
             cqlSession.execute("SELECT data_center from system.local");
             if (cqlSession.getKeyspace().isPresent()) {

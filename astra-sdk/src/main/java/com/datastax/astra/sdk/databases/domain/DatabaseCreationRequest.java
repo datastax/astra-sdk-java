@@ -33,6 +33,7 @@ public class DatabaseCreationRequest {
     /** CloudProvider where the database lives. */
     private CloudProviderType cloudProvider;
     
+    /** Database type. */
     private DatabaseTierType tier = DatabaseTierType.developer;
     
     /**
@@ -42,14 +43,26 @@ public class DatabaseCreationRequest {
      */
     private int capacityUnits = 1;
     
+    /** Region. */
     private String region;
     
+    /** Users. */
     private String user;
     
+    /** Password. */
     private String password;
     
+    /**
+     * default constructor.
+     */
     public DatabaseCreationRequest() {}
 
+    /**
+     * Constructor with the builder.
+     *
+     * @param builder
+     *      current builder
+     */
     public DatabaseCreationRequest(DatabaseCreationBuilder builder) {
         this.capacityUnits = builder.capacityUnits;
         this.cloudProvider = builder.cloudProvider;
@@ -61,6 +74,12 @@ public class DatabaseCreationRequest {
         this.user          = builder.user;
     }
     
+    /**
+     * Create a builder.
+     *
+     * @return
+     *      get the builder
+     */
     public static DatabaseCreationBuilder builder() {
         return new DatabaseCreationBuilder();
     }

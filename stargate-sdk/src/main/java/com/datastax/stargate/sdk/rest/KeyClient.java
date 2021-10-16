@@ -70,13 +70,17 @@ public class KeyClient {
     /**
      * Full constructor.
      *
-     * @param tableClient TableClient
-     * @param keys Object
+     * @param stargateHttpClient 
+     *          stargateHttpClient
+     * @param tableClient 
+     *          TableClient
+     * @param keys 
+     *          Object
      */
-    public KeyClient(StargateHttpClient stargateClient, TableClient tableClient, Object... keys) {
+    public KeyClient(StargateHttpClient stargateHttpClient, TableClient tableClient, Object... keys) {
         this.tableClient    = tableClient;
         this.key            = new ArrayList<>(Arrays.asList(keys));
-        this.stargateClient = stargateClient;
+        this.stargateClient = stargateHttpClient;
         Assert.notNull(key, "key");
         Assert.isTrue(!key.isEmpty(), "key");
     }
