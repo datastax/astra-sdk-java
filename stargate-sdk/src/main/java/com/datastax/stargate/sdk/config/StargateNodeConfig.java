@@ -36,6 +36,25 @@ public class StargateNodeConfig {
         this.restUrl    = "http://" + host + ":8082";
         this.graphqlUrl = "http://" + host + ":8080";
     }
+    
+    /**
+     * Constructor for local node.
+     *
+     * @param host
+     *      target host
+     * @param portAuth
+     *      port for authentication
+     * @param portRest
+     *      port for rest api 
+     * @param portgraphQL
+     *      port for graphQL api 
+     */
+    public StargateNodeConfig(String host, int portAuth, int portRest, int portgraphQL) {
+        this.name       = host;
+        this.authUrl    = "http://" + host + ":" + portAuth;
+        this.restUrl    = "http://" + host + ":" + portRest;
+        this.graphqlUrl = "http://" + host + ":" + portgraphQL;
+    }
             
     /**
      * Constructor without URL.

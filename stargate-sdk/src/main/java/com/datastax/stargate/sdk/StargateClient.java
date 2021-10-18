@@ -71,7 +71,9 @@ public class StargateClient implements Closeable {
      */
     protected ApiGraphQLClient apiGraphQLClient;
     
-    /** Wrapping failover and Load balancer on a delegated wrapper. */
+    /** 
+     * Wrapping failover and Load balancer on a delegated wrapper. 
+     */
     protected StargateHttpClient stargateHttpClient;
     
     // ------------------------------------------------
@@ -231,6 +233,16 @@ public class StargateClient implements Closeable {
      */
     public ApiGraphQLClient apiGraphQL() {
         return apiGraphQLClient;
+    }
+
+    /**
+     * Getter accessor for attribute 'currentDatacenter'.
+     *
+     * @return
+     *       current value of 'currentDatacenter'
+     */
+    public String getCurrentDatacenter() {
+        return currentDatacenter;
     }
     
 }

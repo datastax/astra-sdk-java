@@ -498,5 +498,15 @@ public class DatabaseClient {
                 .append(" msg=" + res.getBody()).toString();
         Assert.isTrue(HTTP_ACCEPTED == res.getCode(), errorMsg);
     }
+
+    /**
+     * Getter accessor for attribute 'databaseId'.
+     *
+     * @return
+     *       current value of 'databaseId'
+     */
+    public String getDatabaseId() {
+        return databaseId;
+    }
     
 }

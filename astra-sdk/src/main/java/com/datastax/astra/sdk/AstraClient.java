@@ -123,7 +123,7 @@ public class AstraClient implements Closeable {
                 new File(config.getSecureConnectBundleFolder()).mkdirs();
             }
             // Download secure bundles (if needed)
-            LOGGER.info("+ Downloading bundles in: [{}]", config.getSecureConnectBundleFolder());
+            LOGGER.info("+ Downloading bundles in: [" + AnsiUtils.cyan("{}") + "]", config.getSecureConnectBundleFolder());
             apiDevopsDatabases.database(config.getDatabaseId())
                               .downloadAllSecureConnectBundles(config.getSecureConnectBundleFolder());
             
@@ -324,6 +324,16 @@ public class AstraClient implements Closeable {
        if (null != stargateClient) {
            stargateClient.close();
        }
+    }
+
+    /**
+     * Getter accessor for attribute 'stargateClient'.
+     *
+     * @return
+     *       current value of 'stargateClient'
+     */
+    public StargateClient getStargateClient() {
+        return stargateClient;
     }
 
 }

@@ -540,7 +540,7 @@ public class StargateClientConfig implements Serializable {
         this.appToken = token;
         return this;
     }
-
+    
     /**
      * Adding all nodes to the local DC (frequently the only one).
      * 

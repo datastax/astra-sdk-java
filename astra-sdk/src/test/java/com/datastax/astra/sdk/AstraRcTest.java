@@ -19,10 +19,7 @@ package com.datastax.astra.sdk;
 import java.io.File;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.astra.sdk.utils.AstraRc;
 
@@ -31,27 +28,19 @@ import com.datastax.astra.sdk.utils.AstraRc;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@TestMethodOrder(OrderAnnotation.class)
-public class AstraRc_IntegrationTest extends AbstractAstraIntegrationTest {
+public class AstraRcTest {
     
     @Test
-    @Order(1)
     public void should_create_astraRc_File() {
-        // You need to have en var ASTRA_DB_APPLICATION_TOKEN
-        
-        printYellow("Create file ");
         // Given
         new File(System.getProperty("user.home") + "/.astrarc").delete();
         Assertions.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
-        printOK("File Deleted if exist");
         // When
-        AstraRc.create(client.getToken().get());
-        printOK("File Created");
+        AstraRc.create(AstraClient.builder().build().getToken().get());
         // Then
         Assertions.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());
         // Then we should be able to load the file
         AstraRc.load().print();
-        printOK("Loaded ");
     }
 
 }

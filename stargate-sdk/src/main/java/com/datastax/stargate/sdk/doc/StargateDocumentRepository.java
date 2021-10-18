@@ -140,6 +140,18 @@ public class StargateDocumentRepository <DOC> {
     }
    
     /**
+     * Search document based on a search query
+     * 
+     * @param query
+     *      current query
+     * @return
+     *      all the element matching
+     */
+    public Stream<ApiDocument<DOC>> search(SearchDocumentQuery query) {
+        return collectionClient.findAll(query, docClass);
+    }
+    
+    /**
      * Search document with attributes.
      * 
      * @param query
@@ -147,21 +159,10 @@ public class StargateDocumentRepository <DOC> {
      * @return
      *      result page
      */
-    public DocumentResultPage<DOC> findPage(SearchDocumentQuery query) {
+    public DocumentResultPage<DOC> searchPage(SearchDocumentQuery query) {
         return collectionClient.findPage(query, docClass);
     }
     
-    /**
-     * Retrieve all documents from the collection.
-     *
-     * @param query
-     *      search query
-     * @return
-     *      every document of the collection
-     */
-    public Stream<ApiDocument<DOC>> findAll(SearchDocumentQuery query) {
-        return collectionClient.findAll(query, docClass);
-    }
     /**
      * Retrieve all documents from the collection.
      * 

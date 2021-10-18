@@ -318,7 +318,7 @@ public class StargateHttpClient {
      * @return
      *      an APi Rest URL available
      */
-    private LoadBalancingResource<StargateClientNode> lookupStargateNode() {
+    public LoadBalancingResource<StargateClientNode> lookupStargateNode() {
         return getLocalDatacenterClient()   // Retrieve the currrent Dc based on localDc property
                 .getStargateNodesLB()       // Retrieve the loadbalancer for node
                 .getLoadBalancedResource(); // Get a resource, idea is to invalidate resource if KO

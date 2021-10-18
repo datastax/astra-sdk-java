@@ -22,6 +22,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -32,6 +33,7 @@ import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.DataCenter;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
+import com.datastax.stargate.sdk.doc.domain.FunctionDefinition;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -46,12 +48,20 @@ public class NamespaceClient {
     /** Constants. */
     public static final String PATH_COLLECTIONS = "/collections";
     
+    /** Constants. */
+    public static final String PATH_FUNCTIONS = "/functions";
+    
     /** Marshalling {@link TypeReference}. */
     private static final TypeReference<ApiResponse<Namespace>> RESPONSE_NAMESPACE = 
             new TypeReference<ApiResponse<Namespace>>(){};
             
+    /** Column Definitions.*/
     private static final TypeReference<ApiResponse<List<CollectionDefinition>>> RESPONSE_COLLECTIONS = 
             new TypeReference<ApiResponse<List<CollectionDefinition>>>(){};
+            
+    /** Functions Definitions.*/        
+    private static final TypeReference<Map<String,List<FunctionDefinition>>> RESPONSE_FUNCTIONS = 
+           new TypeReference<Map<String,List<FunctionDefinition>>>(){};
     
     /** Get Topology of the nodes. */
     protected final StargateHttpClient stargateHttpClient;
@@ -129,6 +139,19 @@ public class NamespaceClient {
     public void delete() {
         stargateHttpClient.DELETE(namespaceSchemaResource);
     }
+    
+
+    /**
+     * List function in namespace.
+     * GET /v2/namespaces/{namespace-id}/functions
+     * 
+     * @return functionsResource
+     */
+    public Stream<FunctionDefinition> functions() {
+        // Access API
+        ApiResponseHttp res = stargateHttpClient.GET(functionsResource);
+        return unmarshallType(res.getBody(), RESPONSE_FUNCTIONS).get("functions").stream();
+    }
    
     /**
      * List collections in namespace.
@@ -197,6 +220,12 @@ public class NamespaceClient {
        * /v2/namespaces/{namespace}/collections
        */
      public Function<StargateClientNode, String> collectionsResource = 
-                     (node) -> namespaceResource.apply(node) + PATH_COLLECTIONS;       
+                     (node) -> namespaceResource.apply(node) + PATH_COLLECTIONS; 
+                     
+      /**
+       * /v2/namespaces/{namespace}/functions
+       */
+      public Function<StargateClientNode, String> functionsResource = 
+                     (node) -> namespaceSchemaResource.apply(node) + PATH_FUNCTIONS;                      
     
 }

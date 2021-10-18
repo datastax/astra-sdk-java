@@ -11,8 +11,10 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.RoleClient;
 import com.datastax.astra.sdk.organizations.UserClient;
@@ -25,28 +27,25 @@ import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.organizations.domain.User;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest {
+public class OrganizatiionsIntegrationTest {
     
-    // Client Test
-    private static final String TEST_DBNAME       = "sdk_test_api_devops";
-    private static final String WORKING_KEYSPACE  = "ks1";
+    /** Logger for our Client. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrganizatiionsIntegrationTest.class);
+    
     private static OrganizationsClient clientOrg;
+    
+    private static AstraClient client;
     
     @BeforeAll
     public static void config() {
-        printYellow("=======================================");
-        printYellow("=          DevopsAPI IAM              =");
-        printYellow("=======================================");
-        createDbAndKeyspaceIfNotExist(TEST_DBNAME, WORKING_KEYSPACE);
-        if (clientOrg ==null) {
-            clientOrg = new OrganizationsClient(client.getToken().get());
-        }
+        client= AstraClient.builder().build();
+        clientOrg = new OrganizationsClient(client.getToken().get());
     }
         
     @Test
     @Order(1)
     public void should_fail_on_invalid_params() {
-        printYellow("Parameter validation");
+        LOGGER.info("Parameter validation");
         Assertions.assertThrows(IllegalArgumentException.class, 
                 () -> new OrganizationsClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, 
@@ -59,53 +58,53 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
     @Test
     @Order(2)
     public void should_list_roles() {
-        printYellow("\nShould List Roles");
+        LOGGER.info("\nShould List Roles");
         // When
         List<Role> listRoles = clientOrg.roles().collect(Collectors.toList());
         // Then
         Assertions.assertTrue(listRoles.size() > 5);
-        printOK("Roles can be retrieved");
+        LOGGER.info("Roles can be retrieved");
         for (Role r : listRoles) {
             Assertions.assertNotNull(r);
             Assertions.assertNotNull(r.getName());
             System.out.println("+ " + r.getName() + "=" + r.getId());
         }
-        printOK("Roles are populated");
+        LOGGER.info("Roles are populated");
     }
     
     @Test
     @Order(3)
     public void should_find_role_byName() {
-        printYellow("Find a role by its Name");
+        LOGGER.info("Find a role by its Name");
         // When
         Optional<Role> role = clientOrg.findRoleByName(DefaultRoles.DATABASE_ADMINISTRATOR.getName());
         // Then (it is a default role, should be there)
         Assertions.assertTrue(role.isPresent());
-        printOK("Role found");
+        LOGGER.info("Role found");
     }
     
     @Test
     @Order(4)
     public void should_find_defaultRoles() {
-        printYellow("Find a role by its Name");
+        LOGGER.info("Find a role by its Name");
         // When
         Optional<Role> role = clientOrg.role(DefaultRoles.DATABASE_ADMINISTRATOR).find();
         // Then (it is a default role, should be there)
         Assertions.assertTrue(role.isPresent());
-        printOK("Role found");
+        LOGGER.info("Role found");
     }
     
     @Test
     @Order(5)
     public void should_find_role_byId() {
-        printYellow("Find a role by its idsxs");
+        LOGGER.info("Find a role by its idsxs");
         Optional<Role> role = clientOrg.role(DefaultRoles.DATABASE_ADMINISTRATOR).find();
         
         Optional<Role> role2 = new OrganizationsClient(client.getToken().get())
             .role(role.get().getId())
             .find();
         Assertions.assertTrue(role2.isPresent());
-        printOK("Role found");
+        LOGGER.info("Role found");
     }
     
     private static String customRole;
@@ -114,7 +113,7 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
     @Test
     @Order(6)
     public void should_create_a_role() {
-        System.out.println(ANSI_YELLOW + "- Creating a role" + ANSI_RESET);
+        System.out.println( "- Creating a role");
         
         customRole = "sdk_java_junit_role" + UUID.randomUUID().toString().substring(0,7);
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
@@ -130,28 +129,28 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         CreateRoleResponse res = iamClient.createRole(cr);
         customRoleId = res.getRoleId();
         Assertions.assertTrue(clientOrg.role(customRoleId).find().isPresent());
-        printOK("Role created name=" + customRole + ", id=" + customRoleId);
+        LOGGER.info("Role created name=" + customRole + ", id=" + customRoleId);
     }
     
     @Test
     @Order(7)
     public void should_delete_a_role() {
-        System.out.println(ANSI_YELLOW + "- Deleting a role" + ANSI_RESET);
+        System.out.println( "- Deleting a role");
         // Given
         RoleClient rc = clientOrg.role(customRoleId);
         Assertions.assertTrue(rc.exist());
-        printOK("Role found");
+        LOGGER.info("Role found");
         // When
         rc.delete();
         // Then
         Assertions.assertFalse(rc.exist());
-        printOK("Role deleted name=" + customRole + ", id=" + customRoleId);
+        LOGGER.info("Role deleted name=" + customRole + ", id=" + customRoleId);
     }
     
     @Test
     @Order(8)
     public void should_update_a_role() {
-        System.out.println(ANSI_YELLOW + "- Deleting a role" + ANSI_RESET);
+        System.out.println( "- Deleting a role");
         // When
         CreateRoleResponse res = clientOrg.createRole(RoleDefinition.builder(clientOrg.organizationId())
                 .name("RoleTMP")
@@ -164,7 +163,7 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         // Then
         RoleClient roleTmp = clientOrg.role(res.getRoleId());
         Assertions.assertTrue(roleTmp.exist());
-        printOK("RoleTMP created");
+        LOGGER.info("RoleTMP created");
         // When
         roleTmp.update(RoleDefinition.builder(clientOrg.organizationId())
                                    .name("RoleTMP")
@@ -175,9 +174,9 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
         Role r = roleTmp.find().get();
         Assertions.assertTrue(r.getPolicy().getActions().contains(Permission.db_cql.getCode()));
         Assertions.assertTrue(r.getPolicy().getDescription().equals("updated descriptiom"));
-        printOK("Role updated");
+        LOGGER.info("Role updated");
         roleTmp.delete();
-        printOK("Role deleted");
+        LOGGER.info("Role deleted");
     }
     
     // ------ Working with Tokens --------------------
@@ -187,30 +186,30 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
     @Test
     @Order(10)
     public void should_create_token() {
-        System.out.println(ANSI_YELLOW + "- Creating a Token" + ANSI_RESET);
+        System.out.println( "- Creating a Token");
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         CreateTokenResponse res = iamClient.createToken(DefaultRoles.DATABASE_ADMINISTRATOR.getName());
         tmpClientId = res.getClientId();
-        printOK("Token created " + tmpClientId);
+        LOGGER.info("Token created " + tmpClientId);
         Assertions.assertTrue(iamClient.token(res.getClientId()).exist());
-        printOK("Token exist ");
+        LOGGER.info("Token exist ");
     }
     
     
     @Test
     @Order(11)
     public void should_delete_token() {
-        System.out.println(ANSI_YELLOW + "- Deleting a Token" + ANSI_RESET);
+        System.out.println( "- Deleting a Token");
         
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         // Given
         Assertions.assertTrue(iamClient.token(tmpClientId).exist());
         // When
         iamClient.token(tmpClientId).delete();
-        printOK("Token deleted ");
+        LOGGER.info("Token deleted ");
         // Then
         Assertions.assertFalse(iamClient.token(tmpClientId).exist());
-        printOK("Token does not exist ");
+        LOGGER.info("Token does not exist ");
     }
     
     // ------ Working with Users --------------------
@@ -222,10 +221,10 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
     @Order(12)
     public void should_list_users() {
         // Given
-        System.out.println(ANSI_YELLOW + "- List users" + ANSI_RESET);
+        System.out.println( "- List users");
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         List<User> users = iamClient.users().collect(Collectors.toList());
-        printOK("Users retrieved ");
+        LOGGER.info("Users retrieved ");
         Assertions.assertTrue(users.size() >0);
         tmpUserid = users.get(0).getUserId();
         tmpUserEmail = users.get(0).getEmail();
@@ -235,12 +234,12 @@ public class OrganizatiionsIntegrationTest extends AbstractAstraIntegrationTest 
     @Order(13)
     public void should_find_user() {
         // Given
-        System.out.println(ANSI_YELLOW + "- Find users" + ANSI_RESET);
+        System.out.println( "- Find users");
         OrganizationsClient iamClient = new OrganizationsClient(client.getToken().get());
         Assertions.assertTrue(iamClient.user(tmpUserid).exist());
-        printOK("User retrieved (by ID)");
+        LOGGER.info("User retrieved (by ID)");
         Assertions.assertTrue(iamClient.findUserByEmail(tmpUserEmail).isPresent());
-        printOK("User retrieved (by email)");
+        LOGGER.info("User retrieved (by email)");
     }
     
     @Test

@@ -1,3 +1,8 @@
+
+##
+## docker-compose-3n-2s-3.11
+##
+
 docker-compose -f docker-compose.yml up -d backend-1 
 
 docker-compose -f docker-compose.yml up -d backend-2
@@ -19,3 +24,15 @@ exit
 docker-compose -f docker-compose.yml up -d stargate
 
 docker-compose -f docker-compose.yml up -d stargate-2
+
+
+##
+## CQLSH
+##
+
+
+docker run --rm -it -e CQLSH_HOST=localhost --net=host nuvo/docker-cqlsh bash
+
+
+
+

@@ -19,10 +19,12 @@ package com.datastax.astra.sdk.stargate;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.datastax.astra.sdk.AbstractAstraIntegrationTest;
 import com.datastax.astra.sdk.AstraClient;
 
 /**
@@ -30,13 +32,23 @@ import com.datastax.astra.sdk.AstraClient;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
+public class CqlSessionIntegrationTest {
+    
+    /** Logger for our Client. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CqlSessionIntegrationTest.class);
+    
+    private static AstraClient client;
+    
+    @BeforeAll
+    public static void config() {
+        client= AstraClient.builder().build();
+    }
     
     @Test
     @DisplayName("Connect Cassandra with CqlSession using clientId/ClientSecret")
     public void should_enable_cqlSession_with_clientId_clientSecret() {
         // Given
-        System.out.println(ANSI_YELLOW + "- Connect Cassandra with CqlSession using clientId/ClientSecret" + ANSI_RESET);
+        LOGGER.info( "- Connect Cassandra with CqlSession using clientId/ClientSecret");
         Assertions.assertNotNull(client.getConfig().getDatabaseId());
         Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
         Assertions.assertNotNull(client.getConfig().getClientId());
@@ -54,13 +66,13 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
                     .one()
                     .getString("release_version"));
         }
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
+        LOGGER.info("[OK]");
     }
     
     @Test
     @DisplayName("Connect Cassandra with CqlSession using token/appToken")
     public void should_enable_cqlSession_with_token() {
-        System.out.println(ANSI_YELLOW + "- Connect Cassandra with CqlSession using token/appToken" + ANSI_RESET);
+        LOGGER.info( "- Connect Cassandra with CqlSession using token/appToken");
         // Given
         Assertions.assertNotNull(client.getConfig().getDatabaseId());
         Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
@@ -77,13 +89,13 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
                     .one()
                     .getString("release_version"));
         }
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
+        LOGGER.info("[OK]");
     }
     
     @Test
     @DisplayName("Invoke Document Api providing dbId,cloudRegion,appToken")
     public void should_enable_documentApi_withToken() {
-        System.out.println(ANSI_YELLOW + "- Invoke Document Api providing dbId,cloudRegion,appToken" + ANSI_RESET);
+        LOGGER.info( "- Invoke Document Api providing dbId,cloudRegion,appToken");
         // Given
         Assertions.assertNotNull(client.getConfig().getDatabaseId());
         Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
@@ -98,13 +110,13 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
                 Assertions.assertTrue(astraClient
                         .apiStargateDocument().namespaceNames().count() > 0);
          }
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
+        LOGGER.info("[OK]");
     }
     
     @Test
     @DisplayName("Invoke REST Api providing dbId,cloudRegion,appToken")
     public void should_enable_restApi_withToken() {
-        System.out.println(ANSI_YELLOW + "- Invoke REST Api providing dbId,cloudRegion,appToken" + ANSI_RESET);
+        LOGGER.info( "- Invoke REST Api providing dbId,cloudRegion,appToken");
         
         // Given
         Assertions.assertNotNull(client.getConfig().getDatabaseId());
@@ -120,13 +132,13 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
             Assertions.assertTrue(astraClient
                     .apiStargateData().keyspaceNames().count() > 0);
         }
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
+        LOGGER.info("[OK]");
     }
     
     @Test
     @DisplayName("Invoke DEVOPS Api providing dbId,cloudRegion,appToken")
     public void should_enable_devops_withToken() {
-        System.out.println(ANSI_YELLOW + "- Contact Devops API" + ANSI_RESET);
+        LOGGER.info( "- Contact Devops API");
         
         // Given
         Assertions.assertTrue(client.getToken().isPresent());
@@ -139,7 +151,7 @@ public class CqlSessionIntegrationTest extends AbstractAstraIntegrationTest {
                     .databases()
                     .collect(Collectors.toList()));
          }
-        System.out.println(ANSI_GREEN + "[OK]" + ANSI_RESET);
+        LOGGER.info("[OK]");
     }
 
 }
