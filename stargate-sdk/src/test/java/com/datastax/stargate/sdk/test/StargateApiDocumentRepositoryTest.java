@@ -7,8 +7,8 @@ import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.NamespaceClient;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentRepositoryTest;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentDocumentTest.Person;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentRepositoryTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
 
 /**
  * Execute some unit tests agains collections.

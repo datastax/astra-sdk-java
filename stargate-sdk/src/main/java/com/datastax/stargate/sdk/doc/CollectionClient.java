@@ -21,6 +21,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -33,6 +34,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONObject;
+
 import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
@@ -41,6 +46,7 @@ import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery.SearchDocumentQueryBuilder;
+import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -113,7 +119,25 @@ public class CollectionClient {
     public void create() {
         stargateHttpClient.POST(collectionResource, 
              "{\"name\":\"" + collectionName + "\"}");
-        
+    }
+    
+    /**
+     * Upgrade the collection.
+     * This is not relevant in ASTRA.
+     */
+    public void upgradeSAI() {
+        upgrade(CollectionUpgradeType.SAI_INDEX_UPGRADE);
+    }
+    
+    /**
+     * Update a collection to SAI.
+     * 
+     * @param index
+     *      collection SAI
+     */
+    public void upgrade(CollectionUpgradeType index) {
+        stargateHttpClient.POST(collectionUpgradeResource, 
+                "{\"upgradeType\":\"" + index.name() + "\"}");
     }
     
     /**
@@ -192,8 +216,8 @@ public class CollectionClient {
      * @return
      *      all items in the the collection
      */
-    public <DOC> Stream<ApiDocument<DOC>> findAll(Class<DOC> beanClass) {
-        List<ApiDocument<DOC>> documents = new ArrayList<>();
+    public <DOC> Stream<Document<DOC>> findAll(Class<DOC> beanClass) {
+        List<Document<DOC>> documents = new ArrayList<>();
         // Loop on pages up to no more pages (could be done)
         String pageState = null;
         do {
@@ -223,8 +247,8 @@ public class CollectionClient {
      * @return
      *          all items matchin criteria
      */
-    public <DOC> Stream<ApiDocument<DOC>> findAll(SearchDocumentQuery query, Class<DOC> beanClass) {
-        List<ApiDocument<DOC>> documents = new ArrayList<>();
+    public <DOC> Stream<Document<DOC>> findAll(SearchDocumentQuery query, Class<DOC> beanClass) {
+        List<Document<DOC>> documents = new ArrayList<>();
         // Loop on pages up to no more pages (could be done)
         String pageState = null;
         do {
@@ -314,11 +338,44 @@ public class CollectionClient {
             return new DocumentResultPage<DOC>(query.getPageSize(), 
                     searchResults.getPageState(), searchResults.getData()
                     .entrySet().stream()
-                    .map(doc -> new ApiDocument<DOC>(doc.getKey(), JsonUtils.getObjectMapper().convertValue(doc.getValue(), beanClass)))
+                    .map(doc -> new Document<DOC>(doc.getKey(), JsonUtils.getObjectMapper().convertValue(doc.getValue(), beanClass)))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
         }
+    }
+    
+    /**
+     * Return the JSON Schema is present.
+     * 
+     * @return
+     *      the json schema if assign to the bean
+     */
+    public Optional<Schema> getSchema() {
+        ApiResponseHttp res = stargateHttpClient.GET(collectionJsonSchemaResource);
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(SchemaLoader
+                .builder()
+                .schemaJson(new JSONObject(res.getBody())).build()
+                .load().build());
+    }
+    
+    /**
+     * Assign a json Schema to a collection.
+     *
+     * @param jsonSchema
+     *      target Schema as a json String
+     */
+    public void setSchema(String jsonSchema) {
+       Assert.hasLength(jsonSchema, "jsonSchema");
+       // Is a valid json schema ?
+       SchemaLoader.builder()
+                   .schemaJson(new JSONObject(jsonSchema))
+                   .build().load().build();
+       // Put the schema to 
+       stargateHttpClient.PUT(collectionJsonSchemaResource, jsonSchema);
     }
     
     /**
@@ -371,6 +428,17 @@ public class CollectionClient {
     // ---------------------------------
     
     /**
+     * Update Types.
+     */
+    public enum CollectionUpgradeType {
+        
+        /**
+         * Move from SASI, secondary index to SAI.
+         */
+        SAI_INDEX_UPGRADE
+    }
+    
+    /**
      * Getter accessor for attribute 'collectionName'.
      *
      * @return
@@ -385,5 +453,16 @@ public class CollectionClient {
      */
     public Function<StargateClientNode, String> collectionResource = 
             (node) -> namespaceClient.collectionsResource.apply(node) +  "/" + collectionName;
-    
+    /** 
+      * /v2/schemas/namespaces/{namespace}/collections/{collection}/upgrade?raw=true
+      */
+    public Function<StargateClientNode, String> collectionUpgradeResource = 
+            (node) -> collectionResource.apply(node) +  "/upgrade?raw=true";
+
+    /** 
+      * /v2/schemas/namespaces/{namespace}/collections/{collection}/json-schema
+      */
+    public Function<StargateClientNode, String> collectionJsonSchemaResource = 
+            (node) -> collectionResource.apply(node) +  "/json-schema";
+            
 }

@@ -147,7 +147,7 @@ public class StargateDocumentRepository <DOC> {
      * @return
      *      all the element matching
      */
-    public Stream<ApiDocument<DOC>> search(SearchDocumentQuery query) {
+    public Stream<Document<DOC>> search(SearchDocumentQuery query) {
         return collectionClient.findAll(query, docClass);
     }
     
@@ -169,7 +169,7 @@ public class StargateDocumentRepository <DOC> {
      * @return
      *      every document of the collection
      */
-    public Stream<ApiDocument<DOC>> findAll() {
+    public Stream<Document<DOC>> findAll() {
         return collectionClient.findAll(docClass);
     }
     

@@ -3,7 +3,7 @@ package com.datastax.stargate.sdk.test;
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 
-import com.datastax.stargate.sdk.rest.test.ApiDocumentNamespacesTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
 
 /**
  * Work with local stargate

@@ -148,6 +148,22 @@ public class StargateHttpClient {
      * Syntaxic sugar.
      * 
      * @param mapper
+     *       mapper for the URL
+     * @param body
+     *      provide a request body
+     * @param suffix
+     *      URL suffix      
+     * @return
+     *      http response
+     */
+    public ApiResponseHttp POST(Function<StargateClientNode, String> mapper, String body, String suffix) {
+        return http(mapper, Method.POST, body, suffix, true);
+    }
+    
+    /**
+     * Syntaxic sugar.
+     * 
+     * @param mapper
      *      mapper for the URL
      * @return
      *       http response

@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.rest.test;
+package com.datastax.stargate.sdk.doc.test;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +13,11 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.stargate.sdk.doc.ApiDocument;
+import com.datastax.stargate.sdk.doc.Document;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentDocumentTest.Address;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentDocumentTest.Person;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Address;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
 
 /**
  * This class test the document api for namespaces
@@ -93,7 +93,7 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         // When
         List<Person> personList = personRepository
             .findAll()
-            .map(ApiDocument::getDocument)
+            .map(Document::getDocument)
             .collect(Collectors.toList());
         // Then
         Assertions.assertNotNull(personList);

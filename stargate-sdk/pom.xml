@@ -47,6 +47,11 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+		<!-- Json Schema Validation -->
+		<dependency>
+			    <groupId>com.github.everit-org.json-schema</groupId>
+			    <artifactId>org.everit.json.schema</artifactId>
+	    </dependency>
 		<!--  Logger -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>

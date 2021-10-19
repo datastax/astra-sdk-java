@@ -14,7 +14,7 @@ import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
 import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentNamespacesTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 
 /**

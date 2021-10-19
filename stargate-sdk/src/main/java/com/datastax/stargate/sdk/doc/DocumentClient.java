@@ -28,6 +28,7 @@ import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
+import com.datastax.stargate.sdk.utils.JsonUtils;
 
 /**
  * Part of the Document API in stargate wrapper for methods at the document level.
@@ -158,6 +159,33 @@ public class DocumentClient {
             return Optional.empty();
         }
         return Optional.empty();
+    }
+    
+    /**
+     * Execute a function on a document.
+     * @param path
+     *      current document sub path
+     * @param function
+     *      function executed.
+     * @param value
+     *      value for attribute to update
+     * @return
+     *      attribute updated
+     */
+    @SuppressWarnings("unchecked")
+    public String executefunction(String path, String function, Object value) {
+        if (value instanceof String) { 
+            value = "\"" + value + "\"";
+        }
+        ApiResponseHttp res = stargateHttpClient.POST(documentResource, 
+                "{ \"operation\":\"" + function + "\",\"value\":" + JsonUtils.marshall(value) + "}", 
+                formatPath(path) + "/function");
+        // Parse result
+        Map<String, Object> doc = unmarshallBean(res.getBody(), Map.class);
+        if (doc.containsKey("data")) {
+            return marshall(doc.get("data"));
+        }
+        return res.getBody();
     }
     
     /**

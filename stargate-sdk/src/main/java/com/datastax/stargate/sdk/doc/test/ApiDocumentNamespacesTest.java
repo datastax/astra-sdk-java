@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.rest.test;
+package com.datastax.stargate.sdk.doc.test;
 
 import java.util.Map;
 import java.util.Optional;

@@ -3,7 +3,7 @@ package com.datastax.stargate.sdk.test;
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 
-import com.datastax.stargate.sdk.rest.test.ApiDocumentCollectionsTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentCollectionsTest;
 
 /**
  * Execute some unit tests agains collections.

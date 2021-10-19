@@ -24,13 +24,18 @@ package com.datastax.stargate.sdk.doc;
  * @param <BEAN>
  *      target bean to store in ASTRA / STARGATE
  */
-public class ApiDocument<BEAN> {
+public class Document<BEAN> {
     
     /** Unique identifier. */
-    private final String documentId;
+    private String documentId;
     
     /** Marshalled Object. */
-    private final BEAN document;
+    private BEAN document;
+    
+    /**
+     * Default constructor.
+     */
+    public Document() {}
     
     /**
      * Constructor with Params
@@ -38,7 +43,7 @@ public class ApiDocument<BEAN> {
      * @param docId String
      * @param doc BEAN
      */
-    public ApiDocument(String docId, BEAN doc) {
+    public Document(String docId, BEAN doc) {
         this.documentId = docId;
         this.document = doc;
     }

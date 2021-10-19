@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.rest.test;
+package com.datastax.stargate.sdk.doc.test;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -16,10 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.doc.ApiDocument;
 import com.datastax.stargate.sdk.doc.CollectionClient;
+import com.datastax.stargate.sdk.doc.Document;
 import com.datastax.stargate.sdk.doc.DocumentClient;
 import com.datastax.stargate.sdk.doc.NamespaceClient;
+import com.datastax.stargate.sdk.doc.domain.DocumentFunction;
 import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -176,7 +177,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         DocumentResultPage<Person> results = personClient.findFirstPage(Person.class);
         // Then
         Assertions.assertNotNull(results);
-        for (ApiDocument<Person> p : results.getResults()) {
+        for (Document<Person> p : results.getResults()) {
             Assertions.assertNotNull(p);
         }
         System.out.println( "[OK]"  + " - Document list found");
@@ -210,7 +211,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         Assertions.assertNotNull(results);
         Assertions.assertTrue(results.getResults().size() > 0);
         
-        for (ApiDocument<Person> PersonAstra : results.getResults()) {
+        for (Document<Person> PersonAstra : results.getResults()) {
             Assertions.assertNotNull(PersonAstra);
         }
         System.out.println( "[OK]"  + " - Document list found");
@@ -365,6 +366,24 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         }
         
         Assertions.assertNotNull(personClient.findPage(query, Person.class));
+    }
+    
+    @Test
+    @Order(14)
+    @DisplayName("14-Execute function")
+    public void n_execute_function() {
+        String docId = personClient.create(""
+                + "{\n"
+                + "   \"firstName\":\"cedrick\" ,\n"
+                + "   \"lastName\":\"lunven\",\n"
+                + "   \"age\": 40,\n"
+                + "   \"color\": [\"blue\"]\n"
+                + "}");
+        String output = personClient.document(docId).executefunction("/color",
+                DocumentFunction.PUSH.getOperation(), "red");
+        Assertions.assertTrue(output.contains("red"));
+        String jsonOutput = personClient.document(docId).find(String.class).get();
+        Assertions.assertTrue(jsonOutput.contains("red"));
     }
     
     // ============================

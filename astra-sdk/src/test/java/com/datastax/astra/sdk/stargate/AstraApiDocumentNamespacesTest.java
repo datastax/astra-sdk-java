@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentNamespacesTest;
-import com.datastax.stargate.sdk.rest.test.ApiDocumentTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
 
 /**
  * Work with local stargate

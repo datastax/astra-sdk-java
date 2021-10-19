@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.rest.test;
+package com.datastax.stargate.sdk.doc.test;
 
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +18,7 @@ import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.NamespaceClient;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
 
 /**
  * This class test the document api for namespaces
@@ -114,7 +115,32 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         // Then
         Assertions.assertFalse(rcc.exist());
         LOGGER.info("Collection deleted");
-    }  
+    }
+    
+    @Test
+    @Order(5)
+    @DisplayName("05-Assign a Json Schema")
+    public void e_should_set_schema() {
+        // Given
+        String randomCollection = UUID.randomUUID().toString().replaceAll("-", "");
+        CollectionClient cc = nsClient.collection(randomCollection);
+        cc.create();
+        Assertions.assertTrue(cc.exist());
+        // Then I can add a person with negative age
+        cc.document("doc1").upsert(new Person("first", "last", -20, null));
+        // When Assign Schema
+        Assertions.assertFalse(cc.getSchema().isPresent());
+        cc.setSchema(TEST_JSON_SCHEMA);
+        // Then a schema is present
+        Assertions.assertTrue(cc.getSchema().isPresent());
+        // And validation should be enabled
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            cc.document("doc1").upsert(new Person("first", "last", -20, null));
+        });
+        // Clean up
+        cc.delete();
+        Assertions.assertFalse(cc.exist());
+    }
 
 
 }

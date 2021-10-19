@@ -205,6 +205,9 @@ public class JsonUtils {
     public static String marshall(Object o) {
         Objects.requireNonNull(o);
         try {
+            if (o instanceof String) {
+               return (String) o;
+            }
             return getObjectMapper().writeValueAsString(o);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall object " + o, e);
