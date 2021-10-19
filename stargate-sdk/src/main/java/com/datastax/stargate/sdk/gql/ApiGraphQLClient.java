@@ -20,12 +20,10 @@ import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.utils.Assert;
@@ -38,15 +36,6 @@ public class ApiGraphQLClient {
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiGraphQLClient.class);
-    
-    /** URL part. */
-    public static final String PATH_CQLFIRST_DDL = "-schema";
-    
-    /** URL part. */
-    public static final String PATH_CQLFIRST_DML = "/";
-    
-    /** URL part. */
-    public static final String PATH_GRAPQHFIRST  = "-admin";
     
     /** Get Topology of the nodes. */
     private final StargateHttpClient stargateHttpClient;
@@ -63,6 +52,42 @@ public class ApiGraphQLClient {
         LOGGER.info("+ API GraphQL  :[" + green("{}") + "]", "ENABLED");
     }
     
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
+    /**
+     * Access /graphql-schema endpoint.
+     * 
+     * @return
+     *      working with DDL and graphQL
+     */
+    public CqlSchemaClient cqlSchema() {
+        return new CqlSchemaClient(stargateHttpClient);
+    }
+    
+    /**
+     * Access /graphql/{keyspace} endpoint.
+     *
+     * @param keyspace
+     *      target keyspace to work with
+     * @return
+     *      instance of CQLFirst
+     */
+    public CqlKeyspaceClient cqlKeyspace(String keyspace) {
+        return new CqlKeyspaceClient(stargateHttpClient, keyspace);
+    }
+    
+    /**
+     * Access /graphql-admin to deploy Schema.
+     * 
+     * @return
+     *      working with DDL and graphQL
+     */
+    public CqlSchemaClient graphQLFirst() {
+        return new CqlSchemaClient(stargateHttpClient);
+    }
+    
     /**
      * Return list of {@link Namespace}(keyspaces) available.
      * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
@@ -77,11 +102,7 @@ public class ApiGraphQLClient {
         return null;
     }
     
-    /**
-     * Mapping from root URL to rest endpoint listing keyspaces definitions.
-     */
-    public Function<StargateClientNode, String> getEndpointSchemaKeyspacesGQL = 
-            (node) -> node.getApiGraphQLEndpoint() + PATH_CQLFIRST_DDL;
+   
     
 
 }

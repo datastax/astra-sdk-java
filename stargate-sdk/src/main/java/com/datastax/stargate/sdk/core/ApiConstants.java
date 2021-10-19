@@ -10,6 +10,9 @@ public interface ApiConstants {
     /** Headers, Api is usig JSON */
     String CONTENT_TYPE_JSON        = "application/json";
     
+    /** Headers, Api is usig JSON */
+    String CONTENT_TYPE_GRAPHQL     = "application/graphql";
+    
     /** Header param. */
     String HEADER_ACCEPT            = "Accept";
     

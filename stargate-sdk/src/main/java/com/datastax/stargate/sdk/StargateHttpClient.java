@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.stargate.sdk.config.StargateClientConfig;
+import com.datastax.stargate.sdk.core.ApiConstants;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.loadbalancer.LoadBalancingResource;
@@ -27,7 +28,7 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StargateHttpClient {
+public class StargateHttpClient implements ApiConstants {
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(StargateClient.class);
@@ -103,7 +104,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp GET(Function<StargateClientNode, String> mapper, String suffix) {
-        return http(mapper, Method.GET, null, suffix, false);
+        return http(mapper, Method.GET, null, suffix, CONTENT_TYPE_JSON, false);
     }
     
     /**
@@ -115,7 +116,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp HEAD(Function<StargateClientNode, String> mapper) {
-        return http(mapper, Method.PATCH, null, null, false);
+        return http(mapper, Method.PATCH, null, null, CONTENT_TYPE_JSON, false);
     }
     
     /**
@@ -141,7 +142,21 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp POST(Function<StargateClientNode, String> mapper, String body) {
-        return http(mapper, Method.POST, body, null, true);
+        return http(mapper, Method.POST, body, null, CONTENT_TYPE_JSON, true);
+    }
+    
+    /**
+     * Syntaxic sugar for a HEAD.
+     *
+     * @param mapper
+     *       mapper for the URL
+     * @param body
+     *      provide a request body      
+     * @return
+     *      http response
+     */
+    public ApiResponseHttp POST_GRAPHQL(Function<StargateClientNode, String> mapper, String body) {
+        return http(mapper, Method.POST, body, null, CONTENT_TYPE_GRAPHQL, true);
     }
     
     /**
@@ -157,7 +172,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp POST(Function<StargateClientNode, String> mapper, String body, String suffix) {
-        return http(mapper, Method.POST, body, suffix, true);
+        return http(mapper, Method.POST, body, suffix, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -169,7 +184,7 @@ public class StargateHttpClient {
      *       http response
      */
     public ApiResponseHttp DELETE(Function<StargateClientNode, String> mapper) {
-        return http(mapper, Method.DELETE, null, null, true);
+        return http(mapper, Method.DELETE, null, null, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -183,7 +198,7 @@ public class StargateHttpClient {
      *       http response
      */
     public ApiResponseHttp DELETE(Function<StargateClientNode, String> mapper, String suffix) {
-        return http(mapper, Method.DELETE, null, suffix, true);
+        return http(mapper, Method.DELETE, null, suffix, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -197,7 +212,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp PUT(Function<StargateClientNode, String> mapper, String body) {
-        return http(mapper, Method.PUT, body, null, false);
+        return http(mapper, Method.PUT, body, null, CONTENT_TYPE_JSON, false);
     }
     
     /**
@@ -213,7 +228,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp PUT(Function<StargateClientNode, String> mapper, String body, String suffix) {
-        return http(mapper, Method.PUT, body, suffix, false);
+        return http(mapper, Method.PUT, body, suffix, CONTENT_TYPE_JSON, false);
     }
     
     /**
@@ -227,7 +242,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp PATCH(Function<StargateClientNode, String> mapper, String body) {
-        return http(mapper, Method.PATCH, body, null, true);
+        return http(mapper, Method.PATCH, body, null, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -243,7 +258,7 @@ public class StargateHttpClient {
      *      http response
      */
     public ApiResponseHttp PATCH(Function<StargateClientNode, String> mapper, String body, String suffix) {
-        return http(mapper, Method.PATCH, body, suffix, true);
+        return http(mapper, Method.PATCH, body, suffix, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -262,7 +277,7 @@ public class StargateHttpClient {
      * @return
      */
     private ApiResponseHttp http(Function<StargateClientNode, String> mapper, 
-            final Method method, String body, String suffix, boolean mandatory) {
+            final Method method, String body, String suffix, String contentType, boolean mandatory) {
         LoadBalancingResource<StargateClientNode> lb = null;
         while (true) {
             try {
@@ -273,7 +288,7 @@ public class StargateHttpClient {
                 if (null != suffix) targetEndPoint+= suffix;
                 // Invoke request
                 return HttpApisClient.getInstance()
-                                      .executeHttp(method, targetEndPoint, lookupToken(), body, mandatory);
+                                      .executeHttp(method, targetEndPoint, lookupToken(), body, contentType, mandatory);
             } catch(UnavailableResourceException rex) {
                 LOGGER.warn("A stargate node is down [{}], falling back to another node...", lb.getResource().getNodeName());
                 failoverStargateNode(lb, rex);

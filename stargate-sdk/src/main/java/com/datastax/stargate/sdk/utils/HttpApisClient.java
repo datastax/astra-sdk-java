@@ -31,6 +31,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -179,7 +180,7 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp GET(String url, String token) {
-        return executeHttp(Method.GET, url, token, null, false);
+        return executeHttp(Method.GET, url, token, null, CONTENT_TYPE_JSON, false);
     }
 
     /**
@@ -193,7 +194,7 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp HEAD(String url, String token) {
-        return executeHttp(Method.HEAD, url, token, null, false);
+        return executeHttp(Method.HEAD, url, token, null, CONTENT_TYPE_JSON, false);
     }
     
     /**
@@ -207,7 +208,7 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp POST(String url, String token) {
-        return executeHttp(Method.POST, url, token, null, true);
+        return executeHttp(Method.POST, url, token, null, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -223,7 +224,23 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp POST(String url, String token, String body) {
-        return executeHttp(Method.POST, url, token, body, true);
+        return executeHttp(Method.POST, url, token, body, CONTENT_TYPE_JSON, true);
+    }
+    
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp POST_GRAPHQL(String url, String token, String body) {
+        return executeHttp(Method.POST, url, token, body, CONTENT_TYPE_GRAPHQL, true);
     }
     
     /**
@@ -237,7 +254,7 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp DELETE(String url, String token) {
-        return executeHttp(Method.DELETE, url, token, null, true);
+        return executeHttp(Method.DELETE, url, token, null, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -253,7 +270,7 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp PUT(String url, String token, String body) {
-        return executeHttp(Method.PUT, url, token, body, false);
+        return executeHttp(Method.PUT, url, token, body, CONTENT_TYPE_JSON, false);
     }
     
     /**
@@ -269,7 +286,7 @@ public class HttpApisClient implements ApiConstants {
      *      http request
      */
     public ApiResponseHttp PATCH(String url, String token, String body) {
-        return executeHttp(Method.PATCH, url, token, body, true);
+        return executeHttp(Method.PATCH, url, token, body, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -288,8 +305,8 @@ public class HttpApisClient implements ApiConstants {
      * @return
      *      basic request
      */
-    public ApiResponseHttp executeHttp(final Method method, final String url, final String token, String reqBody, boolean mandatory) {
-        return executeHttp(buildRequest(method, url, token, reqBody), mandatory);
+    public ApiResponseHttp executeHttp(final Method method, final String url, final String token, String reqBody, String contentType, boolean mandatory) {
+        return executeHttp(buildRequest(method, url, token, reqBody, contentType), mandatory);
     }
     
     /**
@@ -419,7 +436,7 @@ public class HttpApisClient implements ApiConstants {
      * @return
      *      default http with header
      */
-    private HttpUriRequestBase buildRequest(final Method method, final String url, final String token, String body) {
+    private HttpUriRequestBase buildRequest(final Method method, final String url, final String token, String body, String contentType) {
         HttpUriRequestBase req;
         switch(method) {
             case GET:    req = new HttpGet(url);    break;
@@ -433,7 +450,7 @@ public class HttpApisClient implements ApiConstants {
             case CONNECT:
             default:throw new IllegalArgumentException("Invalid HTTP Method");
         }
-        req.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
+        req.addHeader(HEADER_CONTENT_TYPE, contentType);
         req.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
         req.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
         req.addHeader(HEADER_REQUEST_ID, UUID.randomUUID().toString());
@@ -441,7 +458,7 @@ public class HttpApisClient implements ApiConstants {
         req.addHeader(HEADER_CASSANDRA, token);
         req.addHeader(HEADER_AUTHORIZATION, "Bearer " + token);
         if (null != body) {
-            req.setEntity(new StringEntity(body));
+            req.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
         }
         return req;
     }
