@@ -8,7 +8,7 @@ The SDK makes it easy to call Astra services using idiomatic Java APIs. On top o
 
 <p align="left">
  <a href="https://github.com/datastax/astra-sdk-java/wiki">
-  <img src="https://dabuttonfactory.com/button.png?t=Reference Documentation&f=Roboto-Bold&ts=14&tc=fff&hp=15&vp=15&c=11&bgt=unicolored&bgc=1598d7" />
+  <img src="https://dabuttonfactory.com/button.png?t=Reference Documentation&f=Roboto-Bold&ts=14&tc=fff&hp=15&vp=16&c=11&bgt=unicolored&bgc=1598d7" />
  </a>
 </p>
 
