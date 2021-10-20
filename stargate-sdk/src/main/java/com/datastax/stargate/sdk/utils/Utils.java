@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Utilities
@@ -52,7 +53,7 @@ public class Utils {
      * @param lStr String
      * @return boolean
      */
-    public static boolean paramsProvided(String... lStr) {
+    public static boolean hasAllLength(String... lStr) {
         if (null == lStr) return false;
         return Arrays.stream(lStr).allMatch(Utils::hasLength);
     }
@@ -88,5 +89,22 @@ public class Utils {
                 if (null!= bis)  bis.close();
             } catch (IOException e) {}
         }
+    }
+    
+    /**
+     * Syntaxic sugar to read environment variables.
+     *
+     * @param key
+     *      environment variable
+     * @return
+     *      if the value is there
+     */
+    public static Optional<String> readEnvVariable(String key) {
+        if (Utils.hasLength(System.getProperty(key))) {
+            return Optional.ofNullable(System.getProperty(key));
+        } else if (Utils.hasLength(System.getenv(key))) {
+            return Optional.ofNullable(System.getenv(key));
+        }
+        return Optional.empty();
     }
 }

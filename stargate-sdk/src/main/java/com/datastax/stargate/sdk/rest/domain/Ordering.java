@@ -22,6 +22,14 @@ package com.datastax.stargate.sdk.rest.domain;
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum Ordering {  
+    
+    /**
+     * Ascending.
+     */
     ASC,
+    
+    /**
+     * Descending.
+     */
     DESC 
 }

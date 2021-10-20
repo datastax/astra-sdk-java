@@ -26,10 +26,24 @@ public class TableNotFoundException extends RuntimeException {
     /** Serial. */
     private static final long serialVersionUID = -4491748257797687008L;
 
+    /**
+     * Constructor with message.
+     *
+     * @param colName
+     *      column name
+     */
     public TableNotFoundException(String colName) {
         super("Cannot find Table " + colName);
     }
     
+    /**
+     * Constructor with message and parent.
+     *
+     * @param colName
+     *      column name     
+     * @param parent
+     *      parent exception
+     */
     public TableNotFoundException(String colName, Throwable parent) {
         super("Cannot find Table " + colName, parent);
     }

@@ -27,6 +27,13 @@
   			<groupId>org.apache.httpcomponents.client5</groupId>
   			<artifactId>httpclient5-fluent</artifactId>
 		</dependency>
+		<!--  Implements retry HTTP CALLS -->
+		<dependency>
+		    <groupId>com.evanlennick</groupId>
+		    <artifactId>retry4j</artifactId>
+		    <version>0.15.0</version>
+		</dependency>
+
 		<!-- Support for JSON Api -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -40,6 +47,11 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+		<!-- Json Schema Validation -->
+		<dependency>
+			    <groupId>com.github.everit-org.json-schema</groupId>
+			    <artifactId>org.everit.json.schema</artifactId>
+	    </dependency>
 		<!--  Logger -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -49,12 +61,11 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 		</dependency>
-		<!-- Support for GraphQL -->
 		<dependency>
-		    <groupId>com.graphql-java</groupId>
-		    <artifactId>graphql-java</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>compile</scope>
 		</dependency>
-				
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>

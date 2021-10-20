@@ -1,0 +1,41 @@
+name: Java SDK Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  sdk-tests:
+    env:
+      ASTRA_DB_APPLICATION_TOKEN: ${{ secrets.ASTRA_DB_APPLICATION_TOKEN }}
+      ASTRA_DB_CLIENT_ID: ${{ secrets.ASTRA_DB_CLIENT_ID }}
+      ASTRA_DB_CLIENT_SECRET: ${{ secrets.ASTRA_DB_CLIENT_SECRET }}
+    runs-on: ubuntu-latest
+    services:
+      stargate:
+        image: stargateio/stargate-3_11:v1.0.38
+        env:
+          CLUSTER_NAME: stargate
+          CLUSTER_VERSION: 3.11
+          DEVELOPER_MODE: true
+          DATACENTER_NAME: datacenter1
+          JAVA_OPTS: "-Xmx2G"
+        ports:
+          - 8080:8080
+          - 8081:8081
+          - 8082:8082
+          - 8090:8090
+          - 9042:9042
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+      - name: Test with Maven
+        run: mvn test

@@ -15,15 +15,19 @@ public class User implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -5559139394251225663L;
 
+    /** User id. */
     @JsonProperty("UserID")
     private String userId;
     
+    /** user email. */
     @JsonProperty("Email")
     private String email;
     
+    /** user status. */
     @JsonProperty("Status")
     private UserStatus status;
     
+    /** user roles. */
     @JsonProperty("Roles")
     private List<Role> roles;
 

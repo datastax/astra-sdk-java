@@ -16,13 +16,17 @@
 
 package com.datastax.stargate.sdk.gql;
 
+import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
+
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.stargate.sdk.core.ApiTokenProvider;
+import com.datastax.stargate.sdk.StargateHttpClient;
+import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
-
 /**
  * Superclass to work with graphQL.
  *
@@ -33,68 +37,72 @@ public class ApiGraphQLClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiGraphQLClient.class);
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
-    
-    /** This the endPoint to invoke to work with different API(s). */
-    private final String endPointApiGraphQL;
+    /** Get Topology of the nodes. */
+    private final StargateHttpClient stargateHttpClient;
     
     /**
-     * Initialized graphQL API with an URL and a token.
-     * 
-     * @param endpoint
-     *      http endpoint
-     * @param token
-     *      authentication token
-     */
-    public ApiGraphQLClient(String endpoint, String token) {
-        Assert.hasLength(endpoint, "endpoint");
-        Assert.hasLength(token, "token");
-        this.endPointApiGraphQL =  endpoint;
-        this.http = HttpApisClient.getInstance();
-        http.setToken(token);
-        LOGGER.info("+ GraphQL API:  {}, ", endPointApiGraphQL);
-    }
-    
-
-    /**
-     * Initiialized GraphQL client API.
-     * 
-     * @param endpoint
-     *      list endpoint
-     * @param tokenProvider
-     *      provide token
-     */
-    public ApiGraphQLClient(String endpoint, ApiTokenProvider tokenProvider) {
-        Assert.hasLength(endpoint, "endpoint");
-        Assert.notNull(tokenProvider, "tokenProvider");
-        this.endPointApiGraphQL =  endpoint;
-        this.http = HttpApisClient.getInstance();
-        http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API(s) GraphQL [ENABLED] {}", endPointApiGraphQL);
-    }
-    
-    /**
-     * Build the schema endpoint.
+     * Constructor with StargateClient as argument.
      *
-     * @return
-     *      target endpoint
+     * @param stargateClient
+     *      stargate client
      */
-    public String getEndpointSchema() {
-        return endPointApiGraphQL + "-schema";
+    public ApiGraphQLClient(StargateHttpClient stargateClient) {
+        Assert.notNull(stargateClient, "stargate client reference. ");
+        this.stargateHttpClient =  stargateClient;
+        LOGGER.info("+ API GraphQL  :[" + green("{}") + "]", "ENABLED");
+    }
+    
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
+    /**
+     * Access /graphql-schema endpoint.
+     * 
+     * @return
+     *      working with DDL and graphQL
+     */
+    public CqlSchemaClient cqlSchema() {
+        return new CqlSchemaClient(stargateHttpClient);
     }
     
     /**
-     * Build URL for a keyspace.
-     * 
-     * @param keyspaceId
-     *      keyspace identifier
+     * Access /graphql/{keyspace} endpoint.
+     *
+     * @param keyspace
+     *      target keyspace to work with
      * @return
-     *      target endpoint
+     *      instance of CQLFirst
      */
-    public String getEndpointKeyspace(String keyspaceId) {
-        return endPointApiGraphQL + "/" + keyspaceId;
+    public CqlKeyspaceClient cqlKeyspace(String keyspace) {
+        return new CqlKeyspaceClient(stargateHttpClient, keyspace);
     }
+    
+    /**
+     * Access /graphql-admin to deploy Schema.
+     * 
+     * @return
+     *      working with DDL and graphQL
+     */
+    public CqlSchemaClient graphQLFirst() {
+        return new CqlSchemaClient(stargateHttpClient);
+    }
+    
+    /**
+     * Return list of {@link Namespace}(keyspaces) available.
+     * https://docs.datastax.com/en/astra/docs/_attachments/restv2.html#operation/getKeyspaces
+     * 
+     * @return Keyspace
+     */
+    public List<Map<String, Object>> keyspaces() {
+        stargateHttpClient.GET(null);
+        //String query = "";
+        // Invoke gql endpoints
+        // Parse output
+        return null;
+    }
+    
+   
     
 
 }

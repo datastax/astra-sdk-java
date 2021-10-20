@@ -26,10 +26,24 @@ public class ColumnsNotFoundException extends RuntimeException {
     /** Serial. */
     private static final long serialVersionUID = -4491748257797687008L;
 
+    /**
+     * Constructor with message.
+     *
+     * @param colName
+     *      column name
+     */
     public ColumnsNotFoundException(String colName) {
         super("Cannot find Column " + colName);
     }
     
+    /**
+     * Constructor with message and parent.
+     *
+     * @param colName
+     *      column name     
+     * @param parent
+     *      parent exception
+     */
     public ColumnsNotFoundException(String colName, Throwable parent) {
         super("Cannot find Column " + colName, parent);
     }

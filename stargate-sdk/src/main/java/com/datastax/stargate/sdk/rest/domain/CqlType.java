@@ -38,49 +38,176 @@ import com.datastax.oss.driver.api.core.data.UdtValue;
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum CqlType {
-    Ascii(String.class, "US-ASCII characters"),
-    Bigint(Long.class, "64-bit signed integer"),
-    Blob(ByteBuffer.class, "Arbitrary bytes"),
-    Boolean(Boolean.class, "True or false"),
-    Counter(Long.class, "64-bit signed integer"),
-    Date(LocalDate.class, "32-bit unsigned integer representing the number of days since epoch"),
-    Decimal(BigDecimal.class, "Variable-precision decimal, supports integers and floats"),
-    Double(Double.class, "64-bit IEEE-754 floating point"),
-    Duration(CqlDuration.class, "128 bit encoded duration with nanosecond precision"),
-    Float(Float.class, "32-bit IEEE-754 floating point"),
-    Inet(InetAddress.class, "IP address string in IPv4 or IPv6 format"),
-    Int(Integer.class, "32-bit signed integer"),
-    List(List.class, "A typed list of values"),
-    Map(Map.class, "A typed map of key value pairs"),
-    Set(Set.class, "A typed set of values"),
-    Smallint(Short.class, "16-bit signed integer"),
-    Text(String.class, "UTF-8 encoded string"),
-    Time(LocalTime.class,"Encoded 64-bit signed integers representing the number of nanoseconds since midnight with no corresponding date value"),
-    Timestamp(Instant.class,"64-bit signed integer representing the date and time since epoch (January 1 1970 at 00:00:00 GMT) in milliseconds"),
-    Timeuuid(UUID.class,"Version 1 UUID; unique identifier that includes a 'conflict-free' timestamp"),
-    Tinyint(Byte.class, "8-bit signed integer"),
-    Tuple(TupleValue.class,"Fixed length sequence of elements of different types"),
-    Uuid(UUID.class, "128 bit universally unique identifier (UUID)"),
-    Varchar(String.class, "UTF-8 encoded string"),
-    Varint(BigInteger.class,"Arbitrary-precision integer"),
-    UDT(UdtValue.class,"A user defined type that has been set up previously via 'schema.type(<type_name>).property(<prop_name>, <type>)...create()'");
-    //Point(0,io.stargate.db.schema.Point.class,"org.apache.cassandra.db.marshal.PointType",true,null,"Contains two coordinate values for latitude and longitude"),
-    //Polygon(0,io.stargate.db.schema.Polygon.class,"org.apache.cassandra.db.marshal.PolygonType",true,null,"Contains three or more point values forming a polygon"),
-    //LineString(0,io.stargate.db.schema.LineString.class,"org.apache.cassandra.db.marshal.LineStringType",true,null,"Contains two or more point values forming a line"),
     
+    /**
+     * Ascii.
+     */
+    Ascii(String.class, "US-ASCII characters"),
+    
+    /**
+     * Bigint.
+     */
+    Bigint(Long.class, "64-bit signed integer"),
+    
+    /**
+     * Blob.
+     */
+    Blob(ByteBuffer.class, "Arbitrary bytes"),
+    
+    /**
+     * Boolean.
+     */
+    Boolean(Boolean.class, "True or false"),
+    
+    /**
+     * Counter.
+     */
+    Counter(Long.class, "64-bit signed integer"),
+    
+    /**
+     * Date.
+     */
+    Date(LocalDate.class, "32-bit unsigned integer representing the number of days since epoch"),
+    
+    /**
+     * Decimal.
+     */
+    Decimal(BigDecimal.class, "Variable-precision decimal, supports integers and floats"),
+    
+    /**
+     * Double
+     */
+    Double(Double.class, "64-bit IEEE-754 floating point"),
+    
+    /**
+     * Duration.
+     */
+    Duration(CqlDuration.class, "128 bit encoded duration with nanosecond precision"),
+    
+    /**
+     * Float.
+     */
+    Float(Float.class, "32-bit IEEE-754 floating point"),
+    
+    /**
+     * Inet.
+     */
+    Inet(InetAddress.class, "IP address string in IPv4 or IPv6 format"),
+    
+    /**
+     * Int.
+     */
+    Int(Integer.class, "32-bit signed integer"),
+    
+    /**
+     * List.
+     */
+    List(List.class, "A typed list of values"),
+    
+    /**
+     * Map.
+     */
+    Map(Map.class, "A typed map of key value pairs"),
+    
+    /**
+     * Set.
+     */
+    Set(Set.class, "A typed set of values"),
+    
+    /**
+     * Smallint.
+     */
+    Smallint(Short.class, "16-bit signed integer"),
+    
+    /**
+     * Text.
+     */
+    Text(String.class, "UTF-8 encoded string"),
+    
+    /**
+     * Time.
+     */
+    Time(LocalTime.class,"Encoded 64-bit signed integers representing the number of nanoseconds since midnight with no corresponding date value"),
+    
+    /**
+     * Timestamp.
+     */
+    Timestamp(Instant.class,"64-bit signed integer representing the date and time since epoch (January 1 1970 at 00:00:00 GMT) in milliseconds"),
+    
+    /**
+     * Timeuuid
+     */
+    Timeuuid(UUID.class,"Version 1 UUID; unique identifier that includes a 'conflict-free' timestamp"),
+    
+    /**
+     * Tinyint
+     */
+    Tinyint(Byte.class, "8-bit signed integer"),
+    
+    /**
+     * Tuple
+     */
+    Tuple(TupleValue.class,"Fixed length sequence of elements of different types"),
+    
+    /**
+     * Uuid.
+     */
+    Uuid(UUID.class, "128 bit universally unique identifier (UUID)"),
+    
+    /**
+     * Varchar.
+     */
+    Varchar(String.class, "UTF-8 encoded string"),
+    
+    /**
+     * Varint.
+     */
+    Varint(BigInteger.class,"Arbitrary-precision integer"),
+    
+    /**
+     * UDT.
+     */
+    UDT(UdtValue.class,"A user defined type that has been set up previously via 'schema.type(<type_name>).property(<prop_name>, <type>)...create()'");
+    
+    /**
+     * Reference to class.
+     */
     private final Class<?> javaType;
     
+    /**
+     * Description for the type.
+     */
     private final String description;
 
+    /**
+     * Hiddent contructor.
+     * 
+     * @param javaType
+     *      java type
+     * @param description
+     *      description
+     */
     private CqlType(Class<?> javaType, String description) {
         this.javaType = javaType;
         this.description = description;
     }
     
+    /**
+     * Access java type.
+     *
+     * @return
+     *      java type
+     */
     public Class<?> javaType() {
       return javaType;
     }
 
+    /**
+     * Access java description.
+     *
+     * @return
+     *      description
+     */
     public String description() {
       return description;
     }

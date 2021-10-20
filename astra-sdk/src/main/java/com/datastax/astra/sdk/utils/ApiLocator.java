@@ -73,6 +73,7 @@ public class ApiLocator {
                 .append("/api/graphql")
                 .toString();
     }
+    
     /**
      * GRAPHQL endpoint for a database and region working with Schema definition
      *
@@ -98,7 +99,8 @@ public class ApiLocator {
      *      keyspace identifier     
      * @return
      *      the url to invoke
-     */public static final String getApiGraphQLEndPoint(String dbId, String dbRegion, String keyspace) {
+     */
+    public static final String getApiGraphQLEndPoint(String dbId, String dbRegion, String keyspace) {
          return getApiGraphQLEndPoint(dbId, dbRegion) + "/" + keyspace;
     }
 

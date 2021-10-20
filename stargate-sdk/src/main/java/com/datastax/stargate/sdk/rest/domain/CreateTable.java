@@ -32,18 +32,32 @@ public class CreateTable implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -163637535414120053L;
 
+    /** Table name. */
     private String name;
 
+    /** if not exist flag. */
     private boolean ifNotExists = false;
     
+    /** table primary key. */
     private TablePrimaryKey primaryKey = new TablePrimaryKey();
     
+    /** table columns. */
     private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
     
+    /** table options (TTL). */
     private TableOptions tableOptions = new TableOptions();
     
+    /**
+     * Default constructor.
+     */
     public CreateTable() {}
     
+    /**
+     * Constructor with the builder.
+     *
+     * @param builder
+     *      current builder
+     */
     private CreateTable(CreateTableBuilder builder) {
         this.ifNotExists = builder.ifNotExists;
         this.name        = builder.name;
@@ -61,6 +75,12 @@ public class CreateTable implements Serializable {
         });
     }
     
+    /**
+     * Easily create the builder.
+     *      
+     * @return
+     *      the builder
+     */
     public static CreateTableBuilder builder() {
         return new CreateTableBuilder();
     }
@@ -70,28 +90,60 @@ public class CreateTable implements Serializable {
      */
     public static class CreateTableBuilder {
         
+        /** name. */
         private String name;
         
+        /** exist flag. */
         private boolean ifNotExists = false;
         
+        /** columns definitions. */
         private Map<String, ColumnDefinition> pk = new HashMap<>();
         
+        /** columns definitions. */
         private Map<String, ColumnDefinition> cc = new HashMap<>();
         
+        /** columns definitions. */
         private Map<String, Ordering>  ccOrder = new HashMap<>();
         
+        /** columns definitions. */
         private Map<String, ColumnDefinition> cols = new HashMap<>();
         
+        /**
+         * Helper for name.
+         *
+         * @param name
+         *      current name
+         * @return
+         *      self reference
+         */
         public CreateTableBuilder name(String name) {
             this.name = name;
             return this;
         }
         
+        /**
+         * Helper for if not exist.
+         *
+         * @param ine
+         *      current ine
+         * @return
+         *      self reference
+         */
         public CreateTableBuilder ifNotExist(boolean ine) {
             this.ifNotExists = ine;
             return this;
         }
        
+        /**
+         * Helper for column static
+         *
+         * @param name
+         *      current name
+         * @param type
+         *      current type
+         * @return
+         *      self reference
+         */
         public CreateTableBuilder addColumnStatic(String name, String type) {
             if (pk.containsKey(name)) {
                 throw new IllegalArgumentException("Cannot add simple column " + name + ", it has already been defined as partition key");
@@ -106,6 +158,16 @@ public class CreateTable implements Serializable {
             return this;
         }
         
+        /**
+         * Helper for column
+         *
+         * @param name
+         *      current name
+         * @param type
+         *      current type
+         * @return
+         *      self reference
+         */        
         public CreateTableBuilder addColumn(String name, String type) {
             if (pk.containsKey(name)) {
                 throw new IllegalArgumentException("Cannot add simple column " + name + ", it has already been defined as partition key");
@@ -120,6 +182,16 @@ public class CreateTable implements Serializable {
             return this;
         }
         
+        /**
+         * Helper for column PK
+         *
+         * @param name
+         *      current name
+         * @param type
+         *      current type
+         * @return
+         *      self reference
+         */        
         public CreateTableBuilder addPartitionKey(String name, String type) {
             if (pk.containsKey(name)) {
                 throw new IllegalArgumentException("Cannot add partitionKey column " + name + ", it has already been defined as partition key");
@@ -134,6 +206,18 @@ public class CreateTable implements Serializable {
             return this;
         }
         
+        /**
+         * Helper for column CC.
+         *
+         * @param name
+         *      current name
+         * @param type
+         *      current type
+         * @param order
+         *      order  
+         * @return
+         *      self reference
+         */
         public CreateTableBuilder addClusteringKey(String name, String type, Ordering order) {
             if (pk.containsKey(name)) {
                 throw new IllegalArgumentException("Cannot add partitionKey column " + name + ", it has already been defined as partition key");
@@ -149,6 +233,12 @@ public class CreateTable implements Serializable {
             return this;
         }
         
+        /**
+         * Generate target bean.
+         * 
+         * @return
+         *      target create table bean.
+         */
         public CreateTable build() {
             return new CreateTable(this);
         }

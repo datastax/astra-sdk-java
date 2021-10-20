@@ -16,21 +16,22 @@
 
 package com.datastax.stargate.sdk.doc;
 
+import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
-import com.datastax.stargate.sdk.core.ApiResponseHttp;
-import com.datastax.stargate.sdk.core.ApiTokenProvider;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.rest.domain.Keyspace;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -43,64 +44,42 @@ public class ApiDocumentClient {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDocumentClient.class);
     
-    /** Resource for document API schemas. */
+    /** Schema sub level. */
     public static final String PATH_SCHEMA_NAMESPACES = "/namespaces";
     
-    /** Resource for document API schemas. */
-    public static final String PATH_SCHEMA            = "/v2/schemas";
+    /** Schema sub level. */
+    public static final String PATH_SCHEMA            = "/schemas";
     
-    /** Marshalling types. */
-    private static final TypeReference<ApiResponse<List<Namespace>>> RESPONSE_LIST_NAMESPACE = 
-            new TypeReference<ApiResponse<List<Namespace>>>(){};
+    /** Schema sub level. */
+    public static final String PATH_V2                = "/v2";
     
-    /** This the endPoint to invoke to work with different API(s). */
-    private final String endPointApiDocument;
-    
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
-   
-    /**
-     * Initialized document API with an URL and a token.
-     * 
-     * @param endpoint
-     *      http endpoint
-     * @param token
-     *      authentication token
-     */
-    public ApiDocumentClient(String endpoint, String token) {
-        Assert.hasLength(endpoint, "endpoint");
-        Assert.hasLength(token, "token");
-        this.endPointApiDocument =  endpoint;
-        this.http = HttpApisClient.getInstance();
-        http.setToken(token);
-        LOGGER.info("+ Document API:  {}, ", endPointApiDocument);
-    }
+    /** Get Topology of the nodes. */
+    protected final StargateHttpClient stargateHttpClient;
     
     /**
-     * Invoked when working with StandAlone Stargate.
-     * 
-     * @param endpoint
-     *      provide the URL
-     * @param tokenProvider
-     *      how to load the token
+     * Constructor with StargateClient as argument.
+     *
+     * @param stargateHttpClient
+     *      stargate http client
      */
-    public ApiDocumentClient(String endpoint, ApiTokenProvider tokenProvider) {
-        Assert.hasLength(endpoint, "endpoint");
-        Assert.notNull(tokenProvider, "tokenProvider");
-        this.endPointApiDocument =  endpoint;
-        this.http = HttpApisClient.getInstance();
-        http.setTokenProvider(tokenProvider);
-        LOGGER.info("+ API(s) Document is [ENABLED] {}", endPointApiDocument);
+    public ApiDocumentClient(StargateHttpClient stargateHttpClient) {
+        Assert.notNull(stargateHttpClient, "stargate client reference. ");
+        this.stargateHttpClient = stargateHttpClient;
+        LOGGER.info("+ API Document :[" + green("{}") + "]", "ENABLED");
     }
     
     /**
      * Return list of {@link Namespace}(keyspaces) available.
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/getAllNamespaces">Reference Documentation</a>
+     * 
      * @return Stream
      */
     public Stream<Namespace> namespaces() {
-        ApiResponseHttp res = http.GET(getEndpointSchemaNamespaces());
-        return unmarshallType(res.getBody(), RESPONSE_LIST_NAMESPACE).getData().stream();
+        String res = stargateHttpClient.GET(this.namespacesSchemaResource).getBody();
+        return unmarshallType(res, new TypeReference<ApiResponse<List<Namespace>>>(){})
+              .getData()
+              .stream();
     }
     
     /**
@@ -113,6 +92,10 @@ public class ApiDocumentClient {
         return namespaces().map(Keyspace::getName);
     }
     
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
     /**
      * Move the document API (namespace client)
      * 
@@ -120,27 +103,23 @@ public class ApiDocumentClient {
      * @return NamespaceClient
      */
     public NamespaceClient namespace(String namespace) {
-        return new NamespaceClient(this, namespace);
+        return new NamespaceClient(stargateHttpClient, this, namespace);
     }
     
+    // ---------------------------------
+    // ----   Build Resources URLS  ----
+    // ---------------------------------
+    
     /**
-     * Getter accessor for attribute 'endPointApiDocument'.
-     *
-     * @return
-     *       current value of 'endPointApiDocument'
+     * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
-    public String getEndPointApiDocument() {
-        return endPointApiDocument;
-    }
+    public Function<StargateClientNode, String> namespacesSchemaResource = 
+            (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
 
     /**
-     * Endpoint to access schema for namespace.
-     *
-     * @return
-     *      url to build schema for namespaces
+     * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
-    public String getEndpointSchemaNamespaces() {
-        return getEndPointApiDocument() + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
-    }
-
+    public Function<StargateClientNode, String> namespacesResource = 
+            (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA_NAMESPACES;
+            
 }

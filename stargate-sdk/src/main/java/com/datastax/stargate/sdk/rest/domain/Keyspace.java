@@ -36,14 +36,33 @@ public class Keyspace {
     /** This property is used for distributed deployment (NetworkTopologyStrategy). */
     protected List<DataCenter> datacenters;
 
+    /**
+     * Default constructor.
+     */
     public Keyspace() {}
             
+    /**
+     * Constructor with parameters.
+     *
+     * @param name
+     *      keyspace name
+     * @param datacenters
+     *      keyspace datacenter
+     */
     public Keyspace(String name, List<DataCenter> datacenters) {
         super();
         this.name = name;
         this.datacenters = datacenters;
     }
     
+    /**
+     * Constructor with parameters.
+     *
+     * @param name
+     *      keyspace name
+     * @param replicas
+     *      number of replicas.
+     */
     public Keyspace(String name, int replicas) {
         super();
         this.name = name;

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.datastax.astra</groupId>
 	<artifactId>astra-sdk-parent</artifactId>
@@ -21,24 +23,37 @@
 		</license>
 	</licenses>
 	<properties>
-		<java-driver.version>4.10.0</java-driver.version>
-		<spring.version>5.3.2</spring.version>
-		<spring-boot.version>2.4.2</spring-boot.version>
-		<logback.version>1.2.3</logback.version>
-		<jackson.version>2.12.1</jackson.version>
+	 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	 	<java-driver.version>4.13.0</java-driver.version>
+		<logback.version>1.2.6</logback.version>
+		<jackson.version>2.13.0</jackson.version>
+		<json-schema.version>1.14.0</json-schema.version>
 		<httpclient.version>5.1</httpclient.version>
-		<graphql-java.version>16.2</graphql-java.version>
 		<pulsar.version>2.7.2</pulsar.version>
-		<junit-platform.version>1.7.0</junit-platform.version>
-		<junit-jupiter.version>5.7.0</junit-jupiter.version>
-		<maven-compiler-plugin.source>1.8</maven-compiler-plugin.source>
-		<maven-compiler-plugin.target>1.8</maven-compiler-plugin.target>
-		<maven-javadoc-plugin.source>8</maven-javadoc-plugin.source>
-		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-		<maven-fmt-maven-plugin>2.2.0</maven-fmt-maven-plugin>
-		<maven-xml-format-maven-plugin>3.0.7</maven-xml-format-maven-plugin>
-		<skipTests>true</skipTests>
+		<!-- Spring -->
+		<spring.version>5.3.11</spring.version>
+		<spring-boot.version>2.5.5</spring-boot.version>
+		<!-- Junit -->
+		<junit-platform.version>1.8.1</junit-platform.version>
+		<junit-jupiter.version>5.8.1</junit-jupiter.version>
+		<!-- Java -->
+		<maven.plugin.compiler.source>1.8</maven.plugin.compiler.source>
+		<maven.plugin.compiler.target>1.8</maven.plugin.compiler.target>
+		<maven.plugin.javadoc.source>8</maven.plugin.javadoc.source>
+		<!-- Maven -->
+		<version.maven.plugin.failsafe>2.22.2</version.maven.plugin.failsafe>
+		<version.maven.plugin.surefire>2.22.2</version.maven.plugin.surefire>
+		<version.maven.plugin.gpg>3.0.1</version.maven.plugin.gpg>
+		<version.maven.plugin.resources>3.2.0</version.maven.plugin.resources>
+		<version.maven.plugin.release>2.5.2</version.maven.plugin.release>
+		<version.maven.plugin.javadoc>2.10.3</version.maven.plugin.javadoc>
+		<version.maven.plugin.source>2.2.1</version.maven.plugin.source>
+		<version.maven.plugin.nexus>1.6.8</version.maven.plugin.nexus>
+		<version.maven.plugin.compiler>3.8.1</version.maven.plugin.compiler>
+		<version.maven.plugin.jar>3.2.0</version.maven.plugin.jar>
+		<version.maven.plugin.dependency>2.8</version.maven.plugin.dependency>
+		<version.maven.plugin.xml-format>3.0.7</version.maven.plugin.xml-format>
+		<version.maven.plugin.fmt>2.2.0</version.maven.plugin.fmt>
 	</properties>
 	<modules>
 		<module>astra-sdk</module>
@@ -105,20 +120,26 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.graphql-java</groupId>
-				<artifactId>graphql-java</artifactId>
-				<version>${graphql-java.version}</version>
+			    <groupId>com.github.everit-org.json-schema</groupId>
+			    <artifactId>org.everit.json.schema</artifactId>
+			    <version>${json-schema.version}</version>
 			</dependency>
 			<!-- ASTRA STREAMING -->
 			<dependency>
-	    		<groupId>org.apache.pulsar</groupId>
-	    		<artifactId>pulsar-client-admin</artifactId>
-	    		<version>${pulsar.version}</version>
+				<groupId>org.apache.pulsar</groupId>
+				<artifactId>pulsar-client-admin</artifactId>
+				<version>${pulsar.version}</version>
 			</dependency>
 			<dependency>
-			    <groupId>org.apache.pulsar</groupId>
-			    <artifactId>pulsar-client</artifactId>
-			   <version>${pulsar.version}</version>
+				<groupId>org.apache.pulsar</groupId>
+				<artifactId>pulsar-client</artifactId>
+				<version>${pulsar.version}</version>
+			</dependency>
+			<!-- JUNIT -->
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-api</artifactId>
+				<version>${junit-jupiter.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
@@ -132,7 +153,7 @@
 				<version>${junit-platform.version}</version>
 				<scope>test</scope>
 			</dependency>
-			<!-- Creating a SpringBoot Starter -->
+			<!-- SPRING -->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot</artifactId>
@@ -167,6 +188,7 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>${version.maven.plugin.nexus}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
@@ -177,6 +199,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
+				<version>${version.maven.plugin.source}</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -188,6 +211,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
+				<version>${version.maven.plugin.release}</version>
 				<configuration>
 					<tagNameFormat>@{project.version}</tagNameFormat>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
@@ -199,17 +223,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
+				<version>${version.maven.plugin.compiler}</version>
 				<configuration>
-					<source>${maven-compiler-plugin.source}</source>
-					<target>${maven-compiler-plugin.target}</target>
-					<showWarnings>true</showWarnings>
+					<source>${maven.plugin.compiler.source}</source>
+					<target>${maven.plugin.compiler.target}</target>
+					<showWarnings>false</showWarnings>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin.version}</version>
+				<version>${version.maven.plugin.surefire}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.junit.jupiter</groupId>
@@ -222,7 +246,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${version.maven.plugin.javadoc}</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -232,11 +258,44 @@
 					</execution>
 				</executions>
 				<configuration>
-					<source>${maven-javadoc-plugin.source}</source>
+					<source>${maven.plugin.javadoc.source}</source>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${version.maven.plugin.dependency}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${version.maven.plugin.jar}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${version.maven.plugin.resources}</version>
+				<configuration>
+					<escapeString>\</escapeString>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+	    <repository>
+	        <id>jitpack.io</id>
+	        <url>https://jitpack.io</url>
+	    </repository>
+    </repositories>
 	<distributionManagement>
 		<repository>
 			<id>ossrh</id>
@@ -263,7 +322,9 @@
 			<build>
 				<plugins>
 					<plugin>
-						<artifactId>maven-gpg-plugin</artifactId>
+						<groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${version.maven.plugin.gpg}</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>

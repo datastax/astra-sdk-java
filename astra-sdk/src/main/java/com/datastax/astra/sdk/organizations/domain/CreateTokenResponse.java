@@ -16,16 +16,22 @@ public class CreateTokenResponse implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -2033488126365806669L;
 
+    /** client id. */
     private String clientId;
 
+    /** organization id. */
     private String orgId;
 
+    /** secret for a token. */
     private String secret;
 
+    /** value for a token.. */
     private String token;
 
+    /** generated date. */
     private String generatedOn;
 
+    /** list of roles. */
     private List<String> roles;
 
     /**

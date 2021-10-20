@@ -46,7 +46,7 @@ public class StargateDocumentRepository <DOC> {
      */
     public StargateDocumentRepository(NamespaceClient nc, Class<DOC> clazz) {
         this.docClass = clazz;
-        this.collectionClient = new CollectionClient(nc, getCollectionName(clazz));
+        this.collectionClient = new CollectionClient(nc.stargateHttpClient, nc, getCollectionName(clazz));
     } 
     
     /**
@@ -101,19 +101,19 @@ public class StargateDocumentRepository <DOC> {
      * @param doc
      *      document
      */
-    public void upsert(String docId, DOC doc) {
+    public void insert(String docId, DOC doc) {
         collectionClient.document(docId).upsert(doc);
     }
     
     /**
-     * Update only if exists.
+     * Create if not exist with defined ID.
      *
      * @param docId
      *      expected document id
      * @param doc
      *      document
      */
-    public void update(String docId, DOC doc) {
+    public void save(String docId, DOC doc) {
         collectionClient.document(docId).upsert(doc);
     }
     
@@ -138,17 +138,17 @@ public class StargateDocumentRepository <DOC> {
     public Optional<DOC> find(String docId) {
         return collectionClient.document(docId).find(docClass);
     }
-    
+   
     /**
-     * Find a person from ids unique identifier.
-     *
-     * @param docId
-     *      document Id
+     * Search document based on a search query
+     * 
+     * @param query
+     *      current query
      * @return
-     *      if the document exist 
+     *      all the element matching
      */
-    public boolean exist(String docId) {
-        return find(docId).isPresent();
+    public Stream<Document<DOC>> search(SearchDocumentQuery query) {
+        return collectionClient.findAll(query, docClass);
     }
     
     /**
@@ -159,41 +159,54 @@ public class StargateDocumentRepository <DOC> {
      * @return
      *      result page
      */
-    public DocumentResultPage<DOC> searchPageable(SearchDocumentQuery query) {
-        return collectionClient.searchPageable(query, docClass);
+    public DocumentResultPage<DOC> searchPage(SearchDocumentQuery query) {
+        return collectionClient.findPage(query, docClass);
     }
     
-    /**
-     * Retrieve all documents from the collection.
-     *
-     * @param query
-     *      search query
-     * @return
-     *      every document of the collection
-     */
-    public Stream<ApiDocument<DOC>> search(SearchDocumentQuery query) {
-        return collectionClient.search(query, docClass);
-    }
     /**
      * Retrieve all documents from the collection.
      * 
      * @return
      *      every document of the collection
      */
-    public Stream<ApiDocument<DOC>> findAll() {
+    public Stream<Document<DOC>> findAll() {
         return collectionClient.findAll(docClass);
     }
     
-    public DocumentResultPage<DOC> findAllPageable() {
-        return collectionClient.findAllPageable(docClass);
+    /**
+     * Find first page.
+     * 
+     * @return
+     *      first page of the collection
+     */
+    public DocumentResultPage<DOC> findFirstPage() {
+        return collectionClient.findFirstPage(docClass);
     }
     
-    public DocumentResultPage<DOC> findAllPageable(int pageSize){
-        return collectionClient.findAllPageable(docClass, pageSize);
+    /**
+     * Find first page.
+     * 
+     * @param pageSize
+     *      size of page
+     * @return
+     *      first page of the collection
+     */
+    public DocumentResultPage<DOC> findFirstPage(int pageSize){
+        return collectionClient.findFirstPage(docClass, pageSize);
     }
     
-    public DocumentResultPage<DOC> findAllPageable(int pageSize, String pageingState){
-        return collectionClient.findAllPageable(docClass, pageSize, pageingState);
+    /**
+     * Find page.
+     * 
+     * @param pageSize
+     *      size of page
+     * @param pageingState
+     *      cursor to retrieve pages
+     * @return
+     *      first page of the collection
+     */
+    public DocumentResultPage<DOC> findPage(int pageSize, String pageingState){
+        return collectionClient.findPage(docClass, pageSize, pageingState);
     }
     
     /**

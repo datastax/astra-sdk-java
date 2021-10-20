@@ -28,12 +28,31 @@ import com.datastax.stargate.sdk.rest.domain.Keyspace;
  */
 public class Namespace extends Keyspace {
     
+    /**
+     * Default constructor.
+     */
     public Namespace() {}
             
+    /**
+     * Full constructor.
+     * 
+     * @param name
+     *      namespace name
+     * @param datacenters
+     *      list of datacenters
+     */
     public Namespace(String name, List<DataCenter> datacenters) {
         super(name,datacenters);
     }
     
+    /**
+     * Constructor with replicas.
+     * 
+     * @param name
+     *      namespace name
+     * @param replicas
+     *      number of replicas
+     */
     public Namespace(String name, int replicas) {
         super(name, replicas);
     }

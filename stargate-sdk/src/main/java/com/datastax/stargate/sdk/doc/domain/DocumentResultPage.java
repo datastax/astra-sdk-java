@@ -19,7 +19,7 @@ package com.datastax.stargate.sdk.doc.domain;
 import java.util.List;
 
 import com.datastax.stargate.sdk.core.ResultPage;
-import com.datastax.stargate.sdk.doc.ApiDocument;
+import com.datastax.stargate.sdk.doc.Document;
 
 /**
  * Hold results for paging
@@ -29,7 +29,7 @@ import com.datastax.stargate.sdk.doc.ApiDocument;
  * @param <DOC>
  *      document type
  */
-public class DocumentResultPage< DOC > extends ResultPage<ApiDocument<DOC>> {
+public class DocumentResultPage< DOC > extends ResultPage<Document<DOC>> {
     
     /**
      * Default constructor.
@@ -46,7 +46,7 @@ public class DocumentResultPage< DOC > extends ResultPage<ApiDocument<DOC>> {
      * @param pageState String
      * @param results List
      */
-    public DocumentResultPage(int pageSize, String pageState, List<ApiDocument<DOC>> results) {
+    public DocumentResultPage(int pageSize, String pageState, List<Document<DOC>> results) {
         super(pageSize,pageState,results);
     }
     

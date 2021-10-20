@@ -29,14 +29,19 @@ public class TableDefinition implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 455851052070910341L;
 
+    /** table name. */
     private String name;
     
+    /** keyspace name. */
     private String keyspace;
     
+    /** column definition. */
     private List<ColumnDefinition> columnDefinitions;
     
+    /** primary key. */
     private TablePrimaryKey primaryKey;
     
+    /** table options. */
     private TableOptions tableOptions;
 
     /**

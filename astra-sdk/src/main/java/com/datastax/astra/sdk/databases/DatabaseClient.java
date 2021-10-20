@@ -1,8 +1,10 @@
 package com.datastax.astra.sdk.databases;
 
+import static com.datastax.astra.sdk.config.AstraClientConfig.buildScbFileName;
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.Optional;
@@ -32,18 +34,24 @@ public class DatabaseClient {
     private final String databaseId;
     
     /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private final HttpApisClient http = HttpApisClient.getInstance();
+    
+    /** Reference to upper resource. */
+    private final DatabasesClient databasesClient;
     
     /**
      * Default constructor.
      *
+     * @param databasesClient
+     *          database client
      * @param databaseId
      *          uniique database identifier
      */
-    public DatabaseClient(String databaseId) {
-       this.databaseId = databaseId;
-       this.http = HttpApisClient.getInstance();
+    public DatabaseClient(DatabasesClient databasesClient, String databaseId) {
+       Assert.notNull(databasesClient,"databasesClient");
        Assert.hasLength(databaseId, "databaseId");
+       this.databaseId = databaseId;
+       this.databasesClient = databasesClient;
     }
     
     // ---------------------------------
@@ -59,7 +67,7 @@ public class DatabaseClient {
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/getDatabase
      */
     public Optional<Database> find() {
-       ApiResponseHttp res = http.GET(getEndpointDatabase());
+       ApiResponseHttp res = http.GET(getEndpointDatabase(), databasesClient.bearerAuthToken);
        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
            return Optional.empty();
        } else {
@@ -79,6 +87,12 @@ public class DatabaseClient {
         return find().isPresent();
     }
     
+    /**
+     * If the app is active.
+     *
+     * @return
+     *      tells if database is ACTIVE
+     */
     public boolean isActive() {
         Optional<Database> db = find();
         return db.isPresent() && (DatabaseStatusType.ACTIVE == db.get().getStatus());
@@ -94,7 +108,7 @@ public class DatabaseClient {
      */
     public void createKeyspace(String keyspace) {
         Assert.hasLength(keyspace, "keyspace");
-        http.POST(getEndpointKeyspace(keyspace));
+        http.POST(getEndpointKeyspace(keyspace), databasesClient.bearerAuthToken);
     }
     
     /**
@@ -110,7 +124,7 @@ public class DatabaseClient {
     }
     
     /**
-     * Download SecureBundle.
+     * Download SecureBundle for a specific data center
      * 
      * @param destination
      *      file to save the securebundle
@@ -122,7 +136,8 @@ public class DatabaseClient {
             // Parameter validation
             Assert.hasLength(destination, "destination");
             // Invoke
-            ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL");
+            
+            ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL", databasesClient.bearerAuthToken);
             // Check response coode
             Assert.isTrue(HTTP_OK == res.getCode(), "Error in 'downloadSecureConnectBundle', with id=" +databaseId);
             // Read file url to download
@@ -134,6 +149,27 @@ public class DatabaseClient {
         }
     }
     
+    /**
+     * Download all SecureBundle.
+     * 
+     * @param destination
+     *      file to save the securebundle
+     */
+    public void downloadAllSecureConnectBundles(String destination) {
+        Optional<Database> odb = find();
+        // Validation
+        Assert.hasLength(destination, "destination");
+        Assert.isTrue(new File(destination).exists(), "Destination folder");
+        Assert.isTrue(odb.isPresent(), "Database id");
+        odb.get().getInfo().getDatacenters().stream().forEach(dc -> {
+            String fileName = destination + File.separator + buildScbFileName(odb.get().getId(), dc.getRegion());
+            if (!new File(fileName).exists()) {
+                Utils.downloadFile(dc.getSecureBundleUrl(), fileName);
+                LOGGER.info("+ Downloading file: {}", fileName);
+            }
+        });
+    }
+    
     // ---------------------------------
     // ----       MAINTENANCE       ----
     // ---------------------------------
@@ -143,7 +179,7 @@ public class DatabaseClient {
      */
     public void park() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park");
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park", databasesClient.bearerAuthToken);
         // Check response code
         checkResponse(res, "park");
     }
@@ -155,7 +191,7 @@ public class DatabaseClient {
      */
     public void unpark() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark");
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark", databasesClient.bearerAuthToken);
         // Check response code
         checkResponse(res, "unpark");
     }
@@ -167,7 +203,7 @@ public class DatabaseClient {
      */
     public void delete() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate");
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate", databasesClient.bearerAuthToken);
         // Check response code
         checkResponse(res, "terminate");
     }
@@ -186,7 +222,7 @@ public class DatabaseClient {
         // Build request
         String body = "{ \"capacityUnits\":" + capacityUnits + "}";
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", body);
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", databasesClient.bearerAuthToken, body);
         // Check response code
         checkResponse(res, "resize");
     }
@@ -211,7 +247,7 @@ public class DatabaseClient {
                 .append("\"password\": \"").append(password).append( "\"  }")
                 .toString();
         // Invoke
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", body);
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", databasesClient.bearerAuthToken, body);
         // Check response code
         checkResponse(res, "resetPassword");
     }
@@ -461,6 +497,16 @@ public class DatabaseClient {
                 .append(" code=" + res.getCode() )
                 .append(" msg=" + res.getBody()).toString();
         Assert.isTrue(HTTP_ACCEPTED == res.getCode(), errorMsg);
+    }
+
+    /**
+     * Getter accessor for attribute 'databaseId'.
+     *
+     * @return
+     *       current value of 'databaseId'
+     */
+    public String getDatabaseId() {
+        return databaseId;
     }
     
 }

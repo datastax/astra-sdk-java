@@ -8,19 +8,22 @@ import java.util.List;
  * Dto to interact with API.
  *
  * @author Cedrick LUNVEN (@clunven)
- *
  */
 public class RolePolicy implements Serializable {
     
     /** Serial. */
     private static final long serialVersionUID = 5232715799485159463L;
 
+    /** Description. */
     private String description;
     
+    /** effect. */
     private String effect = "allow";
     
+    /** policy resources. */
     private List<String> resources = new ArrayList<>();
     
+    /** policy actions. */
     private List<String> actions = new ArrayList<>();
 
     /**

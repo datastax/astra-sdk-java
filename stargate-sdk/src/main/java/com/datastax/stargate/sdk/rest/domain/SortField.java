@@ -16,6 +16,11 @@
 
 package com.datastax.stargate.sdk.rest.domain;
 
+/**
+ * Sorting results.
+ * 
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class SortField {
     
     /** reference to field to sort. */
@@ -24,8 +29,19 @@ public class SortField {
     /** Order. */
     private Ordering order;
 
+    /**
+     * Default Constructor.
+     */
     public SortField() {}
     
+    /**
+     * Constructor with parameters.
+     *
+     * @param fieldName
+     *      current field name
+     * @param order
+     *      ordering value
+     */
     public SortField(String fieldName, Ordering order) {
         super();
         this.fieldName = fieldName;

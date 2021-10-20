@@ -22,46 +22,82 @@ package com.datastax.stargate.sdk.core;
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum FilterCondition {
-    
-    // Greater Than
-    GreaterThan("$gt"),
-    
-    // Greater Than Or Equal To 
-    GreaterThenOrEqualsTo("$gte"),
 
-    // Less Than
-    LessThan("$lt"),
+    /**
+     * Greater Than.
+     */
+    GREATER_THAN("$gt"),
     
-    // Less Than Or Equal To
-    LessThanOrEqualsTo("$lte"),
+    /** 
+     * Greater Than Or Equal To.
+     */  
+    GREATER_THAN_OR_EQUALS_TO("$gte"),
+
+    /** 
+     * Less Than. 
+     */
+    LESS_THAN("$lt"),
     
-    // Equal To
-    EqualsTo("$eq"),
+    /** 
+     * Less Than Or Equal To. 
+     */
+    LESS_THAN_OR_EQUALS_TO("$lte"),
     
-    // Not Equal To
-    NotEqualsTo("$ne"),
+    /** 
+     * Equal To. 
+     */
+    EQUALS_TO("$eq"),
     
-    // in
-    In("$in"),
+    /** 
+     * Not Equal To.
+     */
+    NOT_EQUALS_TO("$ne"),
     
-    // Exist
-    Exists("$exists"),
+    /** 
+     * in. 
+     */
+    IN("$in"),
     
-    // Contains
-    Contains("$contains"),
+    /** 
+     * Exist. 
+     */
+    EXISTS("$exists"),
     
-    // Contains Key
-    ContainsKey("$containsKey"),
+    /** 
+     * Contains. 
+     */
+    CONTAINS("$contains"),
     
-    // Contains Entry
-    ContainsEntry("$containsEntry");
+    /** 
+     * Contains Key. 
+     */
+    CONTAIN_KEY("$containsKey"),
     
+    /** 
+     * Contains Entry. 
+     */
+    CONTAIN_ENTRY("$containsEntry");
+    
+    /**
+     * Value for the operator
+     */
     private String operator;
     
+    /**
+     * Constructor for the enum.
+     * @param op
+     *      current operator
+     */
     private FilterCondition(String op) {
         this.operator = op;
     }
     
+    /**
+     * Getter for param 'operator'.
+     *
+     * @return
+     *      value for operator
+     */
     public String getOperator() {
         return operator;
     }

@@ -1,11 +1,13 @@
 package com.datastax.stargate.sdk.utils;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +21,7 @@ import org.apache.hc.client5.http.classic.methods.HttpHead;
 import org.apache.hc.client5.http.classic.methods.HttpPatch;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpTrace;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
@@ -27,6 +30,9 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.util.TimeValue;
@@ -35,13 +41,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
-import com.datastax.stargate.sdk.audit.ApiCallEvent;
-import com.datastax.stargate.sdk.audit.ApiCallListener;
+import com.datastax.stargate.sdk.audit.ApiInvocationEvent;
+import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.core.ApiConstants;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
-import com.datastax.stargate.sdk.core.ApiTokenProvider;
-import com.datastax.stargate.sdk.core.TokenProviderStatic;
 import com.datastax.stargate.sdk.exception.AuthenticationException;
+import com.datastax.stargate.sdk.loadbalancer.UnavailableResourceException;
+import com.evanlennick.retry4j.CallExecutorBuilder;
+import com.evanlennick.retry4j.Status;
+import com.evanlennick.retry4j.config.RetryConfig;
+import com.evanlennick.retry4j.config.RetryConfigBuilder;
 
 /**
  * Wrapping the HttpClient and provide helpers
@@ -53,30 +62,84 @@ public class HttpApisClient implements ApiConstants {
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpApisClient.class);
     
-    /** default params */
+    /** Default settings in Request and Retry */
     public static final int DEFAULT_TIMEOUT_REQUEST   = 20;
+    
+    /** Default settings in Request and Retry */
     public static final int DEFAULT_TIMEOUT_CONNECT   = 20;
     
-    /** Liisteners. */
-    protected Map<String, ApiCallListener > apiCallListeners = new ConcurrentHashMap<>();
+    /** Default settings in Request and Retry */
+    public static final int DEFAULT_RETRY_COUNT       = 3;
+    
+    /** Default settings in Request and Retry */
+    public static final Duration DEFAULT_RETRY_DELAY  = Duration.ofMillis(100);
+    
+    // -------------------------------------------
+    // ----------------   Settings  --------------
+    // -------------------------------------------
     
     /** Singleton pattern. */
     private static HttpApisClient _instance = null;
     
-    /** This the endPoint to invoke to work with different API(s). */
-    private int connectionRequestTimeout = DEFAULT_TIMEOUT_REQUEST;
-    
-    /** This the endPoint to invoke to work with different API(s). */
-    private int connectionTimeout = DEFAULT_TIMEOUT_CONNECT;
-    
-    /** default request config. */
-    protected RequestConfig requestConfig = null;
-    
-    /** HhtpComponent5. */
+    /** HttpComponent5. */
     protected CloseableHttpClient httpClient = null;
     
-    /** Working with the token. */
-    private ApiTokenProvider tokenProvider;
+    /** Observers. */
+    protected static Map<String, ApiInvocationObserver > apiInvocationsObserversMap = new ConcurrentHashMap<>();
+    
+    /** Default request configuration. */
+    protected static RequestConfig requestConfig = RequestConfig.custom()
+            .setCookieSpec(StandardCookieSpec.STRICT)
+            .setExpectContinueEnabled(true)
+            .setConnectionRequestTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_REQUEST))
+            .setConnectTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_CONNECT))
+            .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
+            .build();
+    
+    /** Default retry configuration. */
+    protected static RetryConfig retryConfig = new RetryConfigBuilder()
+            //.retryOnSpecificExceptions(ConnectException.class, IOException.class)
+            .retryOnAnyException()
+            .withDelayBetweenTries(DEFAULT_RETRY_DELAY)
+            .withExponentialBackoff()
+            .withMaxNumberOfTries(DEFAULT_RETRY_COUNT)
+            .build();
+    
+    /**
+     * Update Retry configuration of the HTTPClient.
+     *
+     * @param conf
+     *      retryConfiguration
+     */
+    public static void withRetryConfig(RetryConfig conf) {
+        retryConfig= conf;
+    }
+    
+    /**
+     * Update RequestConfig configuration of the HTTPClient.
+     *
+     * @param conf
+     *      RequestConfig
+     */
+    public static void withRequestConfig(RequestConfig conf) {
+        requestConfig = conf;
+    }
+    
+    /**
+     * Register a new listener.
+     *
+     * @param name
+     *      current name
+     * @param listener
+     *      current listener
+     */
+    public static void registerListener(String name, ApiInvocationObserver listener) {
+        apiInvocationsObserversMap.put(name, listener);
+    }
+    
+    // -------------------------------------------
+    // ----------------- Singleton ---------------
+    // -------------------------------------------
     
     /**
      * Hide default constructor
@@ -92,159 +155,344 @@ public class HttpApisClient implements ApiConstants {
     public static synchronized HttpApisClient getInstance() {
         if (_instance == null) {
             _instance = new HttpApisClient();
-            _instance.requestConfig = RequestConfig.custom()
-                    .setCookieSpec(StandardCookieSpec.STRICT)
-                    .setExpectContinueEnabled(true)
-                    .setConnectionRequestTimeout(Timeout.ofSeconds(_instance.connectionRequestTimeout))
-                    .setConnectTimeout(Timeout.ofSeconds(_instance.connectionTimeout))
-                    .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
-                    .build();
             final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
             connManager.setValidateAfterInactivity(TimeValue.ofSeconds(10));
             connManager.setMaxTotal(100);
             connManager.setDefaultMaxPerRoute(10);
             _instance.httpClient = HttpClients.custom().setConnectionManager(connManager).build();
-            LOGGER.info("+ HttpClient Initialized");
         }
         return _instance;
-    }
-    
-    public void setTokenProvider(ApiTokenProvider tokenProvider) {
-        this.tokenProvider = tokenProvider;
-    }
-    
-    public void setToken(String token) {
-        this.tokenProvider = new TokenProviderStatic(token);
-    }
-    
-    public String getToken() {
-        return tokenProvider.getToken();
     }
     
     // -------------------------------------------
     // ---------- Working with HTTP --------------
     // -------------------------------------------
     
-    public ApiResponseHttp GET(String url) {
-        HttpGet httpGet = new HttpGet(url);
-        addHeaders(httpGet);
-        return executeHttp(httpGet, false);
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp GET(String url, String token) {
+        return executeHttp(Method.GET, url, token, null, CONTENT_TYPE_JSON, false);
+    }
+
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp HEAD(String url, String token) {
+        return executeHttp(Method.HEAD, url, token, null, CONTENT_TYPE_JSON, false);
     }
     
-    public ApiResponseHttp HEAD(String url) {
-        HttpHead httpHead = new HttpHead(url);
-        addHeaders(httpHead);
-       return executeHttp(httpHead, false);
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp POST(String url, String token) {
+        return executeHttp(Method.POST, url, token, null, CONTENT_TYPE_JSON, true);
     }
     
-    public ApiResponseHttp POST(String url) {
-        HttpPost httpPost = new HttpPost(url);
-        addHeaders(httpPost);
-        return executeHttp(httpPost, true);
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp POST(String url, String token, String body) {
+        return executeHttp(Method.POST, url, token, body, CONTENT_TYPE_JSON, true);
     }
     
-    public ApiResponseHttp POST(String url, String body) {
-        HttpPost httpPost = new HttpPost(url);
-        addHeaders(httpPost);
-        httpPost.setEntity(new StringEntity(body));
-        return executeHttp(httpPost, true);
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp POST_GRAPHQL(String url, String token, String body) {
+        return executeHttp(Method.POST, url, token, body, CONTENT_TYPE_GRAPHQL, true);
     }
     
-    public ApiResponseHttp DELETE(String url) {
-        HttpDelete httpDelete = new HttpDelete(url);
-        addHeaders(httpDelete);
-        return executeHttp(httpDelete, true);
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp DELETE(String url, String token) {
+        return executeHttp(Method.DELETE, url, token, null, CONTENT_TYPE_JSON, true);
     }
     
-    public ApiResponseHttp PUT(String url,  String body) {
-        HttpPut httpPut = new HttpPut(url);
-        addHeaders(httpPut);
-        httpPut.setEntity(new StringEntity(body));
-        return executeHttp(httpPut, false);
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp PUT(String url, String token, String body) {
+        return executeHttp(Method.PUT, url, token, body, CONTENT_TYPE_JSON, false);
     }
     
-    public ApiResponseHttp PATCH(String url,  String body) {
-        HttpPatch httpPatch = new HttpPatch(url);
-        addHeaders(httpPatch);
-        httpPatch.setEntity(new StringEntity(body));
-        return executeHttp(httpPatch, true);
-    }
-    
-    private void addHeaders(HttpUriRequestBase req) {
-        req.addHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
-        req.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
-        req.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
-        req.addHeader(HEADER_REQUEST_ID, UUID.randomUUID().toString());
-        req.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
-        req.addHeader(HEADER_CASSANDRA, getInstance().tokenProvider.getToken());
-        req.addHeader(HEADER_AUTHORIZATION, "Bearer " + getInstance().tokenProvider.getToken());
+    /**
+     * Helper to build the HTTP request.
+     * 
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body     
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp PATCH(String url, String token, String body) {
+        return executeHttp(Method.PATCH, url, token, body, CONTENT_TYPE_JSON, true);
     }
     
     /**
      * Main Method executting HTTP Request.
-     *
-     * @param req
-     *      http request
+     * 
+     * @param method
+     *      http method
+     * @param url
+     *      url
+     * @param token
+     *      authentication token
+     * @param reqBody
+     *      request body
+     * @param mandatory
+     *      allow 404 errors
      * @return
+     *      basic request
      */
-    private ApiResponseHttp executeHttp(ClassicHttpRequest req, boolean mandatory) {
-        ApiResponseHttp res = null;
-        ApiCallEvent event = new ApiCallEvent(req);
-        try (CloseableHttpResponse response = getHttpClient().execute(req)) {
-            event.setResponseTimestamp(System.currentTimeMillis());
-            event.setResponseCode(response.getCode());
-            
-            Map<String, String > headers = new HashMap<>();
-            Arrays.asList(response.getHeaders())
-                  .stream()
-                  .forEach(h -> headers.put(h.getName(), h.getValue()));
-            event.setResponseHeaders(headers);
-            
-            // Parse body if present
-            String body = null;
-            if (null != response.getEntity()) {
-                body = EntityUtils.toString(response.getEntity());
-                EntityUtils.consume(response.getEntity());
-            }
-            event.setResponseBody(body);
-            
-            // Mapping respoonse
-            res = new ApiResponseHttp(body, response.getCode(), headers);
+    public ApiResponseHttp executeHttp(final Method method, final String url, final String token, String reqBody, String contentType, boolean mandatory) {
+        return executeHttp(buildRequest(method, url, token, reqBody, contentType), mandatory);
+    }
+    
+    /**
+     * Execute a request coming from elsewhere.
+     * 
+     * @param req
+     *      current request
+     * @param mandatory
+     *      mandatory
+     * @return
+     *      api response
+     *      
+     */
+    public ApiResponseHttp executeHttp(HttpUriRequestBase req, boolean mandatory) {
+     // Initializing the invocation event
+        ApiInvocationEvent event = new ApiInvocationEvent(req);
+        // Invoking the expected endpoint
+        Status<CloseableHttpResponse> status = executeWithRetries(req);
+        try {
+            // Parsing result as expected bean
+            ApiResponseHttp res = mapResponse(status, event);
+            // Error managment
             if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode() && !mandatory) {
                 return res;
             }
             if (res.getCode() >= 300) {
-              LOGGER.error("HTTP ERROR:");
-              LOGGER.error("+ request_method={}", req.getMethod());
-              LOGGER.error("+ request_url={}", req.getUri().toString());
-              LOGGER.error("+ response_code={}", res.getCode());
-              LOGGER.error("+ response_body={}", res.getBody());
+              LOGGER.error("Error for request [{}], url={}, method={}, code={}, body={}", 
+                      event.getRequestId(), 
+                      req.getUri().toString(), req.getMethod(),
+                      res.getCode(), res.getBody());
               processErrors(res, mandatory);
             }
             return res;
+        } catch (UnavailableResourceException e) {
+            event.setErrorClass(e.getClass().getName());
+            event.setErrorMessage(e.getMessage());
+            throw e;
         } catch (IllegalArgumentException e) {
-            event.setErrorClass(IllegalArgumentException.class.getName());
+            event.setErrorClass(e.getClass().getName());
             event.setErrorMessage(e.getMessage());
             throw e;
         } catch (Exception e) {
-            event.setErrorClass(Exception.class.getName());
+            e.printStackTrace();
+            event.setErrorClass(e.getClass().getName());
             event.setErrorMessage(e.getMessage());
-            throw new IllegalArgumentException("Error in HTTP Request", e);
+            throw new RuntimeException("Error in HTTP Request", e);
         } finally {
             CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onCall(event)));
         }
     }
     
-    public CloseableHttpClient getHttpClient() {
-        return httpClient;
+    
+    
+    /**
+     * Mapping HTTP Response to framework HTTP BEAN.
+     *
+     * @param status
+     *      current result of the retries
+     * @param event
+     *      event to be sent
+     * @return
+     *      bean populated
+     * @throws ParseException
+     *      error in parsing
+     * @throws IOException
+     *      error in accessing payload
+     */
+    private ApiResponseHttp mapResponse(Status<CloseableHttpResponse> status, ApiInvocationEvent event)
+    throws ParseException, IOException {
+        // Evaluate output
+        ApiResponseHttp res = null;
+        event.setTotalTries(status.getTotalTries());
+        event.setLastException(status.getLastExceptionThatCausedRetry());
+        event.setResponseElapsedTime(status.getTotalElapsedDuration().toMillis());
+        try (CloseableHttpResponse response = status.getResult()) {
+            event.setResponseTimestamp(status.getEndTime());
+            if (response == null) {
+                event.setResponseCode(HttpURLConnection.HTTP_UNAVAILABLE);
+                res = new ApiResponseHttp("Response is empty, cannot contact endpoint, please check url", 
+                        HttpURLConnection.HTTP_UNAVAILABLE, null);
+            } else {
+                event.setResponseCode(response.getCode());
+                Map<String, String > headers = new HashMap<>();
+                Arrays.asList(response.getHeaders())
+                          .stream()
+                          .forEach(h -> headers.put(h.getName(), h.getValue()));
+                event.setResponseHeaders(headers);
+    
+                // Parse body if present
+                String body = null;
+                if (null != response.getEntity()) {
+                     body = EntityUtils.toString(response.getEntity());
+                     EntityUtils.consume(response.getEntity());
+                }
+                event.setResponseBody(body);
+            
+                // Mapping respoonse
+                res = new ApiResponseHttp(body, response.getCode(), headers);
+            }
+        }
+        return res;
     }
     
-    public void registerListener(String name, ApiCallListener listener) {
-        apiCallListeners.put(name, listener);
+    /**
+     * Asynchronously send calls to listener for tracing.
+     *
+     * @param lambda
+     *      operations to execute
+     * @return
+     *      void
+     */
+    private CompletionStage<Void> notifyAsync(Consumer<ApiInvocationObserver> lambda) {
+        return CompletableFutures.allDone(apiInvocationsObserversMap.values().stream()
+                .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
+                .collect(Collectors.toList()));
     }
     
-    public Optional<ApiCallListener> getListener(String name) {
-        return Optional.ofNullable(apiCallListeners.get(name));
+    /**
+     * Initialize an HTTP request against Stargate.
+     * 
+     * @param method
+     *      http Method
+     * @param url
+     *      target URL
+     * @param token
+     *      current token
+     * @return
+     *      default http with header
+     */
+    private HttpUriRequestBase buildRequest(final Method method, final String url, final String token, String body, String contentType) {
+        HttpUriRequestBase req;
+        switch(method) {
+            case GET:    req = new HttpGet(url);    break;
+            case POST:   req = new HttpPost(url);   break;
+            case PUT:    req = new HttpPut(url);    break;
+            case DELETE: req = new HttpDelete(url); break;
+            case PATCH:  req = new HttpPatch(url);  break;
+            case HEAD:   req = new HttpHead(url);   break;
+            case TRACE:  req = new HttpTrace(url);  break;
+            case OPTIONS:
+            case CONNECT:
+            default:throw new IllegalArgumentException("Invalid HTTP Method");
+        }
+        req.addHeader(HEADER_CONTENT_TYPE, contentType);
+        req.addHeader(HEADER_ACCEPT, CONTENT_TYPE_JSON);
+        req.addHeader(HEADER_USER_AGENT, REQUEST_WITH);
+        req.addHeader(HEADER_REQUEST_ID, UUID.randomUUID().toString());
+        req.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
+        req.addHeader(HEADER_CASSANDRA, token);
+        req.addHeader(HEADER_AUTHORIZATION, "Bearer " + token);
+        if (null != body) {
+            req.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
+        }
+        return req;
+    }
+    
+    /**
+     * Implementing retries.
+     *
+     * @param req
+     *      current request
+     * @return
+     *      the closeable response
+     */
+    @SuppressWarnings("unchecked")
+    private Status<CloseableHttpResponse> executeWithRetries(ClassicHttpRequest req) {
+        Callable<CloseableHttpResponse> executeRequest = () -> {
+            return httpClient.execute(req);
+        };
+        return new CallExecutorBuilder<String>()
+                .config(retryConfig)
+                .onSuccessListener(s -> {
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpSuccess(s)));
+                })
+                .onCompletionListener(s -> {
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpCompletion(s)));
+                })
+                .onFailureListener(s -> {
+                    LOGGER.error("Calls failed after {} retries", s.getTotalTries());
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpFailure(s)));
+                })
+                .afterFailedTryListener(s -> {
+                    LOGGER.error("Failure on attempt {}/{} ", s.getTotalTries(), retryConfig.getMaxNumberOfTries());
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpFailedTry(s)));
+                })
+                .build()
+                .execute(executeRequest);
     }
     
     /**
@@ -287,16 +535,11 @@ public class HttpApisClient implements ApiConstants {
                             "(422) Invalid information provided to create DB: " 
                             + res.getBody());
                 default:
-                    throw new RuntimeException("Error Code=" + res.getCode() + 
-                    "Internal ERROR: " + res.getBody());
+                    if (res.getCode() == HttpURLConnection.HTTP_UNAVAILABLE) {
+                        throw new UnavailableResourceException(res.getBody() + " (http:" + res.getCode() + ")");
+                    }
+                    throw new RuntimeException(res.getBody() + " (http:" + res.getCode() + ")");
             }
     }
-    
-    public CompletionStage<Void> notifyAsync(Consumer<ApiCallListener> lambda) {
-        return CompletableFutures.allDone(apiCallListeners.values().stream()
-                .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
-                .collect(Collectors.toList()));
-    }
-   
 
 }

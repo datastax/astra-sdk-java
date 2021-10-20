@@ -21,13 +21,15 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
+import java.util.function.Function;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 import com.datastax.stargate.sdk.rest.domain.IndexDefinition;
 import com.datastax.stargate.sdk.rest.exception.IndexNotFoundException;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 
 /**
  * Working with indices in the classes.
@@ -36,27 +38,29 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
  */
 public class IndexClient {
     
-    /** Namespace. */
-    private final TableClient tableClient;
+    /** Reference to http client. */
+    private final StargateHttpClient stargateClient;
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Namespace. */
+    private TableClient tableClient;
     
     /** Unique document identifer. */
-    private final String indexName;
+    private String indexName;
     
     /**
      * Constructor focusing on a single Column
      *
+     * @param stargateHttpClient 
+     *        stargateHttpClient
      * @param tableClient
      *       table resource client
      * @param indexName
      *      current index identifier
      */
-    public IndexClient(TableClient tableClient, String indexName) {
+    public IndexClient(StargateHttpClient stargateHttpClient, TableClient tableClient, String indexName) {
         this.tableClient    = tableClient;
+        this.stargateClient = stargateHttpClient;
         this.indexName      = indexName;
-        this.http           = HttpApisClient.getInstance();
         Assert.hasLength(indexName, "indexName");
     }
     
@@ -83,7 +87,9 @@ public class IndexClient {
     }
     
     /**
-     * Add an index.
+     * Create an index.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createIndex">Reference Documentation</a>
      *
      * @param ci
      *      new index to create
@@ -91,14 +97,16 @@ public class IndexClient {
     public void create(CreateIndex ci) {
         Assert.notNull(ci, "CreateIndex");
         ci.setName(indexName);
-        http.POST(tableClient.getEndPointSchemaIndexes(), marshall(ci));
+        stargateClient.POST(tableClient.indexesSchemaResource, marshall(ci));
     }
     
     /**
      * Delete an index.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteIndex">Reference Documentation</a>
      */
     public void delete() {
-        ApiResponseHttp res = http.DELETE(getEndPointSchemaCurrentIndex());
+        ApiResponseHttp res = stargateClient.DELETE(indexSchemaResource);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             throw new IndexNotFoundException(indexName);
         }
@@ -107,13 +115,11 @@ public class IndexClient {
     // ---------------------------------
     // ----       Utilities         ----
     // ---------------------------------
-    
+  
     /**
-     * Syntax sugar
-     * 
-     * @return String
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}/indexes/{indexName}
      */
-    public String getEndPointSchemaCurrentIndex() {
-        return tableClient.getEndPointSchemaIndexes() + "/" + indexName;
-    }
+    public Function<StargateClientNode, String> indexSchemaResource = 
+            (node) -> tableClient.indexesSchemaResource.apply(node)  + "/" + indexName;
+    
 }

@@ -22,16 +22,20 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.DataCenter;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
+import com.datastax.stargate.sdk.doc.domain.FunctionDefinition;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -42,35 +46,43 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class NamespaceClient {
     
     /** Constants. */
-    public static final String PATH_NAMESPACES  = "/v2/namespaces";
     public static final String PATH_COLLECTIONS = "/collections";
+    
+    /** Constants. */
+    public static final String PATH_FUNCTIONS = "/functions";
     
     /** Marshalling {@link TypeReference}. */
     private static final TypeReference<ApiResponse<Namespace>> RESPONSE_NAMESPACE = 
             new TypeReference<ApiResponse<Namespace>>(){};
             
+    /** Column Definitions.*/
     private static final TypeReference<ApiResponse<List<CollectionDefinition>>> RESPONSE_COLLECTIONS = 
             new TypeReference<ApiResponse<List<CollectionDefinition>>>(){};
-    
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
             
+    /** Functions Definitions.*/        
+    private static final TypeReference<Map<String,List<FunctionDefinition>>> RESPONSE_FUNCTIONS = 
+           new TypeReference<Map<String,List<FunctionDefinition>>>(){};
+    
+    /** Get Topology of the nodes. */
+    protected final StargateHttpClient stargateHttpClient;
+    
     /** Astra Client. */
-    private final ApiDocumentClient docClient;
+    private ApiDocumentClient apiDocument;
     
     /** Namespace. */
-    private final String namespace;
+    private String namespace;
     
     /**
      * Full constructor.
      * 
+     * @param stargateHttpClient stargateHttpClient
      * @param docClient ApiDocumentClient
      * @param namespace String
      */
-    public NamespaceClient(ApiDocumentClient docClient, String namespace) {
-        this.docClient    = docClient;
+    public NamespaceClient(StargateHttpClient stargateHttpClient, ApiDocumentClient docClient, String namespace) {
+        this.apiDocument  = docClient;
         this.namespace    = namespace;
-        this.http = HttpApisClient.getInstance();
+        this.stargateHttpClient = stargateHttpClient;
         Assert.notNull(namespace, "namespace");
     }
 
@@ -80,7 +92,7 @@ public class NamespaceClient {
      * @return Namespace
      */
     public Optional<Namespace> find() {
-        ApiResponseHttp res = http.GET(getEndPointSchemaNamespace());
+        ApiResponseHttp res = stargateHttpClient.GET(namespaceSchemaResource);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -105,7 +117,7 @@ public class NamespaceClient {
     public void create(DataCenter... datacenters) {
         Assert.notNull(datacenters, "datacenters");
         Assert.isTrue(datacenters.length > 0, "DataCenters are required");
-        http.POST(docClient.getEndpointSchemaNamespaces(), 
+        stargateHttpClient.POST(apiDocument.namespacesSchemaResource,
              marshall(new Namespace(namespace, Arrays.asList(datacenters))));
     }
     
@@ -116,7 +128,7 @@ public class NamespaceClient {
      */
     public void createSimple(int replicas) {
         Assert.isTrue(replicas>0, "Replica number should be bigger than 0");
-        http.POST(docClient.getEndpointSchemaNamespaces(),
+        stargateHttpClient.POST(apiDocument.namespacesSchemaResource,
              marshall(new Namespace(namespace, replicas)));
     }
     
@@ -125,7 +137,20 @@ public class NamespaceClient {
      * Delete a namespace.
      */
     public void delete() {
-        http.DELETE(getEndPointSchemaNamespace());
+        stargateHttpClient.DELETE(namespaceSchemaResource);
+    }
+    
+
+    /**
+     * List function in namespace.
+     * GET /v2/namespaces/{namespace-id}/functions
+     * 
+     * @return functionsResource
+     */
+    public Stream<FunctionDefinition> functions() {
+        // Access API
+        ApiResponseHttp res = stargateHttpClient.GET(functionsResource);
+        return unmarshallType(res.getBody(), RESPONSE_FUNCTIONS).get("functions").stream();
     }
    
     /**
@@ -136,7 +161,7 @@ public class NamespaceClient {
      */
     public Stream<CollectionDefinition> collections() {
         // Access API
-        ApiResponseHttp res = http.GET(getEndPointCollections());
+        ApiResponseHttp res = stargateHttpClient.GET(collectionsResource);
         // Masharl returned objects
         return unmarshallType(res.getBody(), RESPONSE_COLLECTIONS).getData().stream();
     }
@@ -151,6 +176,10 @@ public class NamespaceClient {
         return collections().map(CollectionDefinition::getName);
     }
     
+    // ---------------------------------
+    // ----    Sub Resources        ----
+    // ---------------------------------
+    
     /**
      * Move to the collection client
      * 
@@ -158,9 +187,13 @@ public class NamespaceClient {
      * @return CollectionClient
      */
     public CollectionClient collection(String collectionName) {
-        return new CollectionClient(this, collectionName);
+        return new CollectionClient(stargateHttpClient, this, collectionName);
     }
-
+    
+    // ---------------------------------
+    // ----       Resources         ----
+    // ---------------------------------
+    
     /**
      * Getter accessor for attribute 'namespace'.
      *
@@ -172,24 +205,27 @@ public class NamespaceClient {
     }
     
     /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
+     * /v2/schemas/namespaces/{namespace}
      */
-    public String getEndPointSchemaNamespace() {
-        return docClient.getEndpointSchemaNamespaces() + "/" + namespace;
-    }
-    
+    public Function<StargateClientNode, String> namespaceSchemaResource = 
+             (node) -> apiDocument.namespacesSchemaResource.apply(node) + "/" + namespace;
+        
     /**
-     * Access to schema namespace.
-     * 
-     * @return
-     *      schema namespace
-     */
-    public String getEndPointCollections() {
-        return docClient.getEndPointApiDocument() + PATH_NAMESPACES + "/" + namespace + PATH_COLLECTIONS;
-    }
-    
+      * /v2/namespaces/{namespace}
+      */
+    public Function<StargateClientNode, String> namespaceResource = 
+             (node) -> apiDocument.namespacesResource.apply(node) + "/" + namespace;
+             
+     /**
+       * /v2/namespaces/{namespace}/collections
+       */
+     public Function<StargateClientNode, String> collectionsResource = 
+                     (node) -> namespaceResource.apply(node) + PATH_COLLECTIONS; 
+                     
+      /**
+       * /v2/namespaces/{namespace}/functions
+       */
+      public Function<StargateClientNode, String> functionsResource = 
+                     (node) -> namespaceSchemaResource.apply(node) + PATH_FUNCTIONS;                      
     
 }

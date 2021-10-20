@@ -26,10 +26,24 @@ public class IndexNotFoundException extends RuntimeException {
     /** Serial. */
     private static final long serialVersionUID = -4491748257797687008L;
 
+    /**
+     * Constructor with message.
+     *
+     * @param idxName
+     *      index name
+     */
     public IndexNotFoundException(String idxName) {
         super("Cannot find Index " + idxName);
     }
     
+    /**
+     * Constructor with message and parent.
+     *
+     * @param idxName
+     *      index name     
+     * @param parent
+     *      parent exception
+     */
     public IndexNotFoundException(String idxName, Throwable parent) {
         super("Cannot find Index " + idxName, parent);
     }

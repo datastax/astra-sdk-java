@@ -5,6 +5,11 @@ import java.util.Optional;
 import com.datastax.astra.sdk.streaming.domain.Cluster;
 import com.datastax.stargate.sdk.utils.Assert;
 
+/**
+ * Client to work with clusters.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class ClusterClient {
     
     /** Tenant Identifier. */

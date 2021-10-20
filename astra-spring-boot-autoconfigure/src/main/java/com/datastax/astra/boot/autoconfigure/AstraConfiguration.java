@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraClient.AstraClientBuilder;
+import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
@@ -42,52 +42,60 @@ import com.datastax.oss.driver.api.core.CqlSession;
 @EnableConfigurationProperties(AstraClientProperties.class)
 public class AstraConfiguration {
 
+    /**
+     * reference to properties
+     */
     @Autowired
     private AstraClientProperties astraClientProperties;
     
+    /**
+     * Acessing astra client.
+     *
+     * @return
+     *      astra client
+     */
     @Bean
     @ConditionalOnMissingBean
     public AstraClient astraClient() {
         /* 
          * Load properties and initialize the client
          */
-        AstraClientBuilder builder = AstraClient.builder();
+        AstraClientConfig builder = AstraClient.builder();
         
         if (null != astraClientProperties.getDatabaseId() &&
                 !"".equals(astraClientProperties.getDatabaseId())) {
-            builder = builder.databaseId(astraClientProperties.getDatabaseId());  
+            builder = builder.withDatabaseId(astraClientProperties.getDatabaseId());  
         }
         
         if (null != astraClientProperties.getCloudRegion() &&
                 !"".equals(astraClientProperties.getCloudRegion())) {
-            builder = builder.cloudProviderRegion(astraClientProperties.getCloudRegion());  
+            builder = builder.withDatabaseRegion(astraClientProperties.getCloudRegion());  
         }
         
         if (null != astraClientProperties.getApplicationToken() &&
                 !"".equals(astraClientProperties.getApplicationToken())) {
-            builder = builder.appToken(astraClientProperties.getApplicationToken());  
+            builder = builder.withToken(astraClientProperties.getApplicationToken());  
         }
         
         if (null != astraClientProperties.getClientId() &&
                 !"".equals(astraClientProperties.getClientId())) {
-            builder = builder.clientId(astraClientProperties.getClientId());  
+            builder = builder.withClientId(astraClientProperties.getClientId());  
         }
         
         if (null != astraClientProperties.getClientSecret() &&
                 !"".equals(astraClientProperties.getClientSecret())) {
-            builder = builder.clientSecret(astraClientProperties.getClientSecret());  
+            builder = builder.withClientSecret(astraClientProperties.getClientSecret());  
         }
         
         if (null != astraClientProperties.getSecureConnectBundlePath() &&
             !"".equals(astraClientProperties.getSecureConnectBundlePath())) {
-            builder = builder.secureConnectBundle(astraClientProperties.getSecureConnectBundlePath());
+            builder = builder.withSecureConnectBundleFolder(astraClientProperties.getSecureConnectBundlePath());
         }
         
         if (null != astraClientProperties.getKeyspace() &&
                 !"".equals(astraClientProperties.getKeyspace())) {
-            builder = builder.keyspace(astraClientProperties.getKeyspace());  
+            builder = builder.withKeyspace(astraClientProperties.getKeyspace());  
         }
-        
         return builder.build();
     }
     

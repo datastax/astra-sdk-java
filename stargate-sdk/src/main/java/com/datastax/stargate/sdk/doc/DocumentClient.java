@@ -22,10 +22,13 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
 import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.datastax.stargate.sdk.utils.JsonUtils;
 
 /**
  * Part of the Document API in stargate wrapper for methods at the document level.
@@ -34,25 +37,26 @@ import com.datastax.stargate.sdk.utils.HttpApisClient;
  */
 public class DocumentClient {
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Get Topology of the nodes. */
+    private final StargateHttpClient stargateHttpClient;
     
     /** Namespace. */
-    private final CollectionClient collectionClient;
+    private CollectionClient collectionClient;
     
     /** Unique document identifer. */
-    private final String docId;
+    private String docId;
     
     /**
      * Full constructor.
      * 
+     * @param stargateHttpClient stargateHttpClient
      * @param collectionClient CollectionClient
      * @param docId String
      */
-    public DocumentClient(CollectionClient collectionClient, String docId) {
-        this.collectionClient  = collectionClient;
-        this.docId             = docId;
-        this.http = HttpApisClient.getInstance();
+    public DocumentClient(StargateHttpClient stargateHttpClient, CollectionClient collectionClient, String docId) {
+        this.collectionClient   = collectionClient;
+        this.docId              = docId;
+        this.stargateHttpClient = stargateHttpClient;
     }
     
     /**
@@ -62,8 +66,7 @@ public class DocumentClient {
      * @return boolean
      */
     public boolean exist() {
-        return HttpURLConnection.HTTP_OK == 
-                http.GET(getEndPointDocument()).getCode();
+        return HttpURLConnection.HTTP_OK == stargateHttpClient.GET(documentResource).getCode();
     }
     
     /**
@@ -75,7 +78,7 @@ public class DocumentClient {
      */
     public <DOC> String upsert(DOC doc) {
         Assert.notNull(doc, "document");
-        ApiResponseHttp res = http.PUT(getEndPointDocument(), marshall(doc));
+        ApiResponseHttp res = stargateHttpClient.PUT(documentResource, marshall(doc));
         return marshallDocumentId(res.getBody());
     }
   
@@ -88,7 +91,7 @@ public class DocumentClient {
      */
     public <DOC> String update(DOC doc) {
         Assert.notNull(doc, "document");
-        ApiResponseHttp res = http.PATCH(getEndPointDocument(), marshall(doc));
+        ApiResponseHttp res = stargateHttpClient.PATCH(documentResource, marshall(doc));
         return marshallDocumentId(res.getBody());
     }
     
@@ -101,7 +104,7 @@ public class DocumentClient {
      */
     public <DOC> Optional<DOC> find(Class<DOC> clazz) {
         Assert.notNull(clazz, "className");
-        ApiResponseHttp res = http.GET(getEndPointDocument() + "?raw=true");
+        ApiResponseHttp res = stargateHttpClient.GET(documentResource, "?raw=true");
         if (HttpURLConnection.HTTP_OK == res.getCode()) {
            return Optional.of(marshallDocument(res.getBody(), clazz));
         }
@@ -118,9 +121,17 @@ public class DocumentClient {
         if (!exist()) {
             throw new IllegalArgumentException("Cannot delete " + docId + ", it does not exists");
         }
-        http.DELETE(getEndPointDocument());
+        stargateHttpClient.DELETE(documentResource);
     }
     
+    /**
+     * Add '/' if needed.
+     * 
+     * @param path
+     *      current path
+     * @return
+     *      path with '/'
+     */
     private String formatPath(String path) {
         Assert.hasLength(path, "hasLength");
         if (!path.startsWith("/")) {
@@ -140,7 +151,7 @@ public class DocumentClient {
      */
     public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> className) {
         Assert.notNull(className, "expectedClass");
-        ApiResponseHttp res = http.GET(getEndPointDocument() + formatPath(path) + "?raw=true");
+        ApiResponseHttp res = stargateHttpClient.GET(documentResource, formatPath(path) + "?raw=true");
         if (HttpURLConnection.HTTP_OK == res.getCode()) {
            return Optional.of(marshallDocument(res.getBody(), className));
         }
@@ -148,6 +159,33 @@ public class DocumentClient {
             return Optional.empty();
         }
         return Optional.empty();
+    }
+    
+    /**
+     * Execute a function on a document.
+     * @param path
+     *      current document sub path
+     * @param function
+     *      function executed.
+     * @param value
+     *      value for attribute to update
+     * @return
+     *      attribute updated
+     */
+    @SuppressWarnings("unchecked")
+    public String executefunction(String path, String function, Object value) {
+        if (value instanceof String) { 
+            value = "\"" + value + "\"";
+        }
+        ApiResponseHttp res = stargateHttpClient.POST(documentResource, 
+                "{ \"operation\":\"" + function + "\",\"value\":" + JsonUtils.marshall(value) + "}", 
+                formatPath(path) + "/function");
+        // Parse result
+        Map<String, Object> doc = unmarshallBean(res.getBody(), Map.class);
+        if (doc.containsKey("data")) {
+            return marshall(doc.get("data"));
+        }
+        return res.getBody();
     }
     
     /**
@@ -160,7 +198,7 @@ public class DocumentClient {
      */
     public <SUBDOC> void replaceSubDocument(String path, SUBDOC newValue) {
         Assert.notNull(newValue, "newValue");
-        http.PUT(getEndPointDocument() + formatPath(path), marshall(newValue));
+        stargateHttpClient.PUT(documentResource, marshall(newValue), formatPath(path));
     }
     
     /**
@@ -173,7 +211,7 @@ public class DocumentClient {
      */
     public <SUBDOC> void updateSubDocument(String path, SUBDOC newValue) {
         Assert.notNull(newValue, "newValue");
-        http.PATCH(getEndPointDocument() + formatPath(path), marshall(newValue));
+        stargateHttpClient.PATCH(documentResource, marshall(newValue), formatPath(path));
     }
     
     /**
@@ -183,7 +221,7 @@ public class DocumentClient {
      * @param path sub document path
      */
     public void deleteSubDocument(String path) {
-        http.DELETE(getEndPointDocument() + formatPath(path) + "?raw=true");
+        stargateHttpClient.DELETE(documentResource, formatPath(path) + "?raw=true");
     }
     
     /**
@@ -199,6 +237,10 @@ public class DocumentClient {
             throw new RuntimeException("Cannot marshall document after 'upsert'", e);
         }
     }
+    
+    // ---------------------------------
+    // ----       Resources         ----
+    // ---------------------------------    
     
     /**
      * marshallDocument
@@ -220,11 +262,10 @@ public class DocumentClient {
         }
     }
     
-    /**
-     * Build endpoint of the resource
+    /** 
+     * /v2/schemas/namespaces/{namespace}/collections/{collection}/{docId} 
      */
-    private String getEndPointDocument() {
-        return collectionClient.getEndPointCollection() + "/" + docId;
-    }
-    
+    public Function<StargateClientNode, String> documentResource = 
+            (node) -> collectionClient.collectionResource.apply(node) +  "/" + docId;
+       
 }

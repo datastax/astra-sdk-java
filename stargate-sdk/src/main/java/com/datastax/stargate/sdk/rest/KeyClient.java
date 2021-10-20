@@ -30,18 +30,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ResultPage;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
+import com.datastax.stargate.sdk.rest.domain.QueryWithKey.QueryRowBuilder;
 import com.datastax.stargate.sdk.rest.domain.Row;
 import com.datastax.stargate.sdk.rest.domain.RowMapper;
 import com.datastax.stargate.sdk.rest.domain.RowResultPage;
 import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -52,14 +56,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class KeyClient {
     
+    /** Reference to http client. */
+    private final StargateHttpClient stargateClient;
+    
     /** Collection name. */
-    private final TableClient tableClient;
+    private TableClient tableClient;
  
     /** Search PK. */
-    private final List< Object> key;
-    
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    private List< Object> key = new ArrayList<>();
     
     /** Type for result. */
     private static final  TypeReference<ApiResponse<List<LinkedHashMap<String,?>>>> TYPE_RESULTS = 
@@ -68,13 +72,17 @@ public class KeyClient {
     /**
      * Full constructor.
      *
-     * @param tableClient TableClient
-     * @param keys Object
+     * @param stargateHttpClient 
+     *          stargateHttpClient
+     * @param tableClient 
+     *          TableClient
+     * @param keys 
+     *          Object
      */
-    public KeyClient(TableClient tableClient, Object... keys) {
+    public KeyClient(StargateHttpClient stargateHttpClient, TableClient tableClient, Object... keys) {
         this.tableClient    = tableClient;
         this.key            = new ArrayList<>(Arrays.asList(keys));
-        this.http           = HttpApisClient.getInstance();
+        this.stargateClient = stargateHttpClient;
         Assert.notNull(key, "key");
         Assert.isTrue(!key.isEmpty(), "key");
     }
@@ -85,15 +93,82 @@ public class KeyClient {
     
     /**
      * Retrieve a set of Rows from Primary key value.
+     * 
+     * @return a list of rows
+     */
+    public Stream<Row> findAll() {
+        List<Row> rows = new ArrayList<>();
+        // Loop on pages up to no more pages (could be done)
+        String pageState = null;
+        do {
+            RowResultPage pageX = findPage(QueryWithKey.DEFAULT_PAGING_SIZE, pageState);
+            if (pageX.getPageState().isPresent())  {
+                pageState = pageX.getPageState().get();
+            } else {
+                pageState = null;
+            }
+            rows.addAll(pageX.getResults());
+        } while(pageState != null);
+        return rows.stream();
+    }
+    
+    /**
+     * Marshall output as objects.
      *
+     * @param <T>
+     *      current row 
+     * @param rowMapper
+     *      row mapper
+     * @return
+     *      target return
+     */
+    public <T> Stream<T> findAll(RowMapper<T> rowMapper) {
+        return findAll().map(rowMapper::map);
+    }
+    
+    /**
+     * Find the first page (when we know there are not a lot)
+     * 
+     * @param pageSize
+     *      list of page
+     * @return
+     *      returned a list
+     */
+    public RowResultPage findFirstPage(int pageSize) {
+       return findPage(pageSize, null);
+    }
+    
+    /**
+     * Search for a page.
+     *
+     * @param pageSize
+     *      size of expected page
+     * @param pageState
+     *      cursor in research
+     * @return
+     *      a page of results
+     */
+    public RowResultPage findPage(int pageSize, String pageState) {
+        QueryRowBuilder builder = QueryWithKey.builder().withPageSize(pageSize);
+        if (null != pageState) {
+            builder.withPageState(pageState);
+        }
+        return findPage(builder.build());
+    }
+    
+    /**
+     * Retrieve a set of Rows from Primary key value.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/searchTable">Reference Documentation</a>
+     * 
      * @param query QueryWithKey
      * @return RowResultPage
      */
-    public RowResultPage find(QueryWithKey query) {
+    public RowResultPage findPage(QueryWithKey query) {
         // Parameter validatioons
         Objects.requireNonNull(query);
         // Invoke endpoint
-        ApiResponseHttp res = http.GET(buildQueryUrl(query));
+        ApiResponseHttp res = stargateClient.GET(primaryKeyResource, buildSearchUrlSuffix(query));
         // Marshall response
         ApiResponse<List<LinkedHashMap<String,?>>> result = unmarshallType(res.getBody(), TYPE_RESULTS);
         // Build outout
@@ -112,18 +187,29 @@ public class KeyClient {
     /**
      * Retrieve a set of Rows from Primary key value.
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getRows">Reference Documentation</a>
+     * 
      * @param <T> T
      * @param query QueryWithKey
      * @param mapper RowMapper
      * @return ResultPage
      */
-    public <T> ResultPage<T> find(QueryWithKey query, RowMapper<T> mapper) {
+    public <T> ResultPage<T> findPage(QueryWithKey query, RowMapper<T> mapper) {
         // Parameter validatioons
         Objects.requireNonNull(query);
         Objects.requireNonNull(mapper);
         // Find
-        RowResultPage rrp = find(query);
-        // Mapping
+        return mapAsResultPage(findPage(query), mapper);
+    }
+    
+    /**
+     * Narshalling of a page as a result
+     * @param <T>
+     * @param rrp
+     * @param mapper
+     * @return
+     */
+    private <T> ResultPage<T> mapAsResultPage( RowResultPage rrp,  RowMapper<T> mapper) {
         return new ResultPage<T>(rrp.getPageSize(), 
                 rrp.getPageState().orElse(null),
                 rrp.getResults().stream()
@@ -133,27 +219,32 @@ public class KeyClient {
     
     /**
      * Delete by key
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteRows">Reference Documentation</a>
      */
     public void delete() {
-        http.DELETE(getEndPointCurrentKey());
+        stargateClient.DELETE(primaryKeyResource);
     }
     
     /**
      * update
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/updateRows">Reference Documentation</a>
      * @param newRecord Map
      */
     public void update(Map<String, Object> newRecord) {
-        http.PATCH(getEndPointCurrentKey(), marshall(newRecord));
+        stargateClient.PATCH(primaryKeyResource, marshall(newRecord));
     }
     
     /**
      * replace
      * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/replaceRows">Reference Documentation</a>
+     * 
      * @param newRecord Map
      */
     public void replace(Map<String, Object> newRecord) {
-       http.PUT(getEndPointCurrentKey(), marshall(newRecord));
+       stargateClient.PUT(primaryKeyResource, marshall(newRecord));
     }
     
     // ---------------------------------
@@ -166,9 +257,9 @@ public class KeyClient {
      * @param query QueryWithKey
      * @return String
      */
-    private String buildQueryUrl(QueryWithKey query) {
+    private String buildSearchUrlSuffix(QueryWithKey query) {
         try {
-            StringBuilder sbUrl = new StringBuilder(getEndPointCurrentKey());
+            StringBuilder sbUrl = new StringBuilder();
             // Add query Params
             sbUrl.append("?page-size=" + query.getPageSize());
             // Depending on query you forge your URL
@@ -195,19 +286,17 @@ public class KeyClient {
     }
     
     /**
-     * Build endpoint of this resource
-     * 
-     * @return String
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}/{key1}/...{keyn}
      */
-    private String getEndPointCurrentKey() {
-        StringBuilder sbUrl = new StringBuilder(tableClient.getEndPointTable());
+    public Function<StargateClientNode, String> primaryKeyResource = (node) -> {
+        StringBuilder sbUrl = new StringBuilder(tableClient.tableResource.apply(node));
         try {
             for(Object pk : key) {
-                sbUrl.append("/" +  URLEncoder.encode(pk.toString(), StandardCharsets.UTF_8.toString()));
+                sbUrl.append("/" + URLEncoder.encode(pk.toString(), StandardCharsets.UTF_8.toString()));
             }
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Cannot enode URL", e);
         }
         return sbUrl.toString();
-    }
+    };
 }

@@ -14,21 +14,27 @@ public class CreateRoleResponse implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 1L;
 
+    /** Organization id. */
     @JsonProperty("OrgID")
     private String organizationId;
     
+    /** role id. */
     @JsonProperty("ID")
     private String roleId;
     
+    /** role name. */
     @JsonProperty("Name")
     private String roleName;
     
+    /** role policy. */
     @JsonProperty("Policy")
     private RolePolicy policy;
     
+    /** update time */
     @JsonProperty("LastUpdateDateTime")
     private String lastUpdateDateTime;
     
+    /** user id. */
     @JsonProperty("LastUpdateUserID")
     private String lastUpdateUserID;
     

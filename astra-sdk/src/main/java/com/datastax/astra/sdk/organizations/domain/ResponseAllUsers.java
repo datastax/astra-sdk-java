@@ -15,12 +15,15 @@ public class ResponseAllUsers implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = 3702319553127217656L;
 
+    /** organization id. */
     @JsonProperty("OrgID")
     private String orgId;
     
+    /** organization name. */
     @JsonProperty("OrgName")
     private String orgName;
     
+    /** list of users. */
     @JsonProperty("Users")
     private List<User> users;
 

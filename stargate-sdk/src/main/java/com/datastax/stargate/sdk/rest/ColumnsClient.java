@@ -16,16 +16,20 @@
 
 package com.datastax.stargate.sdk.rest;
 
-import static com.datastax.stargate.sdk.utils.JsonUtils.*;
+import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
+
 import java.net.HttpURLConnection;
 import java.util.Optional;
+import java.util.function.Function;
 
+import com.datastax.stargate.sdk.StargateClientNode;
+import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
 import com.datastax.stargate.sdk.rest.exception.ColumnsNotFoundException;
 import com.datastax.stargate.sdk.utils.Assert;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -34,15 +38,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class ColumnsClient {
-
-    /** Namespace. */
-    private final TableClient tableClient;
     
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpApisClient http;
+    /** Reference to http client. */
+    private final StargateHttpClient stargateClient;
+    
+    /** Namespace. */
+    private TableClient tableClient;
     
     /** Unique document identifer. */
-    private final String columnId;
+    private String columnId;
     
     /** Marshall Column Definition. */
     private final TypeReference<ApiResponse<ColumnDefinition>> TYPE_COLUMN_DEF = 
@@ -51,26 +55,30 @@ public class ColumnsClient {
     /**
      * Constructor focusing on a single Column
      *
+     * @param stargateHttpClient 
+     *       stargateHttpClient
      * @param tableClient
      *       table resource client
      * @param columnId
      *      current column identifier
      */
-    public ColumnsClient(TableClient tableClient, String columnId) {
+    public ColumnsClient(StargateHttpClient stargateHttpClient, TableClient tableClient, String columnId) {
         this.tableClient    = tableClient;
+        this.stargateClient = stargateHttpClient;
         this.columnId       = columnId;
-        this.http           = HttpApisClient.getInstance();
         Assert.hasLength(columnId, "columnId");
     }
     
     
     /**
      * Retrieve a column.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/getColumn">Reference Documentation</a>
      *
      * @return ColumnDefinition
      */
     public Optional<ColumnDefinition> find() {
-        ApiResponseHttp res = http.GET(getEndPointSchemaCurrentColumn());
+        ApiResponseHttp res = stargateClient.GET(columnSchemaResource);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -90,19 +98,23 @@ public class ColumnsClient {
     
     /**
      * Add a column.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/createColumn">Reference Documentation</a>
      *
      * @param cd ColumnDefinition
      */
     public void create(ColumnDefinition cd) {
         Assert.notNull(cd, "ColumnDefinition");
-        http.POST(tableClient.getEndPointSchemaColumns(), marshall(cd));
+        stargateClient.POST(tableClient.columnsSchemaResource, marshall(cd));
     }
     
     /**
      * Delete a column.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/deleteColumn">Reference Documentation</a>
      */
     public void delete() {
-        ApiResponseHttp res = http.DELETE(getEndPointSchemaCurrentColumn());
+        ApiResponseHttp res = stargateClient.DELETE(columnSchemaResource);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             throw new ColumnsNotFoundException(columnId);
         }
@@ -110,18 +122,19 @@ public class ColumnsClient {
     
     /**
      * Update a column.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/replaceColumn">Reference Documentation</a>
      *
      * @param newName String
      */
     public void rename(String newName) {
         // Parameter validation
         Assert.hasLength(newName, "New columns name");
-        Assert.isTrue(!newName.equalsIgnoreCase(columnId), 
-                "You should not rename with same name");
+        Assert.isTrue(!newName.equalsIgnoreCase(columnId), "You should not rename with same name");
         // Build body
         String body = marshall(new ColumnDefinition(newName, find().get().getTypeDefinition()));
         // Invoke HTTP Endpoint
-        http.PUT(getEndPointSchemaCurrentColumn(), body);
+        stargateClient.PUT(columnSchemaResource, body);
     }
     
     // ---------------------------------
@@ -129,12 +142,9 @@ public class ColumnsClient {
     // ---------------------------------
     
     /**
-     * Syntax sugar
-     * 
-     * @return String
+     * /v2/schemas/keyspaces/{keyspace}/tables/{tableName}/columns/{columnName}
      */
-    public String getEndPointSchemaCurrentColumn() {
-        return tableClient.getEndPointSchemaColumns() + "/" + columnId;
-    }
+    public Function<StargateClientNode, String> columnSchemaResource = 
+            (node) -> tableClient.columnsSchemaResource.apply(node)  + "/" + columnId;
     
 }

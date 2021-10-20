@@ -28,16 +28,25 @@ public class ClusteringExpression implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -910292385355052561L;
 
+    /** Order. */
     private Ordering order;
     
+    /** Column name. */
     private String column;
     
     /**
      * Default Constructor
      */
-    public ClusteringExpression() {
-    }
+    public ClusteringExpression() {}
     
+    /**
+     * Full fledge constructor.
+     * 
+     * @param column
+     *      column name
+     * @param order
+     *      order value
+     */
     public ClusteringExpression(String column, Ordering order) {
         super();
         this.order = order;

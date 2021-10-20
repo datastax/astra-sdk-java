@@ -82,10 +82,13 @@ public class QueryWithKey {
         /** Page size. */ 
         protected int pageSize = DEFAULT_PAGING_SIZE;
         
+        /** Page state. */ 
         protected String pageState = null;
         
+        /** Fields. */ 
         protected List<String> fieldsToRetrieve = new ArrayList<>();
         
+        /** Fields. */ 
         protected List<SortField> fieldsToSort = new ArrayList<>();
         
         /**

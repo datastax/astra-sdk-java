@@ -288,7 +288,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isLessThan(Object value) {
-            return addFilter(FilterCondition.LessThan, value);
+            return addFilter(FilterCondition.LESS_THAN, value);
         }
 
         /**
@@ -298,7 +298,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isLessOrEqualsThan(Object value) {
-            return addFilter(FilterCondition.LessThanOrEqualsTo, value);
+            return addFilter(FilterCondition.LESS_THAN_OR_EQUALS_TO, value);
         }
 
         /**
@@ -308,7 +308,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isGreaterThan(Object value) {
-            return addFilter(FilterCondition.GreaterThan, value);
+            return addFilter(FilterCondition.GREATER_THAN, value);
         }
         
         /**
@@ -318,7 +318,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isGreaterOrEqualsThan(Object value) {
-            return addFilter(FilterCondition.GreaterThenOrEqualsTo, value);
+            return addFilter(FilterCondition.GREATER_THAN_OR_EQUALS_TO, value);
         }
 
         /**
@@ -328,7 +328,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isEqualsTo(Object value) {
-            return addFilter(FilterCondition.EqualsTo, value);
+            return addFilter(FilterCondition.EQUALS_TO, value);
         }
 
         /**
@@ -338,7 +338,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isNotEqualsTo(Object value) {
-            return addFilter(FilterCondition.NotEqualsTo, value);
+            return addFilter(FilterCondition.NOT_EQUALS_TO, value);
         }
         
         /**
@@ -347,7 +347,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder exists() {
-            return addFilter(FilterCondition.Exists, null);
+            return addFilter(FilterCondition.EXISTS, null);
         }
 
         /**
@@ -357,7 +357,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder isIn(Collection<Object> values) {
-            return addFilter(FilterCondition.In, values);
+            return addFilter(FilterCondition.IN, values);
         }
 
         /**
@@ -367,7 +367,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder contains(Object value) {
-            return addFilter(FilterCondition.Contains, value);
+            return addFilter(FilterCondition.CONTAINS, value);
         }
 
         /**
@@ -377,7 +377,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder containsKey(Object value) {
-            return addFilter(FilterCondition.ContainsKey, value);
+            return addFilter(FilterCondition.CONTAIN_KEY, value);
         }
 
         /**
@@ -387,7 +387,7 @@ public class SearchTableQuery {
          * @return SearchTableQueryBuilder
          */
         public SearchTableQueryBuilder containsEntry(Object value) {
-            return addFilter(FilterCondition.ContainsEntry, value);
+            return addFilter(FilterCondition.CONTAIN_ENTRY, value);
         }
     }
 

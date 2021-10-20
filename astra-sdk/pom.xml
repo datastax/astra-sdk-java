@@ -64,30 +64,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<!-- Define environment for integration test -->
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<systemProperties>
-						<!--  CREDENTIALS -->
-						<property>
-							<name>ASTRA_DB_CLIENT_ID</name>
-							<value>...</value>
-						</property>
-						<property>
-							<name>ASTRA_DB_CLIENT_SECRET</name>
-							<value>...</value>
-						</property>
-						<property>
-							<name>ASTRA_DB_APPLICATION_TOKEN</name>
-							<value>...</value>
-						</property>
-					</systemProperties>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
