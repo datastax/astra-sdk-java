@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
 
 /**
  * Multiple Connectivity mode for eacj parameters.
@@ -41,7 +43,18 @@ public class CqlSessionAstraTest {
     
     @BeforeAll
     public static void config() {
-        client= AstraClient.builder().build();
+        
+        client = AstraClient.builder().build();
+        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
+        
+        // Connect the client to the new created DB
+        client = AstraClient.builder()
+                .withToken(client.getToken().get())
+                .withKeyspace(ApiDocumentTest.TEST_NAMESPACE)
+                .withDatabaseId(dbId)
+                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
+                .build();
+        System.out.println(dbId);
     }
     
     @Test

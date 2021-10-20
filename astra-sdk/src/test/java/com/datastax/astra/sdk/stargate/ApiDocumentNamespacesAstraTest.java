@@ -37,8 +37,6 @@ public class ApiDocumentNamespacesAstraTest extends ApiDocumentNamespacesTest {
        // Default client to create DB if needed
        AstraClient client = AstraClient.builder().build();
        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-       client.cqlSession().close();
-       
        // Connect the client to the new created DB
        client = AstraClient.builder()
                .withToken(client.getToken().get())
