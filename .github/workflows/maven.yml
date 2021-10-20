@@ -20,7 +20,8 @@ jobs:
           CLUSTER_NAME: stargate
           CLUSTER_VERSION: 3.11
           DEVELOPER_MODE: true
-          DSE: 1
+          DATACENTER_NAME: datacenter1
+          JAVA_OPTS: "-Xmx2G"
         ports:
           - 8080:8080
           - 8081:8081
