@@ -58,7 +58,7 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
             LOGGER.info("Collection aleady exists");
             cc.delete();
             LOGGER.info("Delete collection request sent");
-            Thread.sleep(500);
+            Thread.sleep(1000);
         }
         // Given
         Assertions.assertFalse(cc.exist());
