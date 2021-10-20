@@ -27,10 +27,10 @@ import com.datastax.astra.sdk.organizations.domain.RoleDefinition;
 import com.datastax.astra.sdk.organizations.domain.User;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class OrganizatiionsIntegrationTest {
+public class ApiDevopsOrganizationsAstraTest {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrganizatiionsIntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsOrganizationsAstraTest.class);
     
     private static OrganizationsClient clientOrg;
     

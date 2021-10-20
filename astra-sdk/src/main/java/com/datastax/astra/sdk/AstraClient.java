@@ -98,9 +98,9 @@ public class AstraClient implements Closeable {
             apiDevopsOrganizations  = new OrganizationsClient(config.getToken());
             apiDevopsDatabases      = new DatabasesClient(config.getToken());  
             apiDevopsStreaming      = new StreamingClient(config.getToken());
-            LOGGER.info("+ API(s) Devops [" + AnsiUtils.green("ENABLED")+ "]");
+            LOGGER.info("+ API(s) Devops     [" + AnsiUtils.green("ENABLED")+ "]");
         } else {
-            LOGGER.info("+ API(s) Devops [" + AnsiUtils.red("DISABLED")+ "]");
+            LOGGER.info("+ API(s) Devops     [" + AnsiUtils.red("DISABLED")+ "]");
         }
        
         // ---------------------------------------------------
@@ -183,8 +183,13 @@ public class AstraClient implements Closeable {
             // Set default region
             config.getStargateConfig().withLocalDatacenter(config.getDatabaseRegion());
             this.stargateClient =  config.getStargateConfig().build();
+        } else {
+           LOGGER.info("+ API(s) CqlSession [" + AnsiUtils.red("DISABLED")+ "]");
+           LOGGER.info("+ API(s) Document   [" + AnsiUtils.red("DISABLED")+ "]");
+           LOGGER.info("+ API(s) Rest       [" + AnsiUtils.red("DISABLED")+ "]");
+           LOGGER.info("+ API(s) gRPC       [" + AnsiUtils.red("DISABLED")+ "]");
         }
-        LOGGER.info("[AstraClient] has been initialized.");
+        LOGGER.info("[" + AnsiUtils.yellow("AstraClient") + "] has been initialized.");
     }
     
     /**

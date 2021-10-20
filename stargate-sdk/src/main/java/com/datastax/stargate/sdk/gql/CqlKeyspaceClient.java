@@ -28,6 +28,8 @@ public class CqlKeyspaceClient {
      *
      * @param stargateClient
      *      stargate client
+     * @param keyspace
+     *      target keyspace
      */
     public CqlKeyspaceClient(StargateHttpClient stargateClient, String keyspace) {
         this.stargateHttpClient = stargateClient;

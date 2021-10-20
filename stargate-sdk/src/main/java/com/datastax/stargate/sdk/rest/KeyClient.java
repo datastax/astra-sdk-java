@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
@@ -39,6 +40,7 @@ import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.ResultPage;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
+import com.datastax.stargate.sdk.rest.domain.QueryWithKey.QueryRowBuilder;
 import com.datastax.stargate.sdk.rest.domain.Row;
 import com.datastax.stargate.sdk.rest.domain.RowMapper;
 import com.datastax.stargate.sdk.rest.domain.RowResultPage;
@@ -92,12 +94,77 @@ public class KeyClient {
     /**
      * Retrieve a set of Rows from Primary key value.
      * 
+     * @return a list of rows
+     */
+    public Stream<Row> findAll() {
+        List<Row> rows = new ArrayList<>();
+        // Loop on pages up to no more pages (could be done)
+        String pageState = null;
+        do {
+            RowResultPage pageX = findPage(QueryWithKey.DEFAULT_PAGING_SIZE, pageState);
+            if (pageX.getPageState().isPresent())  {
+                pageState = pageX.getPageState().get();
+            } else {
+                pageState = null;
+            }
+            rows.addAll(pageX.getResults());
+        } while(pageState != null);
+        return rows.stream();
+    }
+    
+    /**
+     * Marshall output as objects.
+     *
+     * @param <T>
+     *      current row 
+     * @param rowMapper
+     *      row mapper
+     * @return
+     *      target return
+     */
+    public <T> Stream<T> findAll(RowMapper<T> rowMapper) {
+        return findAll().map(rowMapper::map);
+    }
+    
+    /**
+     * Find the first page (when we know there are not a lot)
+     * 
+     * @param pageSize
+     *      list of page
+     * @return
+     *      returned a list
+     */
+    public RowResultPage findFirstPage(int pageSize) {
+       return findPage(pageSize, null);
+    }
+    
+    /**
+     * Search for a page.
+     *
+     * @param pageSize
+     *      size of expected page
+     * @param pageState
+     *      cursor in research
+     * @return
+     *      a page of results
+     */
+    public RowResultPage findPage(int pageSize, String pageState) {
+        QueryRowBuilder builder = QueryWithKey.builder().withPageSize(pageSize);
+        if (null != pageState) {
+            builder.withPageState(pageState);
+        }
+        return findPage(builder.build());
+    }
+    
+    /**
+     * Retrieve a set of Rows from Primary key value.
+     * 
      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/restv2.html#operation/searchTable">Reference Documentation</a>
      * 
      * @param query QueryWithKey
      * @return RowResultPage
      */
-    public RowResultPage find(QueryWithKey query) {
+    public RowResultPage findPage(QueryWithKey query) {
         // Parameter validatioons
         Objects.requireNonNull(query);
         // Invoke endpoint
@@ -127,13 +194,22 @@ public class KeyClient {
      * @param mapper RowMapper
      * @return ResultPage
      */
-    public <T> ResultPage<T> find(QueryWithKey query, RowMapper<T> mapper) {
+    public <T> ResultPage<T> findPage(QueryWithKey query, RowMapper<T> mapper) {
         // Parameter validatioons
         Objects.requireNonNull(query);
         Objects.requireNonNull(mapper);
         // Find
-        RowResultPage rrp = find(query);
-        // Mapping
+        return mapAsResultPage(findPage(query), mapper);
+    }
+    
+    /**
+     * Narshalling of a page as a result
+     * @param <T>
+     * @param rrp
+     * @param mapper
+     * @return
+     */
+    private <T> ResultPage<T> mapAsResultPage( RowResultPage rrp,  RowMapper<T> mapper) {
         return new ResultPage<T>(rrp.getPageSize(), 
                 rrp.getPageState().orElse(null),
                 rrp.getResults().stream()

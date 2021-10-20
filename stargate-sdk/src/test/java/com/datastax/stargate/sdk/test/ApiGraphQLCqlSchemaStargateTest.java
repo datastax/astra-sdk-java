@@ -10,7 +10,7 @@ import com.datastax.stargate.sdk.gql.test.ApiGraphQLCqlSchemaTest;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class StargateApiGraphQLCqlSchemaTest extends ApiGraphQLCqlSchemaTest { 
+public class ApiGraphQLCqlSchemaStargateTest extends ApiGraphQLCqlSchemaTest { 
 
     /*
      * Init

@@ -46,10 +46,10 @@ import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class DatabasesIntegrationTest {
+public class ApiDevopsDatabasesAstraTest {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DatabasesIntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsDatabasesAstraTest.class);
     
     // Test Keys
     private static final String TEST_DBNAME      = "sdk_test_api_devops_db";
@@ -256,9 +256,9 @@ public class DatabasesIntegrationTest {
         LOGGER.info("Expected keyspaces and namespaces are now present");
         
         // Cann create keyspace that already exist
-        Assertions.assertThrows(IllegalArgumentException.class, () -> cli.database(serverlessDbId).createNamespace(TEST_NAMESPACE_1));
+        Assertions.assertThrows(RuntimeException.class, () -> cli.database(serverlessDbId).createNamespace(TEST_NAMESPACE_1));
         LOGGER.info("You cannot create an existing keyspace");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> cli.database(serverlessDbId).createKeyspace(TEST_KEYSPACE_2));
+        Assertions.assertThrows(RuntimeException.class, () -> cli.database(serverlessDbId).createKeyspace(TEST_KEYSPACE_2));
         LOGGER.info("You cannot create an existing namespace");
     }
     

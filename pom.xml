@@ -54,7 +54,6 @@
 		<version.maven.plugin.dependency>2.8</version.maven.plugin.dependency>
 		<version.maven.plugin.xml-format>3.0.7</version.maven.plugin.xml-format>
 		<version.maven.plugin.fmt>2.2.0</version.maven.plugin.fmt>
-		<skipTests>true</skipTests>
 	</properties>
 	<modules>
 		<module>astra-sdk</module>

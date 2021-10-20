@@ -81,7 +81,7 @@ public class AstraClientConfig implements Serializable {
         // Loading Stargate Environment variable
         stargateConfig = new StargateClientConfig();
         
-        // Loading ~/.astrarc section default
+        // Loading ~/.astrarc section default if present
         if (AstraRc.exists()) {
             loadFromAstraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
         }
@@ -93,7 +93,7 @@ public class AstraClientConfig implements Serializable {
         readEnvVariable(ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
         readEnvVariable(ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
         readEnvVariable(ASTRA_DB_KEYSPACE).ifPresent(this::withKeyspace);
-        readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withSecureConnectBundleFolder);        
+        readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withSecureConnectBundleFolder);
     }
     
     // ------------------------------------------------

@@ -16,21 +16,19 @@
 
 package com.datastax.astra.sdk;
 
-import java.io.File;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import com.datastax.astra.sdk.utils.AstraRc;
+import org.junit.Ignore;
 
 /**
- * TEST Loading databases metadata in .astrarc 
+ * Create Astrarc to execute test locally.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@Ignore
 public class AstraRcTest {
     
+    /*
     @Test
+    @DisplayName("Create .astraRC without clientId/clientSecret")
     public void should_create_astraRc_File() {
         // Given
         new File(System.getProperty("user.home") + "/.astrarc").delete();
@@ -42,5 +40,6 @@ public class AstraRcTest {
         // Then we should be able to load the file
         AstraRc.load().print();
     }
+    */
 
 }

@@ -1,4 +1,4 @@
-package com.datastax.astra.dto;
+package com.datastax.stargate.sdk.rest.test.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

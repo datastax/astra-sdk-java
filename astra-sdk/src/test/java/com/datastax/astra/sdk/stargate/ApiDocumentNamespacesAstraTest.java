@@ -27,7 +27,7 @@ import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class AstraApiDocumentNamespacesTest extends ApiDocumentNamespacesTest {
+public class ApiDocumentNamespacesAstraTest extends ApiDocumentNamespacesTest {
     
    /*
     * Init

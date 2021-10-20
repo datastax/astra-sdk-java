@@ -1,5 +1,6 @@
 package com.datastax.stargate.sdk.gql.test;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -20,12 +21,6 @@ public class ApiGraphQLCqlSchemaTest implements ApiGraphQLTest {
     /** Tested Store. */
     protected static StargateClient stargateClient;
     
-    /**
-     * Create a namespace
-     * POST /v2​/schemas​/namespaces
-     * @throws InterruptedException
-     *          error in creation
-     */
     @Test
     @Order(1)
     @DisplayName("01-should_list_default_keyspaces")
@@ -33,8 +28,7 @@ public class ApiGraphQLCqlSchemaTest implements ApiGraphQLTest {
         // Given
         CqlSchemaClient cqlSchemaClient = stargateClient.apiGraphQL().cqlSchema();
         // When
-        String output = cqlSchemaClient.queryListKeyspaces();
-        System.out.println(output);
+        Assertions.assertNotNull(cqlSchemaClient.queryListKeyspaces());
     }
     
 }

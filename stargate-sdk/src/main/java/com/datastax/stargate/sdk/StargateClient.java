@@ -123,11 +123,10 @@ public class StargateClient implements Closeable {
         if (cqlSession != null) {
             cqlSession.execute("SELECT data_center from system.local");
             if (cqlSession.getKeyspace().isPresent()) {
-                LOGGER.info("+ CqlSession is [" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"]",  cqlSession.getKeyspace().get());
+                LOGGER.info("+ CqlSession  : [" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"]",  cqlSession.getKeyspace().get());
                 
             } else {
-                LOGGER.info("+ CqlSession is [" + green("ENABLED") + "]");
-                
+                LOGGER.info("+ CqlSession  : [" + green("ENABLED") + "]");
             }
             
             // As we opened a cqlSession we may want to close it properly at application shutdown.
@@ -140,7 +139,7 @@ public class StargateClient implements Closeable {
                   } 
             });
         } else {
-            LOGGER.info("+ CqlSession is  [" + red("DISABLED") + "]");
+            LOGGER.info("+ CqlSession  : [" + red("DISABLED") + "]");
         }
        
         // Initializing Apis

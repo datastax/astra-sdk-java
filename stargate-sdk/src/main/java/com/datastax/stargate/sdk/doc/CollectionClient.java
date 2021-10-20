@@ -48,6 +48,7 @@ import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
 import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery.SearchDocumentQueryBuilder;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
+import com.datastax.stargate.sdk.utils.Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -59,6 +60,9 @@ public class CollectionClient {
     
     /** Read document id. */
     public static final String DOCUMENT_ID = "documentId";
+    
+    /** Read document id. */
+    public static final String BATCH_ID_PATH = "id-path";
     
     /** Get Topology of the nodes. */
     private final StargateHttpClient stargateHttpClient;
@@ -169,6 +173,49 @@ public class CollectionClient {
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document id", e);
         }
+    }
+    
+    /**
+     * Use the resource batch to insert massively in the DB.
+     * 
+     * @param records
+     *      list of records
+     * @param idPath
+     *      id path to enforced ids
+     * @param <DOC>
+     *      working document
+     * @return
+     *      list of inserted ids
+     */
+    @SuppressWarnings("unchecked")
+    public <DOC> List<String> batchInsert(List<DOC> records, String idPath) {
+        Assert.notNull(records, "Records should be provided");
+        ApiResponseHttp res;
+        if (Utils.hasLength(idPath)) {
+            res = stargateHttpClient.POST(collectionBatchResource, marshall(records), 
+                    "?" + BATCH_ID_PATH + "=" + idPath);
+        } else {
+            res = stargateHttpClient.POST(collectionBatchResource, marshall(records));
+        }
+        Map<String, Object> doc = unmarshallBean(res.getBody(), Map.class);
+        if (doc.containsKey("documentIds")) {
+            return (List<String>) doc.get("documentIds");
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Insert multiple record with a single resource.
+     * 
+     * @param records
+     *      list of records
+     * @param <DOC>
+     *      working document
+     * @return
+     *      list of inserted ids
+     */
+    public <DOC > List<String> batchInsert(List<DOC> records) {
+        return batchInsert(records, null);
     }
 
     /**
@@ -459,6 +506,12 @@ public class CollectionClient {
     public Function<StargateClientNode, String> collectionUpgradeResource = 
             (node) -> collectionResource.apply(node) +  "/upgrade?raw=true";
 
+     /** 
+      * /v2/schemas/namespaces/{namespace}/collections/{collection}/batch
+      */
+     public Function<StargateClientNode, String> collectionBatchResource = 
+            (node) -> collectionResource.apply(node) +  "/batch";
+                   
     /** 
       * /v2/schemas/namespaces/{namespace}/collections/{collection}/json-schema
       */

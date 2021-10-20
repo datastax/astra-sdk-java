@@ -16,7 +16,7 @@ import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class AstraApiDocumentCollectionsTest extends ApiDocumentCollectionsTest {
+public class ApiDocumentCollectionsAstraTest extends ApiDocumentCollectionsTest {
      
     /*
      * Init
@@ -25,6 +25,7 @@ public class AstraApiDocumentCollectionsTest extends ApiDocumentCollectionsTest 
     public static void init() {
         // Default client to create DB if needed
         AstraClient client = AstraClient.builder().build();
+        System.out.println(client.getToken().get());
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
         client.cqlSession().close();
         

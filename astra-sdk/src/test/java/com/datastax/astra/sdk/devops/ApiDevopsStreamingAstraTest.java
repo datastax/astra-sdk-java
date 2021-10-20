@@ -23,10 +23,10 @@ import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class StreamingIntegrationTest {
+public class ApiDevopsStreamingAstraTest {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamingIntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsStreamingAstraTest.class);
     
     private static AstraClient client;
     

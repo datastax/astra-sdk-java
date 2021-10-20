@@ -13,7 +13,7 @@ import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class AstraApiDocumentDocumentTest extends ApiDocumentDocumentTest {
+public class ApiDocumentDocumentAstraTest extends ApiDocumentDocumentTest {
      
     /**
      * Init

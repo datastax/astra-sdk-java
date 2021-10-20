@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.datastax.stargate.sdk.StargateClientNode;
@@ -177,6 +178,17 @@ public class KeyspaceClient {
                 stargateHttpClient.GET(tablesSchemaResource).getBody(), 
                 RESPONSE_TABLE_DEFINITIONS)
                 .getData().stream();
+    }
+    
+    /**
+     * Sample collector as MAP of stream.
+     * 
+     * @return
+     *      map
+     */
+    public Map<String, TableDefinition> tablesAsMap() {
+        return tables().collect(
+                Collectors.toMap(TableDefinition::getName, Function.identity()));
     }
     
     /**

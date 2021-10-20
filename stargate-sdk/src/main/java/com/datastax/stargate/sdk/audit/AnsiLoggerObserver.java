@@ -5,6 +5,8 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.evanlennick.retry4j.Status;
+
 import static com.datastax.stargate.sdk.utils.AnsiUtils.*;
 
 /**
@@ -42,5 +44,25 @@ public class AnsiLoggerObserver implements ApiInvocationObserver {
             LOGGER.error("[" + red(event.getRequestId()) + "] Error Message    : [" + green(event.getErrorMessage()) + "]");
             LOGGER.error("[" + red(event.getRequestId()) + "] Error Exception  : [" + green(event.getLastException().getClass().getName()) + "]");
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onHttpSuccess(Status<String> s) {
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onHttpCompletion(Status<String> s) {
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onHttpFailure(Status<String> s) {
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onHttpFailedTry(Status<String> s) {
     }
 }

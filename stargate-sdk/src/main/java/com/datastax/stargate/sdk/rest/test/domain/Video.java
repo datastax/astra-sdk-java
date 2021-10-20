@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.dto;
+package com.datastax.stargate.sdk.rest.test.domain;
 
 /**
  * 

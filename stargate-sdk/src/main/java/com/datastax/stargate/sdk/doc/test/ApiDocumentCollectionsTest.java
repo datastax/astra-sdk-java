@@ -1,5 +1,7 @@
 package com.datastax.stargate.sdk.doc.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -141,6 +143,26 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         cc.delete();
         Assertions.assertFalse(cc.exist());
     }
-
+    
+    @Test
+    @Order(6)
+    @DisplayName("06-Insert as a BACTH")
+    public void f_should_insert_batch() {
+        // Given
+        String randomCollection = UUID.randomUUID().toString().replaceAll("-", "");
+        CollectionClient cc = nsClient.collection(randomCollection);
+        cc.create();
+        Assertions.assertTrue(cc.exist());
+        List <Person> persons = new ArrayList<>();
+        for(int i=0;i<99;i++) {
+            persons.add(new Person("" +i,"" +i,i,null));
+        }
+        List<String> ids = cc.batchInsert(persons);
+        Assertions.assertEquals(99, ids.size());
+        
+        List<String> ids2 = cc.batchInsert(persons, "lastname");
+        Assertions.assertEquals(99, ids2.size());
+        Assertions.assertTrue(ids2.contains("16"));
+    }
 
 }

@@ -32,10 +32,10 @@ import com.datastax.astra.sdk.AstraClient;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class CqlSessionIntegrationTest {
+public class CqlSessionAstraTest {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(CqlSessionIntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CqlSessionAstraTest.class);
     
     private static AstraClient client;
     

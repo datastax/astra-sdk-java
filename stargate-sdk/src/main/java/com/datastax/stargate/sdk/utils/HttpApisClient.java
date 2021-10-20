@@ -3,7 +3,6 @@ package com.datastax.stargate.sdk.utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -479,18 +478,18 @@ public class HttpApisClient implements ApiConstants {
         return new CallExecutorBuilder<String>()
                 .config(retryConfig)
                 .onSuccessListener(s -> {
-                    LOGGER.debug("Call successFull");
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpSuccess(s)));
                 })
                 .onCompletionListener(s -> {
-                    LOGGER.debug("Call completed in in {} millis.", s.getTotalElapsedDuration().get(ChronoUnit.NANOS)/1000000);
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpCompletion(s)));
                 })
                 .onFailureListener(s -> {
-                    LOGGER.error("Calls failed after {} retries",
-                            s.getTotalTries());
+                    LOGGER.error("Calls failed after {} retries", s.getTotalTries());
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpFailure(s)));
                 })
                 .afterFailedTryListener(s -> {
-                    LOGGER.error("Failure on attempt {}/{} ",
-                            s.getTotalTries(), retryConfig.getMaxNumberOfTries());
+                    LOGGER.error("Failure on attempt {}/{} ", s.getTotalTries(), retryConfig.getMaxNumberOfTries());
+                    CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpFailedTry(s)));
                 })
                 .build()
                 .execute(executeRequest);
