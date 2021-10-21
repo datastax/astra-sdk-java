@@ -241,9 +241,6 @@
 						<version>${junit-jupiter.version}</version>
 					</dependency>
 				</dependencies>
-				<configuration>
-					<skipTests>${skipTests}</skipTests>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -322,10 +319,8 @@
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${version.maven.plugin.gpg}</version>
-						<executions>
+					   <artifactId>maven-gpg-plugin</artifactId>
+                       <executions>
 							<execution>
 								<id>sign-artifacts</id>
 								<phase>verify</phase>
