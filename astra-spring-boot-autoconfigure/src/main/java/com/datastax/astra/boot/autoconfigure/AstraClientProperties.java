@@ -30,7 +30,7 @@ public class AstraClientProperties {
     private String databaseId;
     
     /** Astra database region. */
-    private String cloudRegion;
+    private String databaseRegion;
    
     /** Application Token. */
     private String applicationToken;
@@ -64,25 +64,6 @@ public class AstraClientProperties {
      */
     public void setDatabaseId(String databaseId) {
         this.databaseId = databaseId;
-    }
-
-    /**
-     * Getter accessor for attribute 'cloudRegion'.
-     *
-     * @return
-     *       current value of 'cloudRegion'
-     */
-    public String getCloudRegion() {
-        return cloudRegion;
-    }
-
-    /**
-     * Setter accessor for attribute 'cloudRegion'.
-     * @param cloudRegion
-     * 		new value for 'cloudRegion '
-     */
-    public void setCloudRegion(String cloudRegion) {
-        this.cloudRegion = cloudRegion;
     }
 
     /**
@@ -178,6 +159,25 @@ public class AstraClientProperties {
      */
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+
+    /**
+     * Getter accessor for attribute 'databaseRegion'.
+     *
+     * @return
+     *       current value of 'databaseRegion'
+     */
+    public String getDatabaseRegion() {
+        return databaseRegion;
+    }
+
+    /**
+     * Setter accessor for attribute 'databaseRegion'.
+     * @param databaseRegion
+     * 		new value for 'databaseRegion '
+     */
+    public void setDatabaseRegion(String databaseRegion) {
+        this.databaseRegion = databaseRegion;
     }
     
 

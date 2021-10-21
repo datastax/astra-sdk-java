@@ -1,14 +1,5 @@
 package com.datastax.astra.sdk.stargate;
 
-import org.junit.AfterClass;
-import org.junit.Ignore;
-import org.junit.jupiter.api.BeforeAll;
-
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
-
 /**
  * Execute some unit tests agains collections.
  *

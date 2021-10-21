@@ -1,17 +1,5 @@
 package com.datastax.astra.sdk.stargate;
 
-import org.junit.AfterClass;
-import org.junit.Ignore;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
-
 /**
  * Work with local stargate
  * 

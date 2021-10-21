@@ -67,9 +67,9 @@ public class AstraConfiguration {
             builder = builder.withDatabaseId(astraClientProperties.getDatabaseId());  
         }
         
-        if (null != astraClientProperties.getCloudRegion() &&
-                !"".equals(astraClientProperties.getCloudRegion())) {
-            builder = builder.withDatabaseRegion(astraClientProperties.getCloudRegion());  
+        if (null != astraClientProperties.getDatabaseRegion() &&
+                !"".equals(astraClientProperties.getDatabaseRegion())) {
+            builder = builder.withDatabaseRegion(astraClientProperties.getDatabaseRegion());  
         }
         
         if (null != astraClientProperties.getApplicationToken() &&

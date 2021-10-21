@@ -6,7 +6,7 @@
       "defaultValue": "..."
     },
     {
-      "name": "astra.cloudRegion",
+      "name": "astra.databaseRegion",
       "type": "java.lang.String",
       "defaultValue": "us-east-1"
     },
@@ -28,7 +28,7 @@
     {
       "name": "astra.secureConnectBundlePath",
       "type": "java.lang.String",
-      "defaultValue": "spring_petclinic"
+      "defaultValue": "~/.astra"
     },
     {
       "name": "astra.keyspace",
