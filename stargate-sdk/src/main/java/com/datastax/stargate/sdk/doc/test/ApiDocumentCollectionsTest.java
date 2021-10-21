@@ -58,7 +58,7 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
             LOGGER.info("Collection aleady exists");
             cc.delete();
             LOGGER.info("Delete collection request sent");
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         }
         // Given
         Assertions.assertFalse(cc.exist());
@@ -66,7 +66,7 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         // When
         cc.create();
         LOGGER.info("Creation request sent");
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         // Then
         Assertions.assertTrue(cc.exist());
         LOGGER.info("Collection now exist");
@@ -108,12 +108,12 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         Assertions.assertFalse(rcc.exist());
         // When
         rcc.create();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         // Then
         Assertions.assertTrue(rcc.exist());
         // When
         rcc.delete();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         // Then
         Assertions.assertFalse(rcc.exist());
         LOGGER.info("Collection deleted");
@@ -147,7 +147,8 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
     @Test
     @Order(6)
     @DisplayName("06-Insert as a BACTH")
-    public void f_should_insert_batch() {
+    public void f_should_insert_batch() 
+    throws InterruptedException {
         // Given
         String randomCollection = UUID.randomUUID().toString().replaceAll("-", "");
         CollectionClient cc = nsClient.collection(randomCollection);
@@ -158,9 +159,11 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
             persons.add(new Person("" +i,"" +i,i,null));
         }
         List<String> ids = cc.batchInsert(persons);
+        Thread.sleep(2000);
         Assertions.assertEquals(99, ids.size());
         
         List<String> ids2 = cc.batchInsert(persons, "lastname");
+        Thread.sleep(2000);
         Assertions.assertEquals(99, ids2.size());
         Assertions.assertTrue(ids2.contains("16"));
     }

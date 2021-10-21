@@ -20,17 +20,27 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Sample POJO
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class PersonRepo {
     
+    /** param. */
     private String firstname;
     
+    /** param. */
     private String lastname;
     
+    /** param. */
     private int age;
     
+    /** param. */
     private List<String> countries;
     
+    /** param. */
     private Address address;
 
     /**

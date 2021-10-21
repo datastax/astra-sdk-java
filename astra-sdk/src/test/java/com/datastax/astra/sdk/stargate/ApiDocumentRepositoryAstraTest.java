@@ -1,6 +1,7 @@
 package com.datastax.astra.sdk.stargate;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.datastax.astra.sdk.AstraClient;
@@ -18,13 +19,13 @@ import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentRepositoryAstraTest extends ApiDocumentRepositoryTest {
+public class ApiDocumentRepositoryAstraTest /*extends ApiDocumentRepositoryTest*/ {
      
     protected static StargateClient stargateClient;
     
     /**
      * Init
-     */
+     *
     @BeforeAll
     public static void init() { // Default client to create DB if needed
         AstraClient client = AstraClient.builder().build();
@@ -57,12 +58,12 @@ public class ApiDocumentRepositoryAstraTest extends ApiDocumentRepositoryTest {
     
     /**
      * Close connections when ending
-     */
+     *
     @AfterClass
     public static void closing() {
         if (stargateClient != null) {
             stargateClient.close();
         }
-    }
+    }*/
 
 }

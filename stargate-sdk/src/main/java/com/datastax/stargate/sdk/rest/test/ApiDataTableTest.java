@@ -190,6 +190,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertFalse(ksClient.table("invalid").exist());
     }
     
+    /**
+     * Delete table if exists.
+     *
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(6)
     @DisplayName("06-Should delete table if exists")
@@ -223,6 +229,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertFalse(tc.exist());
     }
         
+    /**
+     * Update TTL.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(7)
     @DisplayName("07-Should update table TTL")
@@ -239,6 +251,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         videoTable.updateOptions(new TableOptions(0,null));
     }
     
+    /**
+     * List columns.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(8)
     @DisplayName("08-Should list columns")
@@ -258,6 +276,11 @@ public abstract class ApiDataTableTest implements ApiDataTest {
                 .contains("frames"));
     }
     
+    /**
+     * Find a column.
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(9)
     @DisplayName("08-Should find a column")
@@ -271,6 +294,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertTrue(videoTable.column("frames").exist());
     }
         
+    /**
+     * Create a columns.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(10)
     @DisplayName("10-Should create a columns")
@@ -286,6 +315,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertTrue(videoTable.column("custom").find().isPresent());
     }
     
+    /**
+     * Delete a column.
+     *
+     * @throws InterruptedException
+     *          error
+     */
     @Test
     @Order(11)
     @DisplayName("11-Should delete a columns")
@@ -301,6 +336,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertFalse(videoTable.column("custom").find().isPresent());
     }
     
+    /**
+     * Rename a column.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(12)
     @DisplayName("12-Should rename a clustering columns")
@@ -320,6 +361,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         videoTable.column("new_title").rename("title");
     }
     
+    /**
+     * Create a column.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(13)
     @DisplayName("13-Should create 2nd index")
@@ -339,6 +386,12 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertNotNull(idxDef);
     }
     
+    /**
+     * Delete index.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(14)
     @DisplayName("14-Should delete a 2nd index")

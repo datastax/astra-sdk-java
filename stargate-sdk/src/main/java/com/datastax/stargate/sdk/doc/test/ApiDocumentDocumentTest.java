@@ -61,7 +61,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
                 new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
         // Then
         Assertions.assertNotNull(docId);
-        Thread.sleep(500);
+        Thread.sleep(2000);
         Assertions.assertTrue(personClient.document(docId).exist());
         System.out.println( "[OK]"  + " - Document created");
     }
@@ -89,7 +89,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         // When
         personClient.document("myId").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
 
-        Thread.sleep(500);
+        Thread.sleep(2000);
         // Then
         Assertions.assertTrue(personClient.document("myId").exist());
         System.out.println( "[OK]"  + " - Document created");
@@ -107,6 +107,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         // When
         personClient.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
         personClient.document(uid).upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75015)));
+        Thread.sleep(2000);
         // Then
         Optional<Person> loulou = personClient.document(uid).find(Person.class);
         Assertions.assertTrue(loulou.isPresent());
@@ -151,13 +152,15 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
     @Test
     @Order(6)
     @DisplayName("06-Update document")
-    public void f_should_update_document() {
+    public void f_should_update_document() 
+    throws InterruptedException {
         LOGGER.info("should_update_document");
         // Given
         Assertions.assertTrue(personClient.exist());
         // When
         personClient.document("AAA").upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
         personClient.document("AAA").update(new Person("a", "b"));
+        Thread.sleep(2000);
         // Then
         Optional<Person> loulou = personClient.document("AAA").find(Person.class);
         Assertions.assertTrue(loulou.isPresent());
@@ -186,7 +189,8 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
     @Test
     @Order(8)
     @DisplayName("08-Search Document with a filter Query")
-    public void h_should_search_withQuery() {
+    public void h_should_search_withQuery() 
+    throws InterruptedException {
         LOGGER.info("should_search_withQuery");
         // Given
         Assertions.assertTrue(personClient.exist());
@@ -196,6 +200,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
                     .upsert(new Person("PersonAstra2", "PersonAstra2", 30, new Address("Paris", 75000)));
         personClient.document("PersonAstra3")
                     .upsert(new Person("PersonAstra3", "PersonAstra3", 40, new Address("Melun", 75000)));
+        Thread.sleep(2000);
         Assertions.assertTrue(personClient.document("PersonAstra1").exist());
         Assertions.assertTrue(personClient.document("PersonAstra2").exist());
         Assertions.assertTrue(personClient.document("PersonAstra3").exist());
