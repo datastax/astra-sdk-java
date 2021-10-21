@@ -16,39 +16,13 @@
 
 package com.datastax.astra.sdk.devops;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
-import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.databases.domain.CloudProviderType;
-import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
-import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
-import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
-import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
-import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class ApiDevopsDatabasesAstraTest {
     
-    /** Logger for our Client. */
+    /** Logger for our Client. *
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsDatabasesAstraTest.class);
     
     // Test Keys
@@ -197,22 +171,6 @@ public class ApiDevopsDatabasesAstraTest {
         LOGGER.info("Fields metrics,storage,info are populated");
     }
     
-    /*
-    @Test
-    @Order(8)
-    public void should_find_databases_by_id_Async() throws InterruptedException {
-        LOGGER.info("[GET] Returns a list of databases");
-        client.apiDevopsDatabases()
-              .database(serverlessDbId).findAsync()
-              .whenComplete((db,error) -> {
-                  if (error != null) {
-                      Assertions.fail();
-                  }
-               System.out.println(db.get().getId()); 
-        });    
-        Thread.sleep(1000);
-    }*/
-    
     @Test
     @Order(8)
     public void should_create_keyspaces() {
@@ -341,7 +299,7 @@ public class ApiDevopsDatabasesAstraTest {
             AstraTestUtils.waitForSeconds(1);
         }
         LOGGER.info("Status changed to TERMINATED");
-    }
+    }*/
    
     
 }
