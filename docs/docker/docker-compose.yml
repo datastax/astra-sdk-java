@@ -1,7 +1,7 @@
 version: '2'
 services:
   stargate:
-    image: stargateio/stargate-3_11:v1.0.38
+    image: stargateio/stargate-3_11:v1.0.39
     ports:
       #CQL
       - 9042:9042
@@ -14,7 +14,7 @@ services:
       #Metrics
       - 8084:8084
       #gRPC
-      - 8090:8090
+      - 9191:8090
     mem_limit: 2G
     environment:
       - DATACENTER_NAME=datacenter1

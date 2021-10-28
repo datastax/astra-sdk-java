@@ -17,6 +17,7 @@ public class ApiStargateTestFactory {
      *      a instance for test
      */
     public static StargateClient createStargateClient() {
+        
         return StargateClient.builder()
             .withAuthCredentials("cassandra", "cassandra")
             .withLocalDatacenter("datacenter1")

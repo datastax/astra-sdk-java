@@ -542,4 +542,24 @@ public class HttpApisClient implements ApiConstants {
             }
     }
 
+    /**
+     * Getter accessor for attribute 'requestConfig'.
+     *
+     * @return
+     *       current value of 'requestConfig'
+     */
+    public static RequestConfig getRequestConfig() {
+        return requestConfig;
+    }
+
+    /**
+     * Getter accessor for attribute 'retryConfig'.
+     *
+     * @return
+     *       current value of 'retryConfig'
+     */
+    public static RetryConfig getRetryConfig() {
+        return retryConfig;
+    }
+
 }

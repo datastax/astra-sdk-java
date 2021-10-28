@@ -28,6 +28,8 @@
 		<json-schema.version>1.14.0</json-schema.version>
 		<httpclient.version>5.1</httpclient.version>
 		<pulsar.version>2.7.2</pulsar.version>
+		<stargate-grpc.version>1.0.39</stargate-grpc.version>
+		<grpc-netty.version>1.40.1</grpc-netty.version>
 		<!-- Spring -->
 		<spring.version>5.3.11</spring.version>
 		<spring-boot.version>2.5.5</spring-boot.version>
@@ -121,7 +123,17 @@
 			    <groupId>com.github.everit-org.json-schema</groupId>
 			    <artifactId>org.everit.json.schema</artifactId>
 			    <version>${json-schema.version}</version>
-			</dependency>
+			</dependency> 
+			<dependency>
+	        	<groupId>io.stargate.grpc</groupId>
+	        	<artifactId>grpc-proto</artifactId>
+	        	<version>${stargate-grpc.version}</version>
+   			</dependency>
+	    	<dependency>
+	         	<groupId>io.grpc</groupId>
+	         	<artifactId>grpc-netty-shaded</artifactId>
+	         	<version>${grpc-netty.version}</version>
+	    	</dependency>
 			<!-- ASTRA STREAMING -->
 			<dependency>
 				<groupId>org.apache.pulsar</groupId>

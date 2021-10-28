@@ -67,6 +67,7 @@ public class CqlSchemaClient {
                 + "}");
         
     }
+    
     /**
      * Mutation to create a keyspace.
      * 

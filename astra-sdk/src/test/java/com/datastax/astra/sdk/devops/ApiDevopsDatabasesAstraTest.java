@@ -16,13 +16,38 @@
 
 package com.datastax.astra.sdk.devops;
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.astra.sdk.databases.DatabasesClient;
+import com.datastax.astra.sdk.databases.domain.CloudProviderType;
+import com.datastax.astra.sdk.databases.domain.Database;
+import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
+import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
+import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
+import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
+import com.datastax.astra.sdk.organizations.OrganizationsClient;
+import com.datastax.stargate.sdk.utils.AnsiUtils;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class ApiDevopsDatabasesAstraTest {
     
-    /** Logger for our Client. *
+    /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsDatabasesAstraTest.class);
     
     // Test Keys
@@ -56,6 +81,7 @@ public class ApiDevopsDatabasesAstraTest {
                     .regions()
                     .collect(Collectors.toList()).size() > 1);
         LOGGER.info("Can connect to ASTRA with AstraClient");
+        
     }
    
     @Test
@@ -67,7 +93,7 @@ public class ApiDevopsDatabasesAstraTest {
         // When
         OrganizationsClient cli = new OrganizationsClient(client.getToken().get());
         // Then
-        Assert.assertTrue(cli.regions().collect(Collectors.toList()).size() > 1);
+        Assertions.assertTrue(cli.regions().collect(Collectors.toList()).size() > 1);
         LOGGER.info("Can connect to ASTRA with OrganizationsClient");
     }
     
@@ -81,12 +107,12 @@ public class ApiDevopsDatabasesAstraTest {
         Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> available = 
                 cli.regionsMap();
         // Then
-        Assert.assertTrue(available
+        Assertions.assertTrue(available
                 .containsKey(DatabaseTierType.serverless));
-        Assert.assertTrue(available
+        Assertions.assertTrue(available
                 .get(DatabaseTierType.serverless)
                 .containsKey(CloudProviderType.AWS));
-        Assert.assertTrue(available
+        Assertions.assertTrue(available
                 .get(DatabaseTierType.serverless)
                 .get(CloudProviderType.AWS).stream()
                 .anyMatch(db -> "us-east-1".equalsIgnoreCase(db.getRegion())));
@@ -100,7 +126,7 @@ public class ApiDevopsDatabasesAstraTest {
         // Given
         DatabasesClient cli = new DatabasesClient(client.getToken().get());
         // When
-        Assert.assertFalse(cli.databasesNonTerminatedByName(TEST_DBNAME).collect(Collectors.toSet()).size()>0);
+        Assertions.assertFalse(cli.databasesNonTerminatedByName(TEST_DBNAME).collect(Collectors.toSet()).size()>0);
         LOGGER.info("Instance with name'" + TEST_DBNAME + "' does not exist.");
         // When
         DatabaseCreationRequest dcr = DatabaseCreationRequest
@@ -118,7 +144,7 @@ public class ApiDevopsDatabasesAstraTest {
         LOGGER.info("DB Creation request started");
         
         // Then
-        Assert.assertTrue(cli.database(serverlessDbId).exist());
+        Assertions.assertTrue(cli.database(serverlessDbId).exist());
         LOGGER.info("Database id=" + serverlessDbId);
         LOGGER.info("Initializing ");
         int atempt = 0;
@@ -129,7 +155,7 @@ public class ApiDevopsDatabasesAstraTest {
             AstraTestUtils.waitForSeconds(5);
             atempt++;
         }
-        Assert.assertEquals(DatabaseStatusType.ACTIVE, cli
+        Assertions.assertEquals(DatabaseStatusType.ACTIVE, cli
                 .database(serverlessDbId).find()
                 .get().getStatus());
         System.out.println();
@@ -146,10 +172,10 @@ public class ApiDevopsDatabasesAstraTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.database(""));
         Assertions.assertThrows(IllegalArgumentException.class, () -> cli.database(null));
         LOGGER.info("Validated parameters are required");
-        Assert.assertFalse(cli.database("i-like-cheese").exist());
+        Assertions.assertFalse(cli.database("i-like-cheese").exist());
         
         LOGGER.info("[GET] Finds database by NAME");
-        Assert.assertTrue(cli.databasesNonTerminated().anyMatch(
+        Assertions.assertTrue(cli.databasesNonTerminated().anyMatch(
                 db -> TEST_DBNAME.equals(db.getInfo().getName())));
         LOGGER.info("List retrieved and the new created DB is present");
     }
@@ -161,13 +187,13 @@ public class ApiDevopsDatabasesAstraTest {
         // Given
         DatabasesClient cli = new DatabasesClient(client.getToken().get());
         Optional<Database> odb = cli.database(serverlessDbId).find();
-        Assert.assertTrue(odb.isPresent());
-        Assert.assertEquals(DatabaseStatusType.ACTIVE, odb.get().getStatus());
-        Assert.assertNotNull(odb.get().getInfo());
-        Assert.assertEquals(DatabaseTierType.serverless, odb.get().getInfo().getTier());
-        Assert.assertNotNull(odb.get().getMetrics());
-        Assert.assertNotNull(odb.get().getStorage());
-        Assert.assertNotNull(TEST_KEYSPACE_1, odb.get().getInfo().getKeyspace());
+        Assertions.assertTrue(odb.isPresent());
+        Assertions.assertEquals(DatabaseStatusType.ACTIVE, odb.get().getStatus());
+        Assertions.assertNotNull(odb.get().getInfo());
+        Assertions.assertEquals(DatabaseTierType.serverless, odb.get().getInfo().getTier());
+        Assertions.assertNotNull(odb.get().getMetrics());
+        Assertions.assertNotNull(odb.get().getStorage());
+        Assertions.assertNotNull(TEST_KEYSPACE_1, odb.get().getInfo().getKeyspace());
         LOGGER.info("Fields metrics,storage,info are populated");
     }
     
@@ -186,22 +212,22 @@ public class ApiDevopsDatabasesAstraTest {
         LOGGER.info("Parameters validation is working");
         
         // Given
-        Assert.assertFalse(cli.database(serverlessDbId).find().get().getInfo().getKeyspaces().contains(TEST_KEYSPACE_2));
+        Assertions.assertFalse(cli.database(serverlessDbId).find().get().getInfo().getKeyspaces().contains(TEST_KEYSPACE_2));
         // When
         cli.database(serverlessDbId).createKeyspace(TEST_KEYSPACE_2);
         LOGGER.info("Keyspace creation request successful for '" + TEST_KEYSPACE_2 + "'");
-        Assert.assertEquals(DatabaseStatusType.MAINTENANCE, cli.database(serverlessDbId).find().get().getStatus());
+        Assertions.assertEquals(DatabaseStatusType.MAINTENANCE, cli.database(serverlessDbId).find().get().getStatus());
         LOGGER.info("DB in [MAINTENANCE] mode");
         while(DatabaseStatusType.ACTIVE != cli.database(serverlessDbId).find().get().getStatus() ) {
             AstraTestUtils.waitForSeconds(1);
         }
         // When
-        Assert.assertEquals(DatabaseStatusType.ACTIVE, cli.database(serverlessDbId).find().get().getStatus());
+        Assertions.assertEquals(DatabaseStatusType.ACTIVE, cli.database(serverlessDbId).find().get().getStatus());
         LOGGER.info("DB in [ACTIVE] mode");
         
         cli.database(serverlessDbId).createNamespace(TEST_NAMESPACE_1);
         LOGGER.info("Namespace creation request successful for '" + TEST_NAMESPACE_1 + "'");
-        Assert.assertEquals(DatabaseStatusType.MAINTENANCE, cli.database(serverlessDbId).find().get().getStatus());
+        Assertions.assertEquals(DatabaseStatusType.MAINTENANCE, cli.database(serverlessDbId).find().get().getStatus());
         LOGGER.info("DB in [MAINTENANCE] mode");
         while(DatabaseStatusType.ACTIVE != cli.database(serverlessDbId).find().get().getStatus() ) {
             AstraTestUtils.waitForSeconds(1);
@@ -209,8 +235,8 @@ public class ApiDevopsDatabasesAstraTest {
         LOGGER.info("DB in [ACTIVE] mode");
         // Then
         Database db = cli.database(serverlessDbId).find().get();
-        Assert.assertTrue(db.getInfo().getKeyspaces().contains(TEST_KEYSPACE_2));
-        Assert.assertTrue(db.getInfo().getKeyspaces().contains(TEST_NAMESPACE_1));
+        Assertions.assertTrue(db.getInfo().getKeyspaces().contains(TEST_KEYSPACE_2));
+        Assertions.assertTrue(db.getInfo().getKeyspaces().contains(TEST_NAMESPACE_1));
         LOGGER.info("Expected keyspaces and namespaces are now present");
         
         // Cann create keyspace that already exist
@@ -227,12 +253,12 @@ public class ApiDevopsDatabasesAstraTest {
         // Given
         DatabasesClient cli = new DatabasesClient(client.getToken().get());
         String randomFile = "/tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".zip";
-        Assert.assertFalse(new File(randomFile).exists());
+        Assertions.assertFalse(new File(randomFile).exists());
         // When
         cli.database(serverlessDbId).downloadSecureConnectBundle(randomFile);
         LOGGER.info("Downloading file call");
         // Then
-        Assert.assertTrue(new File(randomFile).exists());
+        Assertions.assertTrue(new File(randomFile).exists());
         LOGGER.info("File as been download in " + randomFile);
     }
     
@@ -299,7 +325,7 @@ public class ApiDevopsDatabasesAstraTest {
             AstraTestUtils.waitForSeconds(1);
         }
         LOGGER.info("Status changed to TERMINATED");
-    }*/
+    }
    
     
 }

@@ -48,6 +48,9 @@ public class AstraClientConfig implements Serializable {
     /** User home folder. */
     public static final String ENV_USER_HOME = "user.home";
     
+    /** Port for grpc in Astra. */
+    public static final int GRPC_PORT = 443;
+    
     /** Serial. */
     private static final long serialVersionUID = 6950028057943051050L;
     

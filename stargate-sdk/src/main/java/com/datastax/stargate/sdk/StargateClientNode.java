@@ -29,6 +29,12 @@ public class StargateClientNode implements Serializable {
     /** Hold a reference for the ApiGraphQL. */
     private final String apiGraphQLEndpoint;
     
+    /** Hold a reference for the ApiGrpc Endpoint. */
+    private final String grpcHostName;
+    
+    /** Hold a reference for the ApiGrpc Endpoint. */
+    private final int grpcPort;
+    
     /**
      * Full fledge constructor for a node. The host is not enough as a stargate node
      * could have a load balancer on top of it changing the default host:8082...
@@ -36,15 +42,21 @@ public class StargateClientNode implements Serializable {
      * @param nodeName
      *      node identifier
      * @param apiRestUrl
-     *      rest Api URL
+     *      rest Api URL http://localhost:8082
      * @param apiGraphQLUrl
-     *      graphQL Api URL
+     *      graphQL Api URL, eg http://localhost:8080
+     * @param grpcHostName
+     *      grpc hostname
+     * @param grpcPort
+     *      grpc port
      */
-    public StargateClientNode(String nodeName, String apiRestUrl, String apiGraphQLUrl) {
+    public StargateClientNode(String nodeName, String apiRestUrl, String apiGraphQLUrl, String grpcHostName, int grpcPort) {
         super();
         this.nodeName           = nodeName;
         this.apiRestEndpoint    = apiRestUrl;
         this.apiGraphQLEndpoint = apiGraphQLUrl;
+        this.grpcHostName       = grpcHostName;
+        this.grpcPort           = grpcPort;
     }
 
     /**
@@ -89,6 +101,26 @@ public class StargateClientNode implements Serializable {
      */
     public String getApiGraphQLEndpoint() {
         return apiGraphQLEndpoint;
+    }
+
+    /**
+     * Getter accessor for attribute 'grpcHostName'.
+     *
+     * @return
+     *       current value of 'grpcHostName'
+     */
+    public String getGrpcHostName() {
+        return grpcHostName;
+    }
+
+    /**
+     * Getter accessor for attribute 'grpcPort'.
+     *
+     * @return
+     *       current value of 'grpcPort'
+     */
+    public int getGrpcPort() {
+        return grpcPort;
     }
 
 }

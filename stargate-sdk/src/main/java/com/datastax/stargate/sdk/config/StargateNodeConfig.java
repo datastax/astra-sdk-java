@@ -7,6 +7,18 @@ package com.datastax.stargate.sdk.config;
  */
 public class StargateNodeConfig {
     
+    /** Default port. */
+    public static final int DEFAULT_PORT_AUTH = 8081;
+    
+    /** Default port. */
+    public static final int DEFAULT_PORT_REST = 8082;
+    
+    /** Default port. */
+    public static final int DEFAULT_PORT_GQL  = 8080;
+    
+    /** Default port. */
+    public static final int DEFAULT_PORT_GRPC = 8090;
+    
     /** Name of the node. */
     private String name;
     
@@ -18,6 +30,12 @@ public class StargateNodeConfig {
     
     /** Authentication API URL. */
     private String authUrl;
+    
+    /** grpc Host. */
+    private String grpcHost;
+    
+    /** grpc Host. */
+    private int grpcPort;
     
     /**
      * Default constructor.
@@ -32,9 +50,11 @@ public class StargateNodeConfig {
      */
     public StargateNodeConfig(String host) {
         this.name       = host;
-        this.authUrl    = "http://" + host + ":8081";
-        this.restUrl    = "http://" + host + ":8082";
-        this.graphqlUrl = "http://" + host + ":8080";
+        this.authUrl    = "http://" + host + ":" + DEFAULT_PORT_AUTH;
+        this.restUrl    = "http://" + host + ":" + DEFAULT_PORT_REST;
+        this.graphqlUrl = "http://" + host + ":" + DEFAULT_PORT_GQL;
+        this.grpcHost   = host;
+        this.grpcPort   = DEFAULT_PORT_GRPC;
     }
     
     /**
@@ -49,11 +69,13 @@ public class StargateNodeConfig {
      * @param portgraphQL
      *      port for graphQL api 
      */
-    public StargateNodeConfig(String host, int portAuth, int portRest, int portgraphQL) {
+    public StargateNodeConfig(String host, int portAuth, int portRest, int portgraphQL, int portGrpc) {
         this.name       = host;
         this.authUrl    = "http://" + host + ":" + portAuth;
         this.restUrl    = "http://" + host + ":" + portRest;
         this.graphqlUrl = "http://" + host + ":" + portgraphQL;
+        this.grpcHost   = host;
+        this.grpcPort   = portGrpc;
     }
             
     /**
@@ -68,6 +90,26 @@ public class StargateNodeConfig {
      */
     public StargateNodeConfig(String name, String rest, String graphQL) {
         this(name, rest, graphQL, null);
+    }
+    
+    /**
+     * Constructor without URL.
+     * 
+     * @param name
+     *      node name
+     * @param urlRest
+     *      api rest url
+     * @param urlGraphQL
+     *      api graphql urk
+     * @param grpcHost
+     * @param grpcPort
+     */
+    public StargateNodeConfig(String name, String urlRest, String urlGraphQL, String grpcHost, int grpcPort) {
+        this.name       = name;
+        this.restUrl    = urlRest;
+        this.graphqlUrl = urlGraphQL;
+        this.grpcHost   = grpcHost;
+        this.grpcPort   = grpcPort;
     }
     
     /**
@@ -127,5 +169,25 @@ public class StargateNodeConfig {
      */
     public String getGraphqlUrl() {
         return graphqlUrl;
+    }
+
+    /**
+     * Getter accessor for attribute 'grpcHost'.
+     *
+     * @return
+     *       current value of 'grpcHost'
+     */
+    public String getGrpcHost() {
+        return grpcHost;
+    }
+
+    /**
+     * Getter accessor for attribute 'grpcPort'.
+     *
+     * @return
+     *       current value of 'grpcPort'
+     */
+    public int getGrpcPort() {
+        return grpcPort;
     }
 }

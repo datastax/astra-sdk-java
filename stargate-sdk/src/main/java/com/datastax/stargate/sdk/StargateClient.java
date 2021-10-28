@@ -35,6 +35,7 @@ import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
+import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
@@ -70,6 +71,11 @@ public class StargateClient implements Closeable {
      * Wrapping Api GraphQL resources.
      */
     protected ApiGraphQLClient apiGraphQLClient;
+    
+    /**
+     * Wrapping Api GRPC resources.
+     */
+    protected ApiGrpcClient apiGrpcClient;
     
     /** 
      * Wrapping failover and Load balancer on a delegated wrapper. 
@@ -123,10 +129,10 @@ public class StargateClient implements Closeable {
         if (cqlSession != null) {
             cqlSession.execute("SELECT data_center from system.local");
             if (cqlSession.getKeyspace().isPresent()) {
-                LOGGER.info("+ CqlSession   : [" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"]",  cqlSession.getKeyspace().get());
+                LOGGER.info("+ CqlSession   :[" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"]",  cqlSession.getKeyspace().get());
                 
             } else {
-                LOGGER.info("+ CqlSession   : [" + green("ENABLED") + "]");
+                LOGGER.info("+ CqlSession   :[" + green("ENABLED") + "]");
             }
             
             // As we opened a cqlSession we may want to close it properly at application shutdown.
@@ -139,13 +145,14 @@ public class StargateClient implements Closeable {
                   } 
             });
         } else {
-            LOGGER.info("+ CqlSession   : [" + red("DISABLED") + "]");
+            LOGGER.info("+ CqlSession   :[" + red("DISABLED") + "]");
         }
        
         // Initializing Apis
         this.apiDataClient     = new ApiDataClient(stargateHttpClient);
         this.apiDocumentClient = new ApiDocumentClient(stargateHttpClient);
         this.apiGraphQLClient  = new ApiGraphQLClient(stargateHttpClient);
+        this.apiGrpcClient     = new ApiGrpcClient(stargateHttpClient);
         
         /** HTTP. */
         if (config.getRetryConfig() != null) {
@@ -211,7 +218,7 @@ public class StargateClient implements Closeable {
      *      current API Document
      */
     public ApiDocumentClient apiDocument() {
-       return apiDocumentClient;
+       return this.apiDocumentClient;
     }
     
     /**
@@ -221,7 +228,7 @@ public class StargateClient implements Closeable {
      *      Api REST DATA client
      */
     public ApiDataClient apiRest() {
-        return apiDataClient;
+        return this.apiDataClient;
     }
     
     /**
@@ -231,7 +238,17 @@ public class StargateClient implements Closeable {
      *      Api graphQL client
      */
     public ApiGraphQLClient apiGraphQL() {
-        return apiGraphQLClient;
+        return this.apiGraphQLClient;
+    }
+    
+    /**
+     * Retrieve items using the gRPC interface
+     * 
+     * @return
+     *      grpc interface
+     */
+    public ApiGrpcClient apiGrpc() {
+        return this.apiGrpcClient;
     }
 
     /**
@@ -241,7 +258,17 @@ public class StargateClient implements Closeable {
      *       current value of 'currentDatacenter'
      */
     public String getCurrentDatacenter() {
-        return currentDatacenter;
+        return this.currentDatacenter;
+    }
+    
+    /**
+     * Getter accessor for attribute 'stargateHttpClient'.
+     *
+     * @return
+     *       current value of 'stargateHttpClient'
+     */
+    public StargateHttpClient getStargateHttpClient() {
+        return this.stargateHttpClient;
     }
     
 }

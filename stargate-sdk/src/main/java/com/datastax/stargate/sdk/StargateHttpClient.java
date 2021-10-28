@@ -66,7 +66,10 @@ public class StargateHttpClient implements ApiConstants {
             datacenters.put(dc, new StargateClientDC(dc, apitokenDC, 
              config.getStargateNodes()
                     .get(dc).stream()
-                    .map(node -> new StargateClientNode(node.getName(), node.getRestUrl(), node.getGraphqlUrl()))
+                    .map(node -> new StargateClientNode(
+                            node.getName(), node.getRestUrl(), 
+                            node.getGraphqlUrl(), node.getGrpcHost(),
+                            node.getGrpcPort()))
                     .collect(Collectors.toList())));
         }
         // Logging topology
@@ -337,7 +340,7 @@ public class StargateHttpClient implements ApiConstants {
      * @return
      *      a token
      */
-    private String lookupToken() {
+    public String lookupToken() {
         return getLocalDatacenterClient() // Retrieve the currrent Dc based on localDc property
                 .getTokenProvider()       // Retrieve the ApiTokenProvider for the DC (could be custom)
                 .getToken();              // Ask the token provider to supply a token

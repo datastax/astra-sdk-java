@@ -1,11 +1,17 @@
 package com.datastax.astra.sdk.devops;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.hc.client5.http.auth.StandardAuthScheme;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -21,6 +27,8 @@ import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.streaming.domain.CreateTenant;
 import com.datastax.astra.sdk.streaming.domain.Tenant;
+import com.datastax.stargate.sdk.StargateClient;
+import com.evanlennick.retry4j.config.RetryConfigBuilder;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class ApiDevopsStreamingAstraTest {
@@ -99,7 +107,7 @@ public class ApiDevopsStreamingAstraTest {
         
         AstraClient astraClient = client;
         
-        try(PulsarAdmin admin = astraClient.streaming()
+        try(PulsarAdmin admin = astraClient.apiDevopsStreaming()
                 .tenant(tmpTenant)
                 .pulsarAdmin()) {
             Assert.assertTrue(admin
@@ -115,7 +123,9 @@ public class ApiDevopsStreamingAstraTest {
                    .topic("postman_tenant_2/default/topc1")
                    .subscriptionName("my-subscription")
                    .subscribe()) {
-        }*/
+        }
+        */
+        
     }
     
     @Test
@@ -123,6 +133,22 @@ public class ApiDevopsStreamingAstraTest {
     public void should_delete_tenant() throws InterruptedException {
         //tmpTenant = "sdk_java_junit_32defeb";
         StreamingClient sc  = new StreamingClient(client.getToken().get());
+        
+        StargateClient.builder()
+                      .withHttpRetryConfig(new RetryConfigBuilder()
+                          .retryOnAnyException()
+                          .withDelayBetweenTries(Duration.ofMillis(100))
+                          .withExponentialBackoff()
+                          .withMaxNumberOfTries(3)
+                          .build())
+                      .withHttpRequestConfig(RequestConfig.custom()
+                           .setCookieSpec(StandardCookieSpec.STRICT)
+                           .setExpectContinueEnabled(true)
+                           .setConnectionRequestTimeout(Timeout.ofSeconds(2))
+                           .setConnectTimeout(Timeout.ofSeconds(2))
+                           .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
+                           .build());
+                  
         System.out.println("- Delete a tenant");
         // Giving
         Assert.assertTrue(sc.tenant(tmpTenant).exist());

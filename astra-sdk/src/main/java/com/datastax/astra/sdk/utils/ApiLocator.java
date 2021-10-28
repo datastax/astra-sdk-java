@@ -64,6 +64,25 @@ public class ApiLocator {
      * @return
      *      the url to invoke
      */
+    public static final String getApiGrpcEndPoint(String dbId, String dbRegion) {
+        Assert.hasLength(dbId, "dbId");
+        Assert.hasLength(dbRegion, "dbRegion");
+        return new StringBuilder()
+                .append(dbId).append("-").append(dbRegion)
+                .append(ASTRA_ENDPOINT_SUFFIX)
+                .toString();
+    }
+    
+    /**
+     * GRAPHQL endpoint for a database and region working with Schema definition
+     *
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      region identifier
+     * @return
+     *      the url to invoke
+     */
     public static final String getApiGraphQLEndPoint(String dbId, String dbRegion) {
         Assert.hasLength(dbId, "dbId");
         Assert.hasLength(dbRegion, "dbRegion");

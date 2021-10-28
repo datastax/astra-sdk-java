@@ -33,6 +33,11 @@ docker-compose -f docker-compose.yml up -d stargate-2
 
 docker run --rm -it -e CQLSH_HOST=localhost --net=host nuvo/docker-cqlsh bash
 
-
+curl -L -X POST 'http://localhost:8081/v1/auth' \
+  -H 'Content-Type: application/json' \
+  --data-raw '{
+    "username": "cassandra",
+    "password": "cassandra"
+}'
 
 

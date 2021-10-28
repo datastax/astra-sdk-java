@@ -37,9 +37,9 @@ public class ApiDocumentRepositoryStargateTest extends ApiDocumentRepositoryTest
         if (!personClient.exist()) {
             personClient.create();
         }
-        
         // Initializing a repository for a bean
-        personRepository = new StargateDocumentRepository<Person>(personClient, Person.class);
+        personRepository = 
+                new StargateDocumentRepository<Person>(personClient, Person.class);
     }
     
     /**

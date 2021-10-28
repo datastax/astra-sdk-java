@@ -38,6 +38,7 @@ import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.config.StargateNodeConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
+import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.Utils;
@@ -80,6 +81,33 @@ public class AstraClient implements Closeable {
    
     /** Hold a reference on current region used for the Failover. */
     protected String currentDatabaseRegion;
+    
+    /**
+     * Create a client with the token on
+     *
+     * @param token
+     *      current token
+     */
+    public AstraClient(String token) {
+        this(builder().withToken(token));
+    }
+    
+    /**
+     * Simple initialization.
+     *
+     * @param dbId
+     *      database id
+     * @param dbRegion
+     *      database region
+     * @param token
+     *      current token
+     */
+    public AstraClient(String dbId, String dbRegion, String token) {
+        this(builder()
+                .withToken(token)
+                .withDatabaseId(dbId)
+                .withDatabaseRegion(dbRegion));
+    }
     
     /**
      * Initialization through builder.
@@ -176,9 +204,17 @@ public class AstraClient implements Closeable {
             // ---------------------------------------------------
             regions.stream().forEach(dc -> {
                 config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
-                        new StargateNodeConfig("astra_sg_" + dc.getRegion(), 
-                                ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()), 
-                                ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), dc.getRegion())));
+                        new StargateNodeConfig(
+                                // node name = region, we got a single per region LB is done by Astra
+                                dc.getRegion(), 
+                                // url or rest api
+                                ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()),
+                                // url of graphql API
+                                ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), dc.getRegion()),
+                                // host for grpc
+                                ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()),
+                                // port for grpc
+                                AstraClientConfig.GRPC_PORT));
               }
             );
             // Set default region
@@ -227,9 +263,23 @@ public class AstraClient implements Closeable {
     public ApiGraphQLClient apiStargateGraphQL() {
         if (stargateClient == null) {
             throw new IllegalStateException("GraphQL Api is not available "
-                    + "you need to provide dbId/dbRegion/username/password at initialization.");
+                    + "you need to provide dbId/dbRegion/token at initialization.");
         }
         return stargateClient.apiGraphQL();
+    }
+    
+    /**
+     * Integration with grpc Api in Stargate.
+     *
+     * @return
+     *      grpc Stargate API.
+     */
+    public ApiGrpcClient apiStargateGrpc() {
+        if (stargateClient == null) {
+            throw new IllegalStateException("GRPC Api is not available "
+                    + "you need to provide dbId/dbRegion/token at initialization.");
+        }
+        return stargateClient.apiGrpc();
     }
     
     /**
@@ -240,7 +290,7 @@ public class AstraClient implements Closeable {
     public OrganizationsClient apiDevopsOrganizations() {
         if (apiDevopsOrganizations == null) {
             throw new IllegalStateException("Api Devops is not available "
-                    + "you need to provide clientId/clientName/clientSecret at initialization.");
+                    + "you need to provide a astra Token (AstraCS:...) at initialization.");
         }
         return apiDevopsOrganizations;
     }
@@ -258,12 +308,13 @@ public class AstraClient implements Closeable {
         return apiDevopsDatabases;
     }
     
+    
     /**
-     * Devops API
+     * Devops API Streaming
      * 
      * @return ApiDevopsClient
      */
-    public StreamingClient streaming() {
+    public StreamingClient apiDevopsStreaming() {
         if (apiDevopsStreaming == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");
