@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
-import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.grpc.domain.ConnectionGrpc;
 import com.datastax.stargate.sdk.grpc.domain.ResultSetGrpc;
 import com.datastax.stargate.sdk.utils.Assert;
@@ -34,7 +33,7 @@ import io.stargate.proto.QueryOuterClass.QueryParameters.Builder;
 public class ApiGrpcClient {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApiGraphQLClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiGrpcClient.class);
     
     /** Get Topology of the nodes. */
     private final StargateHttpClient stargateHttpClient;

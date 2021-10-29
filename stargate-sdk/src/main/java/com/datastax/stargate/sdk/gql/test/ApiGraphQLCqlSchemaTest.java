@@ -28,7 +28,7 @@ public class ApiGraphQLCqlSchemaTest implements ApiGraphQLTest {
         // Given
         CqlSchemaClient cqlSchemaClient = stargateClient.apiGraphQL().cqlSchema();
         // When
-        Assertions.assertNotNull(cqlSchemaClient.queryListKeyspaces());
+        Assertions.assertNotNull(cqlSchemaClient.keyspaces());
     }
     
 }

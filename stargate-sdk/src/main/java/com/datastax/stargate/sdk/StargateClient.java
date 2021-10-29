@@ -149,10 +149,17 @@ public class StargateClient implements Closeable {
         }
        
         // Initializing Apis
-        this.apiDataClient     = new ApiDataClient(stargateHttpClient);
-        this.apiDocumentClient = new ApiDocumentClient(stargateHttpClient);
-        this.apiGraphQLClient  = new ApiGraphQLClient(stargateHttpClient);
-        this.apiGrpcClient     = new ApiGrpcClient(stargateHttpClient);
+        if (!config.getStargateNodes().isEmpty()) {
+            this.apiDataClient     = new ApiDataClient(stargateHttpClient);
+            this.apiDocumentClient = new ApiDocumentClient(stargateHttpClient);
+            this.apiGraphQLClient  = new ApiGraphQLClient(stargateHttpClient);
+            this.apiGrpcClient     = new ApiGrpcClient(stargateHttpClient);
+        } else {
+            LOGGER.info("+ API Data     :[" + red("DISABLED") + "]");
+            LOGGER.info("+ API Document :[" + red("DISABLED") + "]");
+            LOGGER.info("+ API GraphQL  :[" + red("DISABLED") + "]");
+            LOGGER.info("+ API Grpc     :[" + red("DISABLED") + "]");
+        }
         
         /** HTTP. */
         if (config.getRetryConfig() != null) {
@@ -218,6 +225,10 @@ public class StargateClient implements Closeable {
      *      current API Document
      */
     public ApiDocumentClient apiDocument() {
+        if (apiDocumentClient == null) {
+            throw new IllegalStateException("Api Document is not available "
+                    + "you need to provide a node and credentials at initialization.");
+        }
        return this.apiDocumentClient;
     }
     
@@ -228,6 +239,10 @@ public class StargateClient implements Closeable {
      *      Api REST DATA client
      */
     public ApiDataClient apiRest() {
+        if (apiDataClient == null) {
+            throw new IllegalStateException("Api Rest is not available "
+                    + "you need to provide a node and credentials at initialization.");
+        }
         return this.apiDataClient;
     }
     
@@ -238,6 +253,10 @@ public class StargateClient implements Closeable {
      *      Api graphQL client
      */
     public ApiGraphQLClient apiGraphQL() {
+        if (apiGraphQLClient == null) {
+            throw new IllegalStateException("Api GraphQL is not available "
+                    + "you need to provide a node and credentials at initialization.");
+        }
         return this.apiGraphQLClient;
     }
     
@@ -248,6 +267,10 @@ public class StargateClient implements Closeable {
      *      grpc interface
      */
     public ApiGrpcClient apiGrpc() {
+        if (apiGrpcClient == null) {
+            throw new IllegalStateException("Api Grpc is not available "
+                    + "you need to provide a node and credentials at initialization.");
+        }
         return this.apiGrpcClient;
     }
 

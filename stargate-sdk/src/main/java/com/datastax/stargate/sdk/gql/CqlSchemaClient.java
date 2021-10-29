@@ -42,30 +42,14 @@ public class CqlSchemaClient {
         return res.getBody();
     }
     
-    public String queryListKeyspaces() {
-        return query("{ keyspaces { name } }");
-    }
-    
-    public String queryListTables(String keyspace) {
-        return query("query GetTables {\n"
-                + "  keyspace(name: \"" + keyspace + "\") {\n"
-                + "      name\n"
-                + "      tables {\n"
-                + "          name\n"
-                + "          columns {\n"
-                + "              name\n"
-                + "              kind\n"
-                + "              type {\n"
-                + "                  basic\n"
-                + "                  info {\n"
-                + "                      name\n"
-                + "                  }\n"
-                + "              }\n"
-                + "          }\n"
-                + "      }\n"
-                + "  }\n"
-                + "}");
-        
+    /**
+     * List keyspaces.
+     *
+     * @return
+     *      list of keyspaces.
+     */
+    public String keyspaces() {
+        return query(GraphQLQueryBuilder.queryListKeyspaces());
     }
     
     /**

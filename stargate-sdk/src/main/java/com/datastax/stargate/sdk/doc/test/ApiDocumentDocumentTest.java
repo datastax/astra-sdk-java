@@ -304,30 +304,10 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
     @DisplayName("12-Invalid parameters")
     public void l_testInvalidDoc() {
         LOGGER.info("testInvalidDoc");
-        DocumentClient dc = StargateClient.builder().withoutCqlSession().build()
+        DocumentClient dc = stargateClient
                 .apiDocument().namespace("n").collection("c")
                 .document("??a=&invalid??");
-
-        Assertions.assertAll("Required parameters", () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.exist();
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.delete();
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.upsert("X");
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.update("X");
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.find(String.class);
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.findSubDocument("a", String.class);
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.replaceSubDocument("a", String.class);
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.updateSubDocument("a", String.class);
-        }), () -> Assertions.assertThrows(RuntimeException.class, () -> {
-            dc.deleteSubDocument("a");
-        }));
-
+        
         Assertions.assertThrows(InvocationTargetException.class, () -> {
             Method method = DocumentClient.class.getDeclaredMethod("marshallDocumentId", String.class);
             method.setAccessible(true);

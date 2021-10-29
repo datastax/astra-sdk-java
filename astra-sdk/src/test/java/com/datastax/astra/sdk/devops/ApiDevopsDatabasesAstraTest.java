@@ -16,11 +16,8 @@
 
 package com.datastax.astra.sdk.devops;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
@@ -33,16 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
-import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
-import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
 import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class ApiDevopsDatabasesAstraTest {
@@ -51,10 +43,10 @@ public class ApiDevopsDatabasesAstraTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsDatabasesAstraTest.class);
     
     // Test Keys
-    private static final String TEST_DBNAME      = "sdk_test_api_devops_db";
-    private static final String TEST_KEYSPACE_1  = "sdk_ks1";
-    private static final String TEST_KEYSPACE_2  = "sdk_ks2";
-    private static final String TEST_NAMESPACE_1 = "sdk_ns1";
+    public static final String TEST_DBNAME      = "sdk_test_api_devops_db";
+    public static final String TEST_KEYSPACE_1  = "sdk_ks1";
+    public static final String TEST_KEYSPACE_2  = "sdk_ks2";
+    public static final String TEST_NAMESPACE_1 = "sdk_ns1";
     
     // To be updated after db creation
     public static String serverlessDbId;
@@ -119,6 +111,7 @@ public class ApiDevopsDatabasesAstraTest {
         LOGGER.info("Tier `serverless` for region 'aws/us-east-1' is available");
     }
     
+    /*
     @Test
     @Order(5)
     public void should_createServerlessDb() {
@@ -326,6 +319,6 @@ public class ApiDevopsDatabasesAstraTest {
         }
         LOGGER.info("Status changed to TERMINATED");
     }
-   
+   */
     
 }
