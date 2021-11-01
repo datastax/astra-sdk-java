@@ -31,6 +31,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.datastax.astra</groupId>
+			<artifactId>astra-spring-boot-starter</artifactId>
+			<version>0.2.1-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

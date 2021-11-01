@@ -1,0 +1,5 @@
+astra:
+  application-token: AstraCS:gdZaqzmFZszaBTOlLgeecuPs:edd25600df1c01506f5388340f138f277cece2c93cb70f4b5fa386490daa5d44
+  database-id: d7d49808-9f08-403b-84e5-19ae47d1da69
+  database-region: eu-central-1
+  keyspace: quickstart
