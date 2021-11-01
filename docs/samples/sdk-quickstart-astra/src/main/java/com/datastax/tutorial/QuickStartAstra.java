@@ -10,7 +10,6 @@ import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
 
 public class QuickStartAstra {
     
