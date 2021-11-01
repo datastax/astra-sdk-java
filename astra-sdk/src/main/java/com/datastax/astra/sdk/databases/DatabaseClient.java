@@ -156,7 +156,7 @@ public class DatabaseClient {
      *      file to save the securebundle
      */
     public void downloadAllSecureConnectBundles(String destination) {
-        Optional<Database> odb = find();
+        Optional<Database> odb = find(); 
         // Validation
         Assert.hasLength(destination, "destination");
         Assert.isTrue(new File(destination).exists(), "Destination folder");
