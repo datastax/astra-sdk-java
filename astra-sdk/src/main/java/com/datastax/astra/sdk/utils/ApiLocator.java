@@ -89,7 +89,7 @@ public class ApiLocator {
         return new StringBuilder(ASTRA_ENDPOINT_PREFIX)
                 .append(dbId).append("-").append(dbRegion)
                 .append(ASTRA_ENDPOINT_SUFFIX)
-                .append("/api/graphql")
+                .append("/api")
                 .toString();
     }
     
