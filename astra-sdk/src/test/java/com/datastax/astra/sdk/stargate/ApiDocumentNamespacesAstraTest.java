@@ -1,5 +1,16 @@
 package com.datastax.astra.sdk.stargate;
 
+import org.junit.AfterClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
+
 /**
  * Work with local stargate
  * 
@@ -16,11 +27,11 @@ package com.datastax.astra.sdk.stargate;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentNamespacesAstraTest /*extends ApiDocumentNamespacesTest*/ {
+public class ApiDocumentNamespacesAstraTest extends ApiDocumentNamespacesTest {
     
    /*
     * Init
-    *
+    */
    @BeforeAll
    public static void init() {
        // Default client to create DB if needed
@@ -29,7 +40,7 @@ public class ApiDocumentNamespacesAstraTest /*extends ApiDocumentNamespacesTest*
        // Connect the client to the new created DB
        client = AstraClient.builder()
                .withToken(client.getToken().get())
-               .withKeyspace(ApiDocumentTest.TEST_NAMESPACE)
+               .withCqlKeyspace(ApiDocumentTest.TEST_NAMESPACE)
                .withDatabaseId(dbId)
                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                .withoutCqlSession()
@@ -39,7 +50,7 @@ public class ApiDocumentNamespacesAstraTest /*extends ApiDocumentNamespacesTest*
     
     /**
      * Close connections when ending
-     *
+     */
     @AfterClass
     public static void closing() {
         if (stargateClient != null) {
@@ -77,5 +88,5 @@ public class ApiDocumentNamespacesAstraTest /*extends ApiDocumentNamespacesTest*
     @DisplayName("07-Delete a namespace")
     public void g_should_delete_namespace() {
         // cannot create keyspace in Astra
-    }*/
+    }
 }

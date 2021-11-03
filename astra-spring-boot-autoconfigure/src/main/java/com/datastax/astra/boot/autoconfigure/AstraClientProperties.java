@@ -46,7 +46,10 @@ public class AstraClientProperties {
     
     /** used as password for cqlSession. */
     private String clientSecret;
-
+    
+    /** enabled metrics. */
+    private Metrics metrics;
+    
     /**
      * Getter accessor for attribute 'databaseId'.
      *
@@ -179,6 +182,56 @@ public class AstraClientProperties {
     public void setDatabaseRegion(String databaseRegion) {
         this.databaseRegion = databaseRegion;
     }
+    
+
+    /**
+     * Getter accessor for attribute 'metrics'.
+     *
+     * @return
+     *       current value of 'metrics'
+     */
+    public Metrics getMetrics() {
+        return metrics;
+    }
+
+    /**
+     * Setter accessor for attribute 'metrics'.
+     * @param metrics
+     *      new value for 'metrics '
+     */
+    public void setMetrics(Metrics metrics) {
+        this.metrics = metrics;
+    }
+    
+    /**
+     * Nested property for the 
+     */
+    public static class Metrics {
+        
+        private boolean enabled;
+
+        /**
+         * Getter accessor for attribute 'enabled'.
+         *
+         * @return
+         *       current value of 'enabled'
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        /**
+         * Setter accessor for attribute 'enabled'.
+         * @param enabled
+         *      new value for 'enabled '
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
+        
+    }
+
     
 
 }

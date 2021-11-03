@@ -16,6 +16,11 @@
 
 package com.datastax.astra.boot.autoconfigure;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,6 +31,11 @@ import org.springframework.context.annotation.Configuration;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.TypedDriverOption;
+import com.datastax.oss.driver.api.core.metrics.DefaultNodeMetric;
+import com.datastax.oss.driver.api.core.metrics.DefaultSessionMetric;
+
+import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  * Initializing AstraClient (if class present in classpath)
@@ -40,13 +50,19 @@ import com.datastax.oss.driver.api.core.CqlSession;
 @Configuration
 @ConditionalOnClass(AstraClient.class)
 @EnableConfigurationProperties(AstraClientProperties.class)
-public class AstraConfiguration {
+public class AstraClientConfiguration {
+    
+    /** Logger for our Client. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
 
     /**
      * reference to properties
      */
     @Autowired
     private AstraClientProperties astraClientProperties;
+    
+    @Autowired(required = false)
+    private MeterRegistry microMeterMetricsRegistry;
     
     /**
      * Acessing astra client.
@@ -94,7 +110,25 @@ public class AstraConfiguration {
         
         if (null != astraClientProperties.getKeyspace() &&
                 !"".equals(astraClientProperties.getKeyspace())) {
-            builder = builder.withKeyspace(astraClientProperties.getKeyspace());  
+            builder = builder.withCqlKeyspace(astraClientProperties.getKeyspace());  
+        }
+        
+        if (null != microMeterMetricsRegistry) {
+            LOGGER.info("+ Micrometer detected");
+            if (astraClientProperties.getMetrics().isEnabled()) {
+            LOGGER.info("+ Enabling CQL Metrics through Actuator");
+            builder.withCqlDriverOption(TypedDriverOption.METRICS_FACTORY_CLASS, "MicrometerMetricsFactory")
+                   .withCqlDriverOption(TypedDriverOption.METRICS_SESSION_ENABLED, Stream
+                           .of(DefaultSessionMetric.values())
+                           .map(DefaultSessionMetric::getPath)
+                           .collect(Collectors.toList()))
+                   .withCqlDriverOption(TypedDriverOption.METRICS_NODE_ENABLED, Stream
+                           .of(DefaultNodeMetric.values())
+                           .map(DefaultNodeMetric::getPath)
+                           .collect(Collectors.toList()));
+            
+                builder.withCqlMetricsRegistry(microMeterMetricsRegistry);
+            }
         }
         return builder.build();
     }

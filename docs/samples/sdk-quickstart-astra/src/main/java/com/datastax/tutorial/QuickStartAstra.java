@@ -30,10 +30,11 @@ public class QuickStartAstra {
     
     public static AstraClient configureAtraClient() {
         return AstraClient.builder()
-         .withToken("<your_token>")
-         .withDatabaseId("<your_db_id>")
-         .withDatabaseRegion("<your_db_region>")
+         .withToken("AstraCS:RjwrkBwzbcZZDyFZAvuhmCRJ:71cea89b9d3ea45a1c15675ab38f6cd861633bfc521467f525d2f57ced0e6b14")
+         .withDatabaseId("d7d49808-9f08-403b-84e5-19ae47d1da69")
+         .withDatabaseRegion("eu-central-1")
          .withKeyspace("quickstart")
+         .withSecureConnectBundleFolder(null)
          .build();
     }
     
@@ -45,6 +46,7 @@ public class QuickStartAstra {
     
     public static void testDevopsStreamingApi(AstraClient astraClient) {
         System.out.println("\n[DEVOPS/STREAMING]");
+        
         Map<String, List<String>> clouds = astraClient.apiDevopsStreaming().providers();
         System.out.println("+ Available Clouds to create tenants=" + clouds);
     }

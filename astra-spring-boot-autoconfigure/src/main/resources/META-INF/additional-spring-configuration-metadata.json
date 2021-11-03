@@ -34,6 +34,11 @@
       "name": "astra.keyspace",
       "type": "java.lang.String",
       "defaultValue": "keyspace"
+    },
+    {
+      "name": "astra.metrics.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": "false"
     }],
   "hints": []
 }

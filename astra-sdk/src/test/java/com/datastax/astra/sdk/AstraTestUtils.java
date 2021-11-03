@@ -58,7 +58,7 @@ public class AstraTestUtils {
         return AstraClient.builder()
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .withDatabaseId(dbId)
-                .withKeyspace(ApiDocumentNamespacesTest.TEST_NAMESPACE)
+                .withCqlKeyspace(ApiDocumentNamespacesTest.TEST_NAMESPACE)
                 .withoutCqlSession()
                 .build().getStargateClient();
     }

@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
@@ -119,10 +120,22 @@ public class StargateClient implements Closeable {
                     config.getOptions().put(TypedDriverOption.CONTACT_POINTS, Arrays.asList(StargateClientConfig.DEFAULT_CONTACTPOINT));
                 }
             }
-            // Using a Config Map instead of CqlSessionBuilder to create Execution Profiles
-            cqlSession = CqlSession.builder()
-                                   .withConfigLoader(DriverConfigLoader.fromMap(config.getOptions()))
-                                   .build();
+            // Configuration through Map values
+            CqlSessionBuilder sessionBuilder = CqlSession.builder()
+                    .withConfigLoader(DriverConfigLoader.fromMap(config.getOptions()));
+            // Expand configuration
+            if (null != config.getMetricsRegistry()) {
+                sessionBuilder.withMetricRegistry(config.getMetricsRegistry());
+            }
+            // Request Tracking
+            if (null != config.getCqlRequestTracker()) {
+                sessionBuilder.withRequestTracker(config.getCqlRequestTracker());
+            }
+            // Final Customizations
+            if (null != config.getCqlSessionBuilderCustomizer()) {
+                config.getCqlSessionBuilderCustomizer().customize(sessionBuilder);
+            }
+            cqlSession = sessionBuilder.build();
         }
         
         // Testing CqlSession

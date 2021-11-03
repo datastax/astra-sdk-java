@@ -1,2 +1,2 @@
-# Auto Configure
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.datastax.astra.boot.autoconfigure.AstraConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.datastax.astra.boot.autoconfigure.AstraClientConfiguration

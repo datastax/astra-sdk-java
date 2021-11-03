@@ -18,6 +18,8 @@ public class QuickstartStargate {
         }
     }
     
+    
+    
     public static StargateClient configureStargateClientDefault() {
         return StargateClient.builder()
                 .withCqlContactPoints("localhost:9042")
@@ -27,6 +29,8 @@ public class QuickstartStargate {
                 .build();
     }
     
+    
+    
     public static void testCqlApi(StargateClient stargateClient) {
         CqlSession cqlSession = stargateClient.cqlSession().get();
         System.out.println("Cql Version (cql)   : " + cqlSession
@@ -35,7 +39,9 @@ public class QuickstartStargate {
     }
     
     public static void testRestApi(StargateClient stargateClient) {
+        
         System.out.println("Keyspaces (rest)    : " + stargateClient.apiRest()
+        
             .keyspaceNames().collect(Collectors.toList()));
     }
     

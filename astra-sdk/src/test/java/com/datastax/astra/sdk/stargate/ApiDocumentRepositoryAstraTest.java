@@ -1,19 +1,30 @@
 package com.datastax.astra.sdk.stargate;
 
+import org.junit.AfterClass;
+import org.junit.jupiter.api.BeforeAll;
+
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
 import com.datastax.stargate.sdk.StargateClient;
+import com.datastax.stargate.sdk.doc.CollectionClient;
+import com.datastax.stargate.sdk.doc.NamespaceClient;
+import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentRepositoryTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
 
 /**
  * Execute some unit tests agains collections.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentRepositoryAstraTest /*extends ApiDocumentRepositoryTest*/ {
+public class ApiDocumentRepositoryAstraTest extends ApiDocumentRepositoryTest {
      
     protected static StargateClient stargateClient;
     
     /**
      * Init
-     *
+     */
     @BeforeAll
     public static void init() { // Default client to create DB if needed
         AstraClient client = AstraClient.builder().build();
@@ -21,7 +32,7 @@ public class ApiDocumentRepositoryAstraTest /*extends ApiDocumentRepositoryTest*
         // Connect the client to the new created DB
         client = AstraClient.builder()
                 .withToken(client.getToken().get())
-                .withKeyspace(ApiDocumentTest.TEST_NAMESPACE)
+                .withCqlKeyspace(ApiDocumentTest.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .withoutCqlSession()
@@ -46,12 +57,12 @@ public class ApiDocumentRepositoryAstraTest /*extends ApiDocumentRepositoryTest*
     
     /**
      * Close connections when ending
-     *
+     */
     @AfterClass
     public static void closing() {
         if (stargateClient != null) {
             stargateClient.close();
         }
-    }*/
+    }
 
 }

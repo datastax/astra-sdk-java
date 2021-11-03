@@ -50,7 +50,7 @@ public class CqlSessionAstraTest {
         // Connect the client to the new created DB
         client = AstraClient.builder()
                 .withToken(client.getToken().get())
-                .withKeyspace(ApiDocumentTest.TEST_NAMESPACE)
+                .withCqlKeyspace(ApiDocumentTest.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .build();

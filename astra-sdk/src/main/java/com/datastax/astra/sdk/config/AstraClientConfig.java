@@ -15,7 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.oss.driver.api.core.config.TypedDriverOption;
+import com.datastax.oss.driver.api.core.tracker.RequestTracker;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
+import com.datastax.stargate.sdk.config.CqlSessionBuilderCustomizer;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
@@ -95,7 +98,7 @@ public class AstraClientConfig implements Serializable {
         readEnvVariable(ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
         readEnvVariable(ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
         readEnvVariable(ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
-        readEnvVariable(ASTRA_DB_KEYSPACE).ifPresent(this::withKeyspace);
+        readEnvVariable(ASTRA_DB_KEYSPACE).ifPresent(this::withCqlKeyspace);
         readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withSecureConnectBundleFolder);
     }
     
@@ -260,8 +263,63 @@ public class AstraClientConfig implements Serializable {
      *            keyspace name
      * @return current reference
      */
-    public AstraClientConfig withKeyspace(String keyspace) {
+    public AstraClientConfig withCqlKeyspace(String keyspace) {
         stargateConfig.withCqlKeyspace(keyspace);
+        return this;
+    }
+    
+    /**
+     * Fine grained configuration of cqlSession.
+     * 
+     * @param <T>
+     *      current option type
+     * @param option
+     *      current option name
+     * @param value
+     *      current option value
+     * @return
+     */
+    public <T> AstraClientConfig withCqlDriverOption(TypedDriverOption<T> option, T value) {
+        stargateConfig.withCqlDriverOption(option, value);
+        return this;
+    }
+    
+    /**
+     * Provide a metrics registry.
+     * 
+     * @param mr
+     *       metrics registry
+     * @return
+     *      self reference
+     */
+    public AstraClientConfig withCqlMetricsRegistry(Object mr) {
+        stargateConfig.withCqlMetricsRegistry(mr);
+        return this;
+    }
+    
+    /**
+     * Provide a request tracker.
+     *
+     * @param rt
+     *       request tracker
+     * @return
+     *      self reference
+     */
+    public AstraClientConfig withCqlRequestTracker(RequestTracker rt) {
+        stargateConfig.withCqlRequestTracker(rt);
+        return this;
+    }
+    
+    /**
+     * Provide a session builder.
+     * 
+     * @param csbc
+     *       session builder
+     * @return
+     *      self reference
+     */
+    public AstraClientConfig withCqlSessionBuilderCustomizer(CqlSessionBuilderCustomizer csbc) {
+        stargateConfig.withCqlSessionBuilderCustomizer(csbc);
         return this;
     }
     
@@ -311,7 +369,7 @@ public class AstraClientConfig implements Serializable {
         readRcVariable(arc, ASTRA_DB_APPLICATION_TOKEN, sectionName).ifPresent(this::withToken);
         readRcVariable(arc, ASTRA_DB_CLIENT_ID,     sectionName).ifPresent(this::withClientId);
         readRcVariable(arc, ASTRA_DB_CLIENT_SECRET, sectionName).ifPresent(this::withClientSecret);
-        readRcVariable(arc, ASTRA_DB_KEYSPACE,      sectionName).ifPresent(this::withKeyspace);
+        readRcVariable(arc, ASTRA_DB_KEYSPACE,      sectionName).ifPresent(this::withCqlKeyspace);
         readRcVariable(arc, ASTRA_DB_SCB_FOLDER,    sectionName).ifPresent(this::withSecureConnectBundleFolder);
         return this;
     }

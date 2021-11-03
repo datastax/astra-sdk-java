@@ -21,6 +21,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.config.OptionsMap;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
+import com.datastax.oss.driver.api.core.tracker.RequestTracker;
 import com.datastax.oss.driver.internal.core.auth.PlainTextAuthProvider;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
@@ -99,6 +100,15 @@ public class StargateClientConfig implements Serializable {
     /** Defined the default option map for the driver. */
     protected OptionsMap options = OptionsMap.driverDefaults();
     
+    /** Metrics Registry if provided. */
+    protected Object metricsRegistry;
+    
+    /** Request tracker. */ 
+    protected RequestTracker cqlRequestTracker;
+    
+    /** Custom manipulation of the CqlSession. */
+    protected CqlSessionBuilderCustomizer cqlSessionBuilderCustomizer;
+   
     // ------------------------------------------------
     // ----- Tokens and Token Provider (AUTH) ---------
     // ------------------------------------------------
@@ -323,7 +333,49 @@ public class StargateClientConfig implements Serializable {
         options.put(option, value);
         return this;
     }
-
+   
+    /**
+     * Metrics registry.
+     *
+     * @param registry
+     *      target metrics registry
+     * @return
+     *      client config
+     */
+    public StargateClientConfig withCqlMetricsRegistry(Object registry) {
+        checkNoCqlSession();
+        metricsRegistry = registry;
+        return this;
+    }
+    
+    /**
+     * CqlRequest Tracker registry.
+     *
+     * @param cqlReqTracker
+     *      cql tracker
+     * @return
+     *      client config
+     */
+    public StargateClientConfig withCqlRequestTracker(RequestTracker cqlReqTracker) {
+        checkNoCqlSession();
+        this.cqlRequestTracker = cqlReqTracker;
+        return this;
+    }
+    
+    /**
+     * Allow to edit the session if needed.
+     *
+     * @param custom
+     *      custom parameters
+     * @return
+     *      self reference
+     */
+    public StargateClientConfig withCqlSessionBuilderCustomizer(CqlSessionBuilderCustomizer custom) {
+        checkNoCqlSession();
+        this.cqlSessionBuilderCustomizer = custom;
+        return this;
+    }
+    
     /**
      * Provide fine grained configuration for the driver.
      *
@@ -342,7 +394,7 @@ public class StargateClientConfig implements Serializable {
         options.put(dc, option, value);
         return this;
     }
-
+    
     /**
      * Set the consistency level
      * 
@@ -673,6 +725,36 @@ public class StargateClientConfig implements Serializable {
      */
     public Map<String, ApiInvocationObserver> getObservers() {
         return observers;
+    }
+
+    /**
+     * Getter accessor for attribute 'metricsRegistry'.
+     *
+     * @return
+     *       current value of 'metricsRegistry'
+     */
+    public Object getMetricsRegistry() {
+        return metricsRegistry;
+    }
+
+    /**
+     * Getter accessor for attribute 'cqlSessionBuilderCustomizer'.
+     *
+     * @return
+     *       current value of 'cqlSessionBuilderCustomizer'
+     */
+    public CqlSessionBuilderCustomizer getCqlSessionBuilderCustomizer() {
+        return cqlSessionBuilderCustomizer;
+    }
+
+    /**
+     * Getter accessor for attribute 'cqlRequestTracker'.
+     *
+     * @return
+     *       current value of 'cqlRequestTracker'
+     */
+    public RequestTracker getCqlRequestTracker() {
+        return cqlRequestTracker;
     }
 
 }
