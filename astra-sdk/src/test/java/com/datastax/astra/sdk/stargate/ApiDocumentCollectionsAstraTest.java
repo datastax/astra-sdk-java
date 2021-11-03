@@ -1,26 +1,15 @@
 package com.datastax.astra.sdk.stargate;
 
-import org.junit.AfterClass;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentCollectionsTest;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
-
 /**
  * Execute some unit tests agains collections.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentCollectionsAstraTest extends ApiDocumentCollectionsTest {
+public class ApiDocumentCollectionsAstraTest /*extends ApiDocumentCollectionsTest */ {
      
     /*
      * Init
-     */
+     *
     @BeforeAll
     public static void init() {
         // Default client to create DB if needed
@@ -50,12 +39,12 @@ public class ApiDocumentCollectionsAstraTest extends ApiDocumentCollectionsTest 
     
      /**
       * Close connections when ending
-      */
+      *
      @AfterClass
      public static void closing() {
          if (stargateClient != null) {
              stargateClient.close();
          }
-     }
+     }*/
 
 }

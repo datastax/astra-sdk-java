@@ -10,6 +10,10 @@ management:
   server:
     port: 9001
     address: 127.0.0.1
+  metrics:
+    export:
+       prometheus:
+        enabled: true
   endpoints:
     web:
       exposure:
@@ -20,5 +24,5 @@ astra:
   database-id: d7d49808-9f08-403b-84e5-19ae47d1da69
   database-region: eu-central-1
   keyspace: quickstart
-  metrics: 
+  metrics:
     enabled: true
