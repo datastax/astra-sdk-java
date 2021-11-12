@@ -1,0 +1,51 @@
+
+##
+## docker-compose-3n-2s-3.11
+##
+
+docker-compose -f docker-compose.yml up -d backend-1 
+
+docker-compose -f docker-compose.yml up -d backend-2
+
+docker-compose -f docker-compose.yml up -d backend-3
+
+docker exec -it `docker ps | grep backend-1 | cut -b 1-12` nodetool status
+
+export backend1ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' `docker ps | grep backend-1 | cut -b 1-12`)
+
+docker exec -it `docker ps | grep backend-1 | cut -b 1-12` cqlsh $backend1ip -u cassandra -p cassandra
+
+DROP KEYSPACE IF EXISTS data_endpoint_auth;
+CREATE KEYSPACE data_endpoint_auth WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': '3'}  AND durable_writes = true;
+
+exit
+
+
+docker-compose -f docker-compose.yml up -d stargate
+
+docker-compose -f docker-compose.yml up -d stargate-2
+
+
+##
+## CQLSH
+##
+
+
+docker run --rm -it -e CQLSH_HOST=localhost --net=host nuvo/docker-cqlsh bash
+
+curl -L -X POST 'http://localhost:8081/v1/auth' \
+  -H 'Content-Type: application/json' \
+  --data-raw '{
+    "username": "cassandra",
+    "password": "cassandra"
+}'
+
+
+
+docker exec -it $dc1n1_container_id \
+ cqlsh $dc1n1_ip \
+   -u cassandra \
+   -p cassandra \
+   -e "describe keyspace system;"
+
+

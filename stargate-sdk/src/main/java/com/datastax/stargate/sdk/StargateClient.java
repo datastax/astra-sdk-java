@@ -298,6 +298,15 @@ public class StargateClient implements Closeable {
     }
     
     /**
+     * Setter accessor for attribute 'currentDatacenter'.
+     * @param currentDatacenter
+     *      new value for 'currentDatacenter '
+     */
+    public void setCurrentDatacenter(String currentDatacenter) {
+        this.currentDatacenter = currentDatacenter;
+    }
+    
+    /**
      * Getter accessor for attribute 'stargateHttpClient'.
      *
      * @return

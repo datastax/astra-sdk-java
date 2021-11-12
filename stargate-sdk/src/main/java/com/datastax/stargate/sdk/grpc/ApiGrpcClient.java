@@ -16,7 +16,6 @@ import com.datastax.stargate.sdk.utils.Assert;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.Int32Value;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.stargate.proto.QueryOuterClass;
 import io.stargate.proto.QueryOuterClass.Consistency;
@@ -63,20 +62,8 @@ public class ApiGrpcClient {
      *      gRPC query
      */
     public ResultSetGrpc execute(Query query) {
-        try {
-            QueryOuterClass.Response res = getGrpcConnection()
-                    .getSyncStub().executeQuery(query);
-            if (res.hasResultSet()) {
-                return new ResultSetGrpc(res
-                    .getResultSet()
-                    .getData()
-                    .unpack(QueryOuterClass.ResultSet.class)
-                );
-            }
-            return null;
-        } catch (InvalidProtocolBufferException e) {
-           throw new IllegalStateException("Cannot marshall response", e);
-        }
+        QueryOuterClass.Response res = getGrpcConnection().getSyncStub().executeQuery(query);
+        return (res.hasResultSet()) ? new ResultSetGrpc(res.getResultSet()) : null;
     }
     
     /**

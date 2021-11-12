@@ -364,12 +364,12 @@ public class StargateHttpClient implements ApiConstants {
      * @param dc
      *      datacenter name
      */
-    private void failoverDatacenter() {
+    public void failoverDatacenter() {
         String dcDown = sc.currentDatacenter;
         // Mark as unavailable
         unavailableDatacenters.add(dcDown);
         // List available DC
-        Set<String> dcAvailables =  new HashSet<>(datacenters.keySet());
+        Set<String> dcAvailables = new HashSet<>(datacenters.keySet());
         dcAvailables.removeAll(unavailableDatacenters);
         if (dcAvailables.size() == 0) {
             throw new NoneResourceAvailableException("No Resource available anymore on ");

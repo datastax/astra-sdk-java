@@ -118,7 +118,6 @@ public class AstraClient implements Closeable {
     public AstraClient(AstraClientConfig config) {
         this.astraClientConfig = config;
         
-        
         // ---------------------------------------------------
         //  Devops APIS
         // ---------------------------------------------------
@@ -362,8 +361,9 @@ public class AstraClient implements Closeable {
      *      new region
      */
     public void useRegion(String region) {
-        // Validate the regions exist
+        LOGGER.info("Switch to region : {}", region);
         this.currentDatabaseRegion = region;
+        this.stargateClient.setCurrentDatacenter(region);
     }
     
     /**

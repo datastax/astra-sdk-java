@@ -16,6 +16,8 @@
   </properties>
   
   <dependencies>
+    
+    <!-- Core Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
@@ -29,26 +31,29 @@
       <artifactId>spring-boot-autoconfigure-processor</artifactId>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>com.datastax.astra</groupId>
-      <artifactId>astra-sdk</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-    	<groupId>com.datastax.oss</groupId>
-    	<artifactId>java-driver-metrics-micrometer</artifactId>
-    	<version>4.13.0</version>
-	</dependency>
 	<dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
-      <version>2.5.6</version>
     </dependency>
     <dependency>
     	<groupId>org.springframework.boot</groupId>
     	<artifactId>spring-boot-configuration-processor</artifactId>
     	<optional>true</optional>
     </dependency>
+    
+    <!-- SDK -->
+    <dependency>
+      <groupId>com.datastax.astra</groupId>
+      <artifactId>astra-sdk</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <!-- Add metrics in actuator -->
+    <dependency>
+    	<groupId>com.datastax.oss</groupId>
+    	<artifactId>java-driver-metrics-micrometer</artifactId>
+	</dependency>
+	
   </dependencies>
   
   <build>

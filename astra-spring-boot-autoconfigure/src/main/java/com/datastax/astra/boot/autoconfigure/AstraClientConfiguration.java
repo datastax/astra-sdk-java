@@ -115,7 +115,8 @@ public class AstraClientConfiguration {
         
         if (null != microMeterMetricsRegistry) {
             LOGGER.info("+ Micrometer detected");
-            if (astraClientProperties.getMetrics().isEnabled()) {
+            if (null != astraClientProperties.getMetrics() && 
+                 astraClientProperties.getMetrics().isEnabled()) {
             LOGGER.info("+ Enabling CQL Metrics through Actuator");
             builder.withCqlDriverOption(TypedDriverOption.METRICS_FACTORY_CLASS, "MicrometerMetricsFactory")
                    .withCqlDriverOption(TypedDriverOption.METRICS_SESSION_ENABLED, Stream

@@ -6,7 +6,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.config.StargateNodeConfig;
 
-public class QuickstartStargate {
+public class FullSampleStargate {
     
     public static void main(String[] args) {
         try (StargateClient stargateClient = configureStargateClientDefault()) {

@@ -40,9 +40,7 @@ public class Grpc {
                     .setCql("SELECT data_center from system.local")
                     .build());
         
-        QueryOuterClass.ResultSet rs =
-                response.getResultSet().getData().unpack(QueryOuterClass.ResultSet.class);
-        
+        QueryOuterClass.ResultSet rs = response.getResultSet();
         System.out.println(rs.getRowsList().get(0).getValues(0));
     }
     
