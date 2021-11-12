@@ -14,7 +14,8 @@ services:
       - MAX_HEAP_SIZE=1024M
       - CASSANDRA_SEEDS=dc1n1
       - CASSANDRA_CLUSTER_NAME=stargatefull
-      - DATACENTER=DC1
+      - CASSANDRA_DC=DC1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
   
   dc1n2: 
     image: cassandra:3.11.11
@@ -29,7 +30,8 @@ services:
       - MAX_HEAP_SIZE=1024M
       - CASSANDRA_SEEDS=dc1n1
       - CASSANDRA_CLUSTER_NAME=stargatefull
-      - DATACENTER=DC1
+      - CASSANDRA_DC=DC1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
   
   dc1n3: 
     image: cassandra:3.11.11
@@ -44,7 +46,9 @@ services:
       - MAX_HEAP_SIZE=1024M
       - CASSANDRA_SEEDS=dc1n1
       - CASSANDRA_CLUSTER_NAME=stargatefull
-      - DATACENTER=DC1
+      - CASSANDRA_DC=DC1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      
       
   dc2n1: 
     image: cassandra:3.11.11
@@ -56,9 +60,10 @@ services:
     environment:
       - HEAP_NEWSIZE=128M
       - MAX_HEAP_SIZE=1024M
-      - CASSANDRA_SEEDS=dc2n1
+      - CASSANDRA_SEEDS=dc2n1,dc1n1
       - CASSANDRA_CLUSTER_NAME=stargatefull
-      - DATACENTER=DC2
+      - CASSANDRA_DC=DC2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
   
   dc2n2:
     image: cassandra:3.11.11
@@ -71,9 +76,10 @@ services:
     environment:
       - HEAP_NEWSIZE=128M
       - MAX_HEAP_SIZE=1024M
-      - CASSANDRA_SEEDS=dc2n1
+      - CASSANDRA_SEEDS=dc2n1,dc1n1
       - CASSANDRA_CLUSTER_NAME=stargatefull
-      - DATACENTER=DC2
+      - CASSANDRA_DC=DC2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
   
   dc2n3: 
     image: cassandra:3.11.11
@@ -86,9 +92,10 @@ services:
     environment:
       - HEAP_NEWSIZE=128M
       - MAX_HEAP_SIZE=1024M
-      - CASSANDRA_SEEDS=dc2n1
+      - CASSANDRA_SEEDS=dc2n1,dc1n1
       - CASSANDRA_CLUSTER_NAME=stargatefull
-      - DATACENTER=DC2      
+      - CASSANDRA_DC=DC2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
    
 networks:
   backend:
