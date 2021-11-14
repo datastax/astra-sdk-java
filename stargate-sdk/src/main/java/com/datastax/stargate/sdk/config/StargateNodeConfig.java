@@ -49,12 +49,7 @@ public class StargateNodeConfig {
      *      current host
      */
     public StargateNodeConfig(String host) {
-        this.name       = host;
-        this.authUrl    = "http://" + host + ":" + DEFAULT_PORT_AUTH;
-        this.restUrl    = "http://" + host + ":" + DEFAULT_PORT_REST;
-        this.graphqlUrl = "http://" + host + ":" + DEFAULT_PORT_GQL;
-        this.grpcHost   = host;
-        this.grpcPort   = DEFAULT_PORT_GRPC;
+        this(host, host, DEFAULT_PORT_AUTH, DEFAULT_PORT_REST, DEFAULT_PORT_GQL, DEFAULT_PORT_GRPC);
     }
     
     /**
@@ -70,7 +65,25 @@ public class StargateNodeConfig {
      *      port for graphQL api 
      */
     public StargateNodeConfig(String host, int portAuth, int portRest, int portgraphQL, int portGrpc) {
-        this.name       = host;
+        this(host, host, portAuth, portRest, portgraphQL, portGrpc);
+    }
+    
+    /**
+     * Constructor for local node.
+     *
+     * @param name
+     *      node name
+     * @param host
+     *      target host
+     * @param portAuth
+     *      port for authentication
+     * @param portRest
+     *      port for rest api 
+     * @param portgraphQL
+     *      port for graphQL api 
+     */
+    public StargateNodeConfig(String name,String host, int portAuth, int portRest, int portgraphQL, int portGrpc) {
+        this.name       = name;
         this.authUrl    = "http://" + host + ":" + portAuth;
         this.restUrl    = "http://" + host + ":" + portRest;
         this.graphqlUrl = "http://" + host + ":" + portgraphQL;
