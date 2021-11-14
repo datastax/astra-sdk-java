@@ -1,23 +1,27 @@
 package com.datastax.tutorial;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import org.apache.hc.client5.http.auth.StandardAuthScheme;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.core5.util.Timeout;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.stargate.sdk.StargateClient;
+import com.datastax.stargate.sdk.audit.AnsiLoggerObserver;
+import com.datastax.stargate.sdk.audit.AnsiLoggerObserverLight;
 import com.datastax.stargate.sdk.config.StargateNodeConfig;
-import com.datastax.stargate.sdk.core.ApiTokenProviderSimple;
-import com.datastax.stargate.sdk.doc.ApiDocumentClient;
-import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
-import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
-import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
-import com.datastax.stargate.sdk.rest.ApiDataClient;
+import com.evanlennick.retry4j.config.RetryConfigBuilder;
 
 public class FullSampleStargate {
     
     public static void main(String[] args) {
-        try (StargateClient stargateClient = configureStargateClientDefault()) {
+        try (StargateClient stargateClient = configureStargateClientFull()) {
             testCqlApi(stargateClient);
             testRestApi(stargateClient);
             testDocumentaApi(stargateClient);
@@ -26,71 +30,49 @@ public class FullSampleStargate {
         }
     }
     
-    public void doc(StargateClient sdk) {
-        ApiDocumentClient apiDocument = sdk.apiDocument();
-        ApiDataClient apiDataRest = sdk.apiRest();
-        ApiGrpcClient apiGrpc= sdk.apiGrpc();
-        ApiGraphQLClient apiGraphClient= sdk.apiGraphQL();
-        
-        
-        Stream <Document<String>> familyDoe = sdk.apiDocument().namespace("foo").collection("bar")
-            .findAll(SearchDocumentQuery.builder()
-                        .select("firstname").where("lastname").isEqualsTo("Doe")
-                        .build(), String.class);
-    }
-    
-    public static StargateClient configureStargateClientDefault() {
+    public static StargateClient configureStargateClientFull() {
         return StargateClient.builder()
+                .withApplicationName("FullSample")
                 
+                // Setup DC1
                 .withLocalDatacenter("DC1")
-                
+                .withAuthCredentials("cassandra", "cassandra")
+                .withCqlContactPoints("localhost:9052")
+                .withCqlKeyspace("system")
+                .withCqlConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
+                .withCqlDriverOption(TypedDriverOption.CONNECTION_CONNECT_TIMEOUT, Duration.ofSeconds(10))
+                .withCqlDriverOption(TypedDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofSeconds(10))
+                .withCqlDriverOption(TypedDriverOption.CONNECTION_SET_KEYSPACE_TIMEOUT, Duration.ofSeconds(10))
+                .withCqlDriverOption(TypedDriverOption.CONTROL_CONNECTION_TIMEOUT, Duration.ofSeconds(10))
                 .withApiNode(new StargateNodeConfig("dc1s1", "localhost", 8081, 8082, 8080, 8083))
                 .withApiNode(new StargateNodeConfig("dc1s2", "localhost", 9091, 9092, 9090, 9093))
+                
+                // Setup DC2
                 .withApiNodeDC("DC2", new StargateNodeConfig("dc2s1", "localhost", 6061, 6062, 6060, 6063))
                 .withApiNodeDC("DC2", new StargateNodeConfig("dc2s2", "localhost", 7071, 7072, 7070, 7073))
-                
-                .withAuthCredentials("cassandra", "cassandra")
-                
-                .withApiToken(null) // if provided static token use
-                .withApiTokenProvider("url1", "url2") // enforce some node to to the auth in current DC
-                .withApiTokenProviderDC("DC2", "url1", "url2") // enforce some node to to the auth in current DC
-                .withApiTokenProviderDC("DC1", new ApiTokenProviderSimple("", "", ""))
-                
-                .withApplicationName("appp")
-                
-                .withCqlCloudSecureConnectBundle(null) // path  of SCB for current DC
-                .withCqlCloudSecureConnectBundleDC("DC1", null) // path  of SCB for current a DC
-                
-                .withCqlConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
-                .withCqlConsistencyLevelDC("DC1", ConsistencyLevel.LOCAL_QUORUM)
-                
-                .withCqlContactPoints("localhost:9052")
                 .withCqlContactPointsDC("DC2", "localhost:9062")
+                .withCqlDriverOptionDC("DC2",TypedDriverOption.CONNECTION_CONNECT_TIMEOUT, Duration.ofSeconds(10))
+                .withCqlDriverOptionDC("DC2",TypedDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofSeconds(10))
+                .withCqlDriverOptionDC("DC2",TypedDriverOption.CONNECTION_SET_KEYSPACE_TIMEOUT, Duration.ofSeconds(10))
+                .withCqlDriverOptionDC("DC2",TypedDriverOption.CONTROL_CONNECTION_TIMEOUT, Duration.ofSeconds(10))
                 
-                .withCqlDriverConfigurationFile(null)
-                
-                .withCqlDriverConfigurationLoader(null)
-                
-                .withCqlDriverOption(null, null)
-                
-                .withCqlDriverOptionDC("DC2", null, null)
-                
-                .withCqlKeyspace(null)
-                
-                .withCqlMetricsRegistry(null)
-                
-                .withCqlRequestTracker(null)
-                
-                .withCqlSessionBuilderCustomizer(null)
-                
-                .withHttpRequestConfig(null)
-                
-                .withHttpRetryConfig(null)
-                
-                .withHttpObservers(null)
-                
-                .withoutCqlSession()
-                
+                // Setup HTTP
+                .withHttpRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(StandardCookieSpec.STRICT)
+                        .setExpectContinueEnabled(true)
+                        .setConnectionRequestTimeout(Timeout.ofSeconds(5))
+                        .setConnectTimeout(Timeout.ofSeconds(5))
+                        .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
+                        .build())
+                .withHttpRetryConfig(new RetryConfigBuilder()
+                        //.retryOnSpecificExceptions(ConnectException.class, IOException.class)
+                        .retryOnAnyException()
+                        .withDelayBetweenTries( Duration.ofMillis(100))
+                        .withExponentialBackoff()
+                        .withMaxNumberOfTries(10)
+                        .build())
+                .addHttpObserver("logger_light", new AnsiLoggerObserver())
+                .addHttpObserver("logger_full", new AnsiLoggerObserverLight())
                 .build();
     }
     
