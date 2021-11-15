@@ -368,6 +368,7 @@ public class AstraClient implements Closeable {
         LOGGER.info("Switch to region : {}", region);
         this.currentDatabaseRegion = region;
         this.stargateClient.setCurrentDatacenter(region);
+        this.stargateClient.renewCqlSession();
     }
     
     /**

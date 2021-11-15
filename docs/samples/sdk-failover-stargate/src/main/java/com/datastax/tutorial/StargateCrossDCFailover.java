@@ -28,14 +28,13 @@ public class StargateCrossDCFailover {
                 int idx = 0;
                 while(idx++ < NB_TRY_BEFORE_FAILOVER) {
                     Thread.sleep(2000);
+                    System.out.println("- TEST -");
                     testCqlApi(stargateClient);
                     testRestApi(stargateClient);
                     testDocumentaApi(stargateClient);
                     testGraphQLApi(stargateClient);
-                    System.out.println("---");
                     //testGrpcApi(stargateClient);
                 }
-                //stargateClient.getStargateHttpClient().failoverDatacenter();
             }
         } catch (InterruptedException e) {}
     }
