@@ -3,9 +3,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.datastax.tutorial</groupId>
-  <artifactId>sdk-stargate-full</artifactId>
+  <artifactId>sdk-stargate-failover</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <name>sdk-quickstart-stargate</name>
+  <name>sdk-stargate-failover</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>

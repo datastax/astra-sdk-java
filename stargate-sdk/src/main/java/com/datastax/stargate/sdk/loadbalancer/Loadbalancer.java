@@ -112,7 +112,7 @@ public class Loadbalancer < RSC >  {
             case ROUND_ROBIN:
                 if (unavailableCount == resources.size()) {
                     throw new NoneResourceAvailableException("Cannot retrieve a resource "
-                            + "with '" + unavailableCount + "' resources down.");
+                            + "all '" + unavailableCount + "' resources are down.");
                 }
                 for (LoadBalancingResource < RSC > rsc : resources) {
                     // if resource need to be reintroduced 
@@ -234,12 +234,12 @@ public class Loadbalancer < RSC >  {
     public final LoadBalancingResource < RSC > handleComponentError(
             final LoadBalancingResource < RSC > component, 
             final Throwable parentException) {
-        System.out.println("Disabling... " + component.getId());
         component.setAvailable(false);
         component.setUnavailabilityCause(parentException.getMessage());
         component.setUnavailabilityError(parentException);
         component.setUnavailabilityTriggerDate(new Date());
         redistributeWeights();
+        
         return getLoadBalancedResource();
     }
 

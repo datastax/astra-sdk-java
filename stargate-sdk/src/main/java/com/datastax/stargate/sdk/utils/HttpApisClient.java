@@ -2,6 +2,7 @@ package com.datastax.stargate.sdk.utils;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -320,7 +321,7 @@ public class HttpApisClient implements ApiConstants {
      *      
      */
     public ApiResponseHttp executeHttp(HttpUriRequestBase req, boolean mandatory) {
-     // Initializing the invocation event
+        // Initializing the invocation event
         ApiInvocationEvent event = new ApiInvocationEvent(req);
         // Invoking the expected endpoint
         Status<CloseableHttpResponse> status = executeWithRetries(req);
@@ -489,6 +490,12 @@ public class HttpApisClient implements ApiConstants {
                 })
                 .afterFailedTryListener(s -> {
                     LOGGER.error("Failure on attempt {}/{} ", s.getTotalTries(), retryConfig.getMaxNumberOfTries());
+                    try {
+                        LOGGER.error("Failed request {} on {}{}", req.getMethod() , req.getUri(), req.getRequestUri() );
+                    } catch (URISyntaxException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpFailedTry(s)));
                 })
                 .build()

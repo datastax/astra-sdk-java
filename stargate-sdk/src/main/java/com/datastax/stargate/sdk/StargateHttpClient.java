@@ -294,10 +294,16 @@ public class StargateHttpClient implements ApiConstants {
                                       .executeHttp(method, targetEndPoint, lookupToken(), body, contentType, mandatory);
             } catch(UnavailableResourceException rex) {
                 LOGGER.warn("A stargate node is down [{}], falling back to another node...", lb.getResource().getNodeName());
-                failoverStargateNode(lb, rex);
+                try {
+                    failoverStargateNode(lb, rex);
+                } catch (NoneResourceAvailableException nex) {
+                    LOGGER.warn("No node availables is localDc [{}], falling back to another DC if available ...",  sc.currentDatacenter);
+                    failoverDatacenter();
+                }
             } catch(NoneResourceAvailableException nex) {
-                LOGGER.warn("No node availables is localDc [{}], falling back to another DC if available ...",  sc.currentDatacenter);
+                LOGGER.warn("No node availables is DataCenter [{}], falling back to another DC if available ...",  sc.currentDatacenter);
                 failoverDatacenter();
+                
             }
         }
     }
@@ -317,7 +323,9 @@ public class StargateHttpClient implements ApiConstants {
             throw new IllegalArgumentException("'" + datacenter + "' is not a known datacenter please provides one "
                     + "in " + datacenters.keySet());
         }
+        LOGGER.info("Using DataCenter [" + datacenter + "]");
         sc.currentDatacenter = datacenter;
+        sc.renewCqlSession();
     }
     
     /**
@@ -376,7 +384,7 @@ public class StargateHttpClient implements ApiConstants {
         }
         // Pick one and fail over
         useDataCenter(dcAvailables.iterator().next());
-        LOGGER.info("Fell back from DC {} to {}", dcDown, sc.currentDatacenter);
+        LOGGER.info("Failover from {} to {}", dcDown, sc.currentDatacenter);
     }
     
     /**

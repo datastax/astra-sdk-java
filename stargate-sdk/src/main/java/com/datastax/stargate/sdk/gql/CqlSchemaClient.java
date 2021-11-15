@@ -38,7 +38,6 @@ public class CqlSchemaClient {
      *      (dynamic) response
      */
     public String query(String input) {
-        System.out.println(input);
         ApiResponseHttp res = stargateHttpClient.POST_GRAPHQL(cqlSchemaResource, input);
         return res.getBody();
     }

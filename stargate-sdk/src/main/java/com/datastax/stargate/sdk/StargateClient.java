@@ -22,6 +22,7 @@ import static com.datastax.stargate.sdk.utils.AnsiUtils.red;
 
 import java.io.Closeable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -83,6 +84,11 @@ public class StargateClient implements Closeable {
      */
     protected StargateHttpClient stargateHttpClient;
     
+    /**
+     * Cloud be use to recreate a CqlSession during DC fail-over
+     */
+    protected final StargateClientConfig conf;
+    
     // ------------------------------------------------
     // ---------------- Initializing   ----------------
     // ------------------------------------------------
@@ -95,6 +101,7 @@ public class StargateClient implements Closeable {
      */
     public StargateClient(StargateClientConfig config) {
         LOGGER.info("Initializing [" + AnsiUtils.yellow("StargateClient") + "]");
+        this.conf = config;
         // Local DataCenter (if no secureconnect bundle)
         if (!Utils.hasLength(config.getLocalDC())) {
             config.withLocalDatacenter(StargateClientConfig.DEFAULT_LOCALDC);
@@ -105,61 +112,8 @@ public class StargateClient implements Closeable {
         // Initializing the Stargate Http Clients
         stargateHttpClient = new StargateHttpClient(this, config);
         
-        // CqlSession
-        if (!config.isDisableCqlSession()) {
-            if (config.getCqlSession() != null) {
-                // A CQL Session has been provided, we will reuse it
-                cqlSession = config.getCqlSession();
-            }
-            // Check options and add default if needed
-            if (null == config.getOptions().get(TypedDriverOption.CONTACT_POINTS) || 
-                config.getOptions().get(TypedDriverOption.CONTACT_POINTS).isEmpty()) {
-                // Defaulting for contact points if no securebundle provided
-                if (null == config.getOptions().get(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE)) {
-                    LOGGER.info("+ No contact points provided, using default {}", StargateClientConfig.DEFAULT_CONTACTPOINT);
-                    config.getOptions().put(TypedDriverOption.CONTACT_POINTS, Arrays.asList(StargateClientConfig.DEFAULT_CONTACTPOINT));
-                }
-            }
-            // Configuration through Map values
-            CqlSessionBuilder sessionBuilder = CqlSession.builder()
-                    .withConfigLoader(DriverConfigLoader.fromMap(config.getOptions()));
-            // Expand configuration
-            if (null != config.getMetricsRegistry()) {
-                sessionBuilder.withMetricRegistry(config.getMetricsRegistry());
-            }
-            // Request Tracking
-            if (null != config.getCqlRequestTracker()) {
-                sessionBuilder.withRequestTracker(config.getCqlRequestTracker());
-            }
-            // Final Customizations
-            if (null != config.getCqlSessionBuilderCustomizer()) {
-                config.getCqlSessionBuilderCustomizer().customize(sessionBuilder);
-            }
-            cqlSession = sessionBuilder.build();
-        }
-        
-        // Testing CqlSession
-        if (cqlSession != null) {
-            cqlSession.execute("SELECT data_center from system.local");
-            if (cqlSession.getKeyspace().isPresent()) {
-                LOGGER.info("+ CqlSession   :[" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"]",  cqlSession.getKeyspace().get());
-                
-            } else {
-                LOGGER.info("+ CqlSession   :[" + green("ENABLED") + "]");
-            }
-            
-            // As we opened a cqlSession we may want to close it properly at application shutdown.
-            Runtime.getRuntime().addShutdownHook(new Thread() { 
-                public void run() { 
-                    if (!cqlSession.isClosed()) {
-                        cqlSession.close();
-                        LOGGER.info("Closing CqlSession.");
-                    }
-                  } 
-            });
-        } else {
-            LOGGER.info("+ CqlSession   :[" + red("DISABLED") + "]");
-        }
+        // Initialize cqlSession
+        cqlSession = renewCqlSession();
        
         // Initializing Apis
         if (!config.getStargateNodes().isEmpty()) {
@@ -187,6 +141,92 @@ public class StargateClient implements Closeable {
             }
         }
     }   
+    
+    /**
+     * Initializing  CqlSession based on current parameters.
+     *
+     * @return
+     *      a new cqlSession
+     */
+    public CqlSession renewCqlSession() {
+        if (null != cqlSession && !cqlSession.isClosed()) {
+            cqlSession.close();
+            cqlSession = null;
+        }
+        
+        if (!conf.isDisableCqlSession()) {
+            if (conf.getCqlSession() != null) {
+                // A CQL Session has been provided, we will reuse it
+                cqlSession = conf.getCqlSession();
+            }
+            // Check options and add default if needed
+            if (null == conf.getOptions().get(TypedDriverOption.CONTACT_POINTS) || 
+                    conf.getOptions().get(TypedDriverOption.CONTACT_POINTS).isEmpty()) {
+                // Defaulting for contact points if no securebundle provided
+                if (null == conf.getOptions().get(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE)) {
+                    LOGGER.info("+ No contact points provided, using default {}", StargateClientConfig.DEFAULT_CONTACTPOINT);
+                    conf.getOptions().put(TypedDriverOption.CONTACT_POINTS, Arrays.asList(StargateClientConfig.DEFAULT_CONTACTPOINT));
+                }
+            }
+            
+            // Extract keys for dedicated DC on current when making send
+            conf.getOptions().put(TypedDriverOption.LOAD_BALANCING_LOCAL_DATACENTER, this.currentDatacenter);
+            
+            // CONTACT POINTS
+            List<String> configContactPointsDC = conf.getOptions().get(this.currentDatacenter, TypedDriverOption.CONTACT_POINTS);
+            if (configContactPointsDC != null && 
+               !configContactPointsDC.isEmpty()) {
+                conf.getOptions().put(TypedDriverOption.CONTACT_POINTS, configContactPointsDC);
+            }
+            
+            // SCB
+            String scb = conf.getOptions().get(this.currentDatacenter, TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE);
+            if (Utils.hasLength(scb)) {
+                conf.getOptions().put(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE, scb);
+            }
+           
+            // Configuration through Map values
+            CqlSessionBuilder sessionBuilder = CqlSession.builder()
+                    .withConfigLoader(DriverConfigLoader.fromMap(conf.getOptions()));
+            // Expand configuration
+            if (null != conf.getMetricsRegistry()) {
+                sessionBuilder.withMetricRegistry(conf.getMetricsRegistry());
+            }
+            // Request Tracking
+            if (null != conf.getCqlRequestTracker()) {
+                sessionBuilder.withRequestTracker(conf.getCqlRequestTracker());
+            }
+            // Final Customizations
+            if (null != conf.getCqlSessionBuilderCustomizer()) {
+                conf.getCqlSessionBuilderCustomizer().customize(sessionBuilder);
+            }
+            cqlSession = sessionBuilder.build();
+        }
+        
+        // Testing CqlSession
+        if (cqlSession != null) {
+            String currentDC = cqlSession.execute("SELECT data_center from system.local").one().getString("data_center");
+            if (cqlSession.getKeyspace().isPresent()) {
+                LOGGER.info("+ CqlSession   :[" + green("ENABLED") + "] with keyspace [" + cyan("{}")  +"] and dc [" + cyan("{}")  + "]",
+                        cqlSession.getKeyspace().get(), currentDC);
+            } else {
+                LOGGER.info("+ CqlSession   :[" + green("ENABLED") + "]");
+            }
+                
+            // As we opened a cqlSession we may want to close it properly at application shutdown.
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    if (!cqlSession.isClosed()) {
+                        cqlSession.close();
+                        LOGGER.info("Closing CqlSession.");
+                    }
+                } 
+            });
+        } else {
+            LOGGER.info("+ CqlSession   :[" + red("DISABLED") + "]");
+        }
+        return cqlSession;
+    }
     
     /**
      * Builder Pattern
