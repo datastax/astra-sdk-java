@@ -37,6 +37,7 @@ public class TestSpring {
     
     @Test
     public void test() {
+        astraClient.apiDevopsOrganizations().organizationId();
         cassandraUserRepository.createSchema();
         System.out.println("DONE");
     }
