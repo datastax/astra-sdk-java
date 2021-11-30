@@ -8,9 +8,10 @@ import com.datastax.astra.sdk.databases.domain.Datacenter;
 
 public class AstraCrossRegionFailOver {
     
-    public static final String ASTRA_DB_TOKEN    = "AstraCS:RjwrkBwzbcZZDyFZAvuhmCRJ:71cea89b9d3ea45a1c15675ab38f6cd861633bfc521467f525d2f57ced0e6b14";
-    public static final String ASTRA_DB_ID       = "290eb696-c9ed-48b2-ac22-350f71baaee7";
-    public static final String ASTRA_DB_REGION   = "us-east-1";
+    public static final String ASTRA_DB_TOKEN    = "CHANGE_ME";
+    public static final String ASTRA_DB_ID       = "CHANGE_ME";
+    public static final String ASTRA_DB_REGION   = "CHANGE_ME";
+    public static final String ASTRA_DB_KEYSPACE = "CHANGE_ME";
     
     public static void main(String[] args) throws Exception {
 
@@ -50,7 +51,7 @@ public class AstraCrossRegionFailOver {
     public static final void showCurrentDCWithRestApi(AstraClient astraClient) {
         System.out.println("DC (api)" + astraClient
                     .apiStargateData()
-                    .keyspace("ks").find().get()
+                    .keyspace(ASTRA_DB_KEYSPACE).find().get()
                     .getDatacenters().get(0).getName());
     }
 

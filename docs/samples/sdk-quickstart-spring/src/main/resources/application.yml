@@ -20,9 +20,7 @@ management:
         include: "*"
         
 astra:
-  application-token: AstraCS:gdZaqzmFZszaBTOlLgeecuPs:edd25600df1c01506f5388340f138f277cece2c93cb70f4b5fa386490daa5d44
-  database-id: f0b7a8cf-1f2f-4415-99d0-334760666ca3
-  database-region: eu-west-1
+  application-token: CHANGE_ME
+  database-id: CHANGE_ME
+  database-region: CHANGE_ME
   keyspace: quickstart
-  #metrics:
-  #  enabled: true
