@@ -48,12 +48,14 @@ public class UserByIdRepository extends SimpleCassandraRepository<User, String> 
     /**
      * Available constructor.
      *
-     * @param metadata
+     * @param ceInfo
      *      entity mapping
      * @param operations
      *      access to cqlSession
      */
-    public UserByIdRepository(CassandraEntityInformation<User, String> ceInfo, CassandraOperations operations) {
+    public UserByIdRepository(
+            CassandraEntityInformation<User, String> ceInfo, 
+            CassandraOperations operations) {
         super(ceInfo, operations);
         this.cassandraTemplate = operations;
         this.cqlOperations     = cassandraTemplate.getCqlOperations();
@@ -109,6 +111,7 @@ public class UserByIdRepository extends SimpleCassandraRepository<User, String> 
     
     /**
      * Retrieve a user based on a criteria.
+     *
      * @param cql
      *      cql statement (prepared)
      * @param param
@@ -145,7 +148,7 @@ public class UserByIdRepository extends SimpleCassandraRepository<User, String> 
      *   activation_key text,
      *   reset_key text,
      *   reset_date timestamp,
-     *   authorities set<text>,
+     *   authorities set &lt;text&lt;,
      *   PRIMARY KEY(id)
      * );
      */

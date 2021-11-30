@@ -368,9 +368,6 @@ public class StargateHttpClient implements ApiConstants {
     
     /**
      * Failing over from one DC to another
-     * 
-     * @param dc
-     *      datacenter name
      */
     public void failoverDatacenter() {
         String dcDown = sc.currentDatacenter;

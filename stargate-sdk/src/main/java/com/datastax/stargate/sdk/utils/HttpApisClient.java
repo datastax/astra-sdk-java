@@ -298,6 +298,8 @@ public class HttpApisClient implements ApiConstants {
      *      url
      * @param token
      *      authentication token
+     * @param contentType
+     *      request content type
      * @param reqBody
      *      request body
      * @param mandatory
@@ -318,7 +320,6 @@ public class HttpApisClient implements ApiConstants {
      *      mandatory
      * @return
      *      api response
-     *      
      */
     public ApiResponseHttp executeHttp(HttpUriRequestBase req, boolean mandatory) {
         // Initializing the invocation event

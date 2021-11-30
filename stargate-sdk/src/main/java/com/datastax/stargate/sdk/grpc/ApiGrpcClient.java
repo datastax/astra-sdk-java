@@ -60,6 +60,8 @@ public class ApiGrpcClient {
      *
      * @param query
      *      gRPC query
+     * @return
+     *      Resultset
      */
     public ResultSetGrpc execute(Query query) {
         QueryOuterClass.Response res = getGrpcConnection().getSyncStub().executeQuery(query);
@@ -70,7 +72,9 @@ public class ApiGrpcClient {
      * Execute a gRPC batch.
      *
      * @param cqlQueries
-     *      list
+     *      queries
+     * @return
+     *      responses
      */
     public QueryOuterClass.Response executeBatch(String... cqlQueries) {
        Assert.notNull(cqlQueries, "queries");
@@ -100,9 +104,15 @@ public class ApiGrpcClient {
      * Execute a Prepared query.
      *
      * @param cql
-     *      a CQL query
+     *      cql query
+     * @param cl
+     *      consistency level
+     * @param pageSize
+     *      page size
+     * @param pageState
+     *      page state
      * @return
-     *      list of items
+     *      a grpc resultset
      */
     public ResultSetGrpc execute(String cql, Consistency cl, int pageSize, String pageState) {
         Builder queryParamsBuilder = QueryParameters.newBuilder();

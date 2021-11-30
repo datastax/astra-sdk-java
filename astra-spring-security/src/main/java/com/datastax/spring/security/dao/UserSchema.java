@@ -67,7 +67,7 @@ public interface UserSchema {
      *   activation_key text,
      *   reset_key text,
      *   reset_date timestamp,
-     *   authorities set<text>,
+     *   authorities set &lt;text&gt;
      *   PRIMARY KEY(id)
      * );
      */

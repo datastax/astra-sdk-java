@@ -50,6 +50,11 @@ public class PersonRepo {
     
     /**
      * Defaut Constructor.
+     * 
+     * @param first
+     *      firstname
+     * @param last
+     *      lastname
      */
     public PersonRepo(String first, String last) {
         this.firstname = first;
@@ -58,6 +63,15 @@ public class PersonRepo {
     
     /**
      * Defaut Constructor.
+     * 
+     * @param first
+     *      firstname
+     * @param last
+     *      lastname
+     * @param age
+     *      age
+     * @param a
+     *      adress
      */
     public PersonRepo(String first, String last, int age, Address a) {
         this.firstname = first;

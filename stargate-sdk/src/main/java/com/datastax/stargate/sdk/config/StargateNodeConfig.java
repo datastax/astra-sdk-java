@@ -63,6 +63,8 @@ public class StargateNodeConfig {
      *      port for rest api 
      * @param portgraphQL
      *      port for graphQL api 
+     * @param portGrpc
+     *      port for gRPC api
      */
     public StargateNodeConfig(String host, int portAuth, int portRest, int portgraphQL, int portGrpc) {
         this(host, host, portAuth, portRest, portgraphQL, portGrpc);
@@ -81,6 +83,8 @@ public class StargateNodeConfig {
      *      port for rest api 
      * @param portgraphQL
      *      port for graphQL api 
+     * @param portGrpc
+     *      port for gRPC api      
      */
     public StargateNodeConfig(String name,String host, int portAuth, int portRest, int portgraphQL, int portGrpc) {
         this.name       = name;
@@ -115,7 +119,9 @@ public class StargateNodeConfig {
      * @param urlGraphQL
      *      api graphql urk
      * @param grpcHost
+     *      grpc host
      * @param grpcPort
+     *      grpc port 
      */
     public StargateNodeConfig(String name, String urlRest, String urlGraphQL, String grpcHost, int grpcPort) {
         this.name       = name;

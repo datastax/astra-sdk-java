@@ -148,7 +148,10 @@ public abstract class ApiDataTableTest implements ApiDataTest {
     
     
     /**
-     * List table definitions
+     * List table definitions.
+     *
+     * @throws InterruptedException
+     *      error
      */
     @Test
     @Order(3)
@@ -161,7 +164,10 @@ public abstract class ApiDataTableTest implements ApiDataTest {
     }
     
     /**
-     * Find table by its name
+     * Find table by its name.
+     *
+     * @throws InterruptedException
+     *      error
      */
     @Test
     @Order(4)
@@ -179,7 +185,10 @@ public abstract class ApiDataTableTest implements ApiDataTest {
     }
     
     /**
-     * Find table by its name
+     * Find table by its name.
+     *
+     * @throws InterruptedException
+     *      error
      */
     @Test
     @Order(5)
@@ -278,6 +287,7 @@ public abstract class ApiDataTableTest implements ApiDataTest {
     
     /**
      * Find a column.
+     *
      * @throws InterruptedException
      *      error
      */

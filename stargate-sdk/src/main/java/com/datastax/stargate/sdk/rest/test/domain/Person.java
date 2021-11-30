@@ -20,17 +20,27 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Sample bean to test REST API.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class Person {
     
+    /** Attribute. */
     private String firstname;
     
+    /** Attribute. */
     private String lastname;
     
+    /** Attribute. */
     private int age;
     
+    /** Attribute. */
     private List<String> countries;
     
+    /** Attribute. */
     private Address address;
 
     /**
@@ -40,6 +50,11 @@ public class Person {
     
     /**
      * Defaut Constructor.
+     * 
+     * @param first
+     *      firstname
+     * @param last
+     *      lastname
      */
     public Person(String first, String last) {
         this.firstname = first;
@@ -48,6 +63,15 @@ public class Person {
     
     /**
      * Defaut Constructor.
+     * 
+     * @param first
+     *      firstname
+     * @param last
+     *      lastname
+     * @param age
+     *      age
+     * @param a
+     *      adress
      */
     public Person(String first, String last, int age, Address a) {
         this.firstname = first;
