@@ -160,7 +160,7 @@ public class DatabaseClient {
         // Validation
         Assert.hasLength(destination, "destination");
         Assert.isTrue(new File(destination).exists(), "Destination folder");
-        Assert.isTrue(odb.isPresent(), "Database id");
+        Assert.isTrue(odb.isPresent(), "Database '" + databaseId + "' has not been found");
         odb.get().getInfo().getDatacenters().stream().forEach(dc -> {
             String fileName = destination + File.separator + buildScbFileName(odb.get().getId(), dc.getRegion());
             if (!new File(fileName).exists()) {

@@ -182,7 +182,6 @@ public class AstraClientProperties {
     public void setDatabaseRegion(String databaseRegion) {
         this.databaseRegion = databaseRegion;
     }
-    
 
     /**
      * Getter accessor for attribute 'metrics'.

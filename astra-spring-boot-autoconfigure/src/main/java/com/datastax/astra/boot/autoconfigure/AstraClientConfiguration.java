@@ -147,7 +147,6 @@ public class AstraClientConfiguration {
         return astraClient.cqlSession();
     }
     
-    // Could be null if only token provided
     //@Bean
     //public StargateClient stargateClient(AstraClient astraClient) {
     //    return astraClient.getStargateClient();

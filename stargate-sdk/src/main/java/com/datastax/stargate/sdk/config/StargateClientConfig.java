@@ -533,7 +533,6 @@ public class StargateClientConfig implements Serializable {
     public StargateClientConfig withCqlCloudSecureConnectBundleDC(String dc, String cloudConfigUrl) {
         hasLength(dc, "dc");
         hasLength(cloudConfigUrl, "cloudConfigUrl");
-        System.out.println(cloudConfigUrl);
         return withCqlDriverOptionDC(dc, TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE, cloudConfigUrl);
     }
 

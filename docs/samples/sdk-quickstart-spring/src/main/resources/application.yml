@@ -20,9 +20,9 @@ management:
         include: "*"
         
 astra:
-  application-token: AstraCS:RjwrkBwzbcZZDyFZAvuhmCRJ:71cea89b9d3ea45a1c15675ab38f6cd861633bfc521467f525d2f57ced0e6b14
-  database-id: d7d49808-9f08-403b-84e5-19ae47d1da69
-  database-region: eu-central-1
+  application-token: AstraCS:gdZaqzmFZszaBTOlLgeecuPs:edd25600df1c01506f5388340f138f277cece2c93cb70f4b5fa386490daa5d44
+  database-id: f0b7a8cf-1f2f-4415-99d0-334760666ca3
+  database-region: eu-west-1
   keyspace: quickstart
-  metrics:
-    enabled: true
+  #metrics:
+  #  enabled: true
