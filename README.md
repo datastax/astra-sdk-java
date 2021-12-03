@@ -1,5 +1,7 @@
 # Astra Software Development Kit
 
+[![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 <img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-sdk-logo.png?raw/true" height="70"  align="left"/>
 
 ## Overview
@@ -11,11 +13,11 @@ This SDK *(Software Development Kit)* makes it easy to call Stargate and/or Astr
 <img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/sdk-overview.png?raw/true" />
 </center>
 
-- **The Stargate SDK** works with both Stargate standalone installations and Stargate deployed in Astra. With standalone Stargate deployments you will initialize the framework with the class `StargateClient` and provide the list of nodes. To test it locally please follow the [Stargate SDK quickstart](https://github.com/datastax/astra-sdk-java/wiki/Stargate-SDK-Quickstart)
+- **The Stargate SDK** works with both Stargate standalone installations and Stargate deployed in Astra. With standalone Stargate deployments you will initialize the framework with the class `StargateClient` and provide a list of nodes (IP). To start locally please follow [Stargate SDK quickstart](https://github.com/datastax/astra-sdk-java/wiki/Stargate-SDK-Quickstart) guide. The nodes will run in Docker.
 
-- **The Astra SDK** reuses the previous library with Astra environments. You will then work with the class `AstraClient` that will configure `StargateClient` under the hood for you. As you can see on the figure below the `AstraClient` handle not only Stargate Apis but also the Astra Devops Api and Apache Pulsar deployed in Astra. To test it please follow the [Astra SDK quickstart](https://github.com/datastax/astra-sdk-java/wiki/Astra-SDK-Quickstart)
+- **The Astra SDK** reuses the previous library and setup the connection to work with AstraDB cloud-based service. You work with the class `AstraClient` (that configure `StargateClient` for you). As you can see on the figure below the `AstraClient` handles not only Stargate Apis but also Astra Devops Api and Apache Pulsar. To get started follow the [Astra SDK quickstart](https://github.com/datastax/astra-sdk-java/wiki/Astra-SDK-Quickstart) guide.
 
-- **The Astra Spring Boot Starter** provides a straight forward way to configure both `Astra SDK` and `Spring Data Cassandra` to work with Astra. By Reading custom keys in spring boot `application.yaml` the starter will initialize for you all the beans you need. To test it please follow the [Astra Spring Boot Starter QuickStart](https://github.com/datastax/astra-sdk-java/wiki/Spring-Boot-Starter-Quickstart).
+- **The Astra Spring Boot Starter**: Imported in a Spring Boot application, it configures both `Astra SDK` and `Spring Data Cassandra` to work with AstraDB. Configuration is read in `application.yaml`. The starter will initialize any beans you would need (`AstraClient`, `CqlSession`, `StargateClient`. To get started follow the [Astra Spring Boot Starter QuickStart](https://github.com/datastax/astra-sdk-java/wiki/Spring-Boot-Starter-Quickstart) guide.
 
 ## What's NEXT ?
 
