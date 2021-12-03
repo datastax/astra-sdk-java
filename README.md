@@ -1,6 +1,8 @@
 # Astra Software Development Kit
 
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datastax/astra-sdk-java/Java%20SDK%20Tests)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.datastax.astra/astra-sdk/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.datastax.astra/astra-sdk/)
 
 <img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-sdk-logo.png?raw/true" height="70"  align="left"/>
 
