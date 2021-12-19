@@ -1,0 +1,110 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="sidebar" >
+
+<!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    
+    <!-- Brand Logo -->
+    <a href="index3.html" class="brand-link">
+      <img src="img/astradb.png" style="width:200px">
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" 
+        		data-widget="treeview" role="menu" 
+        		data-accordion="false">
+         
+         <li class="nav-item">
+            <a th:href="@{/home}" class="nav-link">
+              <i class="nav-icon fas fa-home text-info"></i>
+              <p>Home</p>
+            </a>
+          </li>
+          
+            <li class="nav-header">
+           <div class="user-panel d-flex">
+          	<b><span class="text-success">FEEDS</span></b>
+           </div>
+          </li>
+          
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-list text-success"></i>
+             <p>
+                 WatchLists
+                <i class="right fas fa-angle-left"></i>
+                <span class="badge badge-info right">6</span>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li>one</li>
+              <li>two</li>
+              <li>three</li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="pages/gallery.html" class="nav-link">
+              <i class="nav-icon fas fa-heart text-success"></i>
+              <p>
+                Favorite Cards
+                <span class="badge badge-info right">6</span>
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="pages/gallery.html" class="nav-link">
+              <i class="nav-icon fas fa-bell text-success"></i>
+              <p>
+                Filters and Alerts
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="pages/gallery.html" class="nav-link">
+              <i class="nav-icon fas fa-chart-line text-success"></i>
+              <p>
+                Investment
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="pages/gallery.html" class="nav-link">
+              <i class="nav-icon fas fa-list-alt text-success"></i>
+              <p>
+                Inventory
+              </p>
+            </a>
+          </li>
+          
+          <li class="nav-header">
+           <div class="user-panel d-flex">
+          	<b><span class="text-warning">PROFILES</span></b>
+           </div>
+          </li>
+          
+           <li class="nav-item">
+            <a th:href="@{/showSetList}" class="nav-link">
+              <i class="nav-icon far fa fa-sitemap text-warning"></i>
+              <p>
+                Set List
+              </p>
+            </a>
+          </li>
+           
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+</div>
+  
+
+</body>

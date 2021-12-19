@@ -200,6 +200,7 @@ public class StargateClient implements Closeable {
             if (null != conf.getCqlSessionBuilderCustomizer()) {
                 conf.getCqlSessionBuilderCustomizer().customize(sessionBuilder);
             }
+            
             cqlSession = sessionBuilder.build();
         }
         

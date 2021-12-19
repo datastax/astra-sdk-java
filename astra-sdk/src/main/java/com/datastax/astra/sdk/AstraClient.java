@@ -178,10 +178,10 @@ public class AstraClient implements Closeable {
             
             if (Utils.hasAllLength(config.getClientId(), config.getClientSecret())) {
                 config.getStargateConfig().withAuthCredentials(config.getClientId(), config.getClientSecret());
-                LOGGER.info("+ Credentials used for Cql clientId/clientSecret");
+                LOGGER.info("+ Credentials used for Cql connection are clientId/clientSecret");
             } else {
                 config.getStargateConfig().withAuthCredentials("token", config.getToken());
-                LOGGER.info("+ Credentials used for Cql 'token' with ${token}");
+                LOGGER.info("+ Credentials used for Cql are based on the token ");
             }
             
             // ---------------------------------------------------

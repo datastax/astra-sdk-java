@@ -80,7 +80,7 @@ public class AstraClientConfiguration {
         
         if (null != astraClientProperties.getDatabaseId() &&
                 !"".equals(astraClientProperties.getDatabaseId())) {
-            builder = builder.withDatabaseId(astraClientProperties.getDatabaseId());  
+            builder = builder.withDatabaseId(astraClientProperties.getDatabaseId());
         }
         
         if (null != astraClientProperties.getDatabaseRegion() &&

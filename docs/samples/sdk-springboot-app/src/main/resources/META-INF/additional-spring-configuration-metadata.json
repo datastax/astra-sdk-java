@@ -1,0 +1,20 @@
+{
+  "properties": [
+    {
+      "name": "feedsreader.url.identifiers",
+      "type": "java.lang.String",
+      "defaultValue": "OK"
+    }
+  ],
+  "hints": [
+    {
+      "name": "mtg-ui.date-format",
+      "values": [
+        {
+          "value": "YYYY/DD/mm",
+          "description": "Default US"
+        }
+      ]
+    }
+  ]
+}
