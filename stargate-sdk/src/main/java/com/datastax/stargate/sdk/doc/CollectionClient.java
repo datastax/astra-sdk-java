@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,10 +41,10 @@ import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
+import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
-import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
-import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
-import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery.SearchDocumentQueryBuilder;
+import com.datastax.stargate.sdk.doc.domain.PageableQuery;
+import com.datastax.stargate.sdk.doc.domain.Query;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.datastax.stargate.sdk.utils.Utils;
@@ -154,7 +153,8 @@ public class CollectionClient {
     }
     
     /**
-     * Create a new document from any serializable object.
+     * Create a new document from any serializable object. 
+     * The doc could be a the String value.
      * 
      * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/addDoc">Reference Documentation</a>
      * 
@@ -168,8 +168,7 @@ public class CollectionClient {
     public <DOC> String create(DOC doc) {
         ApiResponseHttp res = stargateHttpClient.POST(collectionResource, marshall(doc));
         try {
-            return (String) unmarshallBean(res.getBody(), Map.class)
-                    .get(DOCUMENT_ID);
+            return (String) unmarshallBean(res.getBody(), Map.class).get(DOCUMENT_ID);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document id", e);
         }
@@ -225,33 +224,45 @@ public class CollectionClient {
      * @return
      *      number of record
      */
-    public int count() {
-        AtomicInteger count = new AtomicInteger(0);
-        // Invalid field provided for list of ids only
-        SearchDocumentQuery query = SearchDocumentQuery
-                .builder().select("field_not_exist")
-                .withPageSize(2).build();
-        ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults;
-        do {
-            ApiResponseHttp res = stargateHttpClient.GET(collectionResource, buildSuffixQueryUrl(query));
-            searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
-            if (null != searchResults && null != searchResults.getData()) {
-                count.addAndGet(searchResults.getData().size());
-            }
-            // Looking for next page
-            if (null != searchResults.getPageState())  {
-                query = SearchDocumentQuery
-                        .builder().select("field_not_exist")
-                        .withPageState(searchResults.getPageState())
-                        .withPageSize(20).build();
-            }
-        } while(searchResults.getPageState() != null);
-        
-        return count.get();
+    public long count() {
+        // limit fields to be retrieved to limit payload and read count
+        return findAll(Query.builder().select("field_not_exist").build()).count();
     }
-
+    
+    // --- Find all --- 
+    
     /**
-     * This function will retrieve all documents in the Collection.
+     * This function will retrieve all documents in the Collection without any mapping.
+     * 
+     * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     * 
+     * @return
+     *      all items in the the collection
+     */
+    public Stream<Document<String>> findAll() {
+        return findAll(Query.builder().build());
+    }
+    
+    /**
+     * This function will retrieve all documents in the Collection providing a custom mapping logic.
+     * 
+     * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     * 
+     * @param <DOC>
+     *      generic for working bean
+     * @param documentMapper
+     *      mapper from a record to the document bean
+     * @return
+     *      all items in the the collection
+     */
+    public <DOC> Stream<Document<DOC>> findAll(DocumentMapper<DOC> documentMapper) {
+        return findAll(Query.builder().build(), documentMapper);
+    }
+    
+    /**
+     * This function will retrieve all documents in the Collection with automatic marshalling (jackson).
      * 
      * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
      * fetching all pages until no more. 
@@ -264,19 +275,41 @@ public class CollectionClient {
      *      all items in the the collection
      */
     public <DOC> Stream<Document<DOC>> findAll(Class<DOC> beanClass) {
-        List<Document<DOC>> documents = new ArrayList<>();
-        // Loop on pages up to no more pages (could be done)
-        String pageState = null;
-        do {
-            DocumentResultPage<DOC> pageX = findPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE, pageState);
-            if (pageX.getPageState().isPresent())  {
-                pageState = pageX.getPageState().get();
-            } else {
-                pageState = null;
-            }
-            documents.addAll(pageX.getResults());
-        } while(pageState != null);
-        return documents.stream();
+        return findAll(Query.builder().build(), beanClass);
+    }
+    
+    /**
+     * Find all document matching the query.
+     * 
+     * <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     * 
+     * @param query
+     *          list of filters
+     * @return
+     *          all items matchin criteria
+     */
+    public Stream<Document<String>> findAll(Query query) {
+        return findAll(query, (PageSupplier<String>) (cc, q) -> cc.findPage(q));
+    }
+    
+    /**
+     * Find all document matching the query.
+     * 
+     *  <b>USE WITH CAUTION.</b> Default behaviour is using paging, here we are
+     * fetching all pages until no more. 
+     * 
+     * @param <DOC>
+     *       generic for working bean
+     * @param query
+     *          list of filters
+     * @param documentMapper
+     *          custom mapping implementation
+     * @return
+     *          all items matchin criteria
+     */
+    public <DOC> Stream<Document<DOC>> findAll(Query query, DocumentMapper<DOC> documentMapper) {
+        return findAll(query, (PageSupplier<DOC>) (cc, q) -> cc.findPage(q, documentMapper));
     }
     
     /**
@@ -294,12 +327,28 @@ public class CollectionClient {
      * @return
      *          all items matchin criteria
      */
-    public <DOC> Stream<Document<DOC>> findAll(SearchDocumentQuery query, Class<DOC> beanClass) {
+    public <DOC> Stream<Document<DOC>> findAll(Query query, Class<DOC> beanClass) {
+        return findAll(query, (PageSupplier<DOC>) (cc, q) -> cc.findPage(q, beanClass));
+    }
+    
+    /**
+     * Mutualization of searching on multiple pages to do findAll().
+     * 
+     * @param <DOC>
+     *      current working class
+     * @param query
+     *      current query
+     * @param pageLoader
+     *      single page retrieve
+     * @return
+     */
+    private <DOC> Stream<Document<DOC>> findAll(Query query, PageSupplier<DOC> pageLoader) {
         List<Document<DOC>> documents = new ArrayList<>();
+        PageableQuery pageQuery = new PageableQuery(query);
         // Loop on pages up to no more pages (could be done)
         String pageState = null;
         do {
-            DocumentResultPage<DOC> pageX = findPage(query, beanClass);
+            Page<Document<DOC>> pageX = pageLoader.findPage(this, pageQuery);
             if (pageX.getPageState().isPresent())  {
                 pageState = pageX.getPageState().get();
             } else {
@@ -307,63 +356,80 @@ public class CollectionClient {
             }
             documents.addAll(pageX.getResults());
             // Reuissing query for next page
-            query.setPageState(pageState);
+            pageQuery.setPageState(pageState);
         } while(pageState != null);
         return documents.stream();
     }
     
     /**
-     * List all items of a collection without filters.
-     * 
-     * Result is (always) paged, default page sze is 50, API only allow 100 MAX.
-     * Here we get first page as we do not provide paging state
-     * 
-     * @param <DOC>
-     *      generic for working bean
-     * @param beanClass
-     *      class for working bean 
-     * @return
-     *      a page of results
-     */
-    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass) {
-        return findFirstPage(beanClass, SearchDocumentQuery.DEFAULT_PAGING_SIZE);
-    }
-    
-    /**
-     * Find a page
-     * @param <DOC>
-     *      generic for working bean
-     * @param beanClass
-     *      class for working bean 
-     * @param pageSize
-     *      size of expected page
-     * @return
-     *      a page of results
-     */
-    public <DOC> DocumentResultPage<DOC> findFirstPage(Class<DOC> beanClass, int pageSize) {
-        return findPage(beanClass, pageSize, null);
-    }
-    
-    /**
-     * Search for a page.
+     * find next page during a findAll
+     *
+     * @author Cedrick LUNVEN (@clunven)
      *
      * @param <DOC>
-     *      generic for working bean
-     * @param beanClass
-     *      class for working bean 
-     * @param pageSize
-     *      size of expected page
-     * @param pageState
-     *      cursor in research
+     *          list items.
+     */
+    public interface PageSupplier<DOC> {
+        
+        /**
+         * Get a page
+         * @param cc
+         *      collection client
+         * @param q
+         *      query
+         * @return
+         *      page of results
+         */
+        Page<Document<DOC>> findPage(CollectionClient cc, PageableQuery q);
+    }
+    
+    // --- Find Page --- 
+    
+    /**
+     * Search for a page (without marshalling).
+     * There is no filter either.
+     *
      * @return
      *      a page of results
      */
-    public <DOC> DocumentResultPage<DOC> findPage(Class<DOC> beanClass, int pageSize, String pageState) {
-        SearchDocumentQueryBuilder builder = SearchDocumentQuery.builder().withPageSize(pageSize);
-        if (null != pageState) {
-            builder.withPageState(pageState);
+    public Page<Document<String>> findPage() {
+        return findPage(PageableQuery.builder().build());
+    }
+    
+    /**
+     * Find a page given some search (without marshalling the documents).
+     * 
+     * @param query
+     *      query
+     * @return
+     *      output
+     */
+    public Page<Document<String>> findPage(PageableQuery query) {
+        ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults = httpGetFindPage(query);
+        if (null != searchResults && null != searchResults.getData()) {
+            return new Page<Document<String>>(query.getPageSize(), 
+                    searchResults.getPageState(), searchResults.getData()
+                    .entrySet().stream()
+                    .map(doc -> new Document<String>(doc.getKey(), JsonUtils.marshall(doc.getValue())))
+                    .collect(Collectors.toList()));
         }
-        return findPage(builder.build(), beanClass);
+        // no data
+        return new Page<Document<String>>();
+    }
+    
+    
+    /**
+     * Default query, find first page.
+     *
+     * @param <DOC>
+     *      working class
+     * @param beanClass
+     *      working bean
+     * @return
+     *      the page of records
+     */
+    public <DOC> Page<Document<DOC>> findPage(Class<DOC> beanClass) {
+        return findPage(PageableQuery.builder().build(), beanClass);
     }
     
     /**
@@ -378,22 +444,73 @@ public class CollectionClient {
      * @return
      *      a page of results
      */
-    public <DOC> DocumentResultPage<DOC> findPage(SearchDocumentQuery query, Class<DOC> beanClass) {
-        try {
-            ApiResponseHttp res = stargateHttpClient.GET(collectionResource, buildSuffixQueryUrl(query));
-            ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults = unmarshallType(res.getBody(), RESPONSE_SEARCH);
-            return new DocumentResultPage<DOC>(query.getPageSize(), 
+    public <DOC> Page<Document<DOC>> findPage(PageableQuery query, Class<DOC> beanClass) {
+        ApiResponse<Map<String, LinkedHashMap<?,?>>> searchResults = httpGetFindPage(query);
+        if (null != searchResults && null != searchResults.getData()) {
+            return new Page<Document<DOC>>(query.getPageSize(), 
                     searchResults.getPageState(), searchResults.getData()
                     .entrySet().stream()
                     .map(doc -> new Document<DOC>(doc.getKey(), JsonUtils.getObjectMapper().convertValue(doc.getValue(), beanClass)))
                     .collect(Collectors.toList()));
+        }
+        // no data
+        return new Page<Document<DOC>>();
+    }
+   
+    /**
+     * Find a page and marshall using a mapper.
+     * @param <DOC>
+     *      current bean
+     * @param documentMapper
+     *      document mapper
+     * @return
+     *      page of results
+     */
+    public <DOC> Page<Document<DOC>> findPage(DocumentMapper<DOC> documentMapper) {
+        return findPage(PageableQuery.builder().build(), documentMapper);
+    }
+    
+    /**
+     * Find a page and marshall using a mapper.
+     * @param <DOC>
+     *      current bean
+     * @param query
+     *      current query
+     * @param documentMapper
+     *      document mapper
+     * @return
+     *      page of results
+     */
+    public <DOC> Page<Document<DOC>> findPage(PageableQuery query, DocumentMapper<DOC> documentMapper) {
+        Page<Document<String>> raw = findPage(query);
+        return new Page<Document<DOC>> (
+                raw.getPageSize(), 
+                raw.getPageState().orElse(null),
+                raw.getResults().stream()
+                   .map(doc -> new Document<DOC>(doc.getDocument(), documentMapper.map(doc.getDocument())))
+                   .collect(Collectors.toList()));
+    }
+    
+    /**
+     * Technical invocation of the HTTP resources
+     * @param query
+     *      current query
+     * @return
+     *      http response
+     */
+    private ApiResponse<Map<String, LinkedHashMap<?,?>>> httpGetFindPage(PageableQuery query) {
+        try {
+            return unmarshallType(
+                    stargateHttpClient
+                        .GET(collectionResource, buildSuffixQueryUrl(query))
+                        .getBody(), RESPONSE_SEARCH);
         } catch (Exception e) {
             throw new RuntimeException("Cannot marshall document results", e);
         }
     }
     
     /**
-     * Return the JSON Schema is present.
+     * Return the JSON Schema if present.
      * 
      * @return
      *      the json schema if assign to the bean
@@ -433,7 +550,7 @@ public class CollectionClient {
      * @return
      *      the URL
      */
-    private String buildSuffixQueryUrl(SearchDocumentQuery query) {
+    private String buildSuffixQueryUrl(PageableQuery query) {
         try {
             StringBuilder sbUrl = new StringBuilder();
             sbUrl.append("?page-size=" + query.getPageSize());

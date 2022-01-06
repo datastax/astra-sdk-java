@@ -27,7 +27,7 @@ import java.util.Optional;
  * @param <R>
  *      document type
  */
-public class ResultPage<R> {
+public class Page<R> {
  
     /** size of page asked. */
     private final int pageSize;
@@ -41,7 +41,7 @@ public class ResultPage<R> {
     /**
      * Default Constructor.
      */
-    public ResultPage() {
+    public Page() {
         this.pageSize  = 0;
         this.pageState = null;
         this.results   = null;
@@ -53,7 +53,7 @@ public class ResultPage<R> {
      * @param pageState String
      * @param results List
      */
-    public ResultPage(int pageSize, String pageState, List<R> results) {
+    public Page(int pageSize, String pageState, List<R> results) {
         this.pageSize  = pageSize;
         this.pageState = pageState;
         this.results   = results;

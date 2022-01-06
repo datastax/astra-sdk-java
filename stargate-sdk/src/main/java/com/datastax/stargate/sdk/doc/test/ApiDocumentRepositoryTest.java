@@ -13,9 +13,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.doc.Document;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
-import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
+import com.datastax.stargate.sdk.doc.domain.PageableQuery;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Address;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
 
@@ -81,7 +82,7 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
     @DisplayName("03-Count number of items in a collections")
     public void c_should_count_document() {
         // When
-        int count = personRepository.count();
+        long count = personRepository.count();
         // Then
         Assertions.assertTrue(count > 0);
     }
@@ -141,14 +142,17 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
     @DisplayName("08-Search Document with a filter Query")
     public void h_should_findPage() {
         // When
-        DocumentResultPage<Person> page1 = personRepository.findFirstPage(1);
+        Page<Document<Person>> page1 = personRepository.findPage(PageableQuery.builder().pageSize(1).build());
         // Then
         Assertions.assertNotNull(page1);
         Assertions.assertEquals(1, page1.getResults().size());
         Assertions.assertTrue(page1.getPageState().isPresent());
         Assertions.assertEquals(1, page1.getPageSize());
         // When
-        DocumentResultPage<Person> page2 = personRepository.findPage(1, page1.getPageState().get());
+        Page<Document<Person>> page2 = personRepository.findPage(PageableQuery.builder()
+                .pageSize(1)
+                .pageState(page1.getPageState().get())
+                .build());
         Assertions.assertEquals(1, page2.getResults().size());
         Assertions.assertNotEquals(page1.getResults().get(0), page2.getResults().get(0));
     }

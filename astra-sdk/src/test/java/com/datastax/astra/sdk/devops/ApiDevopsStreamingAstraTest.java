@@ -155,7 +155,7 @@ public class ApiDevopsStreamingAstraTest {
         LOGGER.info("Tenant " + tmpTenant + " exists");
         // When
         sc.tenant(tmpTenant).delete();
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         Assert.assertFalse(sc.tenant(tmpTenant).exist());
         LOGGER.info("Tenant " + tmpTenant + " has been deleted");
     }

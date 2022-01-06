@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.utils.Assert;
 
 /**
@@ -50,7 +51,7 @@ public class QueryWithKey {
     private final List<String> fieldsToRetrieve;
     
     /** List of items to retrieve. */
-    private final List<SortField> fieldsToSort;
+    private final List<Sort> fieldsToSort;
     
     /**
      * builder
@@ -89,7 +90,7 @@ public class QueryWithKey {
         protected List<String> fieldsToRetrieve = new ArrayList<>();
         
         /** Fields. */ 
-        protected List<SortField> fieldsToSort = new ArrayList<>();
+        protected List<Sort> fieldsToSort = new ArrayList<>();
         
         /**
          * build
@@ -157,7 +158,7 @@ public class QueryWithKey {
          * @param fields SortField
          * @return QueryRowBuilder
          */
-        public QueryRowBuilder sortedFields(SortField... fields) {
+        public QueryRowBuilder sortedFields(Sort... fields) {
             Assert.notNull(fields, "fields");
             this.fieldsToSort = new ArrayList<>(Arrays.asList(fields));
             return this;
@@ -173,7 +174,7 @@ public class QueryWithKey {
         public QueryRowBuilder addSortedField(String fieldname, Ordering order) {
             Assert.hasLength(fieldname, "fieldname");
             Assert.notNull(order, "order");
-            this.fieldsToSort.add(new SortField(fieldname, order));
+            this.fieldsToSort.add(new Sort(fieldname, order));
             return this;
         }
         
@@ -215,7 +216,7 @@ public class QueryWithKey {
      * @return
      *       current value of 'fieldsToSort'
      */
-    public List<SortField> getFieldsToSort() {
+    public List<Sort> getFieldsToSort() {
         return fieldsToSort;
     }
 }

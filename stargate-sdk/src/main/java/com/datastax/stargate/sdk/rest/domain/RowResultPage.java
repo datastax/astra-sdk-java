@@ -18,14 +18,14 @@ package com.datastax.stargate.sdk.rest.domain;
 
 import java.util.List;
 
-import com.datastax.stargate.sdk.core.ResultPage;
+import com.datastax.stargate.sdk.core.Page;
 
 /**
  * Result of API
  *
  * @author Cedrick LUNVEN (@clunven)s
  */
-public class RowResultPage extends ResultPage<Row> {
+public class RowResultPage extends Page<Row> {
 
     /**
      * Default constructor.

@@ -16,13 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.stargate.sdk.StargateClient;
+import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.Document;
 import com.datastax.stargate.sdk.doc.DocumentClient;
 import com.datastax.stargate.sdk.doc.NamespaceClient;
 import com.datastax.stargate.sdk.doc.domain.DocumentFunction;
-import com.datastax.stargate.sdk.doc.domain.DocumentResultPage;
-import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
+import com.datastax.stargate.sdk.doc.domain.PageableQuery;
+import com.datastax.stargate.sdk.doc.domain.Query;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -73,7 +74,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         // Given
         Assertions.assertTrue(personClient.exist());
         // When
-        int count = personClient.count();
+        long count = personClient.count();
         // Then
         Assertions.assertTrue(count > 0);
     }
@@ -177,7 +178,7 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         // Given
         Assertions.assertTrue(personClient.exist());
         // When
-        DocumentResultPage<Person> results = personClient.findFirstPage(Person.class);
+        Page<Document<Person>> results = personClient.findPage(Person.class);
         // Then
         Assertions.assertNotNull(results);
         for (Document<Person> p : results.getResults()) {
@@ -206,13 +207,14 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         Assertions.assertTrue(personClient.document("PersonAstra3").exist());
 
         // Create a query
-        SearchDocumentQuery query = SearchDocumentQuery
-                .builder()
+        PageableQuery query = PageableQuery.builder()
+                .pageSize(2)
                 .where("age")
-                .isGreaterOrEqualsThan(21).build();
+                .isGreaterOrEqualsThan(21)
+                .build();
 
         // Execute q query
-        DocumentResultPage<Person> results = personClient.findPage(query, Person.class);
+        Page<Document<Person>> results = personClient.findPage(query, Person.class);
         Assertions.assertNotNull(results);
         Assertions.assertTrue(results.getResults().size() > 0);
         
@@ -333,24 +335,30 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
             personClient.create(p1);          
         }
         
-        SearchDocumentQuery query = SearchDocumentQuery.builder()
+        Query query = Query.builder()
                     .where("age")
                     .isGreaterOrEqualsThan(30)
                     .and("lastname").isEqualsTo("PersonAstra2")
-                    .withPageSize(2)
                     .build();
         
         // Get ALL
         personClient.findAll(query, Person.class)
                     .forEach(p -> System.out.println(p.getDocument().getFirstname()));
         
+        PageableQuery pQuery = PageableQuery.builder()
+                .where("age")
+                .isGreaterOrEqualsThan(30)
+                .pageSize(2)
+                .and("lastname").isEqualsTo("PersonAstra2")
+                .build();
+                
         // Get ony the first 2
-        DocumentResultPage<Person> currentPage = personClient.findPage(query,  Person.class);
+        Page<Document<Person>> currentPage = personClient.findPage(pQuery,  Person.class);
         if (currentPage.getPageState().isPresent()) {
-            query.setPageState(currentPage.getPageState().get());
+            pQuery.setPageState(currentPage.getPageState().get());
         }
         
-        Assertions.assertNotNull(personClient.findPage(query, Person.class));
+        Assertions.assertNotNull(personClient.findPage(pQuery, Person.class));
     }
     
     @Test

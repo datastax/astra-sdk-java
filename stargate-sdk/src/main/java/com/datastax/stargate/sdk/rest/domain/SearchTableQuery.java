@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.datastax.stargate.sdk.core.Filter;
 import com.datastax.stargate.sdk.core.FilterCondition;
+import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -60,7 +61,7 @@ public class SearchTableQuery {
     private final List<String> fieldsToRetrieve;
     
     /** List of items to retrieve. */
-    private final List<SortField> fieldsToSort;
+    private final List<Sort> fieldsToSort;
     
     /**
      * static accees to a builder instance.
@@ -102,7 +103,7 @@ public class SearchTableQuery {
         protected List<String> fieldsToRetrieve = new ArrayList<>();
         
         /** Help sorted by result. fieldName + ASC/DESC. */
-        protected List<SortField> fieldsToSort = new ArrayList<>();
+        protected List<Sort> fieldsToSort = new ArrayList<>();
         
         /** 
          * One can provide the full where clause as a JSON String.
@@ -183,7 +184,7 @@ public class SearchTableQuery {
          * @param fields SortField
          * @return SearchTableQueryBuilder
          */
-        public SearchTableQueryBuilder withSortedFields(SortField... fields) {
+        public SearchTableQueryBuilder withSortedFields(Sort... fields) {
             Assert.notNull(fields, "fields");
             this.fieldsToSort = new ArrayList<>(Arrays.asList(fields));
             return this;
@@ -195,7 +196,7 @@ public class SearchTableQuery {
          * @param fields SortField
          * @return SearchTableQueryBuilder
          */
-        public SearchTableQueryBuilder sortBy(SortField... fields) {
+        public SearchTableQueryBuilder sortBy(Sort... fields) {
             return withSortedFields(fields);
         }
         
@@ -437,7 +438,7 @@ public class SearchTableQuery {
      * @return
      *       current value of 'fieldsToSort'
      */
-    public List<SortField> getFieldsToSort() {
+    public List<Sort> getFieldsToSort() {
         return fieldsToSort;
     }
 

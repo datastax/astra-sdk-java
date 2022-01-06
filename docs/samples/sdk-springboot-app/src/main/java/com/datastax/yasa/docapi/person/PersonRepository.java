@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.stargate.sdk.doc.Document;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
-import com.datastax.stargate.sdk.doc.domain.SearchDocumentQuery;
+import com.datastax.stargate.sdk.doc.domain.Query;
 
 /**
  * Work like Spring Data for Collections.
@@ -46,11 +46,11 @@ public class PersonRepository extends StargateDocumentRepository<Person> impleme
      * @return
      */
     public Stream<Document<Person>> findPersonByLastName(String lastName) {
-        return search(SearchDocumentQuery.builder()
+        return findAll(Query.builder()
+                .selectAll()
                 .where("lastName").isEqualsTo(lastName)
                 .build());
     }
 
-   
     
 }

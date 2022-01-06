@@ -38,13 +38,13 @@ import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
-import com.datastax.stargate.sdk.core.ResultPage;
+import com.datastax.stargate.sdk.core.Page;
+import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey.QueryRowBuilder;
 import com.datastax.stargate.sdk.rest.domain.Row;
 import com.datastax.stargate.sdk.rest.domain.RowMapper;
 import com.datastax.stargate.sdk.rest.domain.RowResultPage;
-import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -194,7 +194,7 @@ public class KeyClient {
      * @param mapper RowMapper
      * @return ResultPage
      */
-    public <T> ResultPage<T> findPage(QueryWithKey query, RowMapper<T> mapper) {
+    public <T> Page<T> findPage(QueryWithKey query, RowMapper<T> mapper) {
         // Parameter validatioons
         Objects.requireNonNull(query);
         Objects.requireNonNull(mapper);
@@ -209,8 +209,8 @@ public class KeyClient {
      * @param mapper
      * @return
      */
-    private <T> ResultPage<T> mapAsResultPage( RowResultPage rrp,  RowMapper<T> mapper) {
-        return new ResultPage<T>(rrp.getPageSize(), 
+    private <T> Page<T> mapAsResultPage( RowResultPage rrp,  RowMapper<T> mapper) {
+        return new Page<T>(rrp.getPageSize(), 
                 rrp.getPageState().orElse(null),
                 rrp.getResults().stream()
                    .map(mapper::map)
@@ -274,7 +274,7 @@ public class KeyClient {
             // Fields to sort on 
             if (null != query.getFieldsToSort() && !query.getFieldsToSort().isEmpty()) {
                 Map<String, String> sortFields = new LinkedHashMap<>();
-                for (SortField sf : query.getFieldsToSort()) {
+                for (Sort sf : query.getFieldsToSort()) {
                     sortFields.put(sf.getFieldName(), sf.getOrder().name());
                 }
                 sbUrl.append("&sort=" + URLEncoder.encode(JsonUtils.mapAsJson(sortFields), StandardCharsets.UTF_8.toString()));

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.datastax.stargate.sdk.rest.domain;
+package com.datastax.stargate.sdk.core;
+
+import com.datastax.stargate.sdk.rest.domain.Ordering;
 
 /**
  * Sorting results.
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
-public class SortField {
+public class Sort {
     
     /** reference to field to sort. */
     private String fieldName;
@@ -32,7 +34,20 @@ public class SortField {
     /**
      * Default Constructor.
      */
-    public SortField() {}
+    public Sort() {}
+    
+    /**
+     * Syntax sugar to do Sort.by("field").ascending();
+     * 
+     * @param field
+     *      field name
+     * @return
+     *      sort condition
+     */
+    public static Sort by(String field) {
+        Sort s = new Sort(field, Ordering.ASC);
+        return s;
+    }
     
     /**
      * Constructor with parameters.
@@ -42,7 +57,7 @@ public class SortField {
      * @param order
      *      ordering value
      */
-    public SortField(String fieldName, Ordering order) {
+    public Sort(String fieldName, Ordering order) {
         super();
         this.fieldName = fieldName;
         this.order = order;
@@ -84,6 +99,28 @@ public class SortField {
      */
     public void setOrder(Ordering order) {
         this.order = order;
+    }
+    
+    /**
+     * Sort in ascending mode.
+     *
+     * @return
+     *  current reference.
+     */
+    public Sort ascending() {
+        this.order = Ordering.ASC;
+        return this;
+    }
+    
+    /**
+     * Sort in descending mode.
+     *
+     * @return
+     *  current reference.
+     */
+    public Sort descending() {
+        this.order = Ordering.ASC;
+        return this;
     }
     
      

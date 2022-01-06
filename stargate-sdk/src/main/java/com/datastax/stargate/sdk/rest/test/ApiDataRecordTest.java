@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import com.datastax.stargate.sdk.StargateClient;
+import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.rest.KeyClient;
 import com.datastax.stargate.sdk.rest.KeyspaceClient;
 import com.datastax.stargate.sdk.rest.TableClient;
@@ -19,7 +20,6 @@ import com.datastax.stargate.sdk.rest.domain.Ordering;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
 import com.datastax.stargate.sdk.rest.domain.RowResultPage;
 import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
-import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.rest.test.domain.Video;
 import com.datastax.stargate.sdk.rest.test.domain.VideoRowMapper;
 
@@ -219,7 +219,7 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
                .select("title", "year")
                .where("genre").isEqualsTo("genre1")
                .where("year").isGreaterThan(1989)
-               .sortBy(new SortField("year", Ordering.ASC))
+               .sortBy(new Sort("year", Ordering.ASC))
                .build());
         
         Assertions.assertEquals(6, res3.getResults().size());

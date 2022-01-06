@@ -6,7 +6,7 @@ package com.datastax.astra.sdk.stargate;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class ApiDocumentDocumentAstraTest /*extends ApiDocumentDocumentTest */ {
-     
+    
     /**
      * Init
      *

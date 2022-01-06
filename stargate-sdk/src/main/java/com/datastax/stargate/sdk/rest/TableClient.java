@@ -36,7 +36,8 @@ import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
 import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
-import com.datastax.stargate.sdk.core.ResultPage;
+import com.datastax.stargate.sdk.core.Page;
+import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
 import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 import com.datastax.stargate.sdk.rest.domain.CreateTable;
@@ -45,7 +46,6 @@ import com.datastax.stargate.sdk.rest.domain.Row;
 import com.datastax.stargate.sdk.rest.domain.RowMapper;
 import com.datastax.stargate.sdk.rest.domain.RowResultPage;
 import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
-import com.datastax.stargate.sdk.rest.domain.SortField;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;
 import com.datastax.stargate.sdk.rest.domain.TableOptions;
 import com.datastax.stargate.sdk.utils.Assert;
@@ -236,9 +236,9 @@ public class TableClient {
       * @return ResultPage
       *     pageable result
       */
-     public <T> ResultPage<T> search(SearchTableQuery query, RowMapper<T> mapper) {
+     public <T> Page<T> search(SearchTableQuery query, RowMapper<T> mapper) {
          RowResultPage rrp = search(query);
-         return new ResultPage<T>(
+         return new Page<T>(
                  rrp.getPageSize(), 
                  rrp.getPageState().orElse(null), 
                  rrp.getResults().stream()
@@ -277,7 +277,7 @@ public class TableClient {
              // Fields to sort on 
              if (null != query.getFieldsToSort() && !query.getFieldsToSort().isEmpty()) {
                  Map<String, String> sortFields = new LinkedHashMap<>();
-                 for (SortField sf : query.getFieldsToSort()) {
+                 for (Sort sf : query.getFieldsToSort()) {
                      sortFields.put(sf.getFieldName(), sf.getOrder().name());
                  }
                  sbUrl.append("&sort=" + URLEncoder.encode(JsonUtils.mapAsJson(sortFields), StandardCharsets.UTF_8.toString()));
