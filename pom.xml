@@ -61,7 +61,7 @@
 		<module>astra-sdk</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
-		<module>astra-spring-security</module>
+		<!-- <module>astra-spring-security</module> -->
 		<module>stargate-sdk</module>
 	</modules>
 	
