@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +21,7 @@ import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.doc.CollectionClient;
 import com.datastax.stargate.sdk.doc.Document;
 import com.datastax.stargate.sdk.doc.DocumentClient;
+import com.datastax.stargate.sdk.doc.DocumentMapper;
 import com.datastax.stargate.sdk.doc.NamespaceClient;
 import com.datastax.stargate.sdk.doc.domain.DocumentFunction;
 import com.datastax.stargate.sdk.doc.domain.PageableQuery;
@@ -172,19 +174,32 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
 
     @Test
     @Order(7)
-    @DisplayName("07-Find All Person")
-    public void g_should_find_all_PersonAstra() {
+    @DisplayName("07-Find all Person")
+    public void g_should_find_page_PersonAstra() {
         LOGGER.info("should_find_all_PersonAstra");
         // Given
         Assertions.assertTrue(personClient.exist());
         // When
-        Page<Document<Person>> results = personClient.findPage(Person.class);
+        Stream<Document<Person>> results = personClient.findAll(Person.class);
         // Then
         Assertions.assertNotNull(results);
-        for (Document<Person> p : results.getResults()) {
-            Assertions.assertNotNull(p);
-        }
-        System.out.println( "[OK]"  + " - Document list found");
+        results.forEach(Assertions::assertNotNull);
+        
+        // When
+        Stream<Document<String>> resultsRaw = personClient.findAll();
+        Assertions.assertNotNull(resultsRaw);
+        resultsRaw.forEach(Assertions::assertNotNull);
+        
+        // When
+        Stream<Document<Person>> resultsMapper = personClient.findAll(new DocumentMapper<Person>() {
+            @Override
+            public Person map(String record) {
+                Person p = new Person();
+                p.setAge(10);
+                return p;
+            }});
+        Assertions.assertNotNull(resultsMapper);
+        resultsMapper.forEach(Assertions::assertNotNull);
     }
 
     @Test
@@ -213,15 +228,22 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
                 .isGreaterOrEqualsThan(21)
                 .build();
 
-        // Execute q query
+        // Execute query
         Page<Document<Person>> results = personClient.findPage(query, Person.class);
         Assertions.assertNotNull(results);
         Assertions.assertTrue(results.getResults().size() > 0);
-        
         for (Document<Person> PersonAstra : results.getResults()) {
             Assertions.assertNotNull(PersonAstra);
         }
-        System.out.println( "[OK]"  + " - Document list found");
+        
+        Page<Document<String>> results2 = personClient.findPage(query);
+        Assertions.assertNotNull(results2);
+        Assertions.assertTrue(results2.getResults().size() > 0);
+        for (Document<String> ss : results2.getResults()) {
+            Assertions.assertNotNull(ss);
+        }
+        
+        LOGGER.info("[OK]"  + " - Document list found");
     }
     
     @Test

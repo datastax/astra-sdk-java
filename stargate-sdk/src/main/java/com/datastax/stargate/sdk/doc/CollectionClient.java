@@ -487,7 +487,7 @@ public class CollectionClient {
                 raw.getPageSize(), 
                 raw.getPageState().orElse(null),
                 raw.getResults().stream()
-                   .map(doc -> new Document<DOC>(doc.getDocument(), documentMapper.map(doc.getDocument())))
+                   .map(doc -> new Document<DOC>(doc.getDocumentId(), documentMapper.map(doc.getDocument())))
                    .collect(Collectors.toList()));
     }
     
