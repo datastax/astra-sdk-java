@@ -96,6 +96,36 @@ public class DocumentClient {
     }
     
     /**
+     * Get a document by id.
+     *
+     * @return
+     *      the json payload if document exists.
+     */
+    public Optional<String> find() {
+        ApiResponseHttp res = stargateHttpClient.GET(documentResource, "?raw=true");
+        if (HttpURLConnection.HTTP_OK == res.getCode()) {
+            return Optional.of(res.getBody());
+         }
+         return Optional.empty();
+    }
+    
+    /**
+     * Get a document by id.
+     *
+     * @param <DOC>
+     *      nea
+     * @param docm 
+     */
+    public <DOC> Optional<DOC> find(DocumentMapper<DOC> docm) {
+        Assert.notNull(docm, "documentMapper");
+        Optional<String> f = find();
+        if (f.isPresent()) {
+            return f.map(docm::map);
+        }
+        return Optional.empty();
+    }
+    
+    /**
      * Get a document by {document-id}. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/getDocById
      *
      * @param <DOC> working class
@@ -104,12 +134,9 @@ public class DocumentClient {
      */
     public <DOC> Optional<DOC> find(Class<DOC> clazz) {
         Assert.notNull(clazz, "className");
-        ApiResponseHttp res = stargateHttpClient.GET(documentResource, "?raw=true");
-        if (HttpURLConnection.HTTP_OK == res.getCode()) {
-           return Optional.of(marshallDocument(res.getBody(), clazz));
-        }
-        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
-            return Optional.empty();
+        Optional<String> f = find();
+        if (f.isPresent()) {
+            return f.map(b -> marshallDocument(b, clazz));
         }
         return Optional.empty();
     }

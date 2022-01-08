@@ -401,6 +401,29 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         Assertions.assertTrue(jsonOutput.contains("red"));
     }
     
+    @Test
+    @Order(15)
+    @DisplayName("15-Find a doc document")
+    public void o_should_find_document() throws InterruptedException {
+        LOGGER.info("o_should_find_document");
+        // Given
+        Assertions.assertTrue(personClient.exist());
+        // When
+        personClient.document("doc2Retrieve")
+                    .upsert(new Person("loulou", "looulou", 20, new Address("Paris", 75000)));
+        Thread.sleep(2000);
+        // Then
+        Assertions.assertTrue(personClient.document("doc2Retrieve").exist());
+        Assertions.assertTrue(personClient.document("doc2Retrieve").find().isPresent());
+        Assertions.assertTrue(personClient.document("doc2Retrieve").find(Person.class).isPresent());
+        Assertions.assertTrue(personClient.document("doc2Retrieve").find(
+           new DocumentMapper<Person>() {
+             public Person map(String record) { return new Person(); }
+        }).isPresent());
+        LOGGER.info("Documents Founds.");
+    }
+    
+    
     // ============================
     //           Custom Beans
     // ============================
