@@ -49,8 +49,8 @@
 		</dependency>
 		<!-- Json Schema Validation -->
 		<dependency>
-			    <groupId>com.github.everit-org.json-schema</groupId>
-			    <artifactId>org.everit.json.schema</artifactId>
+	    	<groupId>org.everit.json</groupId>
+	    	<artifactId>org.everit.json.schema</artifactId>
 	    </dependency>
 		<!--  Logger -->
 		<dependency>

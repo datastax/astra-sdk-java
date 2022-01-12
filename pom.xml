@@ -25,7 +25,7 @@
 		<java-driver.version>4.13.0</java-driver.version>
 		<logback.version>1.2.9</logback.version>
 		<jackson.version>2.13.1</jackson.version>
-		<json-schema.version>1.14.0</json-schema.version>
+		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
 		<pulsar.version>2.9.1</pulsar.version>
 		<stargate-grpc.version>1.0.45</stargate-grpc.version>
@@ -97,10 +97,10 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.github.everit-org.json-schema</groupId>
-				<artifactId>org.everit.json.schema</artifactId>
-				<version>${json-schema.version}</version>
-			</dependency>
+	    		<groupId>org.everit.json</groupId>
+	    		<artifactId>org.everit.json.schema</artifactId>
+	    		<version>${json-schema.version}</version>
+	    	</dependency>
 			
 			<!-- Java Drivers -->
 			<dependency>
@@ -348,12 +348,15 @@
 			</plugin>
 		</plugins>
 	</build>
+	<!-- 
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
+	-->
+	
 	<distributionManagement>
 		<repository>
 			<id>ossrh</id>
