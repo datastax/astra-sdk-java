@@ -33,7 +33,6 @@ import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
-import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -96,16 +95,16 @@ public class ApiDevopsDatabasesAstraTest {
         // Given
         OrganizationsClient cli = new OrganizationsClient(client.getToken().get());
         // When
-        Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> available = 
+        Map <String, Map<CloudProviderType,List<DatabaseRegion>>> available = 
                 cli.regionsMap();
         // Then
         Assertions.assertTrue(available
-                .containsKey(DatabaseTierType.serverless));
+                .containsKey("serverless"));
         Assertions.assertTrue(available
-                .get(DatabaseTierType.serverless)
+                .get("serverless")
                 .containsKey(CloudProviderType.AWS));
         Assertions.assertTrue(available
-                .get(DatabaseTierType.serverless)
+                .get("serverless")
                 .get(CloudProviderType.AWS).stream()
                 .anyMatch(db -> "us-east-1".equalsIgnoreCase(db.getRegion())));
         LOGGER.info("Tier `serverless` for region 'aws/us-east-1' is available");

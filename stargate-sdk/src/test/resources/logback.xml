@@ -5,17 +5,13 @@
        		<pattern>%d{HH:mm:ss.SSS} %magenta(%-5level) %cyan(%-47logger) : %msg%n</pattern>
         </encoder>
     </appender>
-   
+    <logger name="com.datastax.stargate" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
     
     <logger name="com.datastax.oss.driver" level="ERROR" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
-    
-    <logger name="com.datastax.astra.sdk" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" />
-    </logger>
-    
-    
     <!-- 
      <logger name="fr.clun.mtg.mtgjson.MtgJsonAllIdentifiersParser" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />

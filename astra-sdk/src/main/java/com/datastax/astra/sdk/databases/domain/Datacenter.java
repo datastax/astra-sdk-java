@@ -35,7 +35,7 @@ public class Datacenter implements Serializable {
     private String name;
     
     /** Reference tier. */
-    private DatabaseTierType tier;
+    private String tier;
     
     /** Reference cloud provider. */
     private CloudProviderType cloudProvider;
@@ -108,7 +108,7 @@ public class Datacenter implements Serializable {
      * @return
      *       current value of 'tier'
      */
-    public DatabaseTierType getTier() {
+    public String getTier() {
         return tier;
     }
 
@@ -117,7 +117,7 @@ public class Datacenter implements Serializable {
      * @param tier
      * 		new value for 'tier '
      */
-    public void setTier(DatabaseTierType tier) {
+    public void setTier(String tier) {
         this.tier = tier;
     }
 

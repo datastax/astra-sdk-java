@@ -339,6 +339,7 @@ public class HttpApisClient implements ApiConstants {
                       req.getUri().toString(), req.getMethod(),
                       res.getCode(), res.getBody());
               processErrors(res, mandatory);
+              logHttpError(res);
             }
             return res;
         } catch (UnavailableResourceException e) {
@@ -386,7 +387,7 @@ public class HttpApisClient implements ApiConstants {
             event.setResponseTimestamp(status.getEndTime());
             if (response == null) {
                 event.setResponseCode(HttpURLConnection.HTTP_UNAVAILABLE);
-                res = new ApiResponseHttp("Response is empty, cannot contact endpoint, please check url", 
+                res = new ApiResponseHttp("Response is empty, please check url", 
                         HttpURLConnection.HTTP_UNAVAILABLE, null);
             } else {
                 event.setResponseCode(response.getCode());
@@ -492,10 +493,10 @@ public class HttpApisClient implements ApiConstants {
                 .afterFailedTryListener(s -> {
                     LOGGER.error("Failure on attempt {}/{} ", s.getTotalTries(), retryConfig.getMaxNumberOfTries());
                     try {
-                        LOGGER.error("Failed request {} on {}{}", req.getMethod() , req.getUri(), req.getRequestUri() );
+                        LOGGER.error("Failed request {} on {}", req.getMethod() , req.getUri() );
+                        LOGGER.error("+ Exception was ", s.getLastExceptionThatCausedRetry());
                     } catch (URISyntaxException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        LOGGER.error("Cannot display URI ", e);
                     }
                     CompletableFuture.runAsync(()-> notifyAsync(listener->listener.onHttpFailedTry(s)));
                 })
@@ -548,6 +549,10 @@ public class HttpApisClient implements ApiConstants {
                     }
                     throw new RuntimeException(res.getBody() + " (http:" + res.getCode() + ")");
             }
+    }
+    
+    private void logHttpError(ApiResponseHttp res) {
+        LOGGER.error("An HTTP Error occured. The HTTP CODE Return is {}", res.getCode());
     }
 
     /**

@@ -15,10 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.utils.AstraRc;
-import com.datastax.oss.driver.api.core.config.TypedDriverOption;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
-import com.datastax.stargate.sdk.config.CqlSessionBuilderCustomizer;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
@@ -29,6 +29,9 @@ import com.evanlennick.retry4j.config.RetryConfig;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class AstraClientConfig implements Serializable {
+    
+    /** Serial. */
+    private static final long serialVersionUID = 6950028057943051050L;
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClientConfig.class);
@@ -47,22 +50,16 @@ public class AstraClientConfig implements Serializable {
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
     /** SECURE BUNDLE FOR EACH RECGIONS. */
     public static final String ASTRA_DB_SCB_FOLDER        = "ASTRA_DB_SCB_FOLDER";
-    
     /** User home folder. */
-    public static final String ENV_USER_HOME = "user.home";
-    
+    public static final String ENV_USER_HOME              = "user.home";
+
     /** Port for grpc in Astra. */
-    public static final int GRPC_PORT = 443;
+    public static final int GRPC_PORT                     = 443;
     
-    /** Serial. */
-    private static final long serialVersionUID = 6950028057943051050L;
-    
-    /** Attribute to describe the Astra instance. */
-    private String databaseId;
-    
-    /** First and main region to use (others are failing over). */
-    private String databaseRegion;
-    
+    // ------------------------------------------------
+    // ------------- Credentials ----------------------
+    // ------------------------------------------------
+   
     /** Token to authenticate. */
     private String token;
     
@@ -71,41 +68,7 @@ public class AstraClientConfig implements Serializable {
     
     /** Client secret. */
     private String clientSecret;
-    
-    /** Folder to load secure connect bundle with formated names scb_dbid_region.zip */
-    private String secureConnectBundleFolder = System.getProperty(ENV_USER_HOME) + File.separator + ".astra";
-    
-    /** Configuring Stargate to work in Astra. */
-    private StargateClientConfig stargateConfig;
-    
-    /**
-     * Reading environment variables
-     */
-    public AstraClientConfig() {
-        LOGGER.info("Initializing [" + AnsiUtils.yellow("AstraClient") + "]");
-        
-        // Loading Stargate Environment variable
-        stargateConfig = new StargateClientConfig();
-        
-        // Loading ~/.astrarc section default if present
-        if (AstraRc.exists()) {
-            loadFromAstraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
-        }
-        
-        // Load Environment Variables
-        readEnvVariable(ASTRA_DB_ID).ifPresent(this::withDatabaseId);
-        readEnvVariable(ASTRA_DB_REGION).ifPresent(this::withDatabaseRegion);
-        readEnvVariable(ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
-        readEnvVariable(ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
-        readEnvVariable(ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
-        readEnvVariable(ASTRA_DB_KEYSPACE).ifPresent(this::withCqlKeyspace);
-        readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withSecureConnectBundleFolder);
-    }
-    
-    // ------------------------------------------------
-    // ------------- Credentials ----------------------
-    // ------------------------------------------------
-    
+   
     /**
      * Provide token.
      *
@@ -146,9 +109,46 @@ public class AstraClientConfig implements Serializable {
         return this;
     }
     
+    /**
+     * Getter accessor for attribute 'token'.
+     *
+     * @return
+     *       current value of 'token'
+     */
+    public String getToken() {
+        return token;
+    }
+
+    /**
+     * Getter accessor for attribute 'clientId'.
+     *
+     * @return
+     *       current value of 'clientId'
+     */
+    public String getClientId() {
+        return clientId;
+    }
+
+    /**
+     * Getter accessor for attribute 'clientSecret'.
+     *
+     * @return
+     *       current value of 'clientSecret'
+     */
+    public String getClientSecret() {
+        return clientSecret;
+    }
+    
+    
     // ------------------------------------------------
     // ---------------- Database ----------------------
     // ------------------------------------------------
+   
+    /** Attribute to describe the Astra instance. */
+    private String databaseId;
+    
+    /** First and main region to use (others are failing over). */
+    private String databaseRegion;
     
     /**
      * Provider database identifier
@@ -174,6 +174,43 @@ public class AstraClientConfig implements Serializable {
         hasLength(databaseRegion, "databaseRegion");
         this.databaseRegion = databaseRegion;
         return this;
+    }
+    
+    /**
+     * Getter accessor for attribute 'databaseId'.
+     *
+     * @return
+     *       current value of 'databaseId'
+     */
+    public String getDatabaseId() {
+        return databaseId;
+    }
+
+    /**
+     * Getter accessor for attribute 'databaseRegion'.
+     *
+     * @return
+     *       current value of 'databaseRegion'
+     */
+    public String getDatabaseRegion() {
+        return databaseRegion;
+    }
+    
+    // ------------------------------------------------
+    // ---------------- Stargate ----------------------
+    // ------------------------------------------------
+     
+    /** Configuring Stargate to work in Astra. */
+    private StargateClientConfig stargateConfig;
+    
+    /**
+     * Getter accessor for attribute 'stargateConfig'.
+     *
+     * @return
+     *       current value of 'stargateConfig'
+     */
+    public StargateClientConfig getStargateConfig() {
+        return stargateConfig;
     }
     
     // ------------------------------------------------
@@ -229,30 +266,129 @@ public class AstraClientConfig implements Serializable {
         stargateConfig.withHttpObservers(observers);
         return this;
     }
+
+    // ------------------------------------------------
+    // ----------------- Grpc -------------------------
+    // ------------------------------------------------
+    
+    /**
+     * Enable gRPC
+     * 
+     * @return reference enforcing cqlsession disabled
+     */
+    public AstraClientConfig enableGrpc() {
+        stargateConfig.enableGrpc();
+        return this;
+    }
     
     // ------------------------------------------------
     // -------------- CqlSession ----------------------
     // ------------------------------------------------
     
+    /** Enable SCB download to target folder. */
+    private boolean downloadSecureConnectBundle = true;
+    
+    /** Folder to load secure connect bundle with formated names scb_dbid_region.zip */
+    private String secureConnectBundleFolder  = System.getProperty(ENV_USER_HOME) + File.separator + ".astra";
+    
     /**
-     * You want to keep the client stateless to be agile.
-     * 
-     * @return reference enforcing cqlsession disabled
+     * Getter accessor for attribute 'secureConnectBundleFolder'.
+     *
+     * @return
+     *       current value of 'secureConnectBundleFolder'
      */
-    public AstraClientConfig withoutCqlSession() {
-        stargateConfig.withoutCqlSession();
+    public String getSecureConnectBundleFolder() {
+        return secureConnectBundleFolder;
+    }
+    
+    /**
+     * Getter for downloadSecureConnectBundle.
+     *
+     * @return
+     *      downloadSecureConnectBundle value
+     */
+    public boolean isEnabledDownloadSecureConnectBundle() {
+        return downloadSecureConnectBundle;
+    }
+    
+    /**
+     * Enable SCB downloads.
+     * 
+     * @return
+     *      current reference.
+     */
+    public AstraClientConfig enableDownloadSecureConnectBundle() {
+        this.downloadSecureConnectBundle = true;
         return this;
     }
     
     /**
-     * Fill Application name.
+     * Disable SCB downloads.
+     * 
+     * @return
+     *      current reference.
+     */
+    public AstraClientConfig disableDownloadSecureConnectBundle() {
+        this.downloadSecureConnectBundle = false;
+        return this;
+    }
+    
+    /**
+     * Enable CqlSession
+     * 
+     * @return reference enforcing cqlsession disabled
+     */
+    public AstraClientConfig enableCql() {
+        stargateConfig.enableCql();
+        return this;
+    }
+    
+    /**
+     * Populate Secure connect bundle
      *
-     * @param appName
-     *            appName
+     * @param scbFile
+     *            path of cloud secure bundle
      * @return current reference
      */
-    public AstraClientConfig withApplicationName(String appName) {
-        stargateConfig.withApplicationName(appName);
+    public AstraClientConfig withCqlCloudSecureConnectBundle(String scbFile) {
+        stargateConfig.withCqlCloudSecureConnectBundle(scbFile);
+        return this;
+    }
+    
+    /**
+     * Populate config.
+     * 
+     * @param conf
+     *      configuration
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlDriverConfig(ProgrammaticDriverConfigLoaderBuilder conf) {
+        stargateConfig.withCqlDriverConfigLoaderBuilder(conf);
+        return this;
+    }
+    
+    /**
+     * Populate Consistency level
+     *
+     * @param cl
+     *           consistency level
+     * @return current reference
+     */
+    public AstraClientConfig withCqlConsistencyLevel(ConsistencyLevel cl) {
+        stargateConfig.withCqlConsistencyLevel(cl);
+        return this;
+    }
+    
+    /**
+     * Populate configuration file
+     *
+     * @param configFile
+     *          configuration file
+     * @return current reference
+     */
+    public AstraClientConfig withCqlDriverConfigurationFile(File configFile) {
+        stargateConfig.withCqlDriverConfigurationFile(configFile);
         return this;
     }
     
@@ -265,22 +401,6 @@ public class AstraClientConfig implements Serializable {
      */
     public AstraClientConfig withCqlKeyspace(String keyspace) {
         stargateConfig.withCqlKeyspace(keyspace);
-        return this;
-    }
-    
-    /**
-     * Fine grained configuration of cqlSession.
-     * 
-     * @param <T>
-     *      current option type
-     * @param option
-     *      current option name
-     * @param value
-     *      current option value
-     * @return
-     */
-    public <T> AstraClientConfig withCqlDriverOption(TypedDriverOption<T> option, T value) {
-        stargateConfig.withCqlDriverOption(option, value);
         return this;
     }
     
@@ -311,26 +431,13 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Provide a session builder.
-     * 
-     * @param csbc
-     *       session builder
-     * @return
-     *      self reference
-     */
-    public AstraClientConfig withCqlSessionBuilderCustomizer(CqlSessionBuilderCustomizer csbc) {
-        stargateConfig.withCqlSessionBuilderCustomizer(csbc);
-        return this;
-    }
-    
-    /**
      * Provide clientSecret.
      *
      * @param scbPath
      *            secure bundle
      * @return self reference
      */
-    public AstraClientConfig withSecureConnectBundleFolder(String scbPath) {
+    public AstraClientConfig withCqlSecureConnectBundleFolder(String scbPath) {
         hasLength(scbPath, "scbPath");
         this.secureConnectBundleFolder = scbPath;
         return this;
@@ -348,6 +455,36 @@ public class AstraClientConfig implements Serializable {
      */
     public static String buildScbFileName(String dId, String dbRegion) {
         return AstraClient.SECURE_CONNECT + dId + "_" + dbRegion + ".zip";
+    }
+    
+    // ------------------------------------------------
+    // -------------------- Core ----------------------
+    // ------------------------------------------------
+    
+    /**
+     * Reading environment variables
+     */
+    public AstraClientConfig() {
+        LOGGER.info("Initializing [" + AnsiUtils.yellow("AstraClient") + "]");
+        
+        // Loading Stargate Environment variable
+        stargateConfig = new StargateClientConfig();
+        
+        // Loading ~/.astrarc section default if present
+        if (AstraRc.exists()) {
+            loadFromAstraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
+        }
+        
+        // Authentication
+        readEnvVariable(ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
+        readEnvVariable(ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
+        readEnvVariable(ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
+        readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withCqlSecureConnectBundleFolder);
+        
+        // Database
+        readEnvVariable(ASTRA_DB_ID).ifPresent(this::withDatabaseId);
+        readEnvVariable(ASTRA_DB_REGION).ifPresent(this::withDatabaseRegion);
+        readEnvVariable(ASTRA_DB_KEYSPACE).ifPresent(this::withCqlKeyspace);
     }
     
     // ------------------------------------------------
@@ -370,7 +507,7 @@ public class AstraClientConfig implements Serializable {
         readRcVariable(arc, ASTRA_DB_CLIENT_ID,     sectionName).ifPresent(this::withClientId);
         readRcVariable(arc, ASTRA_DB_CLIENT_SECRET, sectionName).ifPresent(this::withClientSecret);
         readRcVariable(arc, ASTRA_DB_KEYSPACE,      sectionName).ifPresent(this::withCqlKeyspace);
-        readRcVariable(arc, ASTRA_DB_SCB_FOLDER,    sectionName).ifPresent(this::withSecureConnectBundleFolder);
+        readRcVariable(arc, ASTRA_DB_SCB_FOLDER,    sectionName).ifPresent(this::withCqlSecureConnectBundleFolder);
         return this;
     }
     
@@ -383,74 +520,10 @@ public class AstraClientConfig implements Serializable {
         return new AstraClient(this);
     }
 
-    /**
-     * Getter accessor for attribute 'databaseId'.
-     *
-     * @return
-     *       current value of 'databaseId'
-     */
-    public String getDatabaseId() {
-        return databaseId;
-    }
+   
 
-    /**
-     * Getter accessor for attribute 'databaseRegion'.
-     *
-     * @return
-     *       current value of 'databaseRegion'
-     */
-    public String getDatabaseRegion() {
-        return databaseRegion;
-    }
+    
 
-    /**
-     * Getter accessor for attribute 'token'.
-     *
-     * @return
-     *       current value of 'token'
-     */
-    public String getToken() {
-        return token;
-    }
-
-    /**
-     * Getter accessor for attribute 'clientId'.
-     *
-     * @return
-     *       current value of 'clientId'
-     */
-    public String getClientId() {
-        return clientId;
-    }
-
-    /**
-     * Getter accessor for attribute 'clientSecret'.
-     *
-     * @return
-     *       current value of 'clientSecret'
-     */
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    /**
-     * Getter accessor for attribute 'secureConnectBundleFolder'.
-     *
-     * @return
-     *       current value of 'secureConnectBundleFolder'
-     */
-    public String getSecureConnectBundleFolder() {
-        return secureConnectBundleFolder;
-    }
-
-    /**
-     * Getter accessor for attribute 'stargateConfig'.
-     *
-     * @return
-     *       current value of 'stargateConfig'
-     */
-    public StargateClientConfig getStargateConfig() {
-        return stargateConfig;
-    }
+   
 
 }

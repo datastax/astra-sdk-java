@@ -34,7 +34,7 @@ public class DatabaseCreationRequest {
     private CloudProviderType cloudProvider;
     
     /** Database type. */
-    private DatabaseTierType tier = DatabaseTierType.developer;
+    private String tier = "developer";
     
     /**
      * CapacityUnits is the amount of space available (horizontal scaling) 
@@ -120,7 +120,7 @@ public class DatabaseCreationRequest {
      * @return
      *       current value of 'tier'
      */
-    public DatabaseTierType getTier() {
+    public String getTier() {
         return tier;
     }
     

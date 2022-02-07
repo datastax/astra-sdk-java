@@ -22,7 +22,6 @@ public class ApiStargateTestFactory {
             .withAuthCredentials("cassandra", "cassandra")
             .withLocalDatacenter("datacenter1")
             .withApiNode(new StargateNodeConfig("127.0.0.1"))
-            .withoutCqlSession()
             .build();
     }
 

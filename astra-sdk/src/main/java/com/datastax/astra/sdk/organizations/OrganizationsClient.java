@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
-import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
@@ -127,8 +126,8 @@ public class OrganizationsClient {
      * @return
      *      regions organized by cloud providers
      */
-    public Map <DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> regionsMap() {
-        Map<DatabaseTierType, Map<CloudProviderType,List<DatabaseRegion>>> m = new HashMap<>();
+    public Map <String, Map<CloudProviderType,List<DatabaseRegion>>> regionsMap() {
+        Map<String, Map<CloudProviderType,List<DatabaseRegion>>> m = new HashMap<>();
         regions().forEach(dar -> {
             if (!m.containsKey(dar.getTier())) {
                 m.put(dar.getTier(), new HashMap<CloudProviderType,List<DatabaseRegion>>());

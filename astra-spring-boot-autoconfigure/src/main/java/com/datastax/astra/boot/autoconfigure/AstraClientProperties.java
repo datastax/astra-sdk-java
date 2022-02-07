@@ -16,6 +16,8 @@
 
 package com.datastax.astra.boot.autoconfigure;
 
+import java.io.File;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -26,187 +28,56 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "astra")
 public class AstraClientProperties {
     
-    /** Database unique identifier.  */
-    private String databaseId;
-    
-    /** Astra database region. */
-    private String databaseRegion;
-   
-    /** Application Token. */
-    private String applicationToken;
-   
-    /** working with Astra. */
-    private String secureConnectBundlePath;
-    
-    /** setup Astra from an external file. */
-    private String keyspace;
-    
-    /** used as username for cqlSession. */
-    private String clientId;
-    
-    /** used as password for cqlSession. */
-    private String clientSecret;
-    
-    /** enabled metrics. */
-    private Metrics metrics;
+    /** Configuration regarding the Api. */
+    private Api api;
+
+    /** Configuration regarding CQL sessions. */
+    private Cql cql;
     
     /**
-     * Getter accessor for attribute 'databaseId'.
+     * Getter accessor for attribute 'api'.
      *
      * @return
-     *       current value of 'databaseId'
+     *       current value of 'api'
      */
-    public String getDatabaseId() {
-        return databaseId;
+    public Api getApi() {
+        return api;
     }
 
     /**
-     * Setter accessor for attribute 'databaseId'.
-     * @param databaseId
-     * 		new value for 'databaseId '
+     * Setter accessor for attribute 'api'.
+     * @param api
+     *      new value for 'api '
      */
-    public void setDatabaseId(String databaseId) {
-        this.databaseId = databaseId;
+    public void setApi(Api api) {
+        this.api = api;
     }
 
     /**
-     * Getter accessor for attribute 'applicationToken'.
+     * Getter accessor for attribute 'cql'.
      *
      * @return
-     *       current value of 'applicationToken'
+     *       current value of 'cql'
      */
-    public String getApplicationToken() {
-        return applicationToken;
+    public Cql getCql() {
+        return cql;
     }
 
     /**
-     * Setter accessor for attribute 'applicationToken'.
-     * @param applicationToken
-     * 		new value for 'applicationToken '
+     * Setter accessor for attribute 'cql'.
+     * @param cql
+     *      new value for 'cql '
      */
-    public void setApplicationToken(String applicationToken) {
-        this.applicationToken = applicationToken;
-    }
-
-    /**
-     * Getter accessor for attribute 'secureConnectBundlePath'.
-     *
-     * @return
-     *       current value of 'secureConnectBundlePath'
-     */
-    public String getSecureConnectBundlePath() {
-        return secureConnectBundlePath;
-    }
-
-    /**
-     * Setter accessor for attribute 'secureConnectBundlePath'.
-     * @param secureConnectBundlePath
-     * 		new value for 'secureConnectBundlePath '
-     */
-    public void setSecureConnectBundlePath(String secureConnectBundlePath) {
-        this.secureConnectBundlePath = secureConnectBundlePath;
-    }
-
-    /**
-     * Getter accessor for attribute 'keyspace'.
-     *
-     * @return
-     *       current value of 'keyspace'
-     */
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    /**
-     * Setter accessor for attribute 'keyspace'.
-     * @param keyspace
-     * 		new value for 'keyspace '
-     */
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    /**
-     * Getter accessor for attribute 'clientId'.
-     *
-     * @return
-     *       current value of 'clientId'
-     */
-    public String getClientId() {
-        return clientId;
-    }
-
-    /**
-     * Setter accessor for attribute 'clientId'.
-     * @param clientId
-     * 		new value for 'clientId '
-     */
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    /**
-     * Getter accessor for attribute 'clientSecret'.
-     *
-     * @return
-     *       current value of 'clientSecret'
-     */
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    /**
-     * Setter accessor for attribute 'clientSecret'.
-     * @param clientSecret
-     * 		new value for 'clientSecret '
-     */
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    /**
-     * Getter accessor for attribute 'databaseRegion'.
-     *
-     * @return
-     *       current value of 'databaseRegion'
-     */
-    public String getDatabaseRegion() {
-        return databaseRegion;
-    }
-
-    /**
-     * Setter accessor for attribute 'databaseRegion'.
-     * @param databaseRegion
-     * 		new value for 'databaseRegion '
-     */
-    public void setDatabaseRegion(String databaseRegion) {
-        this.databaseRegion = databaseRegion;
-    }
-
-    /**
-     * Getter accessor for attribute 'metrics'.
-     *
-     * @return
-     *       current value of 'metrics'
-     */
-    public Metrics getMetrics() {
-        return metrics;
-    }
-
-    /**
-     * Setter accessor for attribute 'metrics'.
-     * @param metrics
-     *      new value for 'metrics '
-     */
-    public void setMetrics(Metrics metrics) {
-        this.metrics = metrics;
+    public void setCql(Cql cql) {
+        this.cql = cql;
     }
     
     /**
-     * Nested property for the 
+     * Nested properties for gRPC.
      */
-    public static class Metrics {
+    public static class Grpc {
         
+        /** flag to enable gRPC. */
         private boolean enabled;
 
         /**
@@ -227,10 +98,261 @@ public class AstraClientProperties {
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
+    }
+
+    /**
+     * Specialization for the APIS.
+     *
+     * @author Cedrick LUNVEN (@clunven)
+     */
+    public static class Api {
         
+        /** Application Token. */
+        private String applicationToken;
         
+        /** Database unique identifier.  */
+        private String databaseId;
+        
+        /** Astra database region. */
+        private String databaseRegion;
+        
+        /** Configuration regarding gRPC. */
+        private Grpc grpc;
+        
+        /**
+         * Getter accessor for attribute 'databaseId'.
+         *
+         * @return
+         *       current value of 'databaseId'
+         */
+        public String getDatabaseId() {
+            return databaseId;
+        }
+
+        /**
+         * Setter accessor for attribute 'databaseId'.
+         * @param databaseId
+         *      new value for 'databaseId '
+         */
+        public void setDatabaseId(String databaseId) {
+            this.databaseId = databaseId;
+        }
+
+        /**
+         * Getter accessor for attribute 'applicationToken'.
+         *
+         * @return
+         *       current value of 'applicationToken'
+         */
+        public String getApplicationToken() {
+            return applicationToken;
+        }
+
+        /**
+         * Setter accessor for attribute 'applicationToken'.
+         * @param applicationToken
+         *      new value for 'applicationToken '
+         */
+        public void setApplicationToken(String applicationToken) {
+            this.applicationToken = applicationToken;
+        }
+        
+        /**
+         * Getter accessor for attribute 'databaseRegion'.
+         *
+         * @return
+         *       current value of 'databaseRegion'
+         */
+        public String getDatabaseRegion() {
+            return databaseRegion;
+        }
+
+        /**
+         * Setter accessor for attribute 'databaseRegion'.
+         * @param databaseRegion
+         *      new value for 'databaseRegion '
+         */
+        public void setDatabaseRegion(String databaseRegion) {
+            this.databaseRegion = databaseRegion;
+        }
+
+        /**
+         * Getter accessor for attribute 'grpc'.
+         *
+         * @return
+         *       current value of 'grpc'
+         */
+        public Grpc getGrpc() {
+            return grpc;
+        }
+
+        /**
+         * Setter accessor for attribute 'grpc'.
+         * @param grpc
+         *      new value for 'grpc '
+         */
+        public void setGrpc(Grpc grpc) {
+            this.grpc = grpc;
+        }
+        
+    }
+    
+    /**
+     * Special key for Metrics
+     *
+     * @author Cedrick LUNVEN (@clunven)
+     */
+    public static class Cql {
+        
+        /** Enable Cql Configuration. */
+        private boolean enabled;
+        
+        /** Download SCB. */
+        private DownloadSecureBundle downloadScb;
+
+        /** Get Values. */
+        private Metrics metrics;
+        
+        /**
+         * Getter accessor for attribute 'enabled'.
+         *
+         * @return
+         *       current value of 'enabled'
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        /**
+         * Setter accessor for attribute 'enabled'.
+         * @param enabled
+         *      new value for 'enabled '
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
+        /**
+         * Getter accessor for attribute 'metrics'.
+         *
+         * @return
+         *       current value of 'metrics'
+         */
+        public Metrics getMetrics() {
+            return metrics;
+        }
+
+        /**
+         * Setter accessor for attribute 'metrics'.
+         * @param metrics
+         *      new value for 'metrics '
+         */
+        public void setMetrics(Metrics metrics) {
+            this.metrics = metrics;
+        }
+
+        /**
+         * Getter accessor for attribute 'downloadScb'.
+         *
+         * @return
+         *       current value of 'downloadScb'
+         */
+        public DownloadSecureBundle getDownloadScb() {
+            return downloadScb;
+        }
+
+        /**
+         * Setter accessor for attribute 'downloadScb'.
+         * @param downloadScb
+         * 		new value for 'downloadScb '
+         */
+        public void setDownloadScb(DownloadSecureBundle downloadScb) {
+            this.downloadScb = downloadScb;
+        }
+        
+    }
+    
+    /**
+     * Cql Metrics special properties
+     */
+    public static class Metrics {
+        
+        /** flag for the metrics. */
+        private boolean enabled;
+
+        /**
+         * Getter accessor for attribute 'enabled'.
+         *
+         * @return
+         *       current value of 'enabled'
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        /**
+         * Setter accessor for attribute 'enabled'.
+         * 
+         * @param enabled
+         *      new value for 'enabled '
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 
     
+    /**
+     * Code for the download of the clud seure bundle
+     *
+     * @author Cedrick LUNVEN (@clunven)
+     */
+    public static class DownloadSecureBundle {
+        
+        /** Enable Download. */
+        private boolean enabled = true;
+
+        /** Path to Download. */
+        private String path = System.getProperty("user.home") + File.separator + ".astra";
+        
+        /**
+         * Getter accessor for attribute 'enabled'.
+         *
+         * @return
+         *       current value of 'enabled'
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        /**
+         * Setter accessor for attribute 'enabled'.
+         * @param enabled
+         *      new value for 'enabled '
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        /**
+         * Getter accessor for attribute 'path'.
+         *
+         * @return
+         *       current value of 'path'
+         */
+        public String getPath() {
+            return path;
+        }
+
+        /**
+         * Setter accessor for attribute 'path'.
+         * @param path
+         * 		new value for 'path '
+         */
+        public void setPath(String path) {
+            this.path = path;
+        }
+        
+    }
 
 }

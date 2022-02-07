@@ -21,7 +21,9 @@ package com.datastax.astra.sdk.databases.domain;
  */
 public class DatabaseRegion {
 
-    private DatabaseTierType tier = DatabaseTierType.developer;
+    //private DatabaseTierType tier = DatabaseTierType.developer;
+    // @Since 0.3.0 removing the control as tiers can change
+    private String tier;
     
     private String description;
     
@@ -57,7 +59,7 @@ public class DatabaseRegion {
      * @return
      *       current value of 'tier'
      */
-    public DatabaseTierType getTier() {
+    public String getTier() {
         return tier;
     }
 
@@ -66,7 +68,7 @@ public class DatabaseRegion {
      * @param tier
      * 		new value for 'tier '
      */
-    public void setTier(DatabaseTierType tier) {
+    public void setTier(String tier) {
         this.tier = tier;
     }
 

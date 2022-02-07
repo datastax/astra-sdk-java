@@ -19,12 +19,13 @@ package com.datastax.stargate.sdk;
 import static com.datastax.stargate.sdk.utils.AnsiUtils.cyan;
 import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
 import static com.datastax.stargate.sdk.utils.AnsiUtils.red;
+import static com.datastax.stargate.sdk.utils.AnsiUtils.yellow;
 
 import java.io.Closeable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,6 @@ import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.HttpApisClient;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -56,7 +56,9 @@ public class StargateClient implements Closeable {
     /** The Cql Session to interact with Cassandra through the DataStax CQL Drivers. */
     private CqlSession cqlSession;
     
-    /** Local DC. (load balancing on the nodes there and failover only if not available. */
+    /** 
+     * Local DC. (load balancing on the nodes there and failover only if not available. 
+     */
     protected String currentDatacenter;
     
     /** 
@@ -100,35 +102,45 @@ public class StargateClient implements Closeable {
      *      current builder.
      */
     public StargateClient(StargateClientConfig config) {
-        LOGGER.info("Initializing [" + AnsiUtils.yellow("StargateClient") + "]");
+        LOGGER.info("Initializing [" + cyan("StargateClient") + "]");
         this.conf = config;
-        // Local DataCenter (if no secureconnect bundle)
-        if (!Utils.hasLength(config.getLocalDC())) {
-            config.withLocalDatacenter(StargateClientConfig.DEFAULT_LOCALDC);
-            LOGGER.warn("+ No local datacenter provided, using default {}", StargateClientConfig.DEFAULT_LOCALDC);
-        }
-        this.currentDatacenter = config.getLocalDC();
+        this.currentDatacenter = resolveDataCenterName(config);
         
         // Initializing the Stargate Http Clients
         stargateHttpClient = new StargateHttpClient(this, config);
-        
-        // Initialize cqlSession
-        cqlSession = renewCqlSession();
        
+        // ------------- CQL ---------------------
+        
+        if (config.isEnabledCql()) {
+            cqlSession = initCqlSession();
+            LOGGER.info("+ API Cql      :[" + green("ENABLED") + "]");
+        } else {
+            LOGGER.info("+ API Cql      :[" + yellow("DISABLED") + "]");
+        }
+        
+        // ------------- REST ---------------------
+        
         // Initializing Apis
         if (!config.getStargateNodes().isEmpty()) {
             this.apiDataClient     = new ApiDataClient(stargateHttpClient);
             this.apiDocumentClient = new ApiDocumentClient(stargateHttpClient);
             this.apiGraphQLClient  = new ApiGraphQLClient(stargateHttpClient);
-            this.apiGrpcClient     = new ApiGrpcClient(stargateHttpClient);
         } else {
-            LOGGER.info("+ API Data     :[" + red("DISABLED") + "]");
-            LOGGER.info("+ API Document :[" + red("DISABLED") + "]");
-            LOGGER.info("+ API GraphQL  :[" + red("DISABLED") + "]");
-            LOGGER.info("+ API Grpc     :[" + red("DISABLED") + "]");
+            LOGGER.info("+ API Data     :[" + yellow("DISABLED") + "]");
+            LOGGER.info("+ API Document :[" + yellow("DISABLED") + "]");
+            LOGGER.info("+ API GraphQL  :[" + yellow("DISABLED") + "]");
         }
         
-        /** HTTP. */
+        // ------------- Grpc ---------------------
+        
+        if (!config.getStargateNodes().isEmpty() && config.isEnabledGrpc()) {
+            this.apiGrpcClient = new ApiGrpcClient(stargateHttpClient);
+        } else {
+            LOGGER.info("+ API Grpc     :[" + yellow("DISABLED") + "]");
+        }
+        
+        // ------------- HTTP ---------------------
+        
         if (config.getRetryConfig() != null) {
             HttpApisClient.withRetryConfig(config.getRetryConfig());
         }
@@ -140,68 +152,101 @@ public class StargateClient implements Closeable {
                 HttpApisClient.registerListener(obs.getKey(), obs.getValue());
             }
         }
-    }   
+    }
+    
+    /**
+     * Datacenter name can be retrieved on multiple ways:
+     * - 1. Explicitely populated
+     * - 2. As a cql property
+     * - 3. In the Stargate node topology
+     * - 4. Default Value dc1
+     *
+     * @param config
+     *      current configuration
+     * @return
+     */
+    private String resolveDataCenterName(StargateClientConfig config) {
+        // If not #1...
+        if (!Utils.hasLength(config.getLocalDatacenter())) {
+            LOGGER.info("Looking for local datacenter name");
+            // #2. Read from CQL
+            String cqlDc = config.getCqlOptions().get(TypedDriverOption.LOAD_BALANCING_LOCAL_DATACENTER);
+            if (Utils.hasLength(cqlDc)) {
+                config.withLocalDatacenter(cqlDc);
+                LOGGER.info("+ Using value defined in cql configuration {}", cqlDc);
+            // #3. Read from node topology
+            } else if (!config.getStargateNodes().isEmpty()) {
+                Set< String > dcs = config.getStargateNodes().keySet();
+                String dcPicked = dcs.iterator().next();
+                config.withLocalDatacenter(dcPicked);
+                LOGGER.info("+ Using value from node topology '{}' ( '{}' dc found)", dcPicked, dcs.size());
+            // #4. Default
+            } else {
+                LOGGER.warn("+ Using default '{}'", StargateClientConfig.DEFAULT_LOCALDC);
+                config.withLocalDatacenter(StargateClientConfig.DEFAULT_LOCALDC);
+            }
+        }
+        return config.getLocalDatacenter();
+    }
     
     /**
      * Initializing  CqlSession based on current parameters.
+     * 
+     * - Parameters can be provided by the Builder populating Values
+     * - Parameters can be provided by the configuration keys in Spring application.yaml
      *
      * @return
      *      a new cqlSession
      */
-    public CqlSession renewCqlSession() {
+    public CqlSession initCqlSession() {
+
+        /* ---------------------------------------
+         * Close and cleaan up existing session:
+         * This behaviour occurs when you failover from one DC to another in Astra
+         * ---------------------------------------*/
         if (null != cqlSession && !cqlSession.isClosed()) {
             cqlSession.close();
             cqlSession = null;
         }
         
-        if (!conf.isDisableCqlSession()) {
+        // Only create if CQL Session if enabled, always.
+        if (conf.isEnabledCql()) {
+
+            // A CQL Session has been provided, we will reuse it
             if (conf.getCqlSession() != null) {
-                // A CQL Session has been provided, we will reuse it
                 cqlSession = conf.getCqlSession();
-            }
-            // Check options and add default if needed
-            if (null == conf.getOptions().get(TypedDriverOption.CONTACT_POINTS) || 
-                    conf.getOptions().get(TypedDriverOption.CONTACT_POINTS).isEmpty()) {
-                // Defaulting for contact points if no securebundle provided
-                if (null == conf.getOptions().get(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE)) {
-                    LOGGER.info("+ No contact points provided, using default {}", StargateClientConfig.DEFAULT_CONTACTPOINT);
-                    conf.getOptions().put(TypedDriverOption.CONTACT_POINTS, Arrays.asList(StargateClientConfig.DEFAULT_CONTACTPOINT));
+                
+            } else {
+                
+                // SCB
+                String scb = conf.getCqlOptions().get(this.currentDatacenter, TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE);
+                if (Utils.hasLength(scb)) {
+                    conf.withCqlCloudSecureConnectBundle(scb);
+                    conf.setLocalDatacenter(currentDatacenter);
                 }
+                
+                // CONTACT POINTS
+                List<String> configContactPointsDC = conf.getCqlOptions().get(this.currentDatacenter, TypedDriverOption.CONTACT_POINTS);
+                if (configContactPointsDC != null && !configContactPointsDC.isEmpty()) {
+                    conf.withCqlContactPoints(configContactPointsDC.toArray(new String[0]));
+                    conf.withLocalDatacenter(currentDatacenter);
+                }
+                
+                // Configuration through Map values
+                DriverConfigLoader configLoader = conf.getCqlDriverConfigLoaderBuilder().build();
+                CqlSessionBuilder sessionBuilder = CqlSession.builder().withConfigLoader(configLoader);
+                // Expand configuration
+                if (null != conf.getCqlMetricsRegistry()) {
+                    sessionBuilder.withMetricRegistry(conf.getCqlMetricsRegistry());
+                }
+                // Request Tracking
+                if (null != conf.getCqlRequestTracker()) {
+                    sessionBuilder.withRequestTracker(conf.getCqlRequestTracker());
+                }
+                
+                cqlSession = sessionBuilder.build();
             }
             
-            // Extract keys for dedicated DC on current when making send
-            conf.getOptions().put(TypedDriverOption.LOAD_BALANCING_LOCAL_DATACENTER, this.currentDatacenter);
-            
-            // CONTACT POINTS
-            List<String> configContactPointsDC = conf.getOptions().get(this.currentDatacenter, TypedDriverOption.CONTACT_POINTS);
-            if (configContactPointsDC != null && 
-               !configContactPointsDC.isEmpty()) {
-                conf.getOptions().put(TypedDriverOption.CONTACT_POINTS, configContactPointsDC);
-            }
-            
-            // SCB
-            String scb = conf.getOptions().get(this.currentDatacenter, TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE);
-            if (Utils.hasLength(scb)) {
-                conf.getOptions().put(TypedDriverOption.CLOUD_SECURE_CONNECT_BUNDLE, scb);
-            }
-           
-            // Configuration through Map values
-            CqlSessionBuilder sessionBuilder = CqlSession.builder()
-                    .withConfigLoader(DriverConfigLoader.fromMap(conf.getOptions()));
-            // Expand configuration
-            if (null != conf.getMetricsRegistry()) {
-                sessionBuilder.withMetricRegistry(conf.getMetricsRegistry());
-            }
-            // Request Tracking
-            if (null != conf.getCqlRequestTracker()) {
-                sessionBuilder.withRequestTracker(conf.getCqlRequestTracker());
-            }
-            // Final Customizations
-            if (null != conf.getCqlSessionBuilderCustomizer()) {
-                conf.getCqlSessionBuilderCustomizer().customize(sessionBuilder);
-            }
-            
-            cqlSession = sessionBuilder.build();
         }
         
         // Testing CqlSession

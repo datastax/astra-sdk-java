@@ -1,16 +1,17 @@
-package com.datastax.stargate.sdk.test;
+package com.datastax.stargate.sdk.test.doc;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 
-import com.datastax.stargate.sdk.rest.test.ApiDataTableTest;
+import com.datastax.stargate.sdk.doc.test.ApiDocumentCollectionsTest;
+import com.datastax.stargate.sdk.test.ApiStargateTestFactory;
 
 /**
  * Execute some unit tests agains collections.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDataTableStargateTest extends ApiDataTableTest {
+public class ApiDocumentCollectionsStargateTest extends ApiDocumentCollectionsTest {
      
     /**
      * Init
@@ -18,10 +19,10 @@ public class ApiDataTableStargateTest extends ApiDataTableTest {
     @BeforeAll
     public static void init() {
         stargateClient = ApiStargateTestFactory.createStargateClient();
-        ksClient = stargateClient.apiRest().keyspace(TEST_KEYSPACE);
+        nsClient = stargateClient.apiDocument().namespace(TEST_NAMESPACE);
         // We need the namespace
-        if (!ksClient.exist()) {
-            ksClient.createSimple(1);
+        if (!nsClient.exist()) {
+            nsClient.createSimple(1);
         }
     }
     

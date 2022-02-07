@@ -1,9 +1,10 @@
-package com.datastax.stargate.sdk.test;
+package com.datastax.stargate.sdk.test.data;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.datastax.stargate.sdk.rest.test.ApiDataKeyspacesTest;
+import com.datastax.stargate.sdk.test.ApiStargateTestFactory;
 
 /**
  * Implementations of test for Data keyspace.

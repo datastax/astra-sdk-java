@@ -72,13 +72,30 @@ public class DocumentClient {
     /**
      * Replace a document. https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/replaceDoc
      * 
-     * @param <DOC> working class
-     * @param doc DOC
-     * @return DOC
+     * @param <DOC> 
+     *       working class
+     * @param doc 
+     *       object to be updated
+     * @return
+     *       the unique document identifier
      */
     public <DOC> String upsert(DOC doc) {
         Assert.notNull(doc, "document");
         ApiResponseHttp res = stargateHttpClient.PUT(documentResource, marshall(doc));
+        return marshallDocumentId(res.getBody());
+    }
+    
+    /**
+     * Replace a document providing only the Json.
+     *
+     * @param json
+     *      jon file.
+     * @return
+     *     the unique document identifier
+     */
+    public String upsert(String json) {
+        Assert.hasLength(json, "Json document should not be null");
+        ApiResponseHttp res = stargateHttpClient.PUT(documentResource, json);
         return marshallDocumentId(res.getBody());
     }
   
@@ -92,6 +109,20 @@ public class DocumentClient {
     public <DOC> String update(DOC doc) {
         Assert.notNull(doc, "document");
         ApiResponseHttp res = stargateHttpClient.PATCH(documentResource, marshall(doc));
+        return marshallDocumentId(res.getBody());
+    }
+    
+    /**
+     * Update a document providing only the Json.
+     *
+     * @param json
+     *      jon file.
+     * @return
+     *     the unique document identifier
+     */
+    public String update(String json) {
+        Assert.hasLength(json, "Json document should not be null");
+        ApiResponseHttp res = stargateHttpClient.PATCH(documentResource, json);
         return marshallDocumentId(res.getBody());
     }
     
@@ -115,6 +146,8 @@ public class DocumentClient {
      * @param <DOC>
      *      nea
      * @param docm 
+     *      document mapper
+     * @return a document if exist     
      */
     public <DOC> Optional<DOC> find(DocumentMapper<DOC> docm) {
         Assert.notNull(docm, "documentMapper");
@@ -178,6 +211,7 @@ public class DocumentClient {
      */
     public <SUBDOC> Optional<SUBDOC> findSubDocument(String path, Class<SUBDOC> className) {
         Assert.notNull(className, "expectedClass");
+        Assert.hasLength(path, "path");
         ApiResponseHttp res = stargateHttpClient.GET(documentResource, formatPath(path) + "?raw=true");
         if (HttpURLConnection.HTTP_OK == res.getCode()) {
            return Optional.of(marshallDocument(res.getBody(), className));
@@ -189,7 +223,28 @@ public class DocumentClient {
     }
     
     /**
+     * Retrieve a sub document with no marshalling
+     * 
+     * @param path
+     *      path of the document
+     * @return
+     *      value as a String
+     */
+    public Optional<String> findSubDocument(String path) {
+        Assert.hasLength(path, "path");
+        ApiResponseHttp res = stargateHttpClient.GET(documentResource, formatPath(path) + "?raw=true");
+        if (HttpURLConnection.HTTP_OK == res.getCode()) {
+           return Optional.of(res.getBody());
+        }
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
+            return Optional.empty();
+        }
+        return Optional.empty();
+    }
+    
+    /**
      * Execute a function on a document.
+     * 
      * @param path
      *      current document sub path
      * @param function
@@ -229,6 +284,20 @@ public class DocumentClient {
     }
     
     /**
+     * Replace a subpart of the document.
+     * 
+     * @param path
+     *      sub path
+     * @param newValue
+     *      new value for the path
+     */
+    public void replaceSubDocument(String path, String newValue) {
+        Assert.hasLength(path, "path");
+        Assert.hasLength(newValue, "newValue");
+        stargateHttpClient.PUT(documentResource, newValue, formatPath(path));
+    }
+    
+    /**
      * Update part of a sub document
      * https://docs.datastax.com/en/astra/docs/_attachments/docv2.html#operation/updatePartOfSubDoc
      * 
@@ -239,6 +308,20 @@ public class DocumentClient {
     public <SUBDOC> void updateSubDocument(String path, SUBDOC newValue) {
         Assert.notNull(newValue, "newValue");
         stargateHttpClient.PATCH(documentResource, marshall(newValue), formatPath(path));
+    }
+    
+    /**
+     * Update a subpart of the document.
+     * 
+     * @param path
+     *      sub path
+     * @param newValue
+     *      new value for the path
+     */
+    public void updateSubDocument(String path, String newValue) {
+        Assert.hasLength(path, "path");
+        Assert.hasLength(newValue, "newValue");
+        stargateHttpClient.PATCH(documentResource, newValue, formatPath(path));
     }
     
     /**

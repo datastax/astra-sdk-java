@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.sandbox;
+package com.datastax.stargate.sdk.test.grpc;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +52,6 @@ public class Grpc {
                 .withAuthCredentials("cassandra", "cassandra")
                 .withLocalDatacenter("datacenter1")
                 .withApiNode(new StargateNodeConfig("127.0.0.1", 8081, 8082, 8080, 9191))
-                .withoutCqlSession()
                 .build();
        
         ResultSetGrpc rs = sc.apiGrpc().execute("SELECT data_center from system.local");
@@ -65,7 +64,6 @@ public class Grpc {
                 .withAuthCredentials("cassandra", "cassandra")
                 .withLocalDatacenter("datacenter1")
                 .withApiNode(new StargateNodeConfig("127.0.0.1", 8081, 8082, 8080, 9191))
-                .withoutCqlSession()
                 .build();
        
         ResultSetGrpc rs = sc.apiGrpc().execute("SELECT data_center from system.local");

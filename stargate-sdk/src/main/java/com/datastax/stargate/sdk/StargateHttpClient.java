@@ -325,7 +325,7 @@ public class StargateHttpClient implements ApiConstants {
         }
         LOGGER.info("Using DataCenter [" + datacenter + "]");
         sc.currentDatacenter = datacenter;
-        sc.renewCqlSession();
+        sc.initCqlSession();
     }
     
     /**

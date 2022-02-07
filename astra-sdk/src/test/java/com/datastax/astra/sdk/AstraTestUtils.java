@@ -12,7 +12,6 @@ import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
-import com.datastax.astra.sdk.databases.domain.DatabaseTierType;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
@@ -37,7 +36,7 @@ public class AstraTestUtils {
     public static final CloudProviderType TEST_PROVIDER = CloudProviderType.AWS;
     
     /** Test constant. */
-    public static final DatabaseTierType TEST_TIER = DatabaseTierType.serverless;
+    public static final String TEST_TIER = "serverless";
     
     /**
      * Hide default constructor
@@ -58,8 +57,6 @@ public class AstraTestUtils {
         return AstraClient.builder()
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .withDatabaseId(dbId)
-                .withCqlKeyspace(ApiDocumentNamespacesTest.TEST_NAMESPACE)
-                .withoutCqlSession()
                 .build().getStargateClient();
     }
     

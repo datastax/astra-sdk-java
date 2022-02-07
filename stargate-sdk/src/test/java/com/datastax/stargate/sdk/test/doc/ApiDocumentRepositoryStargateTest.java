@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.test;
+package com.datastax.stargate.sdk.test.doc;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,6 +9,7 @@ import com.datastax.stargate.sdk.doc.NamespaceClient;
 import com.datastax.stargate.sdk.doc.StargateDocumentRepository;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentRepositoryTest;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentDocumentTest.Person;
+import com.datastax.stargate.sdk.test.ApiStargateTestFactory;
 
 /**
  * Execute some unit tests agains collections.

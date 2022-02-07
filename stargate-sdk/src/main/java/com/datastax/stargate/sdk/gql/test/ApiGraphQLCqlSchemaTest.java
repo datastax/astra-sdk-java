@@ -16,7 +16,7 @@ import com.datastax.stargate.sdk.gql.CqlSchemaClient;
  * @author Cedrick LUNVEN (@clunven)
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class ApiGraphQLCqlSchemaTest implements ApiGraphQLTest {
+public abstract class ApiGraphQLCqlSchemaTest implements ApiGraphQLTest {
 
     /** Tested Store. */
     protected static StargateClient stargateClient;

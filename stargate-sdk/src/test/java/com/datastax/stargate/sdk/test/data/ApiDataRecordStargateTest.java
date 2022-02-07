@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.test;
+package com.datastax.stargate.sdk.test.data;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import com.datastax.stargate.sdk.rest.domain.CreateTable;
 import com.datastax.stargate.sdk.rest.domain.Ordering;
 import com.datastax.stargate.sdk.rest.test.ApiDataRecordTest;
+import com.datastax.stargate.sdk.test.ApiStargateTestFactory;
 
 /**
  * Execute some unit tests agains collections.

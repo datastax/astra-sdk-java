@@ -1,9 +1,10 @@
-package com.datastax.stargate.sdk.test;
+package com.datastax.stargate.sdk.test.doc;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
+import com.datastax.stargate.sdk.test.ApiStargateTestFactory;
 
 /**
  * Work with local stargate

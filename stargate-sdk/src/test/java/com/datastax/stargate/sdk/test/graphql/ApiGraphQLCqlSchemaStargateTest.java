@@ -1,9 +1,10 @@
-package com.datastax.stargate.sdk.test;
+package com.datastax.stargate.sdk.test.graphql;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.datastax.stargate.sdk.gql.test.ApiGraphQLCqlSchemaTest;
+import com.datastax.stargate.sdk.test.ApiStargateTestFactory;
 
 /**
  * Execute tests locally agains GraphQL endpoint.

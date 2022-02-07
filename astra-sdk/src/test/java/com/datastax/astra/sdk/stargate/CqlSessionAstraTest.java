@@ -95,6 +95,7 @@ public class CqlSessionAstraTest {
                 .withDatabaseId(client.getConfig().getDatabaseId())
                 .withDatabaseRegion(client.getConfig().getDatabaseRegion())
                 .withToken(client.getConfig().getToken())
+                .enableCql()
                 .build()) {
             // Then
             Assertions.assertNotNull(astraClient

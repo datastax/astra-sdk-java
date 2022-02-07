@@ -41,7 +41,7 @@ public class DatabaseInfo {
     private CloudProviderType cloudProvider;
     
     /** Tier defines the compute power (vertical scaling) for the database. */
-    private DatabaseTierType tier;
+    private String tier;
     
     /**
      * CapacityUnits is the amount of space available (horizontal scaling) 
@@ -215,7 +215,7 @@ public class DatabaseInfo {
      * @return
      *       current value of 'tier'
      */
-    public DatabaseTierType getTier() {
+    public String getTier() {
         return tier;
     }
 
@@ -224,7 +224,7 @@ public class DatabaseInfo {
      * @param tier
      * 		new value for 'tier '
      */
-    public void setTier(DatabaseTierType tier) {
+    public void setTier(String tier) {
         this.tier = tier;
     }
     

@@ -18,7 +18,6 @@ package com.datastax.astra.sdk;
 
 import java.io.Closeable;
 import java.io.File;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
@@ -31,9 +30,7 @@ import com.datastax.astra.sdk.databases.domain.Datacenter;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.utils.ApiLocator;
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.config.StargateNodeConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
@@ -109,6 +106,7 @@ public class AstraClient implements Closeable {
                 .withDatabaseRegion(dbRegion));
     }
     
+    
     /**
      * Initialization through builder.
      * 
@@ -136,75 +134,47 @@ public class AstraClient implements Closeable {
         // ---------------------------------------------------
         
         if (Utils.hasAllLength(config.getDatabaseId(), config.getDatabaseRegion())) {
-            LOGGER.info("+ Using db with id [" 
+            LOGGER.info("+ Db: id [" 
                         + AnsiUtils.cyan("{}")+ "] and region ["
                         + AnsiUtils.cyan("{}")+ "]", 
                     config.getDatabaseId(), 
                     config.getDatabaseRegion());
+            
             this.currentDatabaseRegion = config.getDatabaseRegion();
             
-            // ---------------------------------------------------
-            //       CQL / Cloud Secure Bundles
-            // ---------------------------------------------------
+            // Set default region (not in the cql as SCB is there)
+            config.getStargateConfig().setLocalDatacenter(config.getDatabaseRegion());
             
-            if (!new File(config.getSecureConnectBundleFolder()).exists()) {
-                new File(config.getSecureConnectBundleFolder()).mkdirs();
+            // CqlSession should be initialized only if the flag is on.
+            if (config.getStargateConfig().isEnabledCql()) {
+            
+                // Downloading SCB is enabled (default is true)
+                if (config.isEnabledDownloadSecureConnectBundle()) {
+                    downloadAndSetupSecureConnectBundle(config);
+                }
+                
+                // ---------------------------------------------------
+                //       CQL / Credentials
+                // ---------------------------------------------------
+                
+                if (Utils.hasAllLength(config.getClientId(), config.getClientSecret())) {
+                    config.getStargateConfig().withAuthCredentials(config.getClientId(), config.getClientSecret());
+                } else {
+                    config.getStargateConfig().withAuthCredentials("token", config.getToken());
+                }
+                
             }
-            // Download secure bundles (if needed)
-            LOGGER.info("+ Downloading bundles in: [" + AnsiUtils.cyan("{}") + "]", config.getSecureConnectBundleFolder());
-            apiDevopsDatabases.database(config.getDatabaseId())
-                              .downloadAllSecureConnectBundles(config.getSecureConnectBundleFolder());
             
-            // Enforce secure bundle for each DC
+            // ---------------------------------------------------
+            //     Stargate Node per region
+            // ---------------------------------------------------
             
+            // Retrieve the list of regions for a db
             Set<Datacenter> regions = apiDevopsDatabases
                     .database(config.getDatabaseId())
                     .find().get().getInfo()
                     .getDatacenters();
             
-            regions.stream().forEach(dc -> {
-               config.getStargateConfig()
-                     .withCqlCloudSecureConnectBundleDC(dc.getRegion(), 
-                       config.getSecureConnectBundleFolder() + File.separator + 
-                         AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
-            });
-            // Setup the current region
-            config.getStargateConfig().withCqlCloudSecureConnectBundle(config.getSecureConnectBundleFolder() + 
-                    File.separator + AstraClientConfig.buildScbFileName(config.getDatabaseId(), config.getDatabaseRegion()));
-            
-            // ---------------------------------------------------
-            //       CQL / Credentials
-            // ---------------------------------------------------
-            
-            if (Utils.hasAllLength(config.getClientId(), config.getClientSecret())) {
-                config.getStargateConfig().withAuthCredentials(config.getClientId(), config.getClientSecret());
-                LOGGER.info("+ Credentials used for Cql connection are clientId/clientSecret");
-            } else {
-                config.getStargateConfig().withAuthCredentials("token", config.getToken());
-                LOGGER.info("+ Credentials used for Cql are based on the token ");
-            }
-            
-            // ---------------------------------------------------
-            //       CQL / Timeouts
-            // ---------------------------------------------------
-            
-            // Region to setup Stargate
-            config.getStargateConfig()
-                  .withCqlDriverOption(TypedDriverOption.REQUEST_CONSISTENCY, ConsistencyLevel.LOCAL_QUORUM.name())
-                  .withCqlDriverOption(TypedDriverOption.REQUEST_TIMEOUT, Duration.ofSeconds(10))
-                  .withCqlDriverOption(TypedDriverOption.REQUEST_PAGE_SIZE, 100)
-                  .withCqlDriverOption(TypedDriverOption.CONNECTION_CONNECT_TIMEOUT, Duration.ofSeconds(10))
-                  .withCqlDriverOption(TypedDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofSeconds(10))
-                  .withCqlDriverOption(TypedDriverOption.CONNECTION_SET_KEYSPACE_TIMEOUT, Duration.ofSeconds(10))
-                  .withCqlDriverOption(TypedDriverOption.CONTROL_CONNECTION_TIMEOUT, Duration.ofSeconds(10))
-                  // Failover options: 
-                  // https://docs.datastax.com/en/developer/java-driver/4.13/manual/core/load_balancing/#cross-datacenter-failover
-                  .withCqlDriverOption(TypedDriverOption.LOAD_BALANCING_DC_FAILOVER_ALLOW_FOR_LOCAL_CONSISTENCY_LEVELS, true)
-                  .withCqlDriverOption(TypedDriverOption.LOAD_BALANCING_DC_FAILOVER_MAX_NODES_PER_REMOTE_DC, 3);
-            
-            // ---------------------------------------------------
-            //     Stargate Node per region
-            // ---------------------------------------------------
             regions.stream().forEach(dc -> {
                 config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
                         new StargateNodeConfig(
@@ -218,11 +188,17 @@ public class AstraClient implements Closeable {
                                 ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()),
                                 // port for grpc
                                 AstraClientConfig.GRPC_PORT));
+                
+                config.getStargateConfig()
+                      .withCqlCloudSecureConnectBundleDC(dc.getRegion(),
+                          config.getSecureConnectBundleFolder() 
+                          + File.separator 
+                          + AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
               }
             );
-            // Set default region
-            config.getStargateConfig().withLocalDatacenter(config.getDatabaseRegion());
+            
             this.stargateClient =  config.getStargateConfig().build();
+            
         } else {
            LOGGER.info("+ API(s) CqlSession [" + AnsiUtils.red("DISABLED")+ "]");
            LOGGER.info("+ API(s) Document   [" + AnsiUtils.red("DISABLED")+ "]");
@@ -230,6 +206,27 @@ public class AstraClient implements Closeable {
            LOGGER.info("+ API(s) gRPC       [" + AnsiUtils.red("DISABLED")+ "]");
         }
         LOGGER.info("[" + AnsiUtils.yellow("AstraClient") + "] has been initialized.");
+    }
+    
+    
+    /**
+     * Download the secure connect bundle files
+     * @param config
+     */
+    private void downloadAndSetupSecureConnectBundle(AstraClientConfig config) {
+        if (!new File(config.getSecureConnectBundleFolder()).exists()) {
+            new File(config.getSecureConnectBundleFolder()).mkdirs();
+        }
+        // Download secure bundles (if needed)
+        LOGGER.info("+ Downloading bundles in: [" + AnsiUtils.cyan("{}") + "]", config.getSecureConnectBundleFolder());
+        apiDevopsDatabases.database(config.getDatabaseId())
+                          .downloadAllSecureConnectBundles(config.getSecureConnectBundleFolder());
+        
+        // Setup the current region
+        String scbFile = config.getSecureConnectBundleFolder() 
+                + File.separator 
+                + AstraClientConfig.buildScbFileName(config.getDatabaseId(), config.getDatabaseRegion());
+        config.getStargateConfig().withCqlCloudSecureConnectBundle(scbFile);
     }
     
     /**
@@ -332,8 +329,9 @@ public class AstraClient implements Closeable {
      */
     public CqlSession cqlSession() {
         if (stargateClient == null || !stargateClient.cqlSession().isPresent()) {
-            throw new IllegalStateException("CQL not available  Rest is not available "
-                    + "you need to provide dbId/dbRegion/username/password at initialization.");
+            throw new IllegalStateException("CQL Session is not available."
+                    + " Make sure you enabled it with .enableCql() and provide all"
+                    + " expected paramters: keyspace, contact points or SCB, user+password ");
         }
         return stargateClient.cqlSession().get();
     }
@@ -368,7 +366,7 @@ public class AstraClient implements Closeable {
         LOGGER.info("Switch to region : {}", region);
         this.currentDatabaseRegion = region;
         this.stargateClient.setCurrentDatacenter(region);
-        this.stargateClient.renewCqlSession();
+        this.stargateClient.initCqlSession();
     }
     
     /**

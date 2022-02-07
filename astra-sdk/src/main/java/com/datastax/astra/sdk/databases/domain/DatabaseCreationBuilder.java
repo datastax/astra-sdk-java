@@ -30,8 +30,9 @@ public class DatabaseCreationBuilder {
     /** CloudProvider where the database lives. */
     protected CloudProviderType cloudProvider;
     
-    /** */
-    protected DatabaseTierType tier = DatabaseTierType.developer;
+    /** Default tier. */
+    protected String tier = "developer";
+    
     /** */
     protected int capacityUnits = 1;
     
@@ -94,7 +95,7 @@ public class DatabaseCreationBuilder {
      * @return
      *      current instance
      */
-    public DatabaseCreationBuilder tier(DatabaseTierType tier) {
+    public DatabaseCreationBuilder tier(String tier) {
         this.tier = tier;
         return this;
     }

@@ -1,0 +1,33 @@
+astra:
+  api:
+    application-token: "AstraCS:...."
+    database-id: CHANGE_ME
+    database-region: CHANGE_ME
+  grpc:
+    enabled: false
+  cql:
+    enabled: true
+    download-scb: 
+      enabled: true
+      path: /tmp
+      pattern: scb_{DB_ID}_{DB_REGION}.zip
+    metrics:
+      enabled: true
+        
+    driver-config:
+      basic:
+        request:
+          timeout: 5 seconds
+          consistency: LOCAL_QUORUM
+          page-size: 5000
+        session-keyspace: keyspace
+      advanced:
+        auth-provider:
+          class: PlainTextAuthProvider
+          username: "clientId"
+          password: "clientSecret"
+        connection:
+          init-query-timeout: 10 seconds          
+          set-keyspace-timeout: 10 seconds
+        control-connection.timeout: 10 seconds
+      
