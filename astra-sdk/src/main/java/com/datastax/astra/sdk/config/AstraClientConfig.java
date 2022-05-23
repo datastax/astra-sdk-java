@@ -7,6 +7,8 @@ import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
 
 import java.io.File;
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -17,6 +19,7 @@ import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
+import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
 import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
@@ -403,6 +406,456 @@ public class AstraClientConfig implements Serializable {
         stargateConfig.withCqlKeyspace(keyspace);
         return this;
     }
+    
+
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionBoolean(TypedDriverOption<Boolean> option, Boolean du) {
+       stargateConfig.withCqlOptionBoolean(option, du);
+       return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionBooleanDC(String dc, TypedDriverOption<Boolean> option, Boolean du) {
+        stargateConfig.withCqlOptionBooleanDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionBooleanList(TypedDriverOption<List<Boolean>> option, List<Boolean> du) {
+        stargateConfig.withCqlOptionBooleanList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionBooleanListDC(String dc, TypedDriverOption<List<Boolean>> option, List<Boolean> du) {
+        stargateConfig.withCqlOptionBooleanListDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionClass(TypedDriverOption<Class<?>> option, Class<?> du) {
+        stargateConfig.withCqlOptionClass(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionClassDC(String dc, TypedDriverOption<Class<?>> option, Class<?> du) {
+        stargateConfig.withCqlOptionClassDC(dc, option, du);
+        return this;
+    }
+
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionClassList(TypedDriverOption<List<Class<?>>> option, List<Class<?>> du) {
+        stargateConfig.withCqlOptionClassList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionClassListDC(String dc, TypedDriverOption<List<Class<?>>> option, List<Class<?>> du) {
+        stargateConfig.withCqlOptionClassListDC(dc, option, du);
+        return this;
+    }
+
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDouble(TypedDriverOption<Double> option, Double du) {
+        stargateConfig.withCqlOptionDouble(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDoubleDC(String dc, TypedDriverOption<Double> option,Double du) {
+        stargateConfig.withCqlOptionDoubleDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDoubleList(TypedDriverOption<List<Double>> option, List<Double> du) {
+        stargateConfig.withCqlOptionDoubleList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDoubleListDC(String dc, TypedDriverOption<List<Double>> option, List<Double> du) {
+        stargateConfig.withCqlOptionDoubleListDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDuration(TypedDriverOption<Duration> option, Duration du) {
+        stargateConfig.withCqlOptionDuration(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDurationDC(String dc, TypedDriverOption<Duration> option, Duration du) {
+        stargateConfig.withCqlOptionDurationDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDurationList(TypedDriverOption<List<Duration>> option, List<Duration> du) {
+        stargateConfig.withCqlOptionDurationList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionDurationListDC(String dc, TypedDriverOption<List<Duration>> option, List<Duration> du) {
+        stargateConfig.withCqlOptionDurationListDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionInteger(TypedDriverOption<Integer> option, Integer du) {
+        stargateConfig.withCqlOptionInteger(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionIntegerDC(String dc, TypedDriverOption<Integer> option, Integer du) {
+        stargateConfig.withCqlOptionIntegerDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionIntegerList(TypedDriverOption<List<Integer>> option, List<Integer> du) {
+        stargateConfig.withCqlOptionIntegerList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionIntegerListDC(String dc, TypedDriverOption<List<Integer>> option, List<Integer> du) {
+        stargateConfig.withCqlOptionIntegerListDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionLong(TypedDriverOption<Long> option, Long du) {
+        stargateConfig.withCqlOptionLong(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionLongDC(String dc, TypedDriverOption<Long> option, Long du) {
+        stargateConfig.withCqlOptionLongDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionLongList(TypedDriverOption<List<Long>> option, List<Long> du) {
+        stargateConfig.withCqlOptionLongList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionLongListDC(String dc, TypedDriverOption<List<Long>> option, List<Long> du) {
+        stargateConfig.withCqlOptionLongListDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionString(TypedDriverOption<String> option, String du) {
+        stargateConfig.withCqlOptionString(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionStringDC(String dc, TypedDriverOption<String> option, String du) {
+        stargateConfig.withCqlOptionStringDC(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionStringList(TypedDriverOption<List<String>> option, List<String> du) {
+        stargateConfig.withCqlOptionStringList(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig withCqlOptionStringListDC(String dc, TypedDriverOption<List<String>> option, List<String> du) {
+        stargateConfig.withCqlOptionStringListDC(dc, option, du);
+        return this;
+    }
+    
     
     /**
      * Provide a metrics registry.

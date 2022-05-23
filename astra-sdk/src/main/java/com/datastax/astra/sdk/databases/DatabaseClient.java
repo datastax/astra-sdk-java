@@ -292,6 +292,24 @@ public class DatabaseClient {
         throw new RuntimeException("This function is not yet implemented");
     }
     
+    /**
+     * Configure Astra Remote Telemetry
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/configureTelemetry
+     */
+    public void configureTelemetry() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
+    /**
+     * Retrieve Remote Telemetry configuration
+     * 
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
+     */
+    public void getTelemetryConfiguration() {
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
     // ---------------------------------
     // ----       Access List       ----
     // ---------------------------------

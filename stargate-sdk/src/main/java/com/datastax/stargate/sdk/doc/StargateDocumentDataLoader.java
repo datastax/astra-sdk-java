@@ -57,6 +57,24 @@ public class StargateDocumentDataLoader<DOC> implements Closeable {
            lock.writeLock().unlock();
        }, executor);
    }
+   
+   /**
+    * Push thread in the queue for the document to be loaded.
+    *
+    * @param ccc
+    *       collection client parent
+    * @param doc
+    *       document to be saved
+    * @return
+    *       noothing to return 
+    */
+   public CompletableFuture<Void> submitCreateDoc(CollectionClient ccc, String doc) {
+       return CompletableFuture.runAsync(() -> { 
+           lock.writeLock().lock();
+           ccc.create(doc);
+           lock.writeLock().unlock();
+       }, executor);
+   }
 
    /** {@inheritDoc} */
    @Override

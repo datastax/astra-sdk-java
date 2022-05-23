@@ -1,4 +1,4 @@
-package com.datastax.stargate.sdk.doc;
+package com.datastax.stargate.sdk.doc.domain;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

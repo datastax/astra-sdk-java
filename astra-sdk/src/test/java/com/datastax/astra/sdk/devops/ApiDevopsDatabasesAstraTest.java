@@ -34,6 +34,7 @@ import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
+import com.datastax.astra.sdk.organizations.domain.Organization;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class ApiDevopsDatabasesAstraTest {
@@ -108,6 +109,19 @@ public class ApiDevopsDatabasesAstraTest {
                 .get(CloudProviderType.AWS).stream()
                 .anyMatch(db -> "us-east-1".equalsIgnoreCase(db.getRegion())));
         LOGGER.info("Tier `serverless` for region 'aws/us-east-1' is available");
+    }
+    
+    @Test
+    @Order(5)
+    public void should_retrieve_organization() {
+        // Given
+        OrganizationsClient cli = new OrganizationsClient(client.getToken().get());
+        // When
+        Organization org = cli.organization();
+        // Then
+        Assertions.assertNotNull(org);
+        Assertions.assertNotNull(org.getId());
+        Assertions.assertNotNull(org.getName());
     }
     
     /*

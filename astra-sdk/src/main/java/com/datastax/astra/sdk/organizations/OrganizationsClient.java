@@ -20,6 +20,9 @@ import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
 import com.datastax.astra.sdk.organizations.domain.IamToken;
 import com.datastax.astra.sdk.organizations.domain.InviteUserRequest;
+import com.datastax.astra.sdk.organizations.domain.Key;
+import com.datastax.astra.sdk.organizations.domain.KeyDefinition;
+import com.datastax.astra.sdk.organizations.domain.Organization;
 import com.datastax.astra.sdk.organizations.domain.ResponseAllIamTokens;
 import com.datastax.astra.sdk.organizations.domain.ResponseAllUsers;
 import com.datastax.astra.sdk.organizations.domain.Role;
@@ -65,6 +68,9 @@ public class OrganizationsClient {
     /** Resource suffix. */ 
     public static final String PATH_USERS = "/users";
     
+    /** Resource suffix. */ 
+    public static final String PATH_KEYS = "/kms";
+    
     /** List of regions. */
     public static final TypeReference<List<DatabaseRegion>> TYPE_LIST_REGION = 
             new TypeReference<List<DatabaseRegion>>(){};
@@ -72,6 +78,10 @@ public class OrganizationsClient {
     /** List of Roles. */
     public static final TypeReference<List<Role>> TYPE_LIST_ROLES = 
             new TypeReference<List<Role>>(){};
+            
+    /** List of Keys. */
+    public static final TypeReference<List<Key>> TYPE_LIST_KEYS = 
+            new TypeReference<List<Key>>(){};            
     
     /** Wrapper handling header and error management as a singleton. */
     private final HttpApisClient http = HttpApisClient.getInstance();
@@ -105,6 +115,21 @@ public class OrganizationsClient {
         ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_CURRENT_ORG, bearerAuthToken);
         // Parse response
         return (String) unmarshallBean(res.getBody(),  Map.class).get("id");
+    }
+    
+    /**
+     * Retrieve the organization wth current token.
+     *
+     * @return
+     *      current organization
+     */
+    public Organization organization() {
+        // Invoke endpoint
+        ApiResponseHttp  res  = http.GET(getApiDevopsEndpointUsers(), bearerAuthToken);
+        // Marshalling the all users response to get org infos
+        ResponseAllUsers body = unmarshallBean(res.getBody(), ResponseAllUsers.class);
+        // Build a proper result
+        return new Organization(body.getOrgId(), body.getOrgName());
     }
      
     /**
@@ -351,6 +376,36 @@ public class OrganizationsClient {
         throw new RuntimeException("This function is not yet implemented");
     }
     
+    // ------------------------------------------------------
+    //                WORKING WITH CUSTOM KEYS
+    // ------------------------------------------------------
+    
+    /**
+     * List keys in a Organizations.
+     * 
+     * @return
+     *      list of keys in target organization.
+     */
+    public Stream<Key> keys() {
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpointKeys(), bearerAuthToken);
+        // Mapping
+        return unmarshallType(res.getBody(), TYPE_LIST_KEYS).stream();
+    }
+    
+    /**
+     * Create a new key.
+     * 
+     * @param cr
+     *      new role request
+     * @return
+     *      new role created
+     */
+    public Object createKey(KeyDefinition keyDef) {
+        Assert.notNull(keyDef, "CreateRole request");
+        throw new RuntimeException("This function is not yet implemented");
+    }
+    
     // ---------------------------------
     // ---- Accessing sub resources ----
     // ---------------------------------
@@ -458,6 +513,16 @@ public class OrganizationsClient {
      */
     public static String getApiDevopsEndpointRoles() {
         return ApiLocator.getApiDevopsEndpoint() + PATH_ORGANIZATIONS + PATH_ROLES;
+    }
+    
+    /**
+     * Endpoint to access a key.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getApiDevopsEndpointKeys() {
+        return ApiLocator.getApiDevopsEndpoint() + PATH_KEYS;
     }
     
     /**

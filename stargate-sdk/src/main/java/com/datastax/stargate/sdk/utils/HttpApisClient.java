@@ -459,6 +459,7 @@ public class HttpApisClient implements ApiConstants {
         req.addHeader(HEADER_REQUESTED_WITH, REQUEST_WITH);
         req.addHeader(HEADER_CASSANDRA, token);
         req.addHeader(HEADER_AUTHORIZATION, "Bearer " + token);
+        req.setConfig(requestConfig);
         if (null != body) {
             req.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
         }

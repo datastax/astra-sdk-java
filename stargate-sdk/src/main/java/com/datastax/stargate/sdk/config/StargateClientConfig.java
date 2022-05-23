@@ -7,6 +7,7 @@ import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
 
 import java.io.File;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -122,16 +123,13 @@ public class StargateClientConfig implements Serializable {
         hasLength(password, "password");
         this.username = username;
         this.password = password;
-        
-        driverConfig.withString(DefaultDriverOption.AUTH_PROVIDER_USER_NAME, username);
-        driverConfig.withString(DefaultDriverOption.AUTH_PROVIDER_PASSWORD, password);
-        driverConfig.withString(DefaultDriverOption.AUTH_PROVIDER_CLASS, PlainTextAuthProvider.class.getName());
-        
-        cqlOptions.put(TypedDriverOption.AUTH_PROVIDER_USER_NAME, username);
-        cqlOptions.put(TypedDriverOption.AUTH_PROVIDER_PASSWORD, password);
-        cqlOptions.put(TypedDriverOption.AUTH_PROVIDER_CLASS, PlainTextAuthProvider.class.getName());
+        withCqlOptionString(TypedDriverOption.AUTH_PROVIDER_USER_NAME, username);
+        withCqlOptionString(TypedDriverOption.AUTH_PROVIDER_PASSWORD, password);
+        withCqlOptionString(TypedDriverOption.AUTH_PROVIDER_CLASS,  PlainTextAuthProvider.class.getName());
         return this;
     }
+    
+    
     
     /**
      * Retrieve an {@link ApiTokenProvider} based on token.
@@ -388,6 +386,482 @@ public class StargateClientConfig implements Serializable {
      */
     public StargateClientConfig withCqlDriverConfigLoaderBuilder(ProgrammaticDriverConfigLoaderBuilder pdclb) {
         this.driverConfig = pdclb;
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionBoolean(TypedDriverOption<Boolean> option, Boolean du) {
+        driverConfig.withBoolean(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionBooleanDC(String dc, TypedDriverOption<Boolean> option, Boolean du) {
+        driverConfig.startProfile(dc).withBoolean(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionBooleanList(TypedDriverOption<List<Boolean>> option, List<Boolean> du) {
+        driverConfig.withBooleanList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionBooleanListDC(String dc, TypedDriverOption<List<Boolean>> option, List<Boolean> du) {
+        driverConfig.startProfile(dc).withBooleanList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionClass(TypedDriverOption<Class<?>> option, Class<?> du) {
+        driverConfig.withClass(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionClassDC(String dc, TypedDriverOption<Class<?>> option, Class<?> du) {
+        driverConfig.startProfile(dc).withClass(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionClassList(TypedDriverOption<List<Class<?>>> option, List<Class<?>> du) {
+        driverConfig.withClassList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionClassListDC(String dc, TypedDriverOption<List<Class<?>>> option, List<Class<?>> du) {
+        driverConfig.startProfile(dc).withClassList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDouble(TypedDriverOption<Double> option, Double du) {
+        driverConfig.withDouble(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDoubleDC(String dc, TypedDriverOption<Double> option,Double du) {
+        driverConfig.startProfile(dc).withDouble(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDoubleList(TypedDriverOption<List<Double>> option, List<Double> du) {
+        driverConfig.withDoubleList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDoubleListDC(String dc, TypedDriverOption<List<Double>> option, List<Double> du) {
+        driverConfig.startProfile(dc).withDoubleList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDuration(TypedDriverOption<Duration> option, Duration du) {
+        driverConfig.withDuration(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDurationDC(String dc, TypedDriverOption<Duration> option, Duration du) {
+        driverConfig.startProfile(dc).withDuration(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDurationList(TypedDriverOption<List<Duration>> option, List<Duration> du) {
+        driverConfig.withDurationList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionDurationListDC(String dc, TypedDriverOption<List<Duration>> option, List<Duration> du) {
+        driverConfig.startProfile(dc).withDurationList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionInteger(TypedDriverOption<Integer> option, Integer du) {
+        driverConfig.withInt(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionIntegerDC(String dc, TypedDriverOption<Integer> option, Integer du) {
+        driverConfig.startProfile(dc).withInt(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionIntegerList(TypedDriverOption<List<Integer>> option, List<Integer> du) {
+        driverConfig.withIntList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionIntegerListDC(String dc, TypedDriverOption<List<Integer>> option, List<Integer> du) {
+        driverConfig.startProfile(dc).withIntList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionLong(TypedDriverOption<Long> option, Long du) {
+        driverConfig.withLong(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionLongDC(String dc, TypedDriverOption<Long> option, Long du) {
+        driverConfig.startProfile(dc).withLong(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionLongList(TypedDriverOption<List<Long>> option, List<Long> du) {
+        driverConfig.withLongList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionLongListDC(String dc, TypedDriverOption<List<Long>> option, List<Long> du) {
+        driverConfig.startProfile(dc).withLongList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionString(TypedDriverOption<String> option, String du) {
+        driverConfig.withString(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionStringDC(String dc, TypedDriverOption<String> option, String du) {
+        driverConfig.startProfile(dc).withString(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
+        return this;
+    }
+    
+    /**
+     * Add a property to the Cql Context.
+     *
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionStringList(TypedDriverOption<List<String>> option, List<String> du) {
+        driverConfig.withStringList(option.getRawOption(), du);
+        cqlOptions.put(option, du);
+        return this;
+    }
+    
+    /**
+     * Add a propery to the Cql Context.
+     *
+     * @param dc
+     *      targate datacenter
+     * @param option
+     *      current option
+     * @param du
+     *      option value
+     * @return
+     *      current reference
+     */
+    public StargateClientConfig withCqlOptionStringListDC(String dc, TypedDriverOption<List<String>> option, List<String> du) {
+        driverConfig.startProfile(dc).withStringList(option.getRawOption(), du).endProfile();
+        cqlOptions.put(dc, option, du);
         return this;
     }
     

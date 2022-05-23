@@ -175,6 +175,26 @@ public class CollectionClient {
     }
     
     /**
+     * Create a new document from any serializable object. 
+     * The doc could be a the String value.
+     * 
+     * @see <a href="https://stargate.io/docs/stargate/1.0/attachments/docv2.html#operation/addDoc">Reference Documentation</a>
+     * 
+     * @param doc
+     *          working bean instance
+     * @return
+     *          created document id
+     */
+    public String create(String doc) {
+        ApiResponseHttp res = stargateHttpClient.POST(collectionResource, doc);
+        try {
+            return (String) unmarshallBean(res.getBody(), Map.class).get(DOCUMENT_ID);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot marshall document id", e);
+        }
+    }
+    
+    /**
      * Use the resource batch to insert massively in the DB.
      * 
      * @param records
@@ -204,6 +224,33 @@ public class CollectionClient {
     }
     
     /**
+     * Use the resource batch to insert massively in the DB.
+     * 
+     * @param records
+     *      list of records
+     * @param idPath
+     *      id path to enforced ids
+     * @return
+     *      list of inserted ids
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> batchInsertRaw(List<String> records, String idPath) {
+        Assert.notNull(records, "Records should be provided");
+        ApiResponseHttp res;
+        if (Utils.hasLength(idPath)) {
+            res = stargateHttpClient.POST(collectionBatchResource, marshall(records), 
+                    "?" + BATCH_ID_PATH + "=" + idPath);
+        } else {
+            res = stargateHttpClient.POST(collectionBatchResource, marshall(records));
+        }
+        Map<String, Object> doc = unmarshallBean(res.getBody(), Map.class);
+        if (doc.containsKey("documentIds")) {
+            return (List<String>) doc.get("documentIds");
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
      * Insert multiple record with a single resource.
      * 
      * @param records
@@ -214,6 +261,18 @@ public class CollectionClient {
      *      list of inserted ids
      */
     public <DOC > List<String> batchInsert(List<DOC> records) {
+        return batchInsert(records, null);
+    }
+    
+    /**
+     * Insert multiple record with a single resource.
+     * 
+     * @param records
+     *      list of records
+     * @return
+     *      list of inserted ids
+     */
+    public List<String> batchInsertRaw(List<String> records) {
         return batchInsert(records, null);
     }
 

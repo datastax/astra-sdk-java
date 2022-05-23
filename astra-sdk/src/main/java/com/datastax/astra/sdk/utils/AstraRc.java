@@ -1,17 +1,14 @@
 /*
  * Copyright DataStax, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
  */
 
 package com.datastax.astra.sdk.utils;
@@ -31,7 +28,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -45,147 +41,155 @@ import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.stargate.sdk.utils.Utils;
 
 /**
- * Utility class to load/save .astrarc file. This file is used to store
- * Astra configuration.
+ * Utility class to load/save .astrarc file. This file is used to store Astra configuration.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
 public class AstraRc {
-    
+
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraRc.class);
-   
+
     /** Default filename we are looking for. */
-    public static final String ASTRARC_FILENAME  = ".astrarc";
-    
+    public static final String ASTRARC_FILENAME = ".astrarc";
+
     /** Default filename we are looking for. */
-    public static final String ASTRARC_DEFAULT   = "default";
-    
+    public static final String ASTRARC_DEFAULT = "default";
+
     /** Environment variable coding user home. */
-    public static final String ENV_USER_HOME      = "user.home";
-    
+    public static final String ENV_USER_HOME = "user.home";
+
     /** line separator. */
     public static final String ENV_LINE_SEPERATOR = "line.separator";
     
+    /** line separator. */
+    public static final String LINE_SEPARATOR = System.getProperty(ENV_LINE_SEPERATOR);
+
     /** Sections in the file. [sectionName] -> key=Value. */
-    private final Map <String, Map<String, String>> sections;
-    
+    private final Map<String, Map<String, String>> sections;
+
     /**
      * Load from ~/.astrarc
      */
     public AstraRc() {
         this.sections = AstraRc.load().getSections();
     }
-    
+
     /**
      * Load from specified file
      * 
-     * @param fileName String
+     * @param fileName
+     *            String
      */
     public AstraRc(String fileName) {
         this.sections = AstraRc.load(fileName).getSections();
     }
-    
+
     /**
      * Load from a set of keys (sections / Key / Value)
      * 
-     * @param s Map
+     * @param s
+     *            Map
      */
-    public AstraRc(Map <String, Map<String, String>> s) {
+    public AstraRc(Map<String, Map<String, String>> s) {
         this.sections = s;
     }
-    
+
     /**
      * Getter accessor for attribute 'sections'.
      *
-     * @return
-     *       current value of 'sections'
+     * @return current value of 'sections'
      */
     public Map<String, Map<String, String>> getSections() {
         return sections;
     }
-    
+
     /**
      * Display output in the console
      */
     public void print() {
         System.out.println(generateFileContent(getSections()));
     }
-    
+
     /**
      * Helper to react a key in the file based on section name and key
      * 
-     * @param sectionName String
-     * @param key String
+     * @param sectionName
+     *            String
+     * @param key
+     *            String
      * @return String
      */
     public String read(String sectionName, String key) {
-        return (!sections.containsKey(sectionName)) ? 
-                null :sections.get(sectionName).get(key);
+        return (!sections.containsKey(sectionName)) ? null : sections.get(sectionName).get(key);
     }
-    
+
     // -- Static operations --
-    
+
     /**
      * Check if file ~/.astrac is present in the filesystem
      * 
      * @return File
      */
     public static boolean exists() {
-        return new File(System.getProperty(ENV_USER_HOME) 
-                + File.separator 
-                + ASTRARC_FILENAME).exists();
+        return new File(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME).exists();
     }
-    
+
     /**
      * Generate astrarc based on values in DB using devops API.
      *
-     * @param token token
+     * @param token
+     *            token
      */
     public static void create(String token) {
         save(extractDatabasesInfos(token));
     }
-    
+
     /**
      * Generate astrarc based on values in DB using devops API.
      *
-     * @param token token
-     * @param destination  output to save the values
+     * @param token
+     *            token
+     * @param destination
+     *            output to save the values
      */
     public static void create(String token, File destination) {
         save(extractDatabasesInfos(token), destination);
     }
-  
+
     /**
      * Update only one key.
      * 
-     * @param section String
-     * @param key String
-     * @param value String
+     * @param section
+     *            String
+     * @param key
+     *            String
+     * @param value
+     *            String
      */
     public static void save(String section, String key, String value) {
-        Map <String, Map<String, String>> astraRc = new HashMap<>();
+        Map<String, Map<String, String>> astraRc = new HashMap<>();
         Map<String, String> val = new HashMap<>();
         val.put(key, value);
         astraRc.put(section, val);
         save(astraRc);
     }
-    
+
     /**
      * Create the file from a list of key, merging with existing
      *
      * @param astraRc
-     *      update .astrarc file. 
-     * @param destination 
-     *      destination to save the file
+     *            update .astrarc file.
+     * @param destination
+     *            destination to save the file
      */
-    public static void save(Map <String, Map<String, String>> astraRc, File destination) {
+    public static void save(Map<String, Map<String, String>> astraRc, File destination) {
         // This map is empty if file does not exist
-        Map <String, Map<String, String>> targetAstraRc = astraRc;
-        
+        Map<String, Map<String, String>> targetAstraRc = astraRc;
+
         if (exists()) {
             targetAstraRc = load().getSections();
-            
+
             // Merge if needed, append otherwize
             for (String dbName : astraRc.keySet()) {
                 if (targetAstraRc.containsKey(dbName)) {
@@ -198,7 +202,7 @@ public class AstraRc {
                 LOGGER.info("+ updating [" + dbName + "]");
             }
         }
-       
+
         FileWriter out = null;
         try {
             out = new FileWriter(destination);
@@ -208,62 +212,60 @@ public class AstraRc {
             throw new IllegalStateException("Cannot save astrarc file", e);
         } finally {
             if (null != out) {
-                try { out.close(); } catch (IOException e) {}
+                try {
+                    out.close();
+                } catch (IOException e) {}
             }
         }
     }
-    
+
     /**
      * Create the file from a list of key, merging with existing
      *
      * @param astraRc
-     *      update .astrarc file. 
+     *            update .astrarc file.
      */
-    public static void save(Map <String, Map<String, String>> astraRc) {
+    public static void save(Map<String, Map<String, String>> astraRc) {
         LOGGER.info("Updating .astrarc file");
-        save(astraRc, new File(System.getProperty(ENV_USER_HOME) 
-                + File.separator 
-                + ASTRARC_FILENAME)); 
+        save(astraRc, new File(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME));
     }
-    
+
     /**
      * Loading ~/.astrarc (if present).
      * 
      * @return AstraRc
-     */ 
+     */
     public static AstraRc load() {
         return load(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME);
     }
-    
+
     /**
-     * Loading ~/.astrarc (if present).
-     * Key = block name (dbname of default), then key/value
+     * Loading ~/.astrarc (if present). Key = block name (dbname of default), then key/value
      * 
-     * @param fileName String
+     * @param fileName
+     *            String
      * @return AstraRc
      */
     public static AstraRc load(String fileName) {
-        Map <String, Map<String, String>> sections = new HashMap<>();
+        Map<String, Map<String, String>> sections = new HashMap<>();
         File current = new File(fileName);
-        try(Scanner scanner = new Scanner(current)) {
+        try (Scanner scanner = new Scanner(current)) {
             if (current.exists()) {
                 String sectionName = "";
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.startsWith("[")) {
                         // Starting a new section
-                        sectionName = line.replaceAll("\\[", "") 
-                                          .replaceAll("\\]", "").trim();
+                        sectionName = line.replaceAll("\\[", "").replaceAll("\\]", "").trim();
                         sections.put(sectionName, new HashMap<>());
                     } else if (!line.startsWith("#") && !"".equals(line)) {
                         int off = line.indexOf("=");
                         if (off < 0) {
-                            throw new IllegalArgumentException("Cannot parse file " +
-                                    fileName + ", line '" 
-                                    + line + "' invalid format expecting key=value");
+                            throw new IllegalArgumentException(
+                                    "Cannot parse file " + fileName + ", line '" + line + "' invalid format expecting key=value");
                         }
-                        String key = line.substring(0,off);
-                        String val = line.substring(off+1);
+                        String key = line.substring(0, off);
+                        String val = line.substring(off + 1);
                         sections.get(sectionName).put(key, val);
                     }
                 }
@@ -274,71 +276,59 @@ public class AstraRc {
         }
         return new AstraRc(sections);
     }
-    
+
     /**
      * Prepare file content
      * 
-     * @param astraRc Map
+     * @param astraRc
+     *            Map
      */
-    private static String generateFileContent(Map <String, Map<String, String>> astraRc) {
+    private static String generateFileContent(Map<String, Map<String, String>> astraRc) {
         StringBuilder sb = new StringBuilder();
-        // Put 'default' at first position in the file
-        if (astraRc.containsKey(ASTRARC_DEFAULT)) {
-            sb.append("[" + ASTRARC_DEFAULT + "]");
-            sb.append(System.getProperty(ENV_LINE_SEPERATOR));
-            for (Entry<String,String> line : astraRc.get(ASTRARC_DEFAULT).entrySet()) {
-                sb.append(line.getKey() + "=" + line.getValue());
-                sb.append(System.getProperty(ENV_LINE_SEPERATOR));
-            }
-        }
-        
-        for (String dbName : astraRc.keySet()) {
-            if (!ASTRARC_DEFAULT.equals(dbName)) {
-                sb.append(System.getProperty(ENV_LINE_SEPERATOR));
-                sb.append("[" + dbName + "]");
-                sb.append(System.getProperty(ENV_LINE_SEPERATOR));
-                for (Entry<String,String> line : astraRc.get(dbName).entrySet()) {
-                    sb.append(line.getKey() + "=" + line.getValue());
-                    sb.append(System.getProperty(ENV_LINE_SEPERATOR));
-                }
-            }
-        }
-        
+        astraRc.entrySet().forEach(e -> {
+            sb.append(LINE_SEPARATOR + "[" + e.getKey() + "]"+ LINE_SEPARATOR);
+            e.getValue().entrySet().forEach(line -> {
+                sb.append(line.getKey() + "=" + line.getValue() + LINE_SEPARATOR);
+            });
+        });
         return sb.toString();
     }
-   
+
     /**
      * Use Astra Devops Api to list databases.
      * 
-     * @param token token
+     * @param token
+     *            token
      */
-    private static Map <String, Map<String, String>> extractDatabasesInfos(String token) {
-        // Look for 'non terminated DB' (limit 100), 
-        
+    private static Map<String, Map<String, String>> extractDatabasesInfos(String token) {
+        // Look for 'non terminated DB' (limit 100),
+
         List<Database> dbs = new DatabasesClient(token).databasesNonTerminated().collect(Collectors.toList());
-        
+
         // [default]
-        Map <String, Map<String, String>> result = new HashMap<>();
+        Map<String, Map<String, String>> result = new HashMap<>();
         result.put(ASTRARC_DEFAULT, new TreeMap<>());
         result.get(ASTRARC_DEFAULT).put(ASTRA_DB_APPLICATION_TOKEN, token);
         if (dbs.size() > 0) {
-            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0),token));
+            result.get(ASTRARC_DEFAULT).putAll(dbKeys(dbs.get(0), token));
         }
         // Loop on each database
         dbs.forEach(db -> result.put(db.getInfo().getName(), dbKeys(db, token)));
         return result;
     }
-    
+
     /**
      * dbKeys
      * 
-     * @param db Database
-     * @param token String
+     * @param db
+     *            Database
+     * @param token
+     *            String
      * @return Map
      */
     private static Map<String, String> dbKeys(Database db, String token) {
         Map<String, String> dbKeys = new HashMap<>();
-        dbKeys.put(ASTRA_DB_ID, db.getId() );
+        dbKeys.put(ASTRA_DB_ID, db.getId());
         dbKeys.put(ASTRA_DB_REGION, db.getInfo().getRegion());
         dbKeys.put(ASTRA_DB_KEYSPACE, db.getInfo().getKeyspace());
         dbKeys.put(ASTRA_DB_APPLICATION_TOKEN, token);
@@ -347,24 +337,21 @@ public class AstraRc {
         dbKeys.put(ASTRA_DB_SCB_FOLDER, "");
         return dbKeys;
     }
-    
+
     /**
      * Syntaxic sugar to read environment variables.
      *
      * @param arc
-     *      AstraRc
+     *            AstraRc
      * @param key
-     *      environment variable
+     *            environment variable
      * @param sectionName
-     *      section Name
-     * @return
-     *      if the value is there
+     *            section Name
+     * @return if the value is there
      */
     public static Optional<String> readRcVariable(AstraRc arc, String key, String sectionName) {
-        Map<String,String> section = arc.getSections().get(sectionName);
-        if (section != null && 
-            section.containsKey(key) && 
-            Utils.hasLength(section.get(key))) {
+        Map<String, String> section = arc.getSections().get(sectionName);
+        if (section != null && section.containsKey(key) && Utils.hasLength(section.get(key))) {
             return Optional.ofNullable(section.get(key));
         }
         return Optional.empty();

@@ -19,14 +19,13 @@ package com.datastax.astra.sdk;
 import java.io.Closeable;
 import java.io.File;
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.databases.domain.Datacenter;
+import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.utils.ApiLocator;
@@ -168,14 +167,13 @@ public class AstraClient implements Closeable {
             // ---------------------------------------------------
             //     Stargate Node per region
             // ---------------------------------------------------
-            
-            // Retrieve the list of regions for a db
-            Set<Datacenter> regions = apiDevopsDatabases
-                    .database(config.getDatabaseId())
-                    .find().get().getInfo()
-                    .getDatacenters();
-            
-            regions.stream().forEach(dc -> {
+            Optional<Database> db = apiDevopsDatabases.database(config.getDatabaseId()).find();
+            if (!db.isPresent()) {
+                throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
+            }
+
+            // Loop on regions
+            db.get().getInfo().getDatacenters().stream().forEach(dc -> {
                 config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
                         new StargateNodeConfig(
                                 // node name = region, we got a single per region LB is done by Astra

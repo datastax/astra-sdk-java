@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.core.Page;
+import com.datastax.stargate.sdk.doc.domain.Collection;
 import com.datastax.stargate.sdk.doc.domain.PageableQuery;
 import com.datastax.stargate.sdk.doc.domain.Query;
 
