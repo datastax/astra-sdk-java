@@ -22,31 +22,37 @@ public class ShellPrinter {
         System.out.println("");
         System.out.print("  █████╗ ███████╗████████╗██████╗  █████╗   ");
         Out.setup(TextColor.MAGENTA, null, null);
-        System.out.println("  ███████╗██╗  ██╗");
+        System.out.println("  ███████╗██╗  ██╗███████╗██╗     ██╗     ");
         Out.setup(TextColor.CYAN, null, null);
         System.out.print(" ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔══██╗  ");
         Out.setup(TextColor.BLUE, null, null);
-        System.out.println("  ██╔════╝██║  ██║");
+        System.out.println("  ██╔════╝██║  ██║██╔════╝██║     ██║  ");
         Out.setup(TextColor.CYAN, null, null);
         System.out.print(" ███████║███████╗   ██║   ██████╔╝███████║  ");
         Out.setup(TextColor.GREEN, null, null);
-        System.out.println("  ███████╗███████║");
+        System.out.println("  ███████╗███████║█████╗  ██║     ██║   ");
         Out.setup(TextColor.CYAN, null, null);
         System.out.print(" ██╔══██║╚════██║   ██║   ██╔══██╗██╔══██║  ");
         Out.setup(TextColor.YELLOW, null, null);
-        System.out.println("  ╚════██║██╔══██║");
+        System.out.println("  ╚════██║██╔══██║██╔══╝  ██║     ██║");
         Out.setup(TextColor.CYAN, null, null);
         System.out.print(" ██║  ██║███████║   ██║   ██║  ██║██║  ██║  ");
         Out.setup(TextColor.RED, null, null);
-        System.out.println("  ███████║██║  ██║");
+        System.out.println("  ███████║██║  ██║███████╗███████╗███████╗");
         Out.setup(TextColor.CYAN, null, null);
         System.out.print(" ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝  ");
         Out.setup(TextColor.RED, null, null);
-        System.out.println("  ╚══════╝╚═╝  ╚═╝");
+        System.out.println("  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝");
         System.out.println("");
         Out.setup(TextColor.RESET, null, null);
         System.out.print(" Version: ");
-        Out.print("0.1.0", TextColor.GREEN);
+        String versionPackage = ShellPrinter.class
+                .getPackage()
+                .getImplementationVersion();
+        if (versionPackage == null) {
+            versionPackage = "Developement Mode";
+        }
+        Out.print(versionPackage, TextColor.GREEN);
         System.out.println("\n");
     }
     

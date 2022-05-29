@@ -46,6 +46,7 @@ public class AstraShell {
              * Parsing and initializaion
              */
             String token = parseStartCommand(args);
+            
             ShellContext ctx = ShellContext.getInstance();
             ctx.init(token);
             ctx.validate();
@@ -65,6 +66,18 @@ public class AstraShell {
         } finally {
             if (scanner != null ) scanner.close();
         }
+    }
+    
+    /**
+     * Syntax sugar to help with tests
+     *
+     * @param args
+     *           arguments
+     * @throws Exception
+     *           error during parsing or interpreting command
+     */
+    public static void exec(String... args) throws Exception {
+        main(args);
     }
     
     /**
@@ -150,7 +163,7 @@ public class AstraShell {
     
             // --help or -h = Show help and quit
             if (cli.hasOption(optionHelp)) {
-                new HelpFormatter().printHelp("astra", startOptions);
+                new HelpFormatter().printHelp("astra [CMD] [OPTIONS]", startOptions);
                 SUCCESS.exit();
             }
     
@@ -173,6 +186,10 @@ public class AstraShell {
             if (cli.hasOption(optionToken)) {
                 token = cli.getOptionValue(optionToken);
             }
+            
+            if (cli.getArgList().size() == 1) {
+                // NOT INTERACTIVE 
+             }
         
         } catch (ParseException e) {
             Out.error(e.getMessage());
