@@ -1,4 +1,4 @@
-package com.datastax.astra.cmd;
+package com.datastax.astra.shell.utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.datastax.astra.ansi.TextColor;
-import com.datastax.astra.ansi.Out;
+import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.jansi.TextColor;
 
 /**
  * Standardize output for tables.

@@ -1,4 +1,4 @@
-package com.datastax.astra.ansi;
+package com.datastax.astra.shell.jansi;
 
 import java.util.Optional;
 

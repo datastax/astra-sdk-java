@@ -1,15 +1,15 @@
-package com.datastax.astra.cmd;
+package com.datastax.astra.shell;
 
-import static com.datastax.astra.ExitCode.INVALID_PARAMETER;
+import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
 import java.util.Optional;
 
-import com.datastax.astra.ansi.Out;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
 import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.jansi.Out;
 import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
@@ -42,67 +42,64 @@ public class ShellContext {
         return _instance;
     }
     
-    /**
-     * Devops Api Organization.
-     * 
-     * @return
-     *      orgnization
-     */
     public static OrganizationsClient apiDevopsOrganizations() {
         return getInstance().getAstraClient().apiDevopsOrganizations();
     }
     
-    /** Organization level context */
+    /** Current token in use */
     private String token;
     
-    /** Retrive organization informations. */
+    /** Organization informations (prompt). */
     private Organization organization;
     
-    /** Database level context */
+    /** Database informations. */
     private String databaseId;
-    private String databaseRegion;
-    private String databaseName;
-    private String databaseKeyspace;
     
-    /** Pulsar level context. *.
+    /** Database informations. */
+    private String databaseRegion;
+    
+    /** Database informations. */
+    private String databaseName;
+    
+    /** Database informations. */
+    private String databaseKeyspace;
     
     /** Main Client. */
     private AstraClient astraClient;
     
     /**
-     * Init context.
-     *
+     * Based on a token will initialize the connection.
+     * 
      * @param token
-     *      current token
+     *      token loaded from param
      */
-    public void init(String token) {
+    public void connect(String token) {
+
+        // Persist Token
         this.token = token;
+        
+        // Initialize client
         this.astraClient = AstraClient
                 .builder()
                 .withToken(token)
                 .build();
+        
+        // Use client to get Org infos
         this.organization = astraClient
                 .apiDevopsOrganizations()
                 .organization();
         
-    }
-    
-    /**
-     * Validate context with token.
-     */
-    public void validate() {
+        // Validation of token
         if (null == getOrganization().getName()) {
             Out.error("Cannot connect to Astra: Invalid token.");
             INVALID_PARAMETER.exit();
         }
-    }
-    
-    /**
-     * Update ~/.astrarc.
-     */
-    public void saveConfiguration() {
-        AstraRc.save(getOrganization().getName(), 
-                AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, token);
+        
+        // Update ~/.astrarc
+        AstraRc.save(
+            getOrganization().getName(), 
+            AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, 
+            token);
     }
     
     /**
@@ -124,14 +121,15 @@ public class ShellContext {
     public String getToken() {
         return token;
     }
-
+    
     /**
-     * Setter accessor for attribute 'token'.
-     * @param token
-     * 		new value for 'token '
+     * Reference if the context has been initialized.
+     * 
+     * @return
+     *      if context is initialized
      */
-    public void setToken(String token) {
-        this.token = token;
+    public boolean initialized() {
+        return getToken() != null;
     }
 
     /**
@@ -145,15 +143,6 @@ public class ShellContext {
     }
 
     /**
-     * Setter accessor for attribute 'databaseId'.
-     * @param databaseId
-     * 		new value for 'databaseId '
-     */
-    public void setDatabaseId(String databaseId) {
-        this.databaseId = databaseId;
-    }
-
-    /**
      * Getter accessor for attribute 'databaseRegion'.
      *
      * @return
@@ -161,15 +150,6 @@ public class ShellContext {
      */
     public String getDatabaseRegion() {
         return databaseRegion;
-    }
-
-    /**
-     * Setter accessor for attribute 'databaseRegion'.
-     * @param databaseRegion
-     * 		new value for 'databaseRegion '
-     */
-    public void setDatabaseRegion(String databaseRegion) {
-        this.databaseRegion = databaseRegion;
     }
 
     /**
@@ -183,15 +163,6 @@ public class ShellContext {
     }
 
     /**
-     * Setter accessor for attribute 'databaseName'.
-     * @param databaseName
-     * 		new value for 'databaseName '
-     */
-    public void setDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
-    }
-
-    /**
      * Getter accessor for attribute 'databaseKeyspace'.
      *
      * @return
@@ -202,15 +173,6 @@ public class ShellContext {
     }
 
     /**
-     * Setter accessor for attribute 'databaseKeyspace'.
-     * @param databaseKeyspace
-     * 		new value for 'databaseKeyspace '
-     */
-    public void setDatabaseKeyspace(String databaseKeyspace) {
-        this.databaseKeyspace = databaseKeyspace;
-    }
-
-    /**
      * Getter accessor for attribute 'astreClient'.
      *
      * @return
@@ -218,16 +180,6 @@ public class ShellContext {
      */
     public AstraClient getAstraClient() {
         return astraClient;
-    }
-
-    /**
-     * Setter accessor for attribute 'astreClient'.
-     *
-     * @param astreClient
-     * 		new value for 'astraClient '
-     */
-    public void setAstraClient(AstraClient astreClient) {
-        this.astraClient = astreClient;
     }
 
     /**

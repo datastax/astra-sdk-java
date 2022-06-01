@@ -1,35 +1,32 @@
-package com.datastax.astra.ansi;
+package com.datastax.astra.shell.jansi;
 
 /**
  * Foreground color in ANSI Terminal
  *
  * @author Cedrick Lunven (@clunven)
  */
-public enum BackgroundColor {
+public enum TextStyle {
     
-    /** color. */
-    BLACK   (40),
+    /** style. */
+    CLEAR(0),
     
-    /** color. */
-    RED     (41),
+    /** style. */
+    BOLD(1),
     
-    /** color. */
-    GREEN   (42),
+    /** style. */
+    LIGHT(1),
     
-    /** color. */
-    YELLOW  (43),
+    /** style. */
+    DARK(2),
     
-    /** color. */
-    BLUE    (44),
+    /** style. */
+    UNDERLINE(4),
     
-    /** color. */
-    MAGENTA (45),
+    /** style. */
+    REVERSE(7),
     
-    /** color. */
-    CYAN    (46),
-    
-    /** color. */
-    WHITE   (47);
+    /** style. */
+    HIDDEN(8);
     
     /** Code color for foreGround. */
     private final int code;
@@ -39,7 +36,7 @@ public enum BackgroundColor {
      *
      * @param pcode
      */
-    private BackgroundColor(int pcode) {
+    private TextStyle(int pcode) {
         this.code = pcode;
     }
 

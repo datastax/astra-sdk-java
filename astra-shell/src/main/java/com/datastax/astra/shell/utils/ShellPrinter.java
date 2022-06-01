@@ -1,8 +1,9 @@
-package com.datastax.astra.cmd;
+package com.datastax.astra.shell.utils;
 
-import com.datastax.astra.ansi.BackgroundColor;
-import com.datastax.astra.ansi.Out;
-import com.datastax.astra.ansi.TextColor;
+import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.jansi.BackgroundColor;
+import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.jansi.TextColor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,7 +18,7 @@ public class ShellPrinter {
 	private ShellPrinter() {}
 	
 	/** Start Banner. */
-    public static void printBanner() {
+    public static void banner() {
         Out.setup(TextColor.CYAN, null, null);
         System.out.println("");
         System.out.print("  █████╗ ███████╗████████╗██████╗  █████╗   ");
@@ -97,8 +98,9 @@ public class ShellPrinter {
 	 * @param ctx
 	 *         current context.
 	 */
-	public static void printPrompt(ShellContext ctx) {
+	public static void prompt() {
 	    System.out.println("");
+	    ShellContext ctx = ShellContext.getInstance();
 	    if (ctx.getOrganization() != null) {
 	        Out.print(ctx.getOrganization().getName(), TextColor.GREEN);
 	    }

@@ -1,103 +1,58 @@
-package com.datastax.astra.processor;
+package com.datastax.processor;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.ParseException;
 
-import com.datastax.astra.CommandProcessor;
-import com.datastax.astra.ansi.Out;
-import com.datastax.astra.ansi.TextColor;
-import com.datastax.astra.cmd.Argument;
-import com.datastax.astra.cmd.Arguments;
-import com.datastax.astra.cmd.ShellContext;
-import com.datastax.astra.cmd.ShellPrinter;
-import com.datastax.astra.cmd.ShellTable;
-import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.User;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.ShellPrinter;
+import com.datastax.astra.shell.utils.ShellTable;
 
 /**
  * Operate command `show`
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ShowProcessor implements CommandProcessor {
+public class ShowProcessor {
 
+    /** Error message. */
     private static String ERROR_MESSAGE = "Invalid syntax in command 'show': ";
     
     /**
      * Item to be listed with ls.
      */
     public static enum ShownItems { 
-        databases, dbs,
-        organizations, orgs,
+        db,
+        dbs,
+        org,
+        orgs,
+        token,
         tokens, 
-        user, users, 
-        role, roles, 
-        access_lists, acls,
-        private_links, links,
-        brokers, tenants
+        user, 
+        users, 
+        role, 
+        roles, 
+        acls,
+        links,
+        brokers, 
+        tenants
     };
-        
-    /**
-     * Access the item list.
-     */
-    public List<String> items = Arrays
-            .stream(ShownItems.values())
-            .map(ShownItems::name)
-            .collect(Collectors.toList());
-    
-    /** {@inheritDoc} */
-    @Override
-    public Arguments getArgs() {
-        return new Arguments().addArgument(Argument
-                .builder()
-                .description("Item to be shown")
-                .name("target")
-                .fixedValues(items).build());
-    }
 
     /** {@inheritDoc} */
-    @Override
-    public String getDocumentation() {
-        return "Show items among " + items;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void process(String commandLine) {
         CommandLine cli = null;
         try {
             
-            /**
-             * Validation
-             */
-            cli = new DefaultParser().parse(getOptions(), commandLine.split(" "));
-            if (cli.getArgList().size() < 2) {
-                Out.error(ERROR_MESSAGE + " an argument is expected");
-                this.printHelp(commandLine);
-            }
-            
-            /**
-             * Processing based on target. show <target>
-             */
+           
             switch(ShownItems.valueOf(cli.getArgs()[1])) {
-                case orgs:
-                case organizations:
-                    showOrganizations();
-                break;
-                case dbs: 
-                case databases:
-                    showDatabases();
-                break;
                 case roles: 
                     showRoles();
                 break;
@@ -119,24 +74,9 @@ public class ShowProcessor implements CommandProcessor {
                     }
                     showUser(cli.getArgs()[2]);
                 break;
-                case acls:
-                case access_lists:
-                break;
-                
-                case brokers:
-                case tenants:
-                break;
-                
-                case links:
-                case private_links:
-                break;
-                default:
-                    break;
+               
             }
             
-        } catch (ParseException e) {
-            Out.error(ERROR_MESSAGE + e.getMessage());
-            //e.printStackTrace();
         } catch (IllegalArgumentException e) {
             //e.printStackTrace();
             Out.error(ERROR_MESSAGE + "'" + cli.getArgs()[1] + "' is not a valid argument.");
@@ -147,62 +87,6 @@ public class ShowProcessor implements CommandProcessor {
         }
     }
     
-    /**
-     * Show databases.
-     */
-    public void showDatabases() {
-        // Setup Tableshow 
-        ShellTable sht = new ShellTable();
-        sht.setColumnTitlesColor(TextColor.YELLOW);
-        sht.setCellColor(TextColor.WHITE);
-        sht.setTableColor(TextColor.CYAN);
-        sht.getColumnTitlesNames().add("Name");
-        sht.getColumnTitlesNames().add("Id");
-        sht.getColumnTitlesNames().add("Regions");
-        sht.getColumnTitlesNames().add("Status");
-        sht.getColumnSize().put("Name", 20);
-        sht.getColumnSize().put("Id", 37);
-        sht.getColumnSize().put("Regions", 20);
-        sht.getColumnSize().put("Status", 15);
-        // Fill data
-        ShellContext
-                .getInstance()
-                .getAstraClient()
-                .apiDevopsDatabases()
-                .databasesNonTerminated()
-                .forEach(db -> {
-            Map <String, String> rf = new HashMap<>();
-            rf.put("Name", db.getInfo().getName());
-            rf.put("Id", db.getId());
-            rf.put("Regions", db.getInfo().getRegion());
-            rf.put("Status", db.getStatus().name());
-            sht.getCellValues().add(rf);
-        });
-        sht.show();
-    }
-    
-    /**
-     * Show organizations
-     */
-    public void showOrganizations() {
-        // Setup Table
-        ShellTable sht = new ShellTable();
-        sht.setColumnTitlesColor(TextColor.YELLOW);
-        sht.setCellColor(TextColor.WHITE);
-        sht.setTableColor(TextColor.CYAN);
-        sht.getColumnTitlesNames().add("Organization Name");
-        sht.getColumnTitlesNames().add("Token");
-        sht.getColumnSize().put("Organization Name", 20);
-        sht.getColumnSize().put("Token", 37);
-        AstraRc arc = AstraRc.load();
-        for (String org : arc.getSections().keySet()) {
-            Map <String, String> rf = new HashMap<>();
-            rf.put("Organization Name", org);
-            rf.put("Token",arc.getSections().get(org).get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN));
-            sht.getCellValues().add(rf);
-        }
-        sht.show();
-    }
     
     /**
      * Show roles.
@@ -240,7 +124,7 @@ public class ShowProcessor implements CommandProcessor {
     public void showRole(String role) {
         Optional<Role> role1 = Optional.empty();
         try {
-            role1 = ShellContext
+            role1 = ShellContext.getInstance()
                 .apiDevopsOrganizations()
                 .findRoleByName(role);
             if (!role1.isPresent()) {
