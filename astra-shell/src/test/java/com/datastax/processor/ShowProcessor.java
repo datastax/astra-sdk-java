@@ -1,12 +1,9 @@
 package com.datastax.processor;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.apache.commons.cli.CommandLine;
 
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.User;
@@ -22,71 +19,6 @@ import com.datastax.astra.shell.utils.ShellTable;
  * @author Cedrick LUNVEN (@clunven)
  */
 public class ShowProcessor {
-
-    /** Error message. */
-    private static String ERROR_MESSAGE = "Invalid syntax in command 'show': ";
-    
-    /**
-     * Item to be listed with ls.
-     */
-    public static enum ShownItems { 
-        db,
-        dbs,
-        org,
-        orgs,
-        token,
-        tokens, 
-        user, 
-        users, 
-        role, 
-        roles, 
-        acls,
-        links,
-        brokers, 
-        tenants
-    };
-
-    /** {@inheritDoc} */
-    public void process(String commandLine) {
-        CommandLine cli = null;
-        try {
-            
-           
-            switch(ShownItems.valueOf(cli.getArgs()[1])) {
-                case roles: 
-                    showRoles();
-                break;
-                case role:
-                    if (cli.getArgList().size() < 3) {
-                        Out.error(ERROR_MESSAGE + " Use 'show role < name | id >' to get details for a role.");
-                    }
-                    showRole(cli.getArgs()[2]);
-                break;
-                case tokens: 
-                    showTokens();
-                break;
-                case users: 
-                    showUsers();
-                break;
-                case user:
-                    if (cli.getArgList().size() < 3) {
-                        Out.error(ERROR_MESSAGE + " Use 'show user < email | id >' to get details for a user.");
-                    }
-                    showUser(cli.getArgs()[2]);
-                break;
-               
-            }
-            
-        } catch (IllegalArgumentException e) {
-            //e.printStackTrace();
-            Out.error(ERROR_MESSAGE + "'" + cli.getArgs()[1] + "' is not a valid argument.");
-            Out.print("\nPlease use ");
-            Out.println(Arrays.stream(ShownItems.values())
-                    .map(ShownItems::name)
-                    .collect(Collectors.toList()).toString(), TextColor.CYAN);
-        }
-    }
-    
     
     /**
      * Show roles.
@@ -102,9 +34,7 @@ public class ShowProcessor {
         sht.getColumnSize().put("Role Id", 37);
         sht.getColumnSize().put("Role Name", 20);
         sht.getColumnSize().put("Description", 20);
-        ShellContext.getInstance()
-                    .getAstraClient()
-                    .apiDevopsOrganizations()
+        ShellContext.apiDevopsOrganizations()
                     .roles().forEach(role -> {
          Map <String, String> rf = new HashMap<>();
          rf.put("Role Id", role.getId());
@@ -124,8 +54,7 @@ public class ShowProcessor {
     public void showRole(String role) {
         Optional<Role> role1 = Optional.empty();
         try {
-            role1 = ShellContext.getInstance()
-                .apiDevopsOrganizations()
+            role1 = ShellContext.apiDevopsOrganizations()
                 .findRoleByName(role);
             if (!role1.isPresent()) {
                 role1 = ShellContext
@@ -253,11 +182,5 @@ public class ShowProcessor {
          sht.getCellValues().add(rf);
         });
         sht.show();
-    }
-    
-    /**
-     * Show tokens.
-     */
-    public void showTokens() {
     }
 }

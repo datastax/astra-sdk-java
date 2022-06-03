@@ -6,7 +6,7 @@
     <version>0.3.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>astra-sh</artifactId>
+  <artifactId>astra-shell</artifactId>
   <name>+ astra-shell</name>
   <build>
     <pluginManagement>
@@ -44,7 +44,7 @@
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
                 <transformer>
-                  <mainClass>com.datastax.astra.AstraShell</mainClass>
+                  <mainClass>com.datastax.astra.shell.AstraCli</mainClass>
                 </transformer>
               </transformers>
               <filters>
@@ -102,6 +102,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <airline.version>2.7.2</airline.version>
     <commons-cli.version>1.5.0</commons-cli.version>
     <maven-plugin-exec.version>3.0.0</maven-plugin-exec.version>
     <jansi.version>2.4.0</jansi.version>

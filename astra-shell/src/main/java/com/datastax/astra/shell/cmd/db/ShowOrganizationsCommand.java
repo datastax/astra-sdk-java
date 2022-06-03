@@ -9,7 +9,7 @@ import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
 
-@Command(name = "show-orgs", description = "Display the list organizations registered in config file")
+@Command(name = "orgs", description = "Display the list organizations registered in config file")
 public class ShowOrganizationsCommand implements Runnable {
 
     /** {@inheritDoc} */

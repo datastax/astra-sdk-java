@@ -14,11 +14,15 @@ import com.github.rvesse.airline.annotations.Command;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "show-dbs", description = "Display the list of Databases in an organization")
+@Command(name = "dbs", description = "Display the list of Databases in an organization")
 public class ShowDatabasesCommand extends BaseCommand<ShowDatabasesCommand> {
     
     /** {@inheritDoc} */
     public void execute() {
+        ShellContext.getInstance().getAstraClient()
+        .apiDevopsDatabases().databases();
+        
+        
         // Setup Tableshow 
         ShellTable sht = new ShellTable();
         sht.setColumnTitlesColor(TextColor.YELLOW);

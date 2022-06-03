@@ -1,11 +1,13 @@
 package com.datastax.astra.shell;
 
-import com.datastax.astra.shell.cmd.ReplCommand;
 import com.datastax.astra.shell.cmd.HelpCustomCommand;
+import com.datastax.astra.shell.cmd.ReplCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
+import com.datastax.astra.shell.cmd.db.ShowOrganizationsCommand;
 import com.datastax.astra.shell.cmd.db.ShowOrganizationsCommand;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Cli;
+import com.github.rvesse.airline.annotations.Group;
 
 /**
  * Main class for the program. Will route commands to proper class 
@@ -18,10 +20,16 @@ import com.github.rvesse.airline.annotations.Cli;
   defaultCommand = ReplCommand.class, // no command provided => REPL
   commands       = { 
     ReplCommand.class,
-    ShowDatabasesCommand.class,
-    ShowOrganizationsCommand.class,
     HelpCustomCommand.class
-})
+  },
+  
+  groups = {
+        @Group(
+            name = "show",
+            description = "Listing details of an entity or entity list",
+            commands = { ShowOrganizationsCommand.class, ShowDatabasesCommand.class }
+        )
+  })
 public class AstraCli {
     
     /**

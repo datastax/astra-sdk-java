@@ -19,6 +19,9 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
 /**
  * Connection to another organization.
  * 
+ * 
+ * connect --org mdddd
+ * 
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "connect", description = "Connect to another Astra instance")

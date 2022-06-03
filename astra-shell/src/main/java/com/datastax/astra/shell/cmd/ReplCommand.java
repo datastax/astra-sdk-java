@@ -15,8 +15,8 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(
-    name = "<empty>", 
-    description = "Enter interactive mode if no command provided")
+    name = ".", 
+    description = "If no command, entering interactive mode.")
 public class ReplCommand extends BaseCommand<ReplCommand> implements Runnable {
    
     /** {@inheritDoc} */

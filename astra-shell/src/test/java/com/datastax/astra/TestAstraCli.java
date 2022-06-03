@@ -32,7 +32,7 @@ public class TestAstraCli {
     
     @Test
     public void showDatabasesCli() throws Exception {
-        astraCli("show-dbs");
+        astraCli( "show-dbs", "-org", "cedrick.lunven@datastax.com");
     }
     
     @Test

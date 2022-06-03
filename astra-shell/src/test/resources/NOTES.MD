@@ -8,7 +8,7 @@
 # Executing the command
 
 ```
-java -jar ./target/astra-sh-0.3.1-SNAPSHOT-shaded.jar -v
+java -jar ./target/astra-shell-0.3.1-SNAPSHOT-shaded.jar show-dbs
 ```
  
 
