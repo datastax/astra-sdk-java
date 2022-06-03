@@ -8,7 +8,7 @@ import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.sdk.utils.AstraRcParser;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -96,7 +96,7 @@ public class ShellContext {
         }
         
         // Update ~/.astrarc
-        AstraRc.save(
+        AstraRcParser.save(
             getOrganization().getName(), 
             AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, 
             token);

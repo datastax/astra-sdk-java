@@ -1,12 +1,16 @@
 package com.datastax.astra.shell;
 
 import com.datastax.astra.shell.cmd.HelpCustomCommand;
+import com.datastax.astra.shell.cmd.ConfigCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
 import com.datastax.astra.shell.cmd.org.ShowOrganizationsCommand;
-import com.datastax.astra.shell.cmd.repl.ReplCommand;
+import com.datastax.astra.shell.cmd.shell.ShellCommand;
+import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
+import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException;
 
 /**
  * Main class for the program. Will route commands to proper class 
@@ -16,10 +20,11 @@ import com.github.rvesse.airline.annotations.Group;
 @Cli(
   name = "astra", 
   description    = "CLI for DataStax Astra™ including an interactive mode",
-  defaultCommand = ReplCommand.class, // no command provided => REPL
+  defaultCommand = ShellCommand.class, // no command => interactive
   commands       = { 
-    ReplCommand.class,
-    HelpCustomCommand.class
+    ShellCommand.class,
+    HelpCustomCommand.class,
+    ConfigCommand.class
   },
   
   groups = {
@@ -41,13 +46,21 @@ public class AstraCli {
      */
     public static void main(String[] args) {
         
-        // Show Banner
-        ShellPrinter.banner();
-        
-        // Command Line Interface
-        new com.github.rvesse.airline.Cli<Runnable>(AstraCli.class)
-            .parse(args)  // Find the processor for the command 
-            .run();       // Run the command
+        try {
+            
+            // Show Banner
+            ShellPrinter.banner();
+            
+            // Command Line Interface
+            new com.github.rvesse.airline.Cli<Runnable>(AstraCli.class)
+                .parse(args)  // Find the processor for the command 
+                .run();       // Run the command
+            
+        } catch(ParseArgumentsUnexpectedException ex) {
+            Out.println("Invalid command: " + ex.getMessage(), TextColor.RED);
+        } catch(Exception e) {
+            Out.println("Execution error:" + e.getMessage(), TextColor.RED);
+        }
     }
     
     /**

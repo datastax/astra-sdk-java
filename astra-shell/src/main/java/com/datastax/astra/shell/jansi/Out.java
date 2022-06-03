@@ -193,7 +193,18 @@ public class Out {
      *       text to be displayed
      */
     public static void error(String text) {
-        println(text, TextColor.RED);
+        println("[ERROR] - " + text, TextColor.RED);
     }
+    
+    /**
+     * Syntax sugar for OK.
+     * 
+     * @param text
+     *      text to show in success
+     */
+    public static void success(String text) {
+        println("[OK] - " + text, TextColor.GREEN);
+    }
+    
     
 }

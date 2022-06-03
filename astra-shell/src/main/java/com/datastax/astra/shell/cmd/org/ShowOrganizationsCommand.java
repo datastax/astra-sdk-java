@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.sdk.utils.AstraRcParser;
 import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
@@ -23,7 +23,7 @@ public class ShowOrganizationsCommand implements Runnable {
         sht.getColumnTitlesNames().add("Token");
         sht.getColumnSize().put("Organization Name", 20);
         sht.getColumnSize().put("Token", 37);
-        AstraRc arc = AstraRc.load();
+        AstraRcParser arc = AstraRcParser.load();
         for (String org : arc.getSections().keySet()) {
             Map <String, String> rf = new HashMap<>();
             rf.put("Organization Name", org);

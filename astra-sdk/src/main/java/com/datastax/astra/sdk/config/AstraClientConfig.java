@@ -1,6 +1,6 @@
 package com.datastax.astra.sdk.config;
 
-import static com.datastax.astra.sdk.utils.AstraRc.readRcVariable;
+import static com.datastax.astra.sdk.utils.AstraRcParser.readRcVariable;
 import static com.datastax.stargate.sdk.utils.Assert.hasLength;
 import static com.datastax.stargate.sdk.utils.Assert.notNull;
 import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.sdk.utils.AstraRcParser;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
@@ -924,8 +924,8 @@ public class AstraClientConfig implements Serializable {
         stargateConfig = new StargateClientConfig();
         
         // Loading ~/.astrarc section default if present
-        if (AstraRc.exists()) {
-            loadFromAstraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
+        if (AstraRcParser.exists()) {
+            loadFromAstraRc(AstraRcParser.load(), AstraRcParser.ASTRARC_DEFAULT);
         }
         
         // Authentication
@@ -951,7 +951,7 @@ public class AstraClientConfig implements Serializable {
      * @param sectionName String
      * @return AstraClientBuilder
      */
-    public AstraClientConfig loadFromAstraRc(AstraRc arc, String sectionName) {
+    public AstraClientConfig loadFromAstraRc(AstraRcParser arc, String sectionName) {
         notNull(arc, "AstraRc");
         hasLength(sectionName, "sectionName");
         readRcVariable(arc, ASTRA_DB_ID,            sectionName).ifPresent(this::withDatabaseId);

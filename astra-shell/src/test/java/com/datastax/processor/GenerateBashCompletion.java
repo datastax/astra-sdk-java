@@ -1,4 +1,4 @@
-package com.datastax.astra;
+package com.datastax.processor;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

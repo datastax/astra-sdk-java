@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd.repl;
+package com.datastax.astra.shell.cmd.shell;
 
 import com.github.rvesse.airline.annotations.Command;
 

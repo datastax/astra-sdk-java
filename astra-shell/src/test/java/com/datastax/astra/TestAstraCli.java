@@ -40,6 +40,11 @@ public class TestAstraCli {
         astraCli();
     }
     
+    @Test
+    public void config()  throws Exception {
+        astraCli("config");
+    }
+    
     
     
 }

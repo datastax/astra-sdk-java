@@ -22,8 +22,8 @@
 	</properties>
 
 	<dependencies>
-		
-		<!--  Parsing CLI -->
+
+		<!-- Parsing CLI -->
 		<dependency>
 			<groupId>com.github.rvesse</groupId>
 			<artifactId>airline</artifactId>
@@ -34,7 +34,7 @@
 			<artifactId>airline-help-bash</artifactId>
 			<version>${airline.version}</version>
 		</dependency>
-		
+
 		<!-- Leveraging SDK for Astra Accesses -->
 		<dependency>
 			<groupId>com.datastax.astra</groupId>
@@ -46,7 +46,7 @@
 			<artifactId>jansi</artifactId>
 			<version>${jansi.version}</version>
 		</dependency>
-		
+
 		<!-- Commons -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -132,6 +132,41 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>com.github.rvesse</groupId>
+				<artifactId>airline-maven-plugin</artifactId>
+				<version>${airline.version}</version>
+				<configuration>
+					<formats>
+						<format>MAN</format>
+						<format>CLI</format>
+						<format>MARKDOWN</format>
+					</formats>
+					<sources>
+						<source>
+							<classes>
+								<class>com.datastax.astra.shell.AstraCli</class>
+							</classes>
+						</source>
+						<source>
+							<classes>
+								<class>com.datastax.astra.shell.AstraShell</class>
+							</classes>
+						</source>
+					</sources>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>validate</goal>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

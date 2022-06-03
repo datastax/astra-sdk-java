@@ -7,10 +7,9 @@ import javax.inject.Inject;
 import org.apache.pulsar.shade.org.apache.commons.lang.StringUtils;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.sdk.utils.AstraRcParser;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
 import com.github.rvesse.airline.HelpOption;
 import com.github.rvesse.airline.annotations.Option;
 import com.github.rvesse.airline.annotations.restrictions.MutuallyExclusiveWith;
@@ -54,22 +53,24 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
     protected String getAstraToken() {
         String astraToken = null;
 
-        // Load configuration from file
-        AstraRc config = AstraRc.load();
+        // Load configuration (create if needed)
+        AstraRcParser config = AstraRcParser.load();
         
-        // Token is provided, it will be used 
+        // Token (-t, --token) is explicitely provided
         if (!StringUtils.isEmpty(token)) {
             astraToken = token;
         } else {
             String lookupOrg = DEFAULT_ORG;
+            
+            // -org is provided lookup for token in config file
             if (!StringUtils.isEmpty(organization)) {
                 lookupOrg = organization;
             }
            
+            // Organization name is not in config file => error
             if(!config.getSections().containsKey(lookupOrg)) {
-                Out.error("Organization '" + lookupOrg + "' is not in the configuration file\n");
-                Out.print("Available Organizations:");
-                Out.print(config.getSections().keySet().toString(), TextColor.CYAN);
+                Out.error("Organization '" + lookupOrg + "' not found in config file.");
+                
                 INVALID_PARAMETER.exit();
             } else {
                 // Org found, loading token
@@ -78,12 +79,7 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
                         .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
             }
         }
-        // If default is not in the file, set current org as default
-        if(!config.getSections().containsKey(DEFAULT_ORG)) {
-            AstraRc.save(DEFAULT_ORG, 
-                    AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, 
-                    astraToken);
-        }
+        
         return astraToken;
     }
     

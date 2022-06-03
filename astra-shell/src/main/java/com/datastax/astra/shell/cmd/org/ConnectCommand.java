@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.sdk.utils.AstraRcParser;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;
@@ -42,7 +42,7 @@ public class ConnectCommand implements Runnable {
             Out.print("Invalid arguments, please use 'connect <orgName>'", TextColor.RED);
         } else {
             String orgname = arguments.get(0);
-            Map<String, Map<String, String > > sections = AstraRc.load().getSections();
+            Map<String, Map<String, String > > sections = AstraRcParser.load().getSections();
             Map<String, String> section = sections.get(orgname);
             if (section == null) {
                 Out.print("Organization name not found. Valid are " + sections.keySet(), TextColor.RED);

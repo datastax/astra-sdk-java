@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd.repl;
+package com.datastax.astra.shell.cmd.shell;
 
 import java.util.Scanner;
 
@@ -16,12 +16,13 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(
-    name = ".", 
-    description = "If no command, entering interactive mode.")
-public class ReplCommand extends BaseCommand<ReplCommand> implements Runnable {
+    name = "shell", 
+    description = "Interactive mode")
+public class ShellCommand extends BaseCommand<ShellCommand> implements Runnable {
    
     /** {@inheritDoc} */
     public void execute() {
+        
         
         // astra -h, --help
         if (help.showHelpIfRequested()) {

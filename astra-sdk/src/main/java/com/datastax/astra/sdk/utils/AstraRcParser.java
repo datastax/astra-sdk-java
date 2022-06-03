@@ -45,10 +45,10 @@ import com.datastax.stargate.sdk.utils.Utils;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class AstraRc {
+public class AstraRcParser {
 
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AstraRc.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraRcParser.class);
 
     /** Default filename we are looking for. */
     public static final String ASTRARC_FILENAME = ".astrarc";
@@ -67,12 +67,12 @@ public class AstraRc {
 
     /** Sections in the file. [sectionName] -> key=Value. */
     private final Map<String, Map<String, String>> sections;
-
+    
     /**
      * Load from ~/.astrarc
      */
-    public AstraRc() {
-        this.sections = AstraRc.load().getSections();
+    public AstraRcParser() {
+        this.sections = AstraRcParser.load().getSections();
     }
 
     /**
@@ -81,8 +81,8 @@ public class AstraRc {
      * @param fileName
      *            String
      */
-    public AstraRc(String fileName) {
-        this.sections = AstraRc.load(fileName).getSections();
+    public AstraRcParser(String fileName) {
+        this.sections = AstraRcParser.load(fileName).getSections();
     }
 
     /**
@@ -91,7 +91,7 @@ public class AstraRc {
      * @param s
      *            Map
      */
-    public AstraRc(Map<String, Map<String, String>> s) {
+    public AstraRcParser(Map<String, Map<String, String>> s) {
         this.sections = s;
     }
 
@@ -132,7 +132,36 @@ public class AstraRc {
      * @return File
      */
     public static boolean exists() {
-        return new File(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME).exists();
+        return getDefaultConfigFile().exists();
+    }
+    
+    /**
+     * Provide the configuration {@link File}.
+     *
+     * @return
+     *      config file.
+     */
+    public static File getDefaultConfigFile() {
+        return new File(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME);
+    }
+    
+    /**
+     * Create configuration file if not exist.
+     * 
+     * @return
+     *      if the file has been created
+     */
+    public static boolean createIfNotExists() {
+        File f = new File(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME);
+        if (!f.exists()) {
+            try {
+                return f.createNewFile();
+            } catch (IOException e) {
+                throw new IllegalStateException("Cannot save configuration file in home directory " + 
+                        System.getProperty(ENV_USER_HOME));
+            }
+        }
+        return false;
     }
 
     /**
@@ -235,22 +264,23 @@ public class AstraRc {
      * 
      * @return AstraRc
      */
-    public static AstraRc load() {
-        return load(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME);
+    public static AstraRcParser load() {
+        createIfNotExists();
+        return load(getDefaultConfigFile().getAbsolutePath());
     }
 
     /**
-     * Loading ~/.astrarc (if present). Key = block name (dbname of default), then key/value
-     * 
-     * @param fileName
-     *            String
-     * @return AstraRc
+     * Load configuration file.
+     *  
+     * @param file
+     *      configuration file
+     * @return
+     *      parser.
      */
-    public static AstraRc load(String fileName) {
+    public static AstraRcParser load(File file) {
         Map<String, Map<String, String>> sections = new HashMap<>();
-        File current = new File(fileName);
-        try (Scanner scanner = new Scanner(current)) {
-            if (current.exists()) {
+        try (Scanner scanner = new Scanner(file)) {
+            if (file.exists()) {
                 String sectionName = "";
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
@@ -262,7 +292,7 @@ public class AstraRc {
                         int off = line.indexOf("=");
                         if (off < 0) {
                             throw new IllegalArgumentException(
-                                    "Cannot parse file " + fileName + ", line '" + line + "' invalid format expecting key=value");
+                                    "Cannot parse file " + file.getName() + ", line '" + line + "' invalid format expecting key=value");
                         }
                         String key = line.substring(0, off);
                         String val = line.substring(off + 1);
@@ -274,7 +304,19 @@ public class AstraRc {
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("Cannot read configuration file", e);
         }
-        return new AstraRc(sections);
+        return new AstraRcParser(sections);
+    }
+    
+    /**
+     * Loading ~/.astrarc (if present). Key = block name (dbname of default), then key/value
+     * 
+     * @param fileName
+     *            String
+     * @return AstraRc
+     */
+    public static AstraRcParser load(String fileName) {
+        return load(new File(fileName));
+        
     }
 
     /**
@@ -349,7 +391,7 @@ public class AstraRc {
      *            section Name
      * @return if the value is there
      */
-    public static Optional<String> readRcVariable(AstraRc arc, String key, String sectionName) {
+    public static Optional<String> readRcVariable(AstraRcParser arc, String key, String sectionName) {
         Map<String, String> section = arc.getSections().get(sectionName);
         if (section != null && section.containsKey(key) && Utils.hasLength(section.get(key))) {
             return Optional.ofNullable(section.get(key));
