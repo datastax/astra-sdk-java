@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.org;
 
 import java.util.ArrayList;
 import java.util.List;

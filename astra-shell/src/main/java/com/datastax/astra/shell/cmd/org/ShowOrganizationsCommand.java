@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd.db;
+package com.datastax.astra.shell.cmd.org;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,11 +1,11 @@
 package com.datastax.astra.shell;
 
 import com.datastax.astra.shell.cmd.HelpCustomCommand;
-import com.datastax.astra.shell.cmd.ConnectCommand;
-import com.datastax.astra.shell.cmd.EmptyCommand;
-import com.datastax.astra.shell.cmd.ExitCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
-import com.datastax.astra.shell.cmd.db.ShowOrganizationsCommand;
+import com.datastax.astra.shell.cmd.org.ConnectCommand;
+import com.datastax.astra.shell.cmd.org.ShowOrganizationsCommand;
+import com.datastax.astra.shell.cmd.repl.EmptyCommand;
+import com.datastax.astra.shell.cmd.repl.ExitCommand;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;
 import com.github.rvesse.airline.annotations.Cli;

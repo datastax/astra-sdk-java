@@ -1,10 +1,9 @@
 package com.datastax.astra.shell;
 
 import com.datastax.astra.shell.cmd.HelpCustomCommand;
-import com.datastax.astra.shell.cmd.ReplCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
-import com.datastax.astra.shell.cmd.db.ShowOrganizationsCommand;
-import com.datastax.astra.shell.cmd.db.ShowOrganizationsCommand;
+import com.datastax.astra.shell.cmd.org.ShowOrganizationsCommand;
+import com.datastax.astra.shell.cmd.repl.ReplCommand;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;

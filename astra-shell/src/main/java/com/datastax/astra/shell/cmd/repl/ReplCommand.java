@@ -1,10 +1,11 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.repl;
 
 import java.util.Scanner;
 
 import com.datastax.astra.shell.AstraCli;
 import com.datastax.astra.shell.AstraShell;
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.utils.CommandLineUtils;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Command;

@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.repl;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.jansi.Out;
