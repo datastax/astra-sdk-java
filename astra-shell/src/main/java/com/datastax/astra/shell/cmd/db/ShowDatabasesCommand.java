@@ -17,6 +17,12 @@ import com.github.rvesse.airline.annotations.Command;
 @Command(name = "dbs", description = "Display the list of Databases in an organization")
 public class ShowDatabasesCommand extends BaseCommand<ShowDatabasesCommand> {
     
+    /**
+     * Synonyms: show dbs | databases
+     */
+    @Command(name = "databases", description = "Display the list of Databases in an organization")
+    public static final class ShowDatabasesCommandBis extends ShowDatabasesCommand {}
+    
     /** {@inheritDoc} */
     public void execute() {
         ShellContext.getInstance().getAstraClient()

@@ -20,7 +20,6 @@ public class ShellPrinter {
 	/** Start Banner. */
     public static void banner() {
         Out.setup(TextColor.CYAN, null, null);
-        System.out.println("");
         System.out.print("  █████╗ ███████╗████████╗██████╗  █████╗   ");
         Out.setup(TextColor.MAGENTA, null, null);
         System.out.println("  ███████╗██╗  ██╗███████╗██╗     ██╗     ");
@@ -51,7 +50,7 @@ public class ShellPrinter {
                 .getPackage()
                 .getImplementationVersion();
         if (versionPackage == null) {
-            versionPackage = "Developement Mode";
+            versionPackage = "Development";
         }
         Out.print(versionPackage, TextColor.GREEN);
         System.out.println("\n");

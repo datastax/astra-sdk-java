@@ -193,7 +193,17 @@ public class Out {
      *       text to be displayed
      */
     public static void error(String text) {
-        println("[ERROR] - " + text, TextColor.RED);
+        println("[ERROR]" + text, TextColor.RED);
+    }
+    
+    /**
+     * Log warning.
+     *
+     * @param text
+     *       text to be displayed
+     */
+    public static void warning(String text) {
+        println("[WARN ] " + text, TextColor.YELLOW);
     }
     
     /**
@@ -203,7 +213,17 @@ public class Out {
      *      text to show in success
      */
     public static void success(String text) {
-        println("[OK] - " + text, TextColor.GREEN);
+        println("[ OK  ] " + text, TextColor.GREEN);
+    }
+    
+    /**
+     * Syntax sugar for OK.
+     * 
+     * @param text
+     *      text to show in success
+     */
+    public static void info(String text) {
+        println("[INFO ] " + text, TextColor.CYAN);
     }
     
     

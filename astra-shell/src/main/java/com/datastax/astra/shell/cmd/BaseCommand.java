@@ -2,15 +2,13 @@ package com.datastax.astra.shell.cmd;
 
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
-import javax.inject.Inject;
-
 import org.apache.pulsar.shade.org.apache.commons.lang.StringUtils;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.utils.AstraRcParser;
+import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.jansi.Out;
-import com.github.rvesse.airline.HelpOption;
 import com.github.rvesse.airline.annotations.Option;
 import com.github.rvesse.airline.annotations.restrictions.MutuallyExclusiveWith;
 
@@ -38,9 +36,6 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
     @MutuallyExclusiveWith(tag = "authentication")
     protected String organization;
     
-    @Inject
-    protected HelpOption<CHILD> help;
-    
     /** If no Organization provided we will look in ~.astrarc. */
     public static final String DEFAULT_ORG = "default";
     
@@ -65,29 +60,35 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
             // -org is provided lookup for token in config file
             if (!StringUtils.isEmpty(organization)) {
                 lookupOrg = organization;
+                if(!config.getSections().containsKey(lookupOrg)) {
+                    Out.error("Organization '" + lookupOrg + "' not found in config file.");
+                    INVALID_PARAMETER.exit();
+                }
             }
-           
+            
             // Organization name is not in config file => error
-            if(!config.getSections().containsKey(lookupOrg)) {
-                Out.error("Organization '" + lookupOrg + "' not found in config file.");
-                
-                INVALID_PARAMETER.exit();
-            } else {
-                // Org found, loading token
+            if(config.getSections().containsKey(lookupOrg)) {
                 astraToken = config.getSections()
                         .get(lookupOrg)
                         .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
             }
         }
-        
         return astraToken;
     }
     
     /** {@inheritDoc} */
     public void run() {
-       // Connect to Astra first
+        String astraToken = getAstraToken();
+        if (null == astraToken) {
+            System.out.println("");
+            Out.warning("There is no token option (-t) and configuration file is empty.");
+            Out.info("To setup the cli: astra config");
+            Out.info("To list commands: astra help");
+            ExitCode.INVALID_PARAMETER.exit();
+        }
+        
        ShellContext ctx = ShellContext.getInstance();
-       if (!ctx.initialized()) ctx.connect(getAstraToken());
+       if (!ctx.initialized()) ctx.connect(astraToken);
        
        // Execute custom code
        execute();

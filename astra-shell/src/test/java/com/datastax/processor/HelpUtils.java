@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.utils;
+package com.datastax.processor;
 
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;

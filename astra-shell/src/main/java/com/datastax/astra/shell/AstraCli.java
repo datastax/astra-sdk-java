@@ -1,9 +1,10 @@
 package com.datastax.astra.shell;
 
-import com.datastax.astra.shell.cmd.HelpCustomCommand;
 import com.datastax.astra.shell.cmd.ConfigCommand;
+import com.datastax.astra.shell.cmd.HelpCustomCommand;
+import com.datastax.astra.shell.cmd.SetDefaultOrgCommand;
+import com.datastax.astra.shell.cmd.ShowConfigCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
-import com.datastax.astra.shell.cmd.org.ShowOrganizationsCommand;
 import com.datastax.astra.shell.cmd.shell.ShellCommand;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;
@@ -24,14 +25,15 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
   commands       = { 
     ShellCommand.class,
     HelpCustomCommand.class,
-    ConfigCommand.class
+    ConfigCommand.class,
+    SetDefaultOrgCommand.class
   },
   
   groups = {
         @Group(
             name = "show",
-            description = "Listing details of an entity or entity list",
-            commands = { ShowOrganizationsCommand.class, ShowDatabasesCommand.class }
+            description = "Display entity or group of entities",
+            commands = { ShowConfigCommand.class, ShowDatabasesCommand.class, }
         )
   })
 public class AstraCli {

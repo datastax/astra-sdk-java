@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd.org;
+package com.datastax.astra.shell.cmd.shell;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +45,11 @@ public class ConnectCommand implements Runnable {
             Map<String, Map<String, String > > sections = AstraRcParser.load().getSections();
             Map<String, String> section = sections.get(orgname);
             if (section == null) {
-                Out.print("Organization name not found. Valid are " + sections.keySet(), TextColor.RED);
+                Out.error("Organization name not found.");
             } else {
                 String token = section.get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
                 if (token ==null) {
-                    Out.print("Token not found for '" + orgname + "'");
+                    Out.error("Token not found for '" + orgname + "'");
                 } else {
                     ShellContext.getInstance().connect(token);
                 }

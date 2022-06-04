@@ -2,9 +2,7 @@ package com.datastax.astra.shell.cmd.shell;
 
 import java.util.Scanner;
 
-import com.datastax.astra.shell.AstraCli;
 import com.datastax.astra.shell.AstraShell;
-import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.utils.CommandLineUtils;
 import com.datastax.astra.shell.utils.ShellPrinter;
@@ -17,19 +15,12 @@ import com.github.rvesse.airline.annotations.Command;
  */
 @Command(
     name = "shell", 
-    description = "Interactive mode")
+    description = "Enter interactive mode")
 public class ShellCommand extends BaseCommand<ShellCommand> implements Runnable {
-   
+    
     /** {@inheritDoc} */
     public void execute() {
-        
-        
-        // astra -h, --help
-        if (help.showHelpIfRequested()) {
-            AstraCli.exec("help");
-            System.exit(ExitCode.SUCCESS.getCode());
-        }
-            
+       
         // Interactive mode
         try(Scanner scanner = new Scanner(System.in)) {
             while(true) {

@@ -7,13 +7,13 @@ import com.github.rvesse.airline.annotations.Command;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "<empty>", description = "New prompt")
+@Command(name = "<empty>", description = "New line")
 public class EmptyCommand implements Runnable {
 
     /** {@inheritDoc} */
     @Override
     public void run() {
-        System.out.println(".");
+        System.out.println("");
     }
     
 

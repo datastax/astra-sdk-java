@@ -27,12 +27,7 @@ public class TestAstraCli {
     
     @Test
     public void showHelp2() throws Exception {
-        astraCli("-h");
-    }
-    
-    @Test
-    public void showDatabasesCli() throws Exception {
-        astraCli( "show-dbs", "-org", "cedrick.lunven@datastax.com");
+        astraCli("help", "show");
     }
     
     @Test
@@ -45,6 +40,19 @@ public class TestAstraCli {
         astraCli("config");
     }
     
+    @Test
+    public void showConfig()  throws Exception {
+        astraCli("show", "config");
+    }
     
+    @Test
+    public void showDbs()  throws Exception {
+        astraCli("show", "dbs");
+    }
+    
+    @Test
+    public void setDefault()  throws Exception {
+        astraCli("default-org", "cedrick.lunven@datastax.com");
+    }
     
 }
