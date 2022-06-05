@@ -19,6 +19,7 @@ public class ShellPrinter {
 	
 	/** Start Banner. */
     public static void banner() {
+        System.out.println("");
         Out.setup(TextColor.CYAN, null, null);
         System.out.print("  █████╗ ███████╗████████╗██████╗  █████╗   ");
         Out.setup(TextColor.MAGENTA, null, null);

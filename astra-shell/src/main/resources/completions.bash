@@ -9,15 +9,15 @@ containsElement () {
   return 1
 }
 
-function _complete_astra_command_showdbs() {
+function _complete_astra_command_shell() {
   # Get completion data
   COMPREPLY=()
   CURR_WORD=${COMP_WORDS[COMP_CWORD]}
   PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
   COMMANDS=$1
 
-  FLAG_OPTS="--help -v --verbose -h"
-  ARG_OPTS="--token -org -t --organization"
+  FLAG_OPTS="-v --verbose"
+  ARG_OPTS="--token -org -t"
 
   $( containsElement ${PREV_WORD} ${ARG_OPTS[@]} )
   SAW_ARG=$?
@@ -25,7 +25,7 @@ function _complete_astra_command_showdbs() {
     ARG_VALUES=
     ARG_GENERATED_VALUES=
     case ${PREV_WORD} in
-      -org|--organization)
+      -org)
         COMPREPLY=( $(compgen -W "${ARG_VALUES} ${ARG_GENERATED_VALUES}" -- ${CURR_WORD}) )
         echo ${COMPREPLY[@]}
         return 0
@@ -44,7 +44,7 @@ function _complete_astra_command_showdbs() {
   return 0
 }
 
-function _complete_astra_command_showorgs() {
+function _complete_astra_command_help() {
   # Get completion data
   COMPREPLY=()
   CURR_WORD=${COMP_WORDS[COMP_CWORD]}
@@ -60,7 +60,23 @@ function _complete_astra_command_showorgs() {
   return 0
 }
 
-function _complete_astra_command_help() {
+function _complete_astra_command_config() {
+  # Get completion data
+  COMPREPLY=()
+  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
+  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  COMMANDS=$1
+
+  FLAG_OPTS=""
+  ARG_OPTS=""
+
+  ARGUMENTS=
+  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${ARGUMENTS}" -- ${CURR_WORD}) )
+  echo ${COMPREPLY[@]}
+  return 0
+}
+
+function _complete_astra_command_defaultorg() {
   # Get completion data
   COMPREPLY=()
   CURR_WORD=${COMP_WORDS[COMP_CWORD]}
@@ -85,9 +101,9 @@ function _complete_astra() {
     CURR_CMD=${COMP_WORDS[1]}
   fi
 
-  COMMANDS="help show-orgs show-dbs"
+  COMMANDS="help shell default-org config"
   if [[ ${COMP_CWORD} -eq 1 ]]; then
-    COMPREPLY=( $(_complete_astra_command_help "${COMMANDS}" ) )
+    COMPREPLY=( $(_complete_astra_command_shell "${COMMANDS}" ) )
     DEFAULT_COMMAND_COMPLETIONS=(${COMPREPLY[@]})
     COMPREPLY=()
     COMPREPLY=( $(compgen -W "${COMMANDS} ${DEFAULT_COMMAND_COMPLETIONS}" -- ${CURR_WORD}) )
@@ -95,16 +111,20 @@ function _complete_astra() {
   fi
 
   case ${CURR_CMD} in 
-    show-dbs)
-      COMPREPLY=( $(_complete_astra_command_showdbs "${COMMANDS}" ) )
-      return $?
-      ;;
-    show-orgs)
-      COMPREPLY=( $(_complete_astra_command_showorgs "${COMMANDS}" ) )
+    shell)
+      COMPREPLY=( $(_complete_astra_command_shell "${COMMANDS}" ) )
       return $?
       ;;
     help)
       COMPREPLY=( $(_complete_astra_command_help "${COMMANDS}" ) )
+      return $?
+      ;;
+    config)
+      COMPREPLY=( $(_complete_astra_command_config "${COMMANDS}" ) )
+      return $?
+      ;;
+    default-org)
+      COMPREPLY=( $(_complete_astra_command_defaultorg "${COMMANDS}" ) )
       return $?
       ;;
   esac

@@ -3,7 +3,12 @@ package com.datastax.astra.shell;
 import com.datastax.astra.shell.cmd.ExitCommand;
 import com.datastax.astra.shell.cmd.HelpCustomCommand;
 import com.datastax.astra.shell.cmd.ShowConfigCommand;
+import com.datastax.astra.shell.cmd.ShowRoleCommand;
+import com.datastax.astra.shell.cmd.ShowRolesCommand;
+import com.datastax.astra.shell.cmd.ShowUserCommand;
+import com.datastax.astra.shell.cmd.ShowUsersCommands;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
+import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand.ShowDatabasesCommandBis;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
 import com.datastax.astra.shell.jansi.Out;
@@ -32,7 +37,11 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
           @Group(
               name = "show",
               description = "Listing details of an entity or entity list",
-              commands = { ShowConfigCommand.class, ShowDatabasesCommand.class }
+              commands = { 
+                      ShowDatabasesCommand.class, ShowDatabasesCommandBis.class, 
+                      ShowRoleCommand.class, ShowRolesCommand.class, 
+                      ShowUserCommand.class, ShowUsersCommands.class,
+                      ShowConfigCommand.class }
           )
     })
 public class AstraShell {

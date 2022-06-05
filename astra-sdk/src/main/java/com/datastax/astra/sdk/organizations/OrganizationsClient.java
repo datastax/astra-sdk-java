@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegion;
+import com.datastax.astra.sdk.databases.domain.DatabaseRegionServerless;
 import com.datastax.astra.sdk.organizations.domain.CreateRoleResponse;
 import com.datastax.astra.sdk.organizations.domain.CreateTokenResponse;
 import com.datastax.astra.sdk.organizations.domain.DefaultRoles;
@@ -49,6 +50,9 @@ public class OrganizationsClient {
     
     /** Get Available Regions. */
     public static final String PATH_REGIONS = "/availableRegions";
+    
+    /** Get Available Regions. */
+    public static final String PATH_REGIONS_SERVERLESS = "/regions/serverless";
     
     /** Get Available Regions. */
     public static final String PATH_ACCESS_LISTS = "/access-lists";
@@ -143,6 +147,19 @@ public class OrganizationsClient {
         ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_REGIONS, bearerAuthToken);
         // Marshall response
         return unmarshallType(res.getBody(), TYPE_LIST_REGION).stream();
+    }
+    
+    /**
+     * List serverless regions.
+     * 
+     * @return
+     *      serverless region
+     */
+    public Stream<DatabaseRegionServerless> regionsServerless() {
+        // Invoke endpoint
+        ApiResponseHttp res = http.GET(getApiDevopsEndpoint() + PATH_REGIONS_SERVERLESS, bearerAuthToken);
+        // Marshall response
+        return unmarshallType(res.getBody(), new TypeReference<List<DatabaseRegionServerless>>(){}).stream();
     }
     
     /**

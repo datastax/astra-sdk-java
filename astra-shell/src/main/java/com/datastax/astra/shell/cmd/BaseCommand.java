@@ -4,7 +4,10 @@ import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
 import org.apache.pulsar.shade.org.apache.commons.lang.StringUtils;
 
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
+import com.datastax.astra.sdk.databases.DatabasesClient;
+import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.utils.AstraRcParser;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
@@ -25,13 +28,13 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
     protected boolean verbose = false;
     
     @Option(name = { "-t", "--token" }, 
-            title = "Authentication Token",
+            title = "AuthToken",
             description = "Key to use authenticate each call.")
     @MutuallyExclusiveWith(tag = "authentication")
     protected String token;
     
-    @Option(name = { "-org", "--organization" }, 
-            title = "Organization Name",
+    @Option(name = { "-org" }, 
+            title = "OrgName",
             description= "Organization name as provided for section in ~.astrarc")
     @MutuallyExclusiveWith(tag = "authentication")
     protected String organization;
@@ -74,6 +77,36 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
             }
         }
         return astraToken;
+    }
+    
+    /**
+     * Syntaxic sugar to get Astra Client.
+     * 
+     * @return
+     *      astra client.
+     */
+    protected AstraClient getAstraClient() {
+        return ShellContext.getInstance().getAstraClient();
+    }
+    
+    /**
+     * Syntaxi sugar api devops.
+     *
+     * @return
+     *      api devops org
+     */
+    protected OrganizationsClient getApiDevopsOrg() {
+        return getAstraClient().apiDevopsOrganizations();
+    }
+    
+    /**
+     * Syntaxi sugar api devops.
+     *
+     * @return
+     *      api devops db
+     */
+    protected DatabasesClient getApiDevopsDb() {
+        return getAstraClient().apiDevopsDatabases();
     }
     
     /** {@inheritDoc} */

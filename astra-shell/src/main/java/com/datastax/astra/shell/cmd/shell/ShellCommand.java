@@ -20,7 +20,10 @@ public class ShellCommand extends BaseCommand<ShellCommand> implements Runnable 
     
     /** {@inheritDoc} */
     public void execute() {
-       
+        
+        // Show Banner
+        ShellPrinter.banner();
+        
         // Interactive mode
         try(Scanner scanner = new Scanner(System.in)) {
             while(true) {

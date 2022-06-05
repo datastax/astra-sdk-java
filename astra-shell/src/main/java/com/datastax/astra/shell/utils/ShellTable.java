@@ -22,11 +22,11 @@ public class ShellTable implements Serializable {
     /** Serial */
     private static final long serialVersionUID = -2134504321420499395L;
 
-    private TextColor tableColor = TextColor.WHITE;
+    private TextColor tableColor = TextColor.CYAN;
     
-    private TextColor columnTitlesColor = TextColor.CYAN;
+    private TextColor columnTitlesColor = TextColor.YELLOW;
 
-    private TextColor cellColor = TextColor.YELLOW;
+    private TextColor cellColor = TextColor.WHITE;
     
     private TextColor pkColor = TextColor.RED;
     
@@ -39,7 +39,8 @@ public class ShellTable implements Serializable {
     private List< Map < String, String > > cellValues = new ArrayList<>();
     
     /** Shell Table */
-    public ShellTable() {}
+    public ShellTable() {
+    }
     
     /**
      * Display the table in the shell.
@@ -65,7 +66,6 @@ public class ShellTable implements Serializable {
             }
             tableLine.append("+" + String.format("%-" + (size+1) + "s", "-").replaceAll(" " , "-"));
         }
-        System.out.println();
         Out.print(tableLine.toString() + "+\n", tableColor);
         
         // Display Column Titles
@@ -99,6 +99,37 @@ public class ShellTable implements Serializable {
         }
         Out.print(tableLine.toString() + "+\n", tableColor);
     }
+    
+    /**
+     * Add property in a table.
+     *
+     * @param name
+     *      property name
+     * @param value
+     *      property value
+     * @return
+     *      new row
+     */
+    public static Map<String, String > addProperty(String name, String value) {
+        Map <String, String> rf = new HashMap<>();
+        rf.put("Name", name);
+        rf.put("Value", value);
+        return rf;
+    }
+    
+    /**
+     * Add a column.
+     *
+     * @param colName
+     *      name
+     * @param colwidth
+     *      with
+     */
+    public void addColumn(String colName, int colwidth) {
+        getColumnTitlesNames().add(colName);
+        getColumnSize().put(colName, colwidth);
+    }
+    
 
     /**
      * Getter accessor for attribute 'tableColor'.

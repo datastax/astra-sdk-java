@@ -61,6 +61,39 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.github.rvesse</groupId>
+        <artifactId>airline-maven-plugin</artifactId>
+        <version>${airline.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>validate</goal>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <formats>
+            <format>MAN</format>
+            <format>CLI</format>
+            <format>MARKDOWN</format>
+          </formats>
+          <sources>
+            <source>
+              <classes>
+                <class>com.datastax.astra.shell.AstraCli</class>
+              </classes>
+            </source>
+            <source>
+              <classes>
+                <class>com.datastax.astra.shell.AstraShell</class>
+              </classes>
+            </source>
+          </sources>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -102,7 +135,7 @@
     </dependency>
   </dependencies>
   <properties>
-    <airline.version>2.7.2</airline.version>
+    <airline.version>2.8.5</airline.version>
     <commons-cli.version>1.5.0</commons-cli.version>
     <maven-plugin-exec.version>3.0.0</maven-plugin-exec.version>
     <jansi.version>2.4.0</jansi.version>

@@ -12,13 +12,15 @@ import com.datastax.astra.shell.AstraCli;
 public class TestAstraCli {
     
     private void astraCli(String... args) {
-        System.out.println("---------------------------");
-        System.out.print(" Command: astra ");
+        System.out.print(" astra ");
         for (String string : args) System.out.print(string + " ");
         System.out.println();
         System.out.println("---------------------------");
+        System.out.println();
         AstraCli.main(args);
     }
+    
+    // --  Help
     
     @Test
     public void showHelp1() throws Exception {
@@ -30,14 +32,17 @@ public class TestAstraCli {
         astraCli("help", "show");
     }
     
-    @Test
-    public void startInteractive() throws Exception {
-        astraCli();
-    }
+  
+    // -- Config
     
     @Test
     public void config()  throws Exception {
         astraCli("config");
+    }
+    
+    @Test
+    public void setDefault()  throws Exception {
+        astraCli("default-org", "cedrick.lunven@datastax.com");
     }
     
     @Test
@@ -46,13 +51,40 @@ public class TestAstraCli {
     }
     
     @Test
+    public void startInteractive() throws Exception {
+        astraCli();
+    }
+    
+    // -- shows
+    
+    @Test
     public void showDbs()  throws Exception {
         astraCli("show", "dbs");
     }
     
     @Test
-    public void setDefault()  throws Exception {
-        astraCli("default-org", "cedrick.lunven@datastax.com");
+    public void showRoles()  throws Exception {
+        astraCli("show", "roles");
+    }
+    
+    @Test
+    public void showRole() throws Exception {
+        astraCli("show", "role", "dde8a0e9-f4ae-4b42-b642-9f257436c8da");
+    }
+    
+    @Test
+    public void showUsers()  throws Exception {
+        astraCli("show", "users");
+    }
+    
+    @Test
+    public void showUser()  throws Exception {
+        astraCli("show", "user", "cedrick.lunven@datastax.com");
+    }
+    
+    @Test
+    public void createDb()  throws Exception {
+        astraCli("create", "db", "-n","shell_tests", "-r", "us-east1", "-ks", "ks1");
     }
     
 }
