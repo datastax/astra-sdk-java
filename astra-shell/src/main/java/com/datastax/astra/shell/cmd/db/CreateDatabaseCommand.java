@@ -18,9 +18,19 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "db", description = "Create a new database")
+@Command(
+    name = DatabaseCommandUtils.DB, 
+    description = "Create a new database")
 public class CreateDatabaseCommand extends BaseCommand<CreateDatabaseCommand> {
 
+    /**
+     * Synonyms: show dbs | databases
+     */
+    @Command(
+        name = DatabaseCommandUtils.DATABASE, 
+        description = "Display the list of Databases in an organization")
+    public static final class CreateDatabaseCommandAlias1 extends CreateDatabaseCommand {}
+    
     @Required
     @Option(name = { "-n", "--name" }, 
             title = "DbName", 

@@ -91,6 +91,8 @@ public class CommandLineUtils {
     /**
      * This behaviour will happen again and again.
      * 
+     * @param scanner
+     *      current user input scanner
      * @param message
      *      question asked
      * @return

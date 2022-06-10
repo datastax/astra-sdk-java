@@ -2,18 +2,19 @@ package com.datastax.astra.shell.cmd;
 
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
+import java.io.File;
+
 import org.apache.pulsar.shade.org.apache.commons.lang.StringUtils;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.astra.sdk.utils.AstraRcParser;
+import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.jansi.Out;
 import com.github.rvesse.airline.annotations.Option;
-import com.github.rvesse.airline.annotations.restrictions.MutuallyExclusiveWith;
 
 /**
  * Base command.
@@ -22,25 +23,110 @@ import com.github.rvesse.airline.annotations.restrictions.MutuallyExclusiveWith;
  */
 public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runnable {
     
+    /**
+     * Default section name. 
+     */
+    public static final String DEFAULT_CONFIG_SECTION = "default";
+    
     /** Each command can have a verbose mode. */
     @Option(name = { "-v", "--verbose" }, 
             description = "Enables verbose mode")
     protected boolean verbose = false;
     
+    /** Authentication token used if not provided in config. */
     @Option(name = { "-t", "--token" }, 
             title = "AuthToken",
             description = "Key to use authenticate each call.")
-    @MutuallyExclusiveWith(tag = "authentication")
     protected String token;
     
-    @Option(name = { "-org" }, 
-            title = "OrgName",
-            description= "Organization name as provided for section in ~.astrarc")
-    @MutuallyExclusiveWith(tag = "authentication")
-    protected String organization;
+    /**
+     * File on disk to reuse configuration.
+     */
+    @Option(name = { "-cf","--config-file" }, 
+            title = "config_file",
+            description= "Configuration file (default = ~/.astrarc)")
+    protected String configFilename;
     
-    /** If no Organization provided we will look in ~.astrarc. */
-    public static final String DEFAULT_ORG = "default";
+    /**
+     * Section in configuration file with context
+     */
+    @Option(name = { "-cn, --config-name" }, 
+            title = "config_section",
+            description= "Section in configuration file to load context (default = default)")
+    protected String configSectionName;
+    
+    /**
+     * Configuration as loaded from file.
+     */
+    protected AstraRc config;
+    
+    /**
+     * Retrieve working configuration file.
+     *
+     * @return
+     *      configuration file
+     */
+    protected File getConfigurationFile() {
+        if (configFilename != null) {
+            return new File(configFilename);
+        }
+        return AstraRc.getDefaultConfigFile();
+    }
+    
+    /**
+     * Load configuration from file.
+     *
+     * @return
+     *      configuration
+     */
+    public AstraRc getConfig() {
+       if (config == null) {
+           // Load configuration (create if needed)
+           if (configFilename != null) {
+               File fileConfig = new File(configFilename);
+               if (!fileConfig.exists() || !fileConfig.canRead()) {
+                   Out.error("Cannot read configuration file " + configFilename);
+                   ExitCode.INVALID_PARAMETER.exit();
+               }
+               config = AstraRc.load(new File(configFilename));
+            } else {
+                AstraRc.createIfNotExists();
+                config = AstraRc.load();
+            }
+       }
+       return config;
+        
+    }
+    
+    /** {@inheritDoc} */
+    public void run() {
+        
+        // If no config present, ask for configuation
+        if (config.getSections().isEmpty()) {
+            // ask to create a token
+        }
+        
+        String astraToken = getAstraToken();
+        if (null == astraToken) {
+            System.out.println("");
+            Out.warning("There is no token option (-t) and configuration file is empty.");
+            Out.info("To setup the cli: astra config");
+            Out.info("To list commands: astra help");
+            ExitCode.INVALID_PARAMETER.exit();
+        }
+        
+       ShellContext ctx = ShellContext.getInstance();
+       if (!ctx.isInitialized()) ctx.connect(astraToken);
+       
+       // Execute custom code
+       execute();
+    }
+    
+    /**
+     * Implementation Specialization per command (Pattern Strategy)
+     */
+    public abstract void execute();
+    
     
     /**
      * Read value for Astra Token.
@@ -51,28 +137,28 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
     protected String getAstraToken() {
         String astraToken = null;
 
-        // Load configuration (create if needed)
-        AstraRcParser config = AstraRcParser.load();
+        
         
         // Token (-t, --token) is explicitely provided
         if (!StringUtils.isEmpty(token)) {
             astraToken = token;
         } else {
-            String lookupOrg = DEFAULT_ORG;
+            
+            String lookupSection = DEFAULT_CONFIG_SECTION;
             
             // -org is provided lookup for token in config file
-            if (!StringUtils.isEmpty(organization)) {
-                lookupOrg = organization;
-                if(!config.getSections().containsKey(lookupOrg)) {
-                    Out.error("Organization '" + lookupOrg + "' not found in config file.");
+            if (!StringUtils.isEmpty(configSectionName)) {
+                lookupSection = configSectionName;
+                if(!config.getSections().containsKey(lookupSection)) {
+                    Out.error("Section '" + lookupSection + "' not found in config file.");
                     INVALID_PARAMETER.exit();
                 }
             }
             
             // Organization name is not in config file => error
-            if(config.getSections().containsKey(lookupOrg)) {
+            if(config.getSections().containsKey(lookupSection)) {
                 astraToken = config.getSections()
-                        .get(lookupOrg)
+                        .get(lookupSection)
                         .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
             }
         }
@@ -90,7 +176,7 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
     }
     
     /**
-     * Syntaxi sugar api devops.
+     * Syntax sugar api devops.
      *
      * @return
      *      api devops org
@@ -109,30 +195,6 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
         return getAstraClient().apiDevopsDatabases();
     }
     
-    /** {@inheritDoc} */
-    public void run() {
-        String astraToken = getAstraToken();
-        if (null == astraToken) {
-            System.out.println("");
-            Out.warning("There is no token option (-t) and configuration file is empty.");
-            Out.info("To setup the cli: astra config");
-            Out.info("To list commands: astra help");
-            ExitCode.INVALID_PARAMETER.exit();
-        }
-        
-       ShellContext ctx = ShellContext.getInstance();
-       if (!ctx.initialized()) ctx.connect(astraToken);
-       
-       // Execute custom code
-       execute();
-    }
     
-    /**
-     * Implementation of the command.
-     * 
-     * @return
-     *      return the command
-     */
-    public abstract void execute();
 
 }

@@ -4,7 +4,7 @@ import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.help.Help;
 
 @Command(name = "help", description = "Display help information")
-public class HelpCustomCommand<T> extends Help<T> {
+public class HelpCommand<T> extends Help<T> {
     
     /** {@inheritDoc} */
     @Override

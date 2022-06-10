@@ -37,11 +37,11 @@ public class ShowUserCommand extends BaseCommand<ShowUserCommand> {
             Optional<User> user1 = Optional.empty();
             try {
                 user1 = ShellContext
-                    .apiDevopsOrganizations()
+                    .getApiDevopsOrganizations()
                     .findUserByEmail(user);
                 if (!user1.isPresent()) {
                     user1 = ShellContext
-                            .apiDevopsOrganizations()
+                            .getApiDevopsOrganizations()
                             .user(user)
                             .find();
                 }

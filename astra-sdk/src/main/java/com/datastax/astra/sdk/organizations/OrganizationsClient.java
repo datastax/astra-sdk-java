@@ -413,8 +413,8 @@ public class OrganizationsClient {
     /**
      * Create a new key.
      * 
-     * @param cr
-     *      new role request
+     * @param keyDef
+     *      key definition request
      * @return
      *      new role created
      */

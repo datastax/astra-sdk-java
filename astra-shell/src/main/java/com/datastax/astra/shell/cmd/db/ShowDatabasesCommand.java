@@ -12,7 +12,9 @@ import com.github.rvesse.airline.annotations.Command;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "dbs", description = "Display the list of Databases in an organization")
+@Command(
+    name = DatabaseCommandUtils.DBS, 
+    description = "Display the list of Databases in an organization")
 public class ShowDatabasesCommand extends BaseCommand<ShowDatabasesCommand> {
     
     /**

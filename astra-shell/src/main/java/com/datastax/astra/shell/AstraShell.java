@@ -1,13 +1,15 @@
 package com.datastax.astra.shell;
 
 import com.datastax.astra.shell.cmd.ExitCommand;
-import com.datastax.astra.shell.cmd.HelpCustomCommand;
-import com.datastax.astra.shell.cmd.ShowConfigCommand;
+import com.datastax.astra.shell.cmd.HelpCommand;
+import com.datastax.astra.shell.cmd.QuitCommand;
+import com.datastax.astra.shell.cmd.ShowConfigsCommand;
 import com.datastax.astra.shell.cmd.ShowRoleCommand;
 import com.datastax.astra.shell.cmd.ShowRolesCommand;
 import com.datastax.astra.shell.cmd.ShowUserCommand;
 import com.datastax.astra.shell.cmd.ShowUsersCommands;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
+import com.datastax.astra.shell.cmd.db.UseDatabaseCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand.ShowDatabasesCommandBis;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
@@ -30,8 +32,9 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
   commands       = { 
     ConnectCommand.class,
     EmptyCommand.class,
-    HelpCustomCommand.class,
-    ExitCommand.class
+    HelpCommand.class,
+    ExitCommand.class,
+    QuitCommand.class
 },
   groups = {
           @Group(
@@ -41,7 +44,14 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                       ShowDatabasesCommand.class, ShowDatabasesCommandBis.class, 
                       ShowRoleCommand.class, ShowRolesCommand.class, 
                       ShowUserCommand.class, ShowUsersCommands.class,
-                      ShowConfigCommand.class }
+                      ShowConfigsCommand.class }
+          ),
+          @Group(
+               name = "use",
+               description = "Focus on an entity (context & prompt changed)",
+               commands = {
+                      UseDatabaseCommand.class
+               }
           )
     })
 public class AstraShell {

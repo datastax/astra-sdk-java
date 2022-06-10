@@ -45,10 +45,10 @@ import com.datastax.stargate.sdk.utils.Utils;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class AstraRcParser {
+public class AstraRc {
 
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AstraRcParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraRc.class);
 
     /** Default filename we are looking for. */
     public static final String ASTRARC_FILENAME = ".astrarc";
@@ -71,8 +71,8 @@ public class AstraRcParser {
     /**
      * Load from ~/.astrarc
      */
-    public AstraRcParser() {
-        this.sections = AstraRcParser.load().getSections();
+    public AstraRc() {
+        this.sections = AstraRc.load().getSections();
     }
 
     /**
@@ -81,8 +81,8 @@ public class AstraRcParser {
      * @param fileName
      *            String
      */
-    public AstraRcParser(String fileName) {
-        this.sections = AstraRcParser.load(fileName).getSections();
+    public AstraRc(String fileName) {
+        this.sections = AstraRc.load(fileName).getSections();
     }
 
     /**
@@ -91,7 +91,7 @@ public class AstraRcParser {
      * @param s
      *            Map
      */
-    public AstraRcParser(Map<String, Map<String, String>> s) {
+    public AstraRc(Map<String, Map<String, String>> s) {
         this.sections = s;
     }
 
@@ -264,8 +264,7 @@ public class AstraRcParser {
      * 
      * @return AstraRc
      */
-    public static AstraRcParser load() {
-        createIfNotExists();
+    public static AstraRc load() {
         return load(getDefaultConfigFile().getAbsolutePath());
     }
 
@@ -277,7 +276,7 @@ public class AstraRcParser {
      * @return
      *      parser.
      */
-    public static AstraRcParser load(File file) {
+    public static AstraRc load(File file) {
         Map<String, Map<String, String>> sections = new HashMap<>();
         try (Scanner scanner = new Scanner(file)) {
             if (file.exists()) {
@@ -304,7 +303,7 @@ public class AstraRcParser {
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("Cannot read configuration file", e);
         }
-        return new AstraRcParser(sections);
+        return new AstraRc(sections);
     }
     
     /**
@@ -314,7 +313,7 @@ public class AstraRcParser {
      *            String
      * @return AstraRc
      */
-    public static AstraRcParser load(String fileName) {
+    public static AstraRc load(String fileName) {
         return load(new File(fileName));
         
     }
@@ -391,7 +390,7 @@ public class AstraRcParser {
      *            section Name
      * @return if the value is there
      */
-    public static Optional<String> readRcVariable(AstraRcParser arc, String key, String sectionName) {
+    public static Optional<String> readRcVariable(AstraRc arc, String key, String sectionName) {
         Map<String, String> section = arc.getSections().get(sectionName);
         if (section != null && section.containsKey(key) && Utils.hasLength(section.get(key))) {
             return Optional.ofNullable(section.get(key));

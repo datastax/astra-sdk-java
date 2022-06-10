@@ -95,8 +95,7 @@ public class ShellPrinter {
 	/**
 	 * Will print Promt based on the current state.
 	 * 
-	 * @param ctx
-	 *         current context.
+	 * [;32;mcedrick.lunven@datastax.com[;0;m[;36;m>mtg[;0;m[;35;m>eu-central-1[;0;m[;32;m>[;0;m
 	 */
 	public static void prompt() {
 	    System.out.println("");
@@ -104,7 +103,13 @@ public class ShellPrinter {
 	    if (ctx.getOrganization() != null) {
 	        Out.print(ctx.getOrganization().getName(), TextColor.GREEN);
 	    }
-	    Out.print(">", TextColor.GREEN);
+	    if (ctx.getDatabase() != null) {
+	        Out.print(" > ", TextColor.GREEN);
+            Out.print(ctx.getDatabase().getInfo().getName(), TextColor.YELLOW);
+            Out.print(" > ", TextColor.GREEN);
+            Out.print(ctx.getDatabaseRegion() + " ", TextColor.YELLOW);
+        }
+	    Out.print("> ", TextColor.GREEN);
 	}
 	
 }

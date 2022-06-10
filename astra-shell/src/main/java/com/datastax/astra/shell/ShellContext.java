@@ -6,9 +6,10 @@ import java.util.Optional;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
+import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
-import com.datastax.astra.sdk.utils.AstraRcParser;
+import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -42,7 +43,13 @@ public class ShellContext {
         return _instance;
     }
     
-    public static OrganizationsClient apiDevopsOrganizations() {
+    /**
+     * Access Devops Api Organization.
+     * 
+     * @return
+     *      api organization.
+     */
+    public static OrganizationsClient getApiDevopsOrganizations() {
         return getInstance().getAstraClient().apiDevopsOrganizations();
     }
     
@@ -52,17 +59,11 @@ public class ShellContext {
     /** Organization informations (prompt). */
     private Organization organization;
     
-    /** Database informations. */
-    private String databaseId;
+    /** Work on a db. */
+    private Database database;
     
     /** Database informations. */
     private String databaseRegion;
-    
-    /** Database informations. */
-    private String databaseName;
-    
-    /** Database informations. */
-    private String databaseKeyspace;
     
     /** Main Client. */
     private AstraClient astraClient;
@@ -96,10 +97,40 @@ public class ShellContext {
         }
         
         // Update ~/.astrarc
-        AstraRcParser.save(
+        AstraRc.save(
             getOrganization().getName(), 
             AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, 
             token);
+    }
+    
+    /**
+     * Setter accessor for attribute 'database'.
+     * @param database
+     *      new value for 'database '
+     */
+    public void useDatabase(Database database) {
+        this.database = database;
+        // Initialize to default region
+        this.databaseRegion = this.database.getInfo().getRegion();
+    }
+    
+    /**
+     * Setter accessor for attribute 'databaseRegion'.
+     * @param databaseRegion
+     *      new value for 'databaseRegion '
+     */
+    public void useRegion(String databaseRegion) {
+        this.databaseRegion = databaseRegion;
+    }
+    
+    /**
+     * Reference if the context has been initialized.
+     * 
+     * @return
+     *      if context is initialized
+     */
+    public boolean isInitialized() {
+        return getToken() != null;
     }
     
     /**
@@ -120,56 +151,6 @@ public class ShellContext {
      */
     public String getToken() {
         return token;
-    }
-    
-    /**
-     * Reference if the context has been initialized.
-     * 
-     * @return
-     *      if context is initialized
-     */
-    public boolean initialized() {
-        return getToken() != null;
-    }
-
-    /**
-     * Getter accessor for attribute 'databaseId'.
-     *
-     * @return
-     *       current value of 'databaseId'
-     */
-    public String getDatabaseId() {
-        return databaseId;
-    }
-
-    /**
-     * Getter accessor for attribute 'databaseRegion'.
-     *
-     * @return
-     *       current value of 'databaseRegion'
-     */
-    public String getDatabaseRegion() {
-        return databaseRegion;
-    }
-
-    /**
-     * Getter accessor for attribute 'databaseName'.
-     *
-     * @return
-     *       current value of 'databaseName'
-     */
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
-    /**
-     * Getter accessor for attribute 'databaseKeyspace'.
-     *
-     * @return
-     *       current value of 'databaseKeyspace'
-     */
-    public String getDatabaseKeyspace() {
-        return databaseKeyspace;
     }
 
     /**
@@ -193,13 +174,31 @@ public class ShellContext {
     }
 
     /**
-     * Setter accessor for attribute 'organization'.
-     * @param organization
-     * 		new value for 'organization '
+     * Getter accessor for attribute 'database'.
+     *
+     * @return
+     *       current value of 'database'
      */
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
+    public Database getDatabase() {
+        return database;
     }
-   
+    
+    /**
+     * Getter accessor for attribute 'databaseRegion'.
+     *
+     * @return
+     *       current value of 'databaseRegion'
+     */
+    public String getDatabaseRegion() {
+        return databaseRegion;
+    }
+    
+    /**
+     * Drop focus on current database.
+     */
+    public void exitDatabase() {
+        this.database = null;
+        this.databaseRegion = null;
+    }
     
 }

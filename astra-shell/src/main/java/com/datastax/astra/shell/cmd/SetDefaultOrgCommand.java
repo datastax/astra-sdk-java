@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.utils.AstraRcParser;
+import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;
 import com.github.rvesse.airline.annotations.Arguments;
@@ -32,17 +32,17 @@ public class SetDefaultOrgCommand implements Runnable {
             Out.print("Invalid arguments, please use 'default-org <orgName>'", TextColor.RED);
         } else {
             String orgname = arguments.get(0);
-            Map<String, Map<String, String > > sections = AstraRcParser.load().getSections();
+            Map<String, Map<String, String > > sections = AstraRc.load().getSections();
             Map<String, String> section = sections.get(orgname);
             if (section == null) {
                 Out.error("Organization name not found.");
             } else {
                 String token = section.get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
-                AstraRcParser.save(AstraRcParser.ASTRARC_DEFAULT, 
+                AstraRc.save(AstraRc.ASTRARC_DEFAULT, 
                         AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, token);
                 
                 Out.success("Configuration has been updated\n");
-                new ShowConfigCommand().run();
+                new ShowConfigsCommand().run();
             }
         }
     }

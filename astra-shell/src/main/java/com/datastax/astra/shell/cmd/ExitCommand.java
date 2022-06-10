@@ -10,7 +10,7 @@ import com.github.rvesse.airline.annotations.Command;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "exit", description = "Exit properly from the Shell.")
+@Command(name = "exit", description = "Exit program.")
 public class ExitCommand implements Runnable {
 
     /** {@inheritDoc} */

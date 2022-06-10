@@ -28,7 +28,7 @@ public class ShowRolesCommand extends BaseCommand<ShowRolesCommand> {
         sht.getColumnSize().put("Role Id", 37);
         sht.getColumnSize().put("Role Name", 20);
         sht.getColumnSize().put("Description", 20);
-        ShellContext.apiDevopsOrganizations()
+        ShellContext.getApiDevopsOrganizations()
                     .roles().forEach(role -> {
          Map <String, String> rf = new HashMap<>();
          rf.put("Role Id", role.getId());

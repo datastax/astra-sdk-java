@@ -2,6 +2,7 @@ package com.datastax.astra.shell.cmd.db;
 
 import static com.datastax.astra.shell.cmd.db.DatabaseCommandUtils.retrieveDatabaseClient;
 
+import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.jansi.Out;
 import com.github.rvesse.airline.annotations.Arguments;
@@ -9,35 +10,27 @@ import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
 
 /**
- * Delete a DB is exist
+ * Make the db part of the context and the prompt
  *
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(
-    name = DatabaseCommandUtils.DB, 
-    description = "Delete an existing database")
-public class DeleteDatabaseCommand extends BaseCommand<DeleteDatabaseCommand> {
-    
-    /**
-     * Synonyms: show dbs | databases
-     */
-    @Command(
-        name = DatabaseCommandUtils.DATABASE, 
-        description = "Delete an existing database")
-    public static final class DeleteDatabaseCommandAlias1 extends DeleteDatabaseCommand {}
-    
+        name = DatabaseCommandUtils.DB, 
+        description = "Scope a database")
+public class UseDatabaseCommand extends BaseCommand<UseDatabaseCommand> {
     
     @Required
     @Arguments(title = "DB", description = "Database name or identifier")
     public String databaseId;
     
     /** {@inheritDoc} */
+    @Override
     public void execute() {
         retrieveDatabaseClient(databaseId).ifPresent(dbClient -> {
-            dbClient.delete();
-            Out.info("Deleting Database " + databaseId + " (async)");
-            Out.info("Use 'show dbs' or 'show db <dbId>' to see status");
+            ShellContext.getInstance().useDatabase(dbClient.find().get());
+            Out.info("Database '" + databaseId + "' is now selected with region '" + ShellContext.getInstance().getDatabaseRegion() + "'");
         });
     }
-    
 }
+
+  

@@ -167,8 +167,18 @@ public class Out {
         println(value);
     }
     
+   
     /**
-     * OUTPUT
+     * Show text in the console.
+     * 
+     * @param text
+     *      content of the message
+     * @param bold
+     *      text weight
+     * @param size
+     *      text size
+     * @param color
+     *      text color
      */
     public static void print(String text,  boolean bold, Optional<Integer> size, TextColor color) {
         TextStyle att = bold ? TextStyle.BOLD : TextStyle.CLEAR;
@@ -193,7 +203,8 @@ public class Out {
      *       text to be displayed
      */
     public static void error(String text) {
-        println("[ERROR]" + text, TextColor.RED);
+        print("[ERROR] - ", TextColor.RED);
+        System.out.println(text);
     }
     
     /**
@@ -203,7 +214,8 @@ public class Out {
      *       text to be displayed
      */
     public static void warning(String text) {
-        println("[WARN ] " + text, TextColor.YELLOW);
+        print("[WARN ] - ", TextColor.YELLOW);
+        System.out.println(text);
     }
     
     /**
@@ -213,7 +225,8 @@ public class Out {
      *      text to show in success
      */
     public static void success(String text) {
-        println("[ OK  ] " + text, TextColor.GREEN);
+        print("[ OK ] - ", TextColor.GREEN);
+        System.out.println(text);
     }
     
     /**
@@ -223,8 +236,8 @@ public class Out {
      *      text to show in success
      */
     public static void info(String text) {
-        println("[INFO ] " + text, TextColor.CYAN);
+        print("[INFO ] - ", TextColor.CYAN);
+        System.out.println(text);
     }
-    
     
 }
