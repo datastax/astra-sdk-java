@@ -1,9 +1,10 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.iam;
 
 import java.util.Optional;
 
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellPrinter;

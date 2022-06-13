@@ -1,9 +1,10 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.iam;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;

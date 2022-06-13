@@ -1,8 +1,6 @@
 package com.datastax.astra.sdk.config;
 
-import static com.datastax.astra.sdk.utils.AstraRc.readRcVariable;
 import static com.datastax.stargate.sdk.utils.Assert.hasLength;
-import static com.datastax.stargate.sdk.utils.Assert.notNull;
 import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
 
 import java.io.File;
@@ -924,20 +922,21 @@ public class AstraClientConfig implements Serializable {
         stargateConfig = new StargateClientConfig();
         
         // Loading ~/.astrarc section default if present
-        if (AstraRc.exists()) {
-            loadFromAstraRc(AstraRc.load(), AstraRc.ASTRARC_DEFAULT);
+        if (AstraRc.isDefaultConfigFileExists()) {
+            loadFromAstraRc();
         }
         
         // Authentication
         readEnvVariable(ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
         readEnvVariable(ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
         readEnvVariable(ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
-        readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withCqlSecureConnectBundleFolder);
         
         // Database
         readEnvVariable(ASTRA_DB_ID).ifPresent(this::withDatabaseId);
         readEnvVariable(ASTRA_DB_REGION).ifPresent(this::withDatabaseRegion);
         readEnvVariable(ASTRA_DB_KEYSPACE).ifPresent(this::withCqlKeyspace);
+        readEnvVariable(ASTRA_DB_SCB_FOLDER).ifPresent(this::withCqlSecureConnectBundleFolder);
+        
     }
     
     // ------------------------------------------------
@@ -947,20 +946,19 @@ public class AstraClientConfig implements Serializable {
     /**
      * Some settings can be loaded from ~/.astrarc in you machine.
      * 
-     * @param arc AstraRc
-     * @param sectionName String
      * @return AstraClientBuilder
+     *      configuration
      */
-    public AstraClientConfig loadFromAstraRc(AstraRc arc, String sectionName) {
-        notNull(arc, "AstraRc");
-        hasLength(sectionName, "sectionName");
-        readRcVariable(arc, ASTRA_DB_ID,            sectionName).ifPresent(this::withDatabaseId);
-        readRcVariable(arc, ASTRA_DB_REGION,        sectionName).ifPresent(this::withDatabaseRegion);
-        readRcVariable(arc, ASTRA_DB_APPLICATION_TOKEN, sectionName).ifPresent(this::withToken);
-        readRcVariable(arc, ASTRA_DB_CLIENT_ID,     sectionName).ifPresent(this::withClientId);
-        readRcVariable(arc, ASTRA_DB_CLIENT_SECRET, sectionName).ifPresent(this::withClientSecret);
-        readRcVariable(arc, ASTRA_DB_KEYSPACE,      sectionName).ifPresent(this::withCqlKeyspace);
-        readRcVariable(arc, ASTRA_DB_SCB_FOLDER,    sectionName).ifPresent(this::withCqlSecureConnectBundleFolder);
+    public AstraClientConfig loadFromAstraRc() {
+        AstraRc arc = new AstraRc();
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_ID).ifPresent(this::withDatabaseId);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_ID).ifPresent(this::withDatabaseId);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_REGION).ifPresent(this::withDatabaseRegion);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_KEYSPACE).ifPresent(this::withCqlKeyspace);
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_SCB_FOLDER).ifPresent(this::withCqlSecureConnectBundleFolder);
         return this;
     }
     
@@ -972,11 +970,5 @@ public class AstraClientConfig implements Serializable {
     public AstraClient build() {
         return new AstraClient(this);
     }
-
-   
-
     
-
-   
-
 }

@@ -1,11 +1,11 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.utils.AstraRc;
@@ -13,26 +13,29 @@ import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
 
-@Command(name = "configs", description = "Show a list of configurations availables")
-public class ShowConfigsCommand implements Runnable {
+@Command(name = "list", description = "Show the list of available configurations.")
+public class ConfigListCommand extends AbstractConfigCommand {
     
+    /**
+     * Title of the table.
+     */
+    private static final String COLUMN_TITLE = "Configuration Sections";
+   
     /** {@inheritDoc} */
-    @Override
     public void run() {
-        Map<String, Map<String, String>> sections = AstraRc.load().getSections();
+        Map<String, Map<String, String>> sections = getAstraRc().getSections();
         List<String> orgs = listOrganizations(sections);
         System.out.println("There are " + orgs.size() + " section(s) in your configuration file.");
         ShellTable sht = new ShellTable();
         sht.setColumnTitlesColor(TextColor.YELLOW);
         sht.setCellColor(TextColor.WHITE);
         sht.setTableColor(TextColor.CYAN);
-        sht.getColumnTitlesNames().add("Configuration Sections");
-        sht.getColumnSize().put("Organization Name", 40);
+        sht.getColumnTitlesNames().add(COLUMN_TITLE);
+        sht.getColumnSize().put(COLUMN_TITLE, 40);
         for (String org : orgs) {
             Map <String, String> rf = new HashMap<>();
-            rf.put("Organization Name", org);
+            rf.put(COLUMN_TITLE, org);
             sht.getCellValues().add(rf);
-            
         }
         sht.show();
     }
@@ -84,7 +87,5 @@ public class ShowConfigsCommand implements Runnable {
         }
         return returnedList;
     }
-
-   
     
 }

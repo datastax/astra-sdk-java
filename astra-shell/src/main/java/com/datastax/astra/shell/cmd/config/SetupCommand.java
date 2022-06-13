@@ -1,15 +1,14 @@
-package com.datastax.astra.shell.cmd;
+package com.datastax.astra.shell.cmd.config;
 
 import java.util.Scanner;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.organizations.domain.Organization;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
 import com.datastax.astra.shell.jansi.Out;
 import com.datastax.astra.shell.jansi.TextColor;
-import com.datastax.astra.shell.utils.CommandLineUtils;
 import com.datastax.astra.shell.utils.ShellPrinter;
+import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -17,9 +16,16 @@ import com.github.rvesse.airline.annotations.Command;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "setup", description = "Initialize config file in ~/.astrarc")
-public class SetupCommand implements Runnable {
-
+@Command(
+   name = "setup", 
+   description = "Intialize configuration")
+public class SetupCommand extends AbstractConfigCommand implements Runnable {
+    
+    @Arguments(
+       title = "section", 
+       description = "Section in configuration file to as as defulat.")
+    protected String sectionName;
+    
     /** {@inheritDoc} */
     @Override
     public void run() {
@@ -27,6 +33,7 @@ public class SetupCommand implements Runnable {
         System.out.println("+-------------------------------+");
         System.out.println("+-           Setup.            -+");
         System.out.println("+-------------------------------+");
+        
         System.out.println("\nWelcome to Astra Shell/CLI. We will guide you to start.");
         
         Out.println("\nHow it works ?\n", TextColor.CYAN);
@@ -49,13 +56,10 @@ public class SetupCommand implements Runnable {
         Out.reset();
         
         Out.println("\nGetting Started\n", TextColor.CYAN);
-        System.out.println("You need to get an Astra token, here is the procedure to create one :\nhttps://awesome-astra.github.io/docs/pages/astra/create-token/");
+        System.out.println("You need an Astra token, here is the procedure to create one :\nhttps://awesome-astra.github.io/docs/pages/astra/create-token/");
         
         System.out.println("\nWe will now create a section. "
                 + "(if first, will be set as default).");
-        
-        AstraRc.createIfNotExists();
-        AstraRc existingConfiguration = AstraRc.load();
         
         String token = null;
         try(Scanner scanner = new Scanner(System.in)) {
@@ -67,46 +71,29 @@ public class SetupCommand implements Runnable {
                     Out.error("Your token should start with 'AstraCS:'");
                 } else {
                     try {
-                        Organization o = AstraClient
-                                .builder()
-                                .withToken(token)
-                                .build()
-                                .apiDevopsOrganizations()
-                                .organization();
+                        AstraClient.builder()
+                            .withToken(token)
+                            .build()
+                            .apiDevopsOrganizations()
+                            .organization();
                         valid_token = true;
-                        Out.success("Valid Token, related organization is '" + o.getName() + "'");
-                        System.out.println("");
-                        String sectionName = o.getName();
-                        if (CommandLineUtils.askForConfirmation(scanner, 
-                                " - Do you want to set custom section name (current: " + sectionName + ")")) {
-                            Out.print("Enter a name for this config : ", TextColor.CYAN);
-                            sectionName = scanner.nextLine();
-                        }
-                        if (existingConfiguration.getSections().isEmpty()) {
-                            AstraRc.save(AstraRc.ASTRARC_DEFAULT, 
-                                    AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, token);
-                        }
-                        AstraRc.save(sectionName, AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, token);
-                        Out.success("Configuration Saved.\n");
+                        ConfigCreateCommand ccc = new ConfigCreateCommand();
+                        ccc.token = token;
+                        ccc.run();
+                        
                     } catch(IllegalArgumentException iexo) {
-                        Out.error("Your token seems invalid, it was not possible to connect to Astra."); 
+                        Out.error("Your token seems invalid, it was not possible to connect to Astra.");
                     }
                 }
             }
            
-            new ShowConfigsCommand().run();
+            ShowConfigsCommand configs = new ShowConfigsCommand();
+            configs.astraRc         = this.astraRc;
+            configs.configFileName  = this.configFileName;
+            configs.run();
             System.out.println("");
             
-            if (CommandLineUtils.askForConfirmation(scanner, 
-                    "Do you want it to be your default organization")) {
-                    AstraRc.save(AstraRc.ASTRARC_DEFAULT, 
-                            AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN, token);
-            }
-            
-            System.out.println("");
-            new ShowConfigsCommand().run();
-            
-            System.out.println("\nTo change default organization: astra default-org <orgName>");
+            System.out.println("\nTo change default organization: astra config default <section>");
         }
     }
     
