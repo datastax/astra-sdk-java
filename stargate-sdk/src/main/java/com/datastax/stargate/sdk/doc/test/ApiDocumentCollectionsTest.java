@@ -123,19 +123,21 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
     @Order(5)
     @DisplayName("05-Assign a Json Schema")
     public void e_should_set_schema() {
+        LOGGER.info("should_set_schema");
         // Given
         String randomCollection = UUID.randomUUID().toString().replaceAll("-", "");
         CollectionClient cc = nsClient.collection(randomCollection);
         cc.create();
         Assertions.assertTrue(cc.exist());
         // Then I can add a person with negative age
-        cc.document("doc1").upsert(new Person("first", "last", -20, null));
+        cc.document("doc1").upsert(new Person("first", "last", 20, null));
         // When Assign Schema
         Assertions.assertFalse(cc.getSchema().isPresent());
         cc.setSchema(TEST_JSON_SCHEMA);
         // Then a schema is present
         Assertions.assertTrue(cc.getSchema().isPresent());
         // And validation should be enabled
+        LOGGER.info("negative_should_rise_error");
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             cc.document("doc1").upsert(new Person("first", "last", -20, null));
         });

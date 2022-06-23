@@ -90,7 +90,7 @@ public class ApiDevopsStreamingAstraTest {
         StreamingClient sc  = new StreamingClient(client.getToken().get());
         System.out.println("- Create a tenant");
         // Giving
-        tmpTenant = "sdk_java_junit_" + UUID.randomUUID().toString().substring(0,7);
+        tmpTenant = "sdk-java-junit-" + UUID.randomUUID().toString().substring(0,7);
         // When
         Assert.assertFalse(sc.tenant(tmpTenant).exist());
         LOGGER.info("Tenant " + tmpTenant + " does not exist");

@@ -86,7 +86,6 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
     @Test
     @Order(3)
     @DisplayName("03-should-update-a-row")
-    @SuppressWarnings("unchecked")
     public void c_should_update_row()
     throws InterruptedException {
         // Given
@@ -108,15 +107,16 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
                 .key("Sci-Fi",1990, "line_update")
                 .findPage(QueryWithKey.builder().build());
         Assertions.assertTrue(rrp.getResults().size() == 1);
-        Map<String, Object > map = (Map<String, Object>) rrp.getResults().get(0).get("upload");
-        Assertions.assertEquals(130000000, map.get("nano"));
+        // When you read a long you get back a String
+        Map<String, Object > map = (Map<String, Object>) rrp.getResults().get(0);
+        Assertions.assertEquals("line_update", map.get("title"));
+        Assertions.assertEquals(1990, map.get("year"));
     }
     
    
     @Test
     @Order(4)
     @DisplayName("04-should-replace-a-row")
-    @SuppressWarnings("unchecked")
     public void d_should_replace_row()
     throws InterruptedException {
         // Given
@@ -136,8 +136,9 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
                 .key("Sci-Fi",1990, "line_update")
                 .findPage(QueryWithKey.builder().build());
         Assertions.assertTrue(rrp.getResults().size() == 1);
-        Map<String, Object > map = (Map<String, Object>) rrp.getResults().get(0).get("upload");
-        Assertions.assertEquals(130000000, map.get("nano"));
+        Map<String, Object > map = (Map<String, Object>) rrp.getResults().get(0);
+        Assertions.assertEquals("line_update", map.get("title"));
+        Assertions.assertEquals(1990, map.get("year"));
     }
     
     @Test
