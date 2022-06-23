@@ -1,7 +1,0 @@
-#!/bin/bash
-# myapp
-
-source ./completions.bash
-
-java -jar ../../../target/astra-shell-0.3.1-SNAPSHOT-shaded.jar "$@"
-

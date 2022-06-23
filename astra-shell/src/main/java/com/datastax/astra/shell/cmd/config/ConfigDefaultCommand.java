@@ -1,13 +1,13 @@
 package com.datastax.astra.shell.cmd.config;
 
 import com.datastax.astra.sdk.utils.AstraRc;
-import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
 
 /**
- * Class to TODO
+ * Class to set a section as default in config file
  *
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -16,6 +16,9 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
     description="Set a section as default")
 public class ConfigDefaultCommand extends AbstractConfigCommand implements Runnable {
    
+    /**
+     * Section in configuration file to as as default.
+     */
     @Required
     @Arguments(
        title = "section", 
@@ -25,11 +28,11 @@ public class ConfigDefaultCommand extends AbstractConfigCommand implements Runna
     /** {@inheritDoc} */
     public void run() {
         if (!getAstraRc().isSectionExists(sectionName)) {
-            Out.error("Section '" + sectionName + "' has not been found in config.");
+            LoggerShell.error("Section '" + sectionName + "' has not been found in config.");
         } else {
             getAstraRc().copySection(sectionName, AstraRc.ASTRARC_DEFAULT);
             getAstraRc().save();
-            Out.success("Section has been copied");
+            LoggerShell.success("Section has been copied");
         }
     }
 }

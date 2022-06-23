@@ -4,7 +4,7 @@ import static com.datastax.astra.shell.cmd.db.DatabaseCommandUtils.retrieveDatab
 
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -28,7 +28,7 @@ public class UseDatabaseCommand extends BaseCommand<UseDatabaseCommand> {
     public void execute() {
         retrieveDatabaseClient(databaseId).ifPresent(dbClient -> {
             ShellContext.getInstance().useDatabase(dbClient.find().get());
-            Out.info("Database '" + databaseId + "' is now selected with region '" + ShellContext.getInstance().getDatabaseRegion() + "'");
+            LoggerShell.info("Database '" + databaseId + "' is now selected with region '" + ShellContext.getInstance().getDatabaseRegion() + "'");
         });
     }
 }

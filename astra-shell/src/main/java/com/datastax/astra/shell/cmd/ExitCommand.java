@@ -1,8 +1,9 @@
 package com.datastax.astra.shell.cmd;
 
+import org.fusesource.jansi.Ansi;
+
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -13,10 +14,16 @@ import com.github.rvesse.airline.annotations.Command;
 @Command(name = "exit", description = "Exit program.")
 public class ExitCommand implements Runnable {
 
+    /**
+     * Default constructor.
+     */
+    public ExitCommand() {
+    }
+    
     /** {@inheritDoc} */
     @Override
     public void run() {
-        Out.println("Bye", TextColor.CYAN);
+        LoggerShell.println("Bye", Ansi.Color.CYAN);
         System.exit(ExitCode.SUCCESS.getCode());
     }
 

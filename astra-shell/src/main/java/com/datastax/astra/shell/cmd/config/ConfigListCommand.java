@@ -7,12 +7,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.fusesource.jansi.Ansi;
+
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.utils.AstraRc;
-import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
 
+/**
+ * Show the list of available configurations.
+ * 
+ * astra list XXX
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ *
+ */
 @Command(name = "list", description = "Show the list of available configurations.")
 public class ConfigListCommand extends AbstractConfigCommand {
     
@@ -21,15 +30,22 @@ public class ConfigListCommand extends AbstractConfigCommand {
      */
     private static final String COLUMN_TITLE = "Configuration Sections";
    
+    /**
+     * Constructor to TODO
+     */
+    public ConfigListCommand() {
+        super();
+    }
+    
     /** {@inheritDoc} */
     public void run() {
         Map<String, Map<String, String>> sections = getAstraRc().getSections();
         List<String> orgs = listOrganizations(sections);
         System.out.println("There are " + orgs.size() + " section(s) in your configuration file.");
         ShellTable sht = new ShellTable();
-        sht.setColumnTitlesColor(TextColor.YELLOW);
-        sht.setCellColor(TextColor.WHITE);
-        sht.setTableColor(TextColor.CYAN);
+        sht.setColumnTitlesColor(Ansi.Color.YELLOW);
+        sht.setCellColor(Ansi.Color.WHITE);
+        sht.setTableColor(Ansi.Color.CYAN);
         sht.getColumnTitlesNames().add(COLUMN_TITLE);
         sht.getColumnSize().put(COLUMN_TITLE, 40);
         for (String org : orgs) {

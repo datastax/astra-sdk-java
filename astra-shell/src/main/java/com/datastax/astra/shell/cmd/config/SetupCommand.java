@@ -2,11 +2,12 @@ package com.datastax.astra.shell.cmd.config;
 
 import java.util.Scanner;
 
+import org.fusesource.jansi.Ansi;
+
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
@@ -21,6 +22,9 @@ import com.github.rvesse.airline.annotations.Command;
    description = "Intialize configuration")
 public class SetupCommand extends AbstractConfigCommand implements Runnable {
     
+    /**
+     * Section in configuration file to as as default.
+     */
     @Arguments(
        title = "section", 
        description = "Section in configuration file to as as defulat.")
@@ -36,13 +40,12 @@ public class SetupCommand extends AbstractConfigCommand implements Runnable {
         
         System.out.println("\nWelcome to Astra Shell/CLI. We will guide you to start.");
         
-        Out.println("\nHow it works ?\n", TextColor.CYAN);
+        LoggerShell.println("\nHow it works ?\n", Ansi.Color.CYAN);
         System.out.println("Astra Cli and shell (interactive) leverage a configuration file (~/.astrarc) avoiding users to have to enter credentials each time. "
                 + "The file is divided in sections identified by a name. If user does not specify section name the [default] is used."
                 + " For each section, key 'ASTRA_DB_APPLICATION_TOKEN' is mandatory: it is the authentication token "
                 + " used to invoke Astra Apis. More keys can be added to change scope or settings. Here is a sample file:");
         
-        Out.color(TextColor.YELLOW);
         System.out.println("\n[default]");
         System.out.println(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + "=AstraCS:aaaaa......");
         System.out.println("\n[my_dev_env]");
@@ -53,9 +56,8 @@ public class SetupCommand extends AbstractConfigCommand implements Runnable {
         System.out.println(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + "=AstraCS:12345......");
         System.out.println(AstraClientConfig.ASTRA_DB_ID + "=924e6ab3-eeb5-45e1-9861-5abcdc62f34444");
         System.out.println(AstraClientConfig.ASTRA_DB_REGION + "=europe-west-1");
-        Out.reset();
         
-        Out.println("\nGetting Started\n", TextColor.CYAN);
+        LoggerShell.println("\nGetting Started\n", Ansi.Color.CYAN);
         System.out.println("You need an Astra token, here is the procedure to create one :\nhttps://awesome-astra.github.io/docs/pages/astra/create-token/");
         
         System.out.println("\nWe will now create a section. "
@@ -65,10 +67,10 @@ public class SetupCommand extends AbstractConfigCommand implements Runnable {
         try(Scanner scanner = new Scanner(System.in)) {
             boolean valid_token = false;
             while (!valid_token) {
-                Out.print("\n - Enter a token (eg: AstraCS...) : ", TextColor.CYAN);
+                LoggerShell.print("\n - Enter a token (eg: AstraCS...) : ", Ansi.Color.CYAN);
                 token = scanner.nextLine();
                 if (!token.startsWith("AstraCS:")) {
-                    Out.error("Your token should start with 'AstraCS:'");
+                    LoggerShell.error("Your token should start with 'AstraCS:'");
                 } else {
                     try {
                         AstraClient.builder()
@@ -82,7 +84,7 @@ public class SetupCommand extends AbstractConfigCommand implements Runnable {
                         ccc.run();
                         
                     } catch(IllegalArgumentException iexo) {
-                        Out.error("Your token seems invalid, it was not possible to connect to Astra.");
+                        LoggerShell.error("Your token seems invalid, it was not possible to connect to Astra.");
                     }
                 }
             }

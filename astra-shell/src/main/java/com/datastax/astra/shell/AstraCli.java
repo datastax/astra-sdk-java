@@ -1,5 +1,7 @@
 package com.datastax.astra.shell;
 
+import org.fusesource.jansi.AnsiConsole;
+
 import com.datastax.astra.shell.cmd.HelpCommand;
 import com.datastax.astra.shell.cmd.config.ConfigCreateCommand;
 import com.datastax.astra.shell.cmd.config.ConfigDefaultCommand;
@@ -11,6 +13,7 @@ import com.datastax.astra.shell.cmd.db.CreateDatabaseCommand;
 import com.datastax.astra.shell.cmd.db.CreateDatabaseCommand.CreateDatabaseCommandAlias1;
 import com.datastax.astra.shell.cmd.db.DeleteDatabaseCommand;
 import com.datastax.astra.shell.cmd.db.DeleteDatabaseCommand.DeleteDatabaseCommandAlias1;
+import com.datastax.astra.shell.cmd.db.ShowDatabaseCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand.ShowDatabasesCommandBis;
 import com.datastax.astra.shell.cmd.iam.ShowRoleCommand;
@@ -20,8 +23,7 @@ import com.datastax.astra.shell.cmd.iam.ShowUsersCommands;
 import com.datastax.astra.shell.cmd.shell.ShellCommand;
 import com.datastax.astra.shell.cmd.show.ShowConfigCommand;
 import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
 import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException;
@@ -64,6 +66,7 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
        name = "list", description = "Display list of entities",
        commands = {
          // List Db in the organization (dbs | databases)
+         ShowDatabaseCommand.class,
          ShowDatabasesCommand.class, 
          ShowDatabasesCommandBis.class, 
          ShowRolesCommand.class, 
@@ -112,15 +115,20 @@ public class AstraCli {
         
         try {
             
+            // Enable Colored outputs
+            AnsiConsole.systemInstall();
+            
             // Command Line Interface
             new com.github.rvesse.airline.Cli<Runnable>(AstraCli.class)
                 .parse(args)  // Find the processor for the command 
                 .run();       // Run the command
             
         } catch(ParseArgumentsUnexpectedException ex) {
-            Out.println("Invalid command: " + ex.getMessage(), TextColor.RED);
+            LoggerShell.error("Invalid command: " + ex.getMessage());
+            ex.printStackTrace();
         } catch(Exception e) {
-            Out.println("Execution error:" + e.getMessage(), TextColor.RED);
+            LoggerShell.error("Execution error:" + e.getMessage());
+            e.printStackTrace();
         }
     }
     

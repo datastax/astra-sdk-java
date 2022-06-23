@@ -1,0 +1,28 @@
+version: '2'
+services:
+  stargate:
+    image: stargateio/stargate-4_0:v1.0.58
+    ports:
+      #CQL
+      - 9042:9042
+      #graphQL
+      - 8080:8080
+      #Auth
+      - 8081:8081
+      #REST
+      - 8082:8082
+      #Metrics
+      - 8084:8084
+      #gRPC
+      - 8090:8090
+    mem_limit: 2G
+    environment:
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_SEEDS=stargate
+      - CASSANDRA_CLUSTER_NAME=stargate
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - JAVA_OPTS="-Xmx2G"
+      - CLUSTER_VERSION=4.0
+      - DEVELOPER_MODE=true
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=1024M

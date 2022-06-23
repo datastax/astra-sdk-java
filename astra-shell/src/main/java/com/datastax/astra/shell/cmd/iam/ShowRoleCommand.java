@@ -2,11 +2,11 @@ package com.datastax.astra.shell.cmd.iam;
 
 import java.util.Optional;
 
+import org.fusesource.jansi.Ansi;
+
 import com.datastax.astra.sdk.organizations.domain.Role;
-import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Arguments;
@@ -30,19 +30,19 @@ public class ShowRoleCommand extends BaseCommand<ShowRoleCommand> {
     public void execute() {
         Optional<Role> role1 = Optional.empty();
         try {
-            role1 = ShellContext.getApiDevopsOrganizations().findRoleByName(role);
+            role1 = getApiDevopsOrganizations().findRoleByName(role);
             if (!role1.isPresent()) {
-                role1 = getApiDevopsOrg()
+                role1 = getApiDevopsOrganizations()
                          .role(role)
                          .find();
             }
             if (!role1.isPresent()) {
-                Out.error("Role '" + role + "' has not been found.");
+                LoggerShell.error("Role '" + role + "' has not been found.");
             } else {
                 printRole(role1.get());
             }
         } catch(RuntimeException e) {
-             Out.error("Cannot show role, technical error " + e.getMessage());
+             LoggerShell.error("Cannot show role, technical error " + e.getMessage());
         }
     }
     
@@ -54,9 +54,6 @@ public class ShowRoleCommand extends BaseCommand<ShowRoleCommand> {
      */
     void printRole(Role r) {
         ShellTable sht = new ShellTable();
-        sht.setColumnTitlesColor(TextColor.YELLOW);
-        sht.setCellColor(TextColor.WHITE);
-        sht.setTableColor(TextColor.CYAN);
         sht.getColumnSize().put("Name", 15);
         sht.getColumnSize().put("Value", 40);
         sht.getColumnTitlesNames().add("Name");
@@ -65,10 +62,10 @@ public class ShowRoleCommand extends BaseCommand<ShowRoleCommand> {
         sht.getCellValues().add(ShellTable.addProperty("Name", r.getName()));
         sht.getCellValues().add(ShellTable.addProperty("Description", r.getPolicy().getDescription()));
         sht.getCellValues().add(ShellTable.addProperty("Effect", r.getPolicy().getEffect()));
-        Out.println("\nSummary:", TextColor.MAGENTA);
+        LoggerShell.println("\nSummary:", Ansi.Color.MAGENTA);
         sht.show();
-        Out.println("\nDetails (json):", TextColor.MAGENTA);
-        ShellPrinter.printObjectAsJson(r, TextColor.YELLOW);
+        LoggerShell.println("\nDetails (json):", Ansi.Color.MAGENTA);
+        ShellPrinter.printObjectAsJson(r, Ansi.Color.YELLOW);
     }
     
 }

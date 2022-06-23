@@ -2,14 +2,12 @@ package com.datastax.astra.shell;
 
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
-import java.util.Optional;
-
-import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.astra.sdk.streaming.StreamingClient;
+import com.datastax.astra.shell.utils.LoggerShell;
 
 /**
  * Hold the context of CLI to know where we are.
@@ -41,16 +39,6 @@ public class ShellContext {
         return _instance;
     }
     
-    /**
-     * Access Devops Api Organization.
-     * 
-     * @return
-     *      api organization.
-     */
-    public static OrganizationsClient getApiDevopsOrganizations() {
-        return getInstance().getAstraClient().apiDevopsOrganizations();
-    }
-    
     /** Current token in use */
     private String token;
     
@@ -63,8 +51,14 @@ public class ShellContext {
     /** Database informations. */
     private String databaseRegion;
     
-    /** Main Client. */
-    private AstraClient astraClient;
+    /** Hold a reference for the Api Devops. */
+    private DatabasesClient apiDevopsDatabases;
+    
+    /** Hold a reference for the Api Devops. */
+    private OrganizationsClient apiDevopsOrganizations;
+    
+    /** Hold a reference for the Api Devops. */
+    private StreamingClient apiDevopsStreaming;
     
     /**
      * Based on a token will initialize the connection.
@@ -77,20 +71,17 @@ public class ShellContext {
         // Persist Token
         this.token = token;
         
-        // Initialize client
-        this.astraClient = AstraClient
-                .builder()
-                .withToken(token)
-                .build();
+        // Initializing Http Clients
+        apiDevopsOrganizations  = new OrganizationsClient(token);
+        apiDevopsDatabases      = new DatabasesClient(token);  
+        apiDevopsStreaming      = new StreamingClient(token);
         
         // Use client to get Org infos
-        this.organization = astraClient
-                .apiDevopsOrganizations()
-                .organization();
+        this.organization = apiDevopsOrganizations.organization();
         
         // Validation of token
         if (null == getOrganization().getName()) {
-            Out.error("Cannot connect to Astra: Invalid token.");
+            LoggerShell.error("Cannot connect to Astra: Invalid token.");
             INVALID_PARAMETER.exit();
         }
         
@@ -125,17 +116,7 @@ public class ShellContext {
     public boolean isInitialized() {
         return getToken() != null;
     }
-    
-    /**
-     * Syntaxi sugar.
-     * 
-     * @return
-     *      cql session
-     */
-    public Optional<CqlSession> getCqlSession() {
-        return getAstraClient().getStargateClient().cqlSession();
-    }
-
+   
     /**
      * Getter accessor for attribute 'token'.
      *
@@ -144,16 +125,6 @@ public class ShellContext {
      */
     public String getToken() {
         return token;
-    }
-
-    /**
-     * Getter accessor for attribute 'astreClient'.
-     *
-     * @return
-     *       current value of 'astraClient'
-     */
-    public AstraClient getAstraClient() {
-        return astraClient;
     }
 
     /**
@@ -192,6 +163,63 @@ public class ShellContext {
     public void exitDatabase() {
         this.database = null;
         this.databaseRegion = null;
+    }
+
+    /**
+     * Getter accessor for attribute 'apiDevopsDatabases'.
+     *
+     * @return
+     *       current value of 'apiDevopsDatabases'
+     */
+    public DatabasesClient getApiDevopsDatabases() {
+        return apiDevopsDatabases;
+    }
+
+    /**
+     * Setter accessor for attribute 'apiDevopsDatabases'.
+     * @param apiDevopsDatabases
+     * 		new value for 'apiDevopsDatabases '
+     */
+    public void setApiDevopsDatabases(DatabasesClient apiDevopsDatabases) {
+        this.apiDevopsDatabases = apiDevopsDatabases;
+    }
+
+    /**
+     * Getter accessor for attribute 'apiDevopsStreaming'.
+     *
+     * @return
+     *       current value of 'apiDevopsStreaming'
+     */
+    public StreamingClient getApiDevopsStreaming() {
+        return apiDevopsStreaming;
+    }
+
+    /**
+     * Setter accessor for attribute 'apiDevopsStreaming'.
+     * @param apiDevopsStreaming
+     * 		new value for 'apiDevopsStreaming '
+     */
+    public void setApiDevopsStreaming(StreamingClient apiDevopsStreaming) {
+        this.apiDevopsStreaming = apiDevopsStreaming;
+    }
+
+    /**
+     * Setter accessor for attribute 'apiDevopsOrganizations'.
+     * @param apiDevopsOrganizations
+     * 		new value for 'apiDevopsOrganizations '
+     */
+    public void setApiDevopsOrganizations(OrganizationsClient apiDevopsOrganizations) {
+        this.apiDevopsOrganizations = apiDevopsOrganizations;
+    }
+
+    /**
+     * Getter accessor for attribute 'apiDevopsOrganizations'.
+     *
+     * @return
+     *       current value of 'apiDevopsOrganizations'
+     */
+    public OrganizationsClient getApiDevopsOrganizations() {
+        return apiDevopsOrganizations;
     }
     
 }

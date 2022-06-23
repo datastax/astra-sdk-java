@@ -34,7 +34,7 @@ public class ShowDatabasesCommand extends BaseCommand<ShowDatabasesCommand> {
         sht.addColumn("Status",  15);
 
         // Fill data
-        getApiDevopsDb()
+        getApiDevopsDatabases()
                 .databasesNonTerminated()
                 .forEach(db -> {
             Map <String, String> rf = new HashMap<>();

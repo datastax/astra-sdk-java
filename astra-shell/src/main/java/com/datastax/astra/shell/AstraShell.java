@@ -4,17 +4,17 @@ import com.datastax.astra.shell.cmd.ExitCommand;
 import com.datastax.astra.shell.cmd.HelpCommand;
 import com.datastax.astra.shell.cmd.QuitCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
-import com.datastax.astra.shell.cmd.db.UseDatabaseCommand;
 import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand.ShowDatabasesCommandBis;
+import com.datastax.astra.shell.cmd.db.UseDatabaseCommand;
 import com.datastax.astra.shell.cmd.iam.ShowRoleCommand;
 import com.datastax.astra.shell.cmd.iam.ShowRolesCommand;
 import com.datastax.astra.shell.cmd.iam.ShowUserCommand;
 import com.datastax.astra.shell.cmd.iam.ShowUsersCommands;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
+import com.datastax.astra.shell.cmd.shell.CqlShCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
 import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
 import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException;
@@ -34,7 +34,8 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     EmptyCommand.class,
     HelpCommand.class,
     ExitCommand.class,
-    QuitCommand.class
+    QuitCommand.class,
+    CqlShCommand.class
 },
   groups = {
           @Group(
@@ -56,22 +57,23 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     })
 public class AstraShell {
     
+    /**
+     * Main program for the interactive Shell.
+     * 
+     * @param args
+     *      cli arguments
+     */
     public static void main(String[] args) {
-        com.github.rvesse.airline.Cli<Runnable> cli = 
-                new com.github.rvesse.airline.Cli<>(AstraShell.class);
         try {
-            // Parsing
-            Runnable cmd = cli.parse(args);
-            
-            // Interogation failed
-            cmd.run();
+
+            new com.github.rvesse.airline.Cli<Runnable>(AstraShell.class)
+               .parse(args)  // Find the processor for the command 
+               .run();       // Run the command
             
         } catch(ParseArgumentsUnexpectedException ex) {
-            Out.println("Invalid command: " + ex.getMessage(), TextColor.RED);
-            
+            LoggerShell.error("Invalid command: " + ex.getMessage());
         } catch(Exception e) {
-            Out.println("An error occured during exection " + e.getMessage(), TextColor.RED);
-            
+            LoggerShell.error("Execution error:" + e.getMessage());
         }
     }
 

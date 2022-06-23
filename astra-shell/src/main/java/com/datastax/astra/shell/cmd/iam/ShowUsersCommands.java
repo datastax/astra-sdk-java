@@ -3,9 +3,7 @@ package com.datastax.astra.shell.cmd.iam;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.jansi.TextColor;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
 
@@ -16,28 +14,22 @@ import com.github.rvesse.airline.annotations.Command;
  */
 @Command(name = "users", description = "Display the list of users in an organization")
 public class ShowUsersCommands extends BaseCommand<ShowUsersCommands> {
-
+    
+    private static final String USER_ID     = "User Id";
+    private static final String USER_EMAIL  = "User Email";
+    private static final String USER_STATUS = "Status";
     
     /** {@inheritDoc} */
     public void execute() {
         ShellTable sht = new ShellTable();
-        sht.setColumnTitlesColor(TextColor.YELLOW);
-        sht.setCellColor(TextColor.WHITE);
-        sht.setTableColor(TextColor.CYAN);
-        sht.getColumnTitlesNames().add("User Id");
-        sht.getColumnTitlesNames().add("User Email");
-        sht.getColumnTitlesNames().add("Status");
-        sht.getColumnSize().put("User Id", 37);
-        sht.getColumnSize().put("User Email", 20);
-        sht.getColumnSize().put("Status", 20);
-        ShellContext.getInstance()
-                    .getAstraClient()
-                    .apiDevopsOrganizations()
-                    .users().forEach(user -> {
+        sht.addColumn(USER_ID, 37);
+        sht.addColumn(USER_EMAIL, 20);
+        sht.addColumn(USER_STATUS, 20);
+        getApiDevopsOrganizations().users().forEach(user -> {
          Map <String, String> rf = new HashMap<>();
-         rf.put("User Id", user.getUserId());
-         rf.put("User Email", user.getEmail());
-         rf.put("Status", user.getStatus().name());
+         rf.put(USER_ID, user.getUserId());
+         rf.put(USER_EMAIL, user.getEmail());
+         rf.put(USER_STATUS, user.getStatus().name());
          sht.getCellValues().add(rf);
         });
         sht.show();

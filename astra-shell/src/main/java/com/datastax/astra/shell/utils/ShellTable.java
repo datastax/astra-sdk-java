@@ -6,11 +6,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import org.fusesource.jansi.Ansi;
 
 /**
  * Standardize output for tables.
@@ -22,24 +20,52 @@ public class ShellTable implements Serializable {
     /** Serial */
     private static final long serialVersionUID = -2134504321420499395L;
 
-    private TextColor tableColor = TextColor.CYAN;
+    /**
+     * Color of table. 
+     */
+    private Ansi.Color tableColor = Ansi.Color.CYAN;
     
-    private TextColor columnTitlesColor = TextColor.YELLOW;
+    /**
+     * Color of title
+     */
+    private Ansi.Color  columnTitlesColor = Ansi.Color.YELLOW;
 
-    private TextColor cellColor = TextColor.WHITE;
+    /**
+     * Color of cell
+     */
+    private Ansi.Color  cellColor = Ansi.Color.WHITE;
     
-    private TextColor pkColor = TextColor.RED;
+    /**
+     * Color of PK
+     */
+    private Ansi.Color  pkColor = Ansi.Color.RED;
     
+    /**
+     * Title column names
+     */
     private List < String > columnTitlesNames = new ArrayList<>();
     
+    /**
+     * Partition keys columns
+     */
     private Set < String > pkColumns = new HashSet<>();
     
+    /**
+     * Columns sizes
+     */
     private Map < String, Integer > columnSize = new HashMap<>();
     
+    /**
+     * Cell values
+     */
     private List< Map < String, String > > cellValues = new ArrayList<>();
     
     /** Shell Table */
     public ShellTable() {
+        // Astra Shell defaults
+        setColumnTitlesColor(Ansi.Color.YELLOW);
+        setCellColor(Ansi.Color.WHITE);
+        setTableColor(Ansi.Color.CYAN);
     }
     
     /**
@@ -66,38 +92,34 @@ public class ShellTable implements Serializable {
             }
             tableLine.append("+" + String.format("%-" + (size+1) + "s", "-").replaceAll(" " , "-"));
         }
-        Out.print(tableLine.toString() + "+\n", tableColor);
+        LoggerShell.print(tableLine.toString() + "+\n", tableColor);
         
         // Display Column Titles
         for(String columnName : columnTitlesNames) {
-            Out.print("| ", tableColor);
+            LoggerShell.print("| ", tableColor);
             Integer size = columnSize.get(columnName);
             if (null == size) {
                 size = columnName.length() + 1;
             }
-            Out.print(columnName , true, Optional.of(size), columnTitlesColor);
+            LoggerShell.print(columnName , columnTitlesColor, size);
         }
-        Out.print("|\n", tableColor);
-        Out.print(tableLine.toString() + "+\n", tableColor);
+        LoggerShell.print("|\n", tableColor);
+        LoggerShell.print(tableLine.toString() + "+\n", tableColor);
         
         // Display Data
         for (Map<String, String > res : cellValues) {
             // Keep Orders
             for(String columnName : columnTitlesNames) {
-                Out.print("| ", tableColor);
+                LoggerShell.print("| ", tableColor);
                 if (pkColumns.contains(columnName)) {
-                    Out.print(res.get(columnName) , 
-                            true, Optional.of(columnSize.get(columnName)), pkColor);
+                    LoggerShell.print(res.get(columnName), pkColor, columnSize.get(columnName));
                 } else {
-                    Out.print(res.get(columnName) , 
-                            true, Optional.of(columnSize.get(columnName)), cellColor);
-                } 
-                
-               
+                    LoggerShell.print(res.get(columnName), cellColor, columnSize.get(columnName));
+                }
             }
-            Out.print("|\n", tableColor);
+            LoggerShell.print("|\n", tableColor);
         }
-        Out.print(tableLine.toString() + "+\n", tableColor);
+        LoggerShell.print(tableLine.toString() + "+\n", tableColor);
     }
     
     /**
@@ -137,7 +159,7 @@ public class ShellTable implements Serializable {
      * @return
      *       current value of 'tableColor'
      */
-    public TextColor getTableColor() {
+    public Ansi.Color getTableColor() {
         return tableColor;
     }
 
@@ -146,7 +168,7 @@ public class ShellTable implements Serializable {
      * @param tableColor
      * 		new value for 'tableColor '
      */
-    public void setTableColor(TextColor tableColor) {
+    public void setTableColor(Ansi.Color tableColor) {
         this.tableColor = tableColor;
     }
 
@@ -175,7 +197,7 @@ public class ShellTable implements Serializable {
      * @return
      *       current value of 'columnTitlesColor'
      */
-    public TextColor getColumnTitlesColor() {
+    public Ansi.Color getColumnTitlesColor() {
         return columnTitlesColor;
     }
 
@@ -184,7 +206,7 @@ public class ShellTable implements Serializable {
      * @param columnTitlesColor
      * 		new value for 'columnTitlesColor '
      */
-    public void setColumnTitlesColor(TextColor columnTitlesColor) {
+    public void setColumnTitlesColor(Ansi.Color columnTitlesColor) {
         this.columnTitlesColor = columnTitlesColor;
     }
 
@@ -194,7 +216,7 @@ public class ShellTable implements Serializable {
      * @return
      *       current value of 'cellColor'
      */
-    public TextColor getCellColor() {
+    public Ansi.Color getCellColor() {
         return cellColor;
     }
 
@@ -203,7 +225,7 @@ public class ShellTable implements Serializable {
      * @param cellColor
      * 		new value for 'cellColor '
      */
-    public void setCellColor(TextColor cellColor) {
+    public void setCellColor(Ansi.Color cellColor) {
         this.cellColor = cellColor;
     }
 
@@ -251,7 +273,7 @@ public class ShellTable implements Serializable {
      * @return
      *       current value of 'pkColor'
      */
-    public TextColor getPkColor() {
+    public Ansi.Color getPkColor() {
         return pkColor;
     }
 
@@ -260,7 +282,7 @@ public class ShellTable implements Serializable {
      * @param pkColor
      * 		new value for 'pkColor '
      */
-    public void setPkColor(TextColor pkColor) {
+    public void setPkColor(Ansi.Color pkColor) {
         this.pkColor = pkColor;
     }
 

@@ -3,13 +3,15 @@ package com.datastax.astra.shell.cmd.config;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
- * Class to TODO
+ * Create a new section in configuration.
+ * 
+ * "astra config create"
  *
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -17,14 +19,15 @@ import com.github.rvesse.airline.annotations.Option;
          description = "Create a new section in configuration")
 public class ConfigCreateCommand extends AbstractConfigCommand implements Runnable {
     
+    /**
+     * Section in configuration file to as as default.
+     */
     @Arguments(
        title = "section", 
-       description = "Section in configuration file to as as defulat.")
+       description = "Section in configuration file to as as default.")
     protected String sectionName;
     
-    /** 
-     * Overriding default config file 
-     **/
+   
     /** Authentication token used if not provided in config. */
     @Option(name = { "-t", "--token" }, 
             title = "AuthToken",
@@ -35,11 +38,11 @@ public class ConfigCreateCommand extends AbstractConfigCommand implements Runnab
     @Override
     public void run() {
         if (token == null) {
-            Out.error("Please Provide a token with option -t, --tokebn");
+            LoggerShell.error("Please Provide a token with option -t, --tokebn");
             ExitCode.INVALID_PARAMETER.exit();
         }
         if (!token.startsWith("AstraCS:")) {
-            Out.error("Your token should start with 'AstraCS:'");
+            LoggerShell.error("Your token should start with 'AstraCS:'");
             ExitCode.INVALID_PARAMETER.exit();
         }
         try {
@@ -49,15 +52,15 @@ public class ConfigCreateCommand extends AbstractConfigCommand implements Runnab
                     .build()
                     .apiDevopsOrganizations()
                     .organization();
-            Out.success("Valid Token, related organization is '" + o.getName() + "'");
+            LoggerShell.success("Valid Token, related organization is '" + o.getName() + "'");
             if (sectionName == null) {
                 sectionName = o.getName();
             }
             getAstraRc().createSectionWithToken(sectionName, token);
             getAstraRc().save();
-            Out.success("Configuration Saved.\n");
+            LoggerShell.success("Configuration Saved.\n");
         } catch(IllegalArgumentException iexo) {
-            Out.error("Your token seems invalid, it was not possible to connect to Astra."); 
+            LoggerShell.error("Your token seems invalid, it was not possible to connect to Astra."); 
             ExitCode.INVALID_PARAMETER.exit();
         }
     }

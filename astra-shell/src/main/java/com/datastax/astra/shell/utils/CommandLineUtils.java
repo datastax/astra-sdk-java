@@ -5,8 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import org.fusesource.jansi.Ansi;
 
 /**
  * Utililities for the command line.
@@ -101,7 +100,7 @@ public class CommandLineUtils {
     public static boolean askForConfirmation(Scanner scanner, String message) {
         String response = null;
         while (!"y".equalsIgnoreCase(response) && !"n".equalsIgnoreCase(response)) {
-            Out.print(message + " (y/n) ? ", TextColor.CYAN);
+            LoggerShell.print(message + " (y/n) ? ", Ansi.Color.CYAN);
             response = scanner.nextLine();
         }
         return "y".equalsIgnoreCase(response);

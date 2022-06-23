@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.fusesource.jansi.Ansi;
+
 import com.datastax.astra.sdk.organizations.domain.Role;
 import com.datastax.astra.sdk.organizations.domain.User;
-import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.jansi.Out;
-import com.datastax.astra.shell.jansi.TextColor;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Arguments;
@@ -32,28 +32,21 @@ public class ShowUserCommand extends BaseCommand<ShowUserCommand> {
     /** {@inheritDoc} */
     public void execute() {
         if (arguments.size() != 1) {
-            Out.print("Invalid arguments, please use 'role <roleId | roleName>'", TextColor.RED);
+            LoggerShell.error("Invalid arguments, please use 'role <roleId | roleName>'");
         } else {
             String user = arguments.get(0);
             Optional<User> user1 = Optional.empty();
             try {
-                user1 = ShellContext
-                    .getApiDevopsOrganizations()
-                    .findUserByEmail(user);
+                user1 = getApiDevopsOrganizations().findUserByEmail(user);
                 if (!user1.isPresent()) {
-                    user1 = ShellContext
-                            .getApiDevopsOrganizations()
-                            .user(user)
-                            .find();
+                    user1 = getApiDevopsOrganizations().user(user).find();
                 }
            
                 if (!user1.isPresent()) {
-                    Out.error("User '" + user1 + "' has not been found.\n");
+                    LoggerShell.error("User '" + user1 + "' has not been found.\n");
                 } else {
                     ShellTable sht = new ShellTable();
-                    sht.setColumnTitlesColor(TextColor.YELLOW);
-                    sht.setCellColor(TextColor.WHITE);
-                    sht.setTableColor(TextColor.CYAN);
+                    
                     sht.getColumnSize().put("Name", 15);
                     sht.getColumnSize().put("Value", 40);
                     sht.getColumnTitlesNames().add("Name");
@@ -65,14 +58,14 @@ public class ShowUserCommand extends BaseCommand<ShowUserCommand> {
                             .map(Role::getName)
                             .collect(Collectors.toList()).size())));
                     
-                    Out.print("\nSummary:", TextColor.MAGENTA);
+                    LoggerShell.print("\nSummary:", Ansi.Color.MAGENTA);
                     sht.show();
                     
-                    Out.println("\nDetails (json):", TextColor.MAGENTA);
-                    ShellPrinter.printObjectAsJson(user1.get(), TextColor.YELLOW);
+                    LoggerShell.println("\nDetails (json):", Ansi.Color.MAGENTA);
+                    ShellPrinter.printObjectAsJson(user1.get(), Ansi.Color.YELLOW);
                 }
             } catch(RuntimeException e) {
-                Out.error("Cannot show user, technical error " + e.getMessage());
+                LoggerShell.error("Cannot show user, technical error " + e.getMessage());
             }
         }
     }

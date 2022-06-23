@@ -1,7 +1,7 @@
 version: '2'
 services:
   stargate:
-    image: stargateio/stargate-3_11:v1.0.41
+    image: stargateio/stargate-3_11:v1.0.58
     ports:
       #CQL
       - 9042:9042

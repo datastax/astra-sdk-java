@@ -8,7 +8,7 @@ import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegionServerless;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.Option;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -56,16 +56,16 @@ public class CreateDatabaseCommand extends BaseCommand<CreateDatabaseCommand> {
     @Override
     public void execute() {
        // List regions
-       Map<String, DatabaseRegionServerless> regionMap = getApiDevopsOrg()
+       Map<String, DatabaseRegionServerless> regionMap = getApiDevopsOrganizations()
                .regionsServerless()
                .collect(Collectors
                .toMap(DatabaseRegionServerless::getName, Function.identity()));
        
        if (!regionMap.containsKey(databaseRegion)) {
-           Out.error("The database region has not been found");
-           Out.info("Available regions are: " + regionMap.keySet());
+           LoggerShell.error("The database region has not been found");
+           LoggerShell.info("Available regions are: " + regionMap.keySet());
        } else {
-           String dbId = getApiDevopsDb().createDatabase(DatabaseCreationRequest.builder()
+           String dbId = getApiDevopsDatabases().createDatabase(DatabaseCreationRequest.builder()
                 .name(databaseName)
                 .tier("serverless")
                 .cloudProvider(CloudProviderType.valueOf(regionMap
@@ -75,8 +75,8 @@ public class CreateDatabaseCommand extends BaseCommand<CreateDatabaseCommand> {
                 .cloudRegion(databaseRegion)
                 .keyspace(defaultKeyspace)
                 .build());
-           Out.success("Creating database... " + dbId);
-           Out.info("To get status: astra show db < dbName | dbId >");
+           LoggerShell.success("Creating database... " + dbId);
+           LoggerShell.info("To get status: astra show db < dbName | dbId >");
        }
     }
     

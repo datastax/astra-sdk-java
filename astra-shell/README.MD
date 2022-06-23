@@ -40,18 +40,39 @@ $myAstraOrganization>create db  --name workshop --region eu-central-1 --keyspace
 
 ## Installations
 
-- Download the zip archive
-- run `astra-install.sh`
-- run `astra-autocomplete.bash`
-- run `astra version` to validate installation
+- Download and extract the zip archive
 
-## Setup
+```
+unzip astra-shell-alpha1.zip
+```
 
-- Will ask for token and initialize config file
-- Each time you want to add a new token you can use it
+- Initialization 
+
+```
+cd astra-shell
+chmod 700 astra
+source auto-completions.bash
+```
+
+- Configuration
+
+
+You are already set and can start typing commands
+
+```
+astra show dbs -t <TOKEN>
+```
+
+But it is annoying each time having to provide a token. What if you could save it ?
 
 ```
 astra setup
+```
+
+- You can now 
+
+```
+astra show dbs
 ```
 
 ## Configuration file
@@ -66,13 +87,14 @@ astra config list
 - Create a new configuration providing a name
 
 ```
-astra config create my_new_section -t <TOKEN>
+astra config create dev -t <TOKEN>
+astra config list
 ```
 
-- Show details of a configuration
+- Show details of a dev
 
 ```
-astra config show my_new_section
+astra config show dev
 ```
 
 - Set a configuration as default
@@ -90,20 +112,39 @@ astra config rename my_new_section --name section2
 - Delete a configuration
 
 ```
-astra config delete my_new_section
+astra config delete dev
+astra config list
 ```
 
+## Let's start the SHOW
 
-
+```
 astra show dbs
-astra show db <DB>
+```
 
+```
 astra show roles
-astra show role <ROLE>
+```
 
+```
+astra show role <ROLE>
+```
+
+```
 astra show users
+```
+
+```
 astra show user <USER>
 ```
+
+## Shell we started now ?
+
+
+```
+astra shell
+```
+
 
 ## Configuration
 

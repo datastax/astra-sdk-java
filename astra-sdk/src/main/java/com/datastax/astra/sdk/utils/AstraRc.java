@@ -25,19 +25,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Utility class to load/save .astrarc file. This file is used to store Astra configuration.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
 public class AstraRc {
-
-    /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AstraRc.class);
-
+    
     /** Default filename we are looking for. */
     public static final String ASTRARC_FILENAME = ".astrarc";
 
@@ -96,6 +90,7 @@ public class AstraRc {
      * @param sectionName
      *      section name
      * @return
+     *      tell if the section exists
      */
     public boolean isSectionExists(String sectionName) {
         return sectionName != null && sections.containsKey(sectionName);
@@ -231,7 +226,6 @@ public class AstraRc {
         try {
             out = new FileWriter(configFile);
             out.write(renderSections());
-            LOGGER.info("File {} has been successfully updated.", configFile.getAbsolutePath());
         } catch (IOException e) {
             throw new IllegalStateException("Cannot save configuration file", e);
         } finally {
@@ -248,8 +242,6 @@ public class AstraRc {
      *  
      * @param file
      *      configuration file
-     * @return
-     *      parser.
      */
     private void parseConfigFile() {
         try (Scanner scanner = new Scanner(configFile)) {
@@ -282,8 +274,8 @@ public class AstraRc {
     /**
      * Prepare file content
      * 
-     * @param astraRc
-     *            Map
+     * @return
+     *      sections as a string
      */
     public String renderSections() {
         StringBuilder sb = new StringBuilder();
@@ -292,8 +284,12 @@ public class AstraRc {
     }
     
     /**
-     * Show 
+     * Display section as a string.
+     *
      * @param sectionName
+     *      name of section
+     * @return
+     *      section as a string
      */
     public String renderSection(String sectionName) {
         StringBuilder sb = new StringBuilder();
@@ -307,10 +303,12 @@ public class AstraRc {
     }
 
     /**
-     * Use Astra Devops Api to list databases.
-     * 
+     * Create a section in the configuration file.
+     *
+     * @param sectionName
+     *      current section name
      * @param token
-     *            token
+     *      token to authenticate
      */
     public void createSectionWithToken(String sectionName, String token) {
         updateSectionKey(sectionName, ASTRA_DB_APPLICATION_TOKEN, token);

@@ -3,7 +3,7 @@ package com.datastax.astra.shell.cmd.db;
 import static com.datastax.astra.shell.cmd.db.DatabaseCommandUtils.retrieveDatabaseClient;
 
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -27,6 +27,9 @@ public class DeleteDatabaseCommand extends BaseCommand<DeleteDatabaseCommand> {
     public static final class DeleteDatabaseCommandAlias1 extends DeleteDatabaseCommand {}
     
     
+    /**
+     * Database name or identifier
+     */
     @Required
     @Arguments(title = "DB", description = "Database name or identifier")
     public String databaseId;
@@ -35,8 +38,8 @@ public class DeleteDatabaseCommand extends BaseCommand<DeleteDatabaseCommand> {
     public void execute() {
         retrieveDatabaseClient(databaseId).ifPresent(dbClient -> {
             dbClient.delete();
-            Out.info("Deleting Database " + databaseId + " (async)");
-            Out.info("Use 'show dbs' or 'show db <dbId>' to see status");
+            LoggerShell.info("Deleting Database " + databaseId + " (async)");
+            LoggerShell.info("Use 'show dbs' or 'show db <dbId>' to see status");
         });
     }
     

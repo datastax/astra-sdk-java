@@ -19,4 +19,5 @@ public class DatabasesCommandsTest extends AbstractAstraCliTest {
         astraCli("create", "db", "-n","shell_tests", "-r", "us-east1", "-ks", "ks1");
     }
     
+    
 }

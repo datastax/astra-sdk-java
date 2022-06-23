@@ -2,16 +2,15 @@ package com.datastax.astra.shell.cmd;
 
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
-import org.apache.pulsar.shade.org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.jansi.Out;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
@@ -111,7 +110,7 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
             }
             
             if(!getAstraRc().isSectionExists(lookupSection)) {
-                Out.error("Section '" + lookupSection + "' not found in config file.");
+                LoggerShell.error("Section '" + lookupSection + "' not found in config file.");
                 INVALID_PARAMETER.exit();
             }
             
@@ -119,16 +118,16 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
                         .getSection(lookupSection)
                         .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
             if (astraToken == null) {
-                Out.error("Key '" + AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + 
+                LoggerShell.error("Key '" + AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + 
                           "' not found in config section '" + lookupSection + "'");
                     INVALID_PARAMETER.exit();
             }
         }
         
         if (astraToken == null) {
-            Out.warning("There is no token option (-t) and configuration file is invalid.");
-            Out.info("To setup the cli: astra setup");
-            Out.info("To list commands: astra help");
+            LoggerShell.warning("There is no token option (-t) and configuration file is invalid.");
+            LoggerShell.info("To setup the cli: astra setup");
+            LoggerShell.info("To list commands: astra help");
             ExitCode.INVALID_PARAMETER.exit();
         }
         
@@ -141,8 +140,8 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
      * @return
      *      astra client.
      */
-    protected AstraClient getAstraClient() {
-        return ShellContext.getInstance().getAstraClient();
+    protected DatabasesClient getApiDevopsDatabases() {
+        return ShellContext.getInstance().getApiDevopsDatabases();
     }
     
     /**
@@ -151,20 +150,8 @@ public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runna
      * @return
      *      api devops org
      */
-    protected OrganizationsClient getApiDevopsOrg() {
-        return getAstraClient().apiDevopsOrganizations();
+    protected OrganizationsClient getApiDevopsOrganizations() {
+        return ShellContext.getInstance().getApiDevopsOrganizations();
     }
-    
-    /**
-     * Syntaxi sugar api devops.
-     *
-     * @return
-     *      api devops db
-     */
-    protected DatabasesClient getApiDevopsDb() {
-        return getAstraClient().apiDevopsDatabases();
-    }
-    
-    
-
+   
 }

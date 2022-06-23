@@ -22,19 +22,19 @@
 	</licenses>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java-driver.version>4.13.0</java-driver.version>
+		<java-driver.version>4.14.1</java-driver.version>
 		<logback.version>1.2.9</logback.version>
 		<jackson.version>2.13.3</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
-		<pulsar.version>2.9.1</pulsar.version>
-		<stargate-grpc.version>1.0.45</stargate-grpc.version>
-		<grpc-netty.version>1.43.1</grpc-netty.version>
+		<pulsar.version>2.10.0</pulsar.version>
+		<stargate-grpc.version>1.0.58</stargate-grpc.version>
+		<grpc-netty.version>1.47.0</grpc-netty.version>
 		<!-- Spring -->
-		<spring.version>5.3.14</spring.version>
-		<spring-boot.version>2.6.2</spring-boot.version>
-		<spring-data.version>3.3.0</spring-data.version>
-		<spring-security.version>5.6.4</spring-security.version>
+		<spring.version>5.3.21</spring.version>
+		<spring-boot.version>2.7.0</spring-boot.version>
+		<spring-data.version>3.4.1</spring-data.version>
+		<spring-security.version>5.7.2</spring-security.version>
 		<!-- Junit -->
 		<junit-platform.version>1.8.2</junit-platform.version>
 		<junit-jupiter.version>5.8.2</junit-jupiter.version>
@@ -61,7 +61,7 @@
 		<module>astra-sdk</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
-		<module>astra-shell</module>
+		<!-- <module>astra-shell</module> -->
 		<module>stargate-sdk</module>
 	</modules>
 	
