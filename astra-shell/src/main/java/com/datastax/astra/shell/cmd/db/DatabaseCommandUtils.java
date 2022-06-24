@@ -25,6 +25,8 @@ public class DatabaseCommandUtils {
     public static final String DBS       = "dbs"; 
     /** Command constants. */
     public static final String DATABASES = "databases"; 
+    /** Command constants. */
+    public static final String CREATE    = "create";
     
     /**
      * Load the databaseClient by user input.

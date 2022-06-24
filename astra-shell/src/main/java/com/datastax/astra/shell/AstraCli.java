@@ -10,6 +10,7 @@ import com.datastax.astra.shell.cmd.config.ConfigListCommand;
 import com.datastax.astra.shell.cmd.config.ConfigShowCommand;
 import com.datastax.astra.shell.cmd.config.SetupCommand;
 import com.datastax.astra.shell.cmd.db.CreateDatabaseCommand;
+import com.datastax.astra.shell.cmd.db.DatabaseCommandUtils;
 import com.datastax.astra.shell.cmd.db.CreateDatabaseCommand.CreateDatabaseCommandAlias1;
 import com.datastax.astra.shell.cmd.db.DeleteDatabaseCommand;
 import com.datastax.astra.shell.cmd.db.DeleteDatabaseCommand.DeleteDatabaseCommandAlias1;
@@ -101,7 +102,16 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
           DeleteDatabaseCommand.class,
           DeleteDatabaseCommandAlias1.class,
       }
-     )
+     ),
+     // Noun then verb
+     @Group(
+       name = DatabaseCommandUtils.DB,
+       description = "Commands at Database level",
+       commands = { 
+               CreateDatabaseCommand.class,
+               CreateDatabaseCommandAlias1.class
+       }
+     ),
   })
 public class AstraCli {
     

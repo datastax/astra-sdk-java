@@ -3,7 +3,7 @@
   <parent>
     <artifactId>astra-sdk-parent</artifactId>
     <groupId>com.datastax.astra</groupId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>astra-shell</artifactId>
@@ -109,11 +109,14 @@
                   <fallback>false</fallback>
                   <verbose>true</verbose>
                   <buildArgs>
-                    <buildArg>--no-fallback</buildArg>
-                    <buildArg>-H:ReflectionConfigurationFiles=../src/main/resources/META-INF/native-image/reflect-config.json</buildArg>
+                    <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                    <buildArg>-H:EnableURLProtocols=http,https</buildArg>
+                    <buildArg>--allow-incomplete-classpath</buildArg>
+                    <buildArg>--report-unsupported-elements-at-runtime</buildArg>
+                    <buildArg>--verbose</buildArg>
                   </buildArgs>
                   <classpath>
-                    <param>/Users/cedricklunven/dev/workspaces/datastax/astra-sdk-java/astra-shell/target/astra-shell-0.3.1-SNAPSHOT-shaded.jar</param>
+                    <param>/Users/cedricklunven/dev/workspaces/datastax/astra-sdk-java/astra-shell/target/astra-shell-0.3.2-SNAPSHOT-shaded.jar</param>
                   </classpath>
                 </configuration>
               </execution>
@@ -127,11 +130,14 @@
               <fallback>false</fallback>
               <verbose>true</verbose>
               <buildArgs>
-                <buildArg>--no-fallback</buildArg>
-                <buildArg>-H:ReflectionConfigurationFiles=../src/main/resources/META-INF/native-image/reflect-config.json</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-H:EnableURLProtocols=http,https</buildArg>
+                <buildArg>--allow-incomplete-classpath</buildArg>
+                <buildArg>--report-unsupported-elements-at-runtime</buildArg>
+                <buildArg>--verbose</buildArg>
               </buildArgs>
               <classpath>
-                <param>/Users/cedricklunven/dev/workspaces/datastax/astra-sdk-java/astra-shell/target/astra-shell-0.3.1-SNAPSHOT-shaded.jar</param>
+                <param>/Users/cedricklunven/dev/workspaces/datastax/astra-sdk-java/astra-shell/target/astra-shell-0.3.2-SNAPSHOT-shaded.jar</param>
               </classpath>
             </configuration>
           </plugin>

@@ -225,8 +225,11 @@
   			  <fallback>false</fallback>
               <verbose>true</verbose>
               <buildArgs>
-				<buildArg>--no-fallback</buildArg>
-				<buildArg>-H:ReflectionConfigurationFiles=../src/main/resources/META-INF/native-image/reflect-config.json</buildArg>
+              	<buildArg>-H:+ReportExceptionStackTraces</buildArg>
+				<buildArg>-H:EnableURLProtocols=http,https</buildArg>
+				<buildArg>--allow-incomplete-classpath</buildArg>
+				<buildArg>--report-unsupported-elements-at-runtime</buildArg>
+				<buildArg>--verbose</buildArg>
 			  </buildArgs>
               <classpath>
             	<param>${project.build.directory}/${project.artifactId}-${project.version}-shaded.jar</param>
