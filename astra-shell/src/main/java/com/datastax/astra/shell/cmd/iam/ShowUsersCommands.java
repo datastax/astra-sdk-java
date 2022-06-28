@@ -1,10 +1,7 @@
 package com.datastax.astra.shell.cmd.iam;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.utils.ShellTable;
+import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -13,14 +10,16 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "users", description = "Display the list of users in an organization")
-public class ShowUsersCommands extends BaseCommand<ShowUsersCommands> {
+public class ShowUsersCommands extends BaseShellCommand {
     
     private static final String USER_ID     = "User Id";
     private static final String USER_EMAIL  = "User Email";
     private static final String USER_STATUS = "Status";
     
     /** {@inheritDoc} */
-    public void execute() {
+    public ExitCode execute() {
+        return ExitCode.SUCCESS;
+        /*
         ShellTable sht = new ShellTable();
         sht.addColumn(USER_ID, 37);
         sht.addColumn(USER_EMAIL, 20);
@@ -32,6 +31,6 @@ public class ShowUsersCommands extends BaseCommand<ShowUsersCommands> {
          rf.put(USER_STATUS, user.getStatus().name());
          sht.getCellValues().add(rf);
         });
-        sht.show();
+        sht.show();*/
     }
 }

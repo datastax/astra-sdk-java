@@ -14,10 +14,16 @@ public enum ExitCode {
     INVALID_PARAMETER(400),
     
     /** code. */
+    NOT_FOUND(404),
+    
+    /** conflict. */
+    CONFLICT(409),
+    
+    /** code. */
     PARSE_ERROR(-1),
     
     /** code. */
-    CANNOT_CONNECT(-10);
+    CANNOT_CONNECT(408);
     
     /* Exit code. */
     private int code;

@@ -20,7 +20,7 @@ import com.github.rvesse.airline.annotations.Command;
 @Command(
    name = "setup", 
    description = "Intialize configuration")
-public class SetupCommand extends AbstractConfigCommand implements Runnable {
+public class Setup extends BaseConfigCommand implements Runnable {
     
     /**
      * Section in configuration file to as as default.
@@ -79,7 +79,7 @@ public class SetupCommand extends AbstractConfigCommand implements Runnable {
                             .apiDevopsOrganizations()
                             .organization();
                         valid_token = true;
-                        ConfigCreateCommand ccc = new ConfigCreateCommand();
+                        ConfigCreate ccc = new ConfigCreate();
                         ccc.token = token;
                         ccc.run();
                         
@@ -91,7 +91,7 @@ public class SetupCommand extends AbstractConfigCommand implements Runnable {
            
             ShowConfigsCommand configs = new ShowConfigsCommand();
             configs.astraRc         = this.astraRc;
-            configs.configFileName  = this.configFileName;
+            configs.configFilename  = this.configFilename;
             configs.run();
             System.out.println("");
             

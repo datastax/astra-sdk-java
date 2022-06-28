@@ -351,7 +351,6 @@ public class HttpApisClient implements ApiConstants {
             event.setErrorMessage(e.getMessage());
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
             event.setErrorClass(e.getClass().getName());
             event.setErrorMessage(e.getMessage());
             throw new RuntimeException("Error in HTTP Request", e);

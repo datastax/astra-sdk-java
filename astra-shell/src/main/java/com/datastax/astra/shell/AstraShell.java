@@ -3,9 +3,7 @@ package com.datastax.astra.shell;
 import com.datastax.astra.shell.cmd.ExitCommand;
 import com.datastax.astra.shell.cmd.HelpCommand;
 import com.datastax.astra.shell.cmd.QuitCommand;
-import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand;
-import com.datastax.astra.shell.cmd.db.ShowDatabasesCommand.ShowDatabasesCommandBis;
-import com.datastax.astra.shell.cmd.db.UseDatabaseCommand;
+import com.datastax.astra.shell.cmd.db.DbListShell;
 import com.datastax.astra.shell.cmd.iam.ShowRoleCommand;
 import com.datastax.astra.shell.cmd.iam.ShowRolesCommand;
 import com.datastax.astra.shell.cmd.iam.ShowUserCommand;
@@ -14,6 +12,7 @@ import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.CqlShCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
 import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
+import com.datastax.astra.shell.cmd.use.UseDb;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
@@ -42,7 +41,7 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
               name = "show",
               description = "Listing details of an entity or entity list",
               commands = { 
-                      ShowDatabasesCommand.class, ShowDatabasesCommandBis.class, 
+                      DbListShell.class,
                       ShowRoleCommand.class, ShowRolesCommand.class, 
                       ShowUserCommand.class, ShowUsersCommands.class,
                       ShowConfigsCommand.class }
@@ -51,7 +50,7 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                name = "use",
                description = "Focus on an entity (context & prompt changed)",
                commands = {
-                      UseDatabaseCommand.class
+                      UseDb.class
                }
           )
     })

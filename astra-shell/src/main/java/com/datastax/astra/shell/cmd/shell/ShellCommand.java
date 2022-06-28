@@ -3,23 +3,34 @@ package com.datastax.astra.shell.cmd.shell;
 import java.util.Scanner;
 
 import com.datastax.astra.shell.AstraShell;
-import com.datastax.astra.shell.cmd.BaseCommand;
+import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.utils.CommandLineUtils;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Command;
+import com.github.rvesse.airline.annotations.Option;
 
 /**
  * The is a COMMAND from the CLI when no command name is provided
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(
-    name = "shell", 
-    description = "Enter interactive mode")
-public class ShellCommand extends BaseCommand<ShellCommand> implements Runnable {
+@Command(name = "shell", description = "Enter interactive mode")
+public class ShellCommand extends BaseCliCommand {
+    
+    /** 
+     * Each command can have a verbose mode. 
+     **/
+    @Option(name = { "-v", "--version" }, description = "Show version")
+    protected boolean version = false;
     
     /** {@inheritDoc} */
-    public void execute() {
+    public ExitCode execute() {
+        
+        if (version) {
+            outputData("version", ShellPrinter.version());
+            return ExitCode.SUCCESS;
+        }
         
         // Show Banner
         ShellPrinter.banner();
@@ -34,6 +45,7 @@ public class ShellCommand extends BaseCommand<ShellCommand> implements Runnable 
                 }
             }
         }
+       
     }
 
 }

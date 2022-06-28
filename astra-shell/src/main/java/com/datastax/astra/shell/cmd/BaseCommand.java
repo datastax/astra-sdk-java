@@ -1,157 +1,137 @@
 package com.datastax.astra.shell.cmd;
 
-import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.CsvOutput;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.JsonOutput;
+import com.datastax.astra.shell.OutputFormat;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
- * Base command.
- * 
+ * Options, parameters and treatments that you want to apply on all commands.
+ *
  * @author Cedrick LUNVEN (@clunven)
  */
-public abstract class BaseCommand<CHILD extends BaseCommand<?>> implements Runnable {
+public abstract class BaseCommand implements Runnable {
+    
+    /** Command constants. */
+    public static final String CREATE     = "create";
+    
+    /** Command constants. */
+    public static final String DELETE     = "delete";
+    
+    /** Command constants. */
+    public static final String SHOW       = "show";
+    
+    /** Command constants. */
+    public static final String LIST       = "list";
+    
+    // --- Flags ---
+    
+    /** 
+     * Each command can have a verbose mode. 
+     **/
+    @Option(name = { "--debug" }, description = "Enter Debug mode")
+    protected boolean debug = false;
     
     /**
-     * Default section name. 
+     * No log but provide output as a JSON
      */
-    public static final String DEFAULT_CONFIG_SECTION = "default";
-    
-    /** Each command can have a verbose mode. */
-    @Option(name = { "-v", "--verbose" }, 
-            description = "Enables verbose mode")
-    protected boolean verbose = false;
-    
-    /** Authentication token used if not provided in config. */
-    @Option(name = { "-t", "--token" }, 
-            title = "AuthToken",
-            description = "Key to use authenticate each call.")
-    protected String token;
+    @Option(name = { "-f", "--format" }, 
+            title = "FORMAT",
+            description = "Output format, valid values are: human,json,csv")
+    protected OutputFormat format = OutputFormat.human;
     
     /**
-     * File on disk to reuse configuration.
+     * Exit program with error.
+     *
+     * @param code
+     *      error code
+     * @param msg
+     *      error message
      */
-    @Option(name = { "-cf","--config-file" }, 
-            title = "config_file",
-            description= "Configuration file (default = ~/.astrarc)")
-    protected String configFilename;
+    public void outputError(ExitCode code, String msg) {
+        switch(format) {
+            case json:
+                LoggerShell.json(new JsonOutput(code, code.name() + ": " + msg));
+            break;
+            case csv:
+                LoggerShell.csv(new CsvOutput(code.getCode(),  code.name() + ": " + msg));
+            break;
+            case human:
+            default:
+                LoggerShell.error( code.name() + ": " + msg);
+            break;
+        }
+    }
     
     /**
-     * Section in configuration file with context
+     * Exit program with error.
+     *
+     * @param msg
+     *      return message
      */
-    @Option(name = { "-conf, --config" }, 
-            title = "config_section",
-            description= "Section in configuration file to load context (default = default)")
-    protected String configSectionName;
+    public void outputData(String label, String data) {
+        switch(format) {
+            case json:
+                LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, label, data));
+            break;
+            case csv:
+                Map<String, String> m = new HashMap<>();
+                m.put(label, data);
+                LoggerShell.csv(new CsvOutput(Arrays.asList(label), Arrays.asList(m)));
+            break;
+            case human:
+            default:
+               System.out.println(data);
+            break;
+        }
+    }
     
     /**
-     * Configuration as loaded from file.
+     * Exit program with error.
+     *
+     * @param msg
+     *      return message
      */
-    protected AstraRc astraRc;
-    
+    public void outputSuccess(String msg) {
+        switch(format) {
+            case json:
+                LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, msg));
+            break;
+            case csv:
+                LoggerShell.csv(new CsvOutput(ExitCode.SUCCESS.getCode(), msg));
+            break;
+            case human:
+            default:
+                LoggerShell.success(msg);
+            break;
+        }
+    }
+
     /**
-     * Getter for confifguration AstraRC.
+     * Getter accessor for attribute 'format'.
      *
      * @return
-     *      configuration in AstraRc
+     *       current value of 'format'
      */
-    protected AstraRc getAstraRc() {
-        if (astraRc == null) {
-            if (configFilename != null) {
-                astraRc = new AstraRc(configFilename);
-            } else {
-                astraRc = new AstraRc();
-            }
-        }
-        return astraRc;
+    public OutputFormat getFormat() {
+        return format;
     }
-    
-    
-    /** {@inheritDoc} */
-    public void run() {
-       ShellContext ctx = ShellContext.getInstance();
-       if (!ctx.isInitialized()) { 
-           ctx.connect(getAstraToken());
-       }
-       execute();
-    }
-    
+
     /**
-     * Implementation Specialization per command (Pattern Strategy)
-     */
-    public abstract void execute();
-    
-    /**
-     * Read value for Astra Token.
-     * 
-     * @return
-     *      current token to use
-     */
-    protected String getAstraToken() {
-        String astraToken = null;
-        
-        // Token (-t, --token) is explicitely provided
-        if (!StringUtils.isEmpty(token)) {
-            astraToken = token;
-        } else {
-            String lookupSection = DEFAULT_CONFIG_SECTION;
-            
-            // --conf is provided lookup for token in config file
-            if (!StringUtils.isEmpty(configSectionName)) {
-                lookupSection = configSectionName;
-            }
-            
-            if(!getAstraRc().isSectionExists(lookupSection)) {
-                LoggerShell.error("Section '" + lookupSection + "' not found in config file.");
-                INVALID_PARAMETER.exit();
-            }
-            
-            astraToken = getAstraRc()
-                        .getSection(lookupSection)
-                        .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
-            if (astraToken == null) {
-                LoggerShell.error("Key '" + AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + 
-                          "' not found in config section '" + lookupSection + "'");
-                    INVALID_PARAMETER.exit();
-            }
-        }
-        
-        if (astraToken == null) {
-            LoggerShell.warning("There is no token option (-t) and configuration file is invalid.");
-            LoggerShell.info("To setup the cli: astra setup");
-            LoggerShell.info("To list commands: astra help");
-            ExitCode.INVALID_PARAMETER.exit();
-        }
-        
-        return astraToken;
-    }
-    
-    /**
-     * Syntaxic sugar to get Astra Client.
-     * 
-     * @return
-     *      astra client.
-     */
-    protected DatabasesClient getApiDevopsDatabases() {
-        return ShellContext.getInstance().getApiDevopsDatabases();
-    }
-    
-    /**
-     * Syntax sugar api devops.
+     * Getter accessor for attribute 'debug'.
      *
      * @return
-     *      api devops org
+     *       current value of 'debug'
      */
-    protected OrganizationsClient getApiDevopsOrganizations() {
-        return ShellContext.getInstance().getApiDevopsOrganizations();
+    public boolean isDebug() {
+        return debug;
     }
-   
+    
+
 }

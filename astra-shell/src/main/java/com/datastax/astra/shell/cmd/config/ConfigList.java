@@ -11,6 +11,7 @@ import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.utils.ShellPrinter;
 import com.datastax.astra.shell.utils.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
 
@@ -23,17 +24,17 @@ import com.github.rvesse.airline.annotations.Command;
  *
  */
 @Command(name = "list", description = "Show the list of available configurations.")
-public class ConfigListCommand extends AbstractConfigCommand {
+public class ConfigList extends BaseConfigCommand {
     
     /**
      * Title of the table.
      */
-    private static final String COLUMN_TITLE = "Configuration Sections";
+    private static final String COLUMN_TITLE = "configuration";
    
     /**
      * Constructor to TODO
      */
-    public ConfigListCommand() {
+    public ConfigList() {
         super();
     }
     
@@ -41,7 +42,6 @@ public class ConfigListCommand extends AbstractConfigCommand {
     public void run() {
         Map<String, Map<String, String>> sections = getAstraRc().getSections();
         List<String> orgs = listOrganizations(sections);
-        System.out.println("There are " + orgs.size() + " section(s) in your configuration file.");
         ShellTable sht = new ShellTable();
         sht.setColumnTitlesColor(Ansi.Color.YELLOW);
         sht.setCellColor(Ansi.Color.WHITE);
@@ -53,7 +53,7 @@ public class ConfigListCommand extends AbstractConfigCommand {
             rf.put(COLUMN_TITLE, org);
             sht.getCellValues().add(rf);
         }
-        sht.show();
+        ShellPrinter.printShellTable(sht, format);
     }
     
     /**

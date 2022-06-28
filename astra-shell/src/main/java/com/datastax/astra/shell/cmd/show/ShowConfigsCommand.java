@@ -1,6 +1,6 @@
 package com.datastax.astra.shell.cmd.show;
 
-import com.datastax.astra.shell.cmd.config.ConfigListCommand;
+import com.datastax.astra.shell.cmd.config.ConfigList;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -9,7 +9,7 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "configs", description = "Show a list of configurations availables")
-public class ShowConfigsCommand extends ConfigListCommand {
+public class ShowConfigsCommand extends ConfigList {
     
     /**
      * Default constructor

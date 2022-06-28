@@ -30,6 +30,7 @@
 		<pulsar.version>2.10.0</pulsar.version>
 		<stargate-grpc.version>1.0.58</stargate-grpc.version>
 		<grpc-netty.version>1.47.0</grpc-netty.version>
+		<slf4j.version>1.7.36</slf4j.version>
 		<!-- Spring -->
 		<spring.version>5.3.21</spring.version>
 		<spring-boot.version>2.7.0</spring-boot.version>
@@ -131,6 +132,16 @@
 			</dependency>
 			
 			<!-- Logging -->
+			<dependency>
+        		<groupId>org.slf4j</groupId>
+        		<artifactId>slf4j-api</artifactId>
+        		<version>${slf4j.version}</version>
+    		</dependency> 
+			<dependency>
+        		<groupId>org.slf4j</groupId>
+        		<artifactId>slf4j-nop</artifactId>
+        		<version>${slf4j.version}</version>
+    		</dependency> 
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>

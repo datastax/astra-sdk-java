@@ -1,12 +1,8 @@
 package com.datastax.astra.shell.cmd.db;
 
-import static com.datastax.astra.shell.cmd.db.DatabaseCommandUtils.retrieveDatabaseClient;
-
-import org.fusesource.jansi.Ansi;
-
-import com.datastax.astra.sdk.databases.domain.Database;
+import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.utils.ShellTable;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -17,17 +13,19 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(
-    name = DatabaseCommandUtils.DB, 
+    name = BaseCommand.SHOW, 
     description = "Show details of a database")
-public class ShowDatabaseCommand extends BaseCommand<ShowDatabaseCommand> {
+public class DbShow extends BaseShellCommand {
 
     @Required
     @Arguments(title = "DB", description = "Database name or identifier")
     public String databaseId;
     
     /** {@inheritDoc} */
-    @Override
-    public void execute() {
+    /** {@inheritDoc} */
+    public ExitCode execute() {
+        return ExitCode.SUCCESS;
+        /*
         retrieveDatabaseClient(databaseId).ifPresent(dbClient -> {
             Database db = dbClient.find().get();
             ShellTable sht = new ShellTable();
@@ -46,7 +44,7 @@ public class ShowDatabaseCommand extends BaseCommand<ShowDatabaseCommand> {
             sht.getCellValues().add(ShellTable.addProperty("Creation Time", db.getCreationTime()));
             
             sht.show();
-        });
+        });*/
     }
 
 }

@@ -2,17 +2,9 @@ package com.datastax.astra.shell.cmd.iam;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.fusesource.jansi.Ansi;
-
-import com.datastax.astra.sdk.organizations.domain.Role;
-import com.datastax.astra.sdk.organizations.domain.User;
-import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.utils.LoggerShell;
-import com.datastax.astra.shell.utils.ShellPrinter;
-import com.datastax.astra.shell.utils.ShellTable;
+import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -23,14 +15,17 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "user", description = "Show user details")
-public class ShowUserCommand extends BaseCommand<ShowUserCommand> {
+public class ShowUserCommand extends BaseShellCommand {
     
     @Required
     @Arguments(title = "user", description = "User email or identifier")
     public List<String> arguments = new ArrayList<>();
     
     /** {@inheritDoc} */
-    public void execute() {
+    /** {@inheritDoc} */
+    public ExitCode execute() {
+        return ExitCode.SUCCESS;
+        /*
         if (arguments.size() != 1) {
             LoggerShell.error("Invalid arguments, please use 'role <roleId | roleName>'");
         } else {
@@ -67,7 +62,7 @@ public class ShowUserCommand extends BaseCommand<ShowUserCommand> {
             } catch(RuntimeException e) {
                 LoggerShell.error("Cannot show user, technical error " + e.getMessage());
             }
-        }
+        }*/
     }
 
 }

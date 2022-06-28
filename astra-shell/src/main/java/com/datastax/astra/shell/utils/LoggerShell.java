@@ -4,9 +4,17 @@ import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.Ansi.Color.CYAN;
 import static org.fusesource.jansi.Ansi.Color.RED;
 import static org.fusesource.jansi.Ansi.Color.YELLOW;
+import static org.fusesource.jansi.Ansi.Color.GREEN;
+import static org.fusesource.jansi.Ansi.Color.BLUE;
+
 
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
+
+import com.datastax.astra.shell.CsvOutput;
+import com.datastax.astra.shell.JsonOutput;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Work with terminal.
@@ -20,6 +28,11 @@ public class LoggerShell {
 	 */
 	private LoggerShell() {}
 	
+	/**
+	 * Json Object Mapper. 
+	 */
+	public static final ObjectMapper OM = new ObjectMapper();
+	
     /**
      * Output.
      *
@@ -32,7 +45,6 @@ public class LoggerShell {
         System.out.print(ansi().fg(color).a(text).reset());
     }
     
-
     /**
      * Show text in the console.
      * 
@@ -56,7 +68,7 @@ public class LoggerShell {
      *      colot
      */
     public static void println(String text, Ansi.Color color) {
-        System.out.println(ansi().fg(color).a("text").reset());
+        System.out.println(ansi().fg(color).a(text).reset());
     }
     
     /**
@@ -99,7 +111,17 @@ public class LoggerShell {
      *      text to show in success
      */
     public static void success(String text) {
-        System.out.println(ansi().fg(YELLOW).a("[ OK  ] - ").reset().a(text));
+        System.out.println(ansi().fg(GREEN).a("[ OK  ] - ").reset().a(text));
+    }
+    
+    /**
+     * Syntax sugar for OK.
+     * 
+     * @param text
+     *      text to show in success
+     */
+    public static void trace(String text) {
+        System.out.println(ansi().fg(BLUE).a("[TRACE] - ").reset().a(text));
     }
     
     /**
@@ -112,6 +134,34 @@ public class LoggerShell {
         System.out.println(ansi()
                 .fg(CYAN)
                 .a("[INFO ] - ").reset().a(text));
+    }
+    
+    /**
+     * Log as JSON in the console.
+     *
+     * @param json
+     *      json in the console
+     */
+    public static void json(JsonOutput json) {
+        if (json != null) {
+            try {
+                System.out.println(OM.writeValueAsString(json));
+            } catch (JsonProcessingException e) {
+                error("Cannot create JSON :" + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Log as CSV in the output.
+     *
+     * @param csv
+     *      create CSV for the output
+     */
+    public static void csv(CsvOutput csv) {
+        if (csv != null) {
+            System.out.println(csv.toString());
+        }
     }
     
 }

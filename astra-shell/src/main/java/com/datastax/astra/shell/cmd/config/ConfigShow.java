@@ -1,18 +1,19 @@
 package com.datastax.astra.shell.cmd.config;
 
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.ExitCode;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
 
 /**
- * Delete a block in the command.
+ * Allowing both syntax:
  * 
- * @author Cedrick LUNVEN (@clunven)
+ * astra config show default
+ * astra show config default 
  */
-@Command(name = "delete", description = "Delete section in configuration")
-public class ConfigDeleteCommand extends AbstractConfigCommand 
-                                 implements Runnable {
+@Command(name = "show", description = "Show details for a configuration.")
+public class ConfigShow extends BaseConfigCommand implements Runnable {
+    
     /**
      * Section in configuration file to as as default.
      */
@@ -25,11 +26,10 @@ public class ConfigDeleteCommand extends AbstractConfigCommand
     /** {@inheritDoc} */
     public void run() {
         if (!getAstraRc().isSectionExists(sectionName)) {
-            LoggerShell.error("Section '" + sectionName + "' has not been found in config.");
+            outputError(ExitCode.INVALID_PARAMETER, "Section '" + sectionName + "' has not been found in config.");
+            ExitCode.INVALID_PARAMETER.exit();
         } else {
-            getAstraRc().deleteSection(sectionName);
-            getAstraRc().save();
-            LoggerShell.success("Section '" + sectionName + "' has been deleted.");
+            System.out.print(getAstraRc().renderSection(sectionName));
         }
      }
 

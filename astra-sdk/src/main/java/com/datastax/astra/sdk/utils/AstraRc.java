@@ -57,7 +57,7 @@ public class AstraRc {
      * Load from ~/.astrarc
      */
     public AstraRc() {
-        this(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME);
+        this(getDefaultConfigurationFileName());
     }
     
     /**
@@ -81,7 +81,17 @@ public class AstraRc {
      *      if default config exists
      */
     public static boolean isDefaultConfigFileExists() {
-        return new File(System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME).exists();
+        return new File(getDefaultConfigurationFileName()).exists();
+    }
+    
+    /**
+     * Build default configuration filename.
+     * 
+     * @return
+     *      default configuration file name
+     */
+    public static String getDefaultConfigurationFileName() {
+        return System.getProperty(ENV_USER_HOME) + File.separator + ASTRARC_FILENAME;
     }
     
     /**
@@ -315,6 +325,16 @@ public class AstraRc {
         if (!isSectionExists(ASTRARC_DEFAULT)) {
             copySection(sectionName, ASTRARC_DEFAULT);
         }
+    }
+
+    /**
+     * Getter accessor for attribute 'configFile'.
+     *
+     * @return
+     *       current value of 'configFile'
+     */
+    public File getConfigFile() {
+        return configFile;
     }   
 
 }

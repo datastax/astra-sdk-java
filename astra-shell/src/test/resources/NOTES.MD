@@ -30,3 +30,21 @@ https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/L
 Run with Agent
 java -agentlib:native-image-agent=config-output-dir=. -jar astra-shell-0.3.1-SNAPSHOT-shaded.jar
 
+
+ TO BUILD:
+============
+mvn clean install -Dmaven.test.skip=true
+
+
+
+ TO BUILD IN NATIVE:
+ ======================
+(1) you need to install GraalVM (GU)
+
+(2) mvn clean install -Dmaven.test.skip=true -Pnative
+
+
+
+
+
+

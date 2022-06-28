@@ -2,6 +2,7 @@ package com.datastax.astra.shell.utils;
 
 import org.fusesource.jansi.Ansi;
 
+import com.datastax.astra.shell.OutputFormat;
 import com.datastax.astra.shell.ShellContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,7 @@ public class ShellPrinter {
 	
 	/** Start Banner. */
     public static void banner() {
+        System.out.println();
         System.out.print("  █████╗ ███████╗████████╗██████╗  █████╗   ");
         System.out.println("  ███████╗██╗  ██╗███████╗██╗     ██╗     ");
         System.out.print(" ██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔══██╗  ");
@@ -31,17 +33,49 @@ public class ShellPrinter {
         System.out.print(" ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝  ");
         System.out.println("  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝");
         System.out.println("");
-        System.out.print(" Version: ");
+        System.out.print(" Version: " + version() + "\n");
+    }
+    
+    /**
+     * Show version.
+     *
+     * @return
+     *      return version
+     */
+    public static String version() {
         String versionPackage = ShellPrinter.class
                 .getPackage()
                 .getImplementationVersion();
         if (versionPackage == null) {
             versionPackage = "Development";
         }
-        System.out.println("\n");
+        return versionPackage;
     }
     
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    
+    /**
+     * Show the table in console.
+     * 
+     * @param sht
+     *      table
+     * @param fmt
+     *      format
+     */
+    public static void printShellTable(ShellTable sht, OutputFormat fmt) {
+        switch(fmt) {
+            case json:
+                sht.showJson("db list");
+            break;
+            case csv: 
+                sht.showCsv(); 
+            break;
+            case human:
+            default:
+                sht.show();
+            break;
+        }
+    }
     
     /**
      * Show object as Json in console.

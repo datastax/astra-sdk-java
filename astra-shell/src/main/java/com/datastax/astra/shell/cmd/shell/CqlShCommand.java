@@ -14,10 +14,10 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "cqlsh", description = "Start cqlSH (db must be selected first)")
-public class CqlShCommand extends BaseCommand<CqlShCommand> {
+public class CqlShCommand extends BaseCommand {
 
     /** {@inheritDoc} */
-    @Override
+    //@Override
     public void execute() {
         if (null == ShellContext.getInstance().getDatabase()) {
             LoggerShell.warning("You have no base selected.");
@@ -37,6 +37,12 @@ public class CqlShCommand extends BaseCommand<CqlShCommand> {
             LoggerShell.info("Exiting Cqlsh");
             System.exit(0);
         }
+    }
+
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+        
     }
     
 }

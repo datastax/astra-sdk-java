@@ -1,11 +1,10 @@
 package com.datastax.astra.shell.cmd.iam;
 
-import java.util.Optional;
-
 import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.sdk.organizations.domain.Role;
-import com.datastax.astra.shell.cmd.BaseCommand;
+import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.datastax.astra.shell.utils.ShellTable;
@@ -19,15 +18,16 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "role", description = "Show role details")
-public class ShowRoleCommand extends BaseCommand<ShowRoleCommand> {
+public class ShowRoleCommand extends BaseShellCommand {
     
     @Required
     @Arguments(title = "ROLE", description = "Role name or identifier")
     public String role;
     
-   
     /** {@inheritDoc} */
-    public void execute() {
+    public ExitCode execute() {
+        return ExitCode.SUCCESS;
+        /*
         Optional<Role> role1 = Optional.empty();
         try {
             role1 = getApiDevopsOrganizations().findRoleByName(role);
@@ -43,7 +43,7 @@ public class ShowRoleCommand extends BaseCommand<ShowRoleCommand> {
             }
         } catch(RuntimeException e) {
              LoggerShell.error("Cannot show role, technical error " + e.getMessage());
-        }
+        }*/
     }
     
     /**

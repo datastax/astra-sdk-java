@@ -1,13 +1,19 @@
 package com.datastax.astra.shell;
 
+import static com.datastax.astra.shell.ExitCode.CANNOT_CONNECT;
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
 import com.datastax.astra.sdk.streaming.StreamingClient;
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.cmd.BaseCliCommand;
+import com.datastax.astra.shell.cmd.BaseCommand;
 
 /**
  * Hold the context of CLI to know where we are.
@@ -39,17 +45,21 @@ public class ShellContext {
         return _instance;
     }
     
+    // -- Config --
+    
     /** Current token in use */
     private String token;
     
-    /** Organization informations (prompt). */
-    private Organization organization;
+    /** Configuration file name. */
+    private String configFilename = AstraRc.getDefaultConfigurationFileName();
     
-    /** Work on a db. */
-    private Database database;
+    /** Configuration section. */
+    private String configSection = AstraRc.ASTRARC_DEFAULT;
     
-    /** Database informations. */
-    private String databaseRegion;
+    /** Load Astra Rc in the context. */
+    private AstraRc astraRc;
+    
+    // -- Clients --
     
     /** Hold a reference for the Api Devops. */
     private DatabasesClient apiDevopsDatabases;
@@ -60,31 +70,116 @@ public class ShellContext {
     /** Hold a reference for the Api Devops. */
     private StreamingClient apiDevopsStreaming;
     
+    // -- Selection --
+    
+    /** Organization informations (prompt). */
+    private Organization organization;
+    
+    /** Work on a db. */
+    private Database database;
+    
+    /** Database informations. */
+    private String databaseRegion;
+        
+    /**
+     * Valid section.
+     *
+     * @param cmd
+     *      current command with options
+     * @return
+     *      section is valid
+     */
+    private boolean isSectionValid(BaseCommand cmd) {
+        if (!this.astraRc.isSectionExists(this.configSection)) {
+            cmd.outputError(CANNOT_CONNECT, "No token provided (-t), no config provided (--config), section '" + this.configSection 
+                    + "' has not been found in config file '" 
+                    + this.astraRc.getConfigFile().getPath() + "'. Try [astra setup]");
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Log error.
+     *
+     * @param cmd
+     *      command.
+     * @return
+     *      error
+     */
+    private boolean isSectionTokenValid(BaseCommand cmd) {
+        if (StringUtils.isEmpty(this.astraRc
+                .getSection(this.configSection)
+                .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN))) {
+            cmd.outputError(
+                    INVALID_PARAMETER, 
+                    "Key '" + AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + 
+                    "' has not found been in config [section '" + this.configSection + "']");
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Should initialized the client based on provided parameters.
+     *
+     * @param cli
+     *      command line cli
+     */
+    public void init(BaseCliCommand cli) {
+        this.token = cli.getToken();
+        
+        // No token = use configuration file
+        if (this.token == null) {
+            // Overriding default config
+            if (cli.getConfigFilename() != null) {
+                this.astraRc = new AstraRc(cli.getConfigFilename());
+            } else {
+                this.astraRc = new AstraRc();
+            }
+            // Overriding default section
+            if (!StringUtils.isEmpty(cli.getConfigSectionName())) {
+                this.configSection = cli.getConfigSectionName();
+            }
+            
+            if (isSectionValid(cli) && isSectionTokenValid(cli)) {
+                token = this.astraRc
+                        .getSection(this.configSection)
+                        .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN);
+            }
+        }
+        
+        if (token != null) {
+            connect(cli, token);
+        }
+    }
+    
     /**
      * Based on a token will initialize the connection.
      * 
      * @param token
      *      token loaded from param
      */
-    public void connect(String token) {
+    public void connect(BaseCommand cmd, String token) {
 
         // Persist Token
         this.token = token;
         
-        // Initializing Http Clients
-        apiDevopsOrganizations  = new OrganizationsClient(token);
-        apiDevopsDatabases      = new DatabasesClient(token);  
-        apiDevopsStreaming      = new StreamingClient(token);
-        
-        // Use client to get Org infos
-        this.organization = apiDevopsOrganizations.organization();
-        
-        // Validation of token
-        if (null == getOrganization().getName()) {
-            LoggerShell.error("Cannot connect to Astra: Invalid token.");
+        if (!token.startsWith(token)) {
+            cmd.outputError(INVALID_PARAMETER, "Token provided is invalid. It should start with 'AstraCS:...'. Try [astra setup]");
             INVALID_PARAMETER.exit();
         }
+
+        apiDevopsOrganizations  = new OrganizationsClient(token);
+        apiDevopsDatabases = new DatabasesClient(token);  
+        apiDevopsStreaming = new StreamingClient(token);
         
+        try {
+            this.organization = apiDevopsOrganizations.organization();
+        } catch(Exception e) {
+            cmd.outputError(CANNOT_CONNECT, "Token provided is invalid. Try [astra setup]");
+            INVALID_PARAMETER.exit();
+        }
     }
     
     /**
@@ -176,15 +271,6 @@ public class ShellContext {
     }
 
     /**
-     * Setter accessor for attribute 'apiDevopsDatabases'.
-     * @param apiDevopsDatabases
-     * 		new value for 'apiDevopsDatabases '
-     */
-    public void setApiDevopsDatabases(DatabasesClient apiDevopsDatabases) {
-        this.apiDevopsDatabases = apiDevopsDatabases;
-    }
-
-    /**
      * Getter accessor for attribute 'apiDevopsStreaming'.
      *
      * @return
@@ -193,25 +279,7 @@ public class ShellContext {
     public StreamingClient getApiDevopsStreaming() {
         return apiDevopsStreaming;
     }
-
-    /**
-     * Setter accessor for attribute 'apiDevopsStreaming'.
-     * @param apiDevopsStreaming
-     * 		new value for 'apiDevopsStreaming '
-     */
-    public void setApiDevopsStreaming(StreamingClient apiDevopsStreaming) {
-        this.apiDevopsStreaming = apiDevopsStreaming;
-    }
-
-    /**
-     * Setter accessor for attribute 'apiDevopsOrganizations'.
-     * @param apiDevopsOrganizations
-     * 		new value for 'apiDevopsOrganizations '
-     */
-    public void setApiDevopsOrganizations(OrganizationsClient apiDevopsOrganizations) {
-        this.apiDevopsOrganizations = apiDevopsOrganizations;
-    }
-
+    
     /**
      * Getter accessor for attribute 'apiDevopsOrganizations'.
      *
@@ -220,6 +288,36 @@ public class ShellContext {
      */
     public OrganizationsClient getApiDevopsOrganizations() {
         return apiDevopsOrganizations;
+    }
+
+    /**
+     * Getter accessor for attribute 'configFilename'.
+     *
+     * @return
+     *       current value of 'configFilename'
+     */
+    public String getConfigFilename() {
+        return configFilename;
+    }
+
+    /**
+     * Getter accessor for attribute 'configSection'.
+     *
+     * @return
+     *       current value of 'configSection'
+     */
+    public String getConfigSection() {
+        return configSection;
+    }
+
+    /**
+     * Getter accessor for attribute 'astraRc'.
+     *
+     * @return
+     *       current value of 'astraRc'
+     */
+    public AstraRc getAstraRc() {
+        return astraRc;
     }
     
 }

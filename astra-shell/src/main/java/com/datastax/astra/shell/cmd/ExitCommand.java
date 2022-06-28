@@ -1,9 +1,6 @@
 package com.datastax.astra.shell.cmd;
 
-import org.fusesource.jansi.Ansi;
-
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -12,19 +9,15 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "exit", description = "Exit program.")
-public class ExitCommand implements Runnable {
+public class ExitCommand extends BaseShellCommand {
 
-    /**
-     * Default constructor.
-     */
-    public ExitCommand() {
-    }
-    
-    /** {@inheritDoc} */
+   /** {@inheritDoc} */
     @Override
-    public void run() {
-        LoggerShell.println("Bye", Ansi.Color.CYAN);
-        System.exit(ExitCode.SUCCESS.getCode());
+    public ExitCode execute() {
+       outputSuccess("Exiting Astra Cli");
+       ExitCode.SUCCESS.exit();
+       // Nerver reachede
+       return ExitCode.SUCCESS;
     }
 
 }

@@ -10,6 +10,10 @@ import java.util.Set;
 
 import org.fusesource.jansi.Ansi;
 
+import com.datastax.astra.shell.CsvOutput;
+import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.JsonOutput;
+
 /**
  * Standardize output for tables.
  *
@@ -66,6 +70,23 @@ public class ShellTable implements Serializable {
         setColumnTitlesColor(Ansi.Color.YELLOW);
         setCellColor(Ansi.Color.WHITE);
         setTableColor(Ansi.Color.CYAN);
+    }
+    
+    /**
+     * Show as Json.
+     * 
+     * @param title
+     *      title
+     */
+    public void showJson(String title) {
+        LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, title, getCellValues()));
+    }
+    
+    /**
+     * Show as Csv
+     */
+    public void showCsv() {
+        LoggerShell.csv(new CsvOutput(getColumnTitlesNames(), getCellValues()));
     }
     
     /**
