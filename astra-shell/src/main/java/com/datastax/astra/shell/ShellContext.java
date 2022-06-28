@@ -151,6 +151,8 @@ public class ShellContext {
         
         if (token != null) {
             connect(cli, token);
+        } else {
+            INVALID_PARAMETER.exit();
         }
     }
     

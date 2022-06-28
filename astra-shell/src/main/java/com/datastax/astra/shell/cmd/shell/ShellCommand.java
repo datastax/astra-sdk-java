@@ -29,7 +29,7 @@ public class ShellCommand extends BaseCliCommand {
         
         if (version) {
             outputData("version", ShellPrinter.version());
-            return ExitCode.SUCCESS;
+            ExitCode.SUCCESS.exit();
         }
         
         // Show Banner

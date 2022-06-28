@@ -1,15 +1,16 @@
 package com.datastax.astra.shell.cmd.config;
 
+import static org.fusesource.jansi.Ansi.ansi;
+
 import java.util.Scanner;
 
 import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.Ansi.Color;
 
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.config.AstraClientConfig;
+import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
-import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -22,80 +23,59 @@ import com.github.rvesse.airline.annotations.Command;
    description = "Intialize configuration")
 public class Setup extends BaseConfigCommand implements Runnable {
     
-    /**
-     * Section in configuration file to as as default.
-     */
-    @Arguments(
-       title = "section", 
-       description = "Section in configuration file to as as defulat.")
-    protected String sectionName;
-    
     /** {@inheritDoc} */
     @Override
     public void run() {
+        System.out.print(ansi().eraseScreen().reset());
         ShellPrinter.banner();
-        System.out.println("+-------------------------------+");
-        System.out.println("+-           Setup.            -+");
-        System.out.println("+-------------------------------+");
+        System.out.println();
+        LoggerShell.print("+-------------------------------+\n", Color.CYAN);
+        LoggerShell.print("+-           Setup.            -+\n", Color.CYAN);
+        LoggerShell.print("+-------------------------------+\n", Color.CYAN);
+        System.out.println("\nWelcome to Astra Shell. We will guide you to start.");
         
-        System.out.println("\nWelcome to Astra Shell/CLI. We will guide you to start.");
+        LoggerShell.println("\n[Astra Setup]\n", Ansi.Color.CYAN);
+        System.out.println("To use the cli you have to:");
+        System.out.println("   • Create an Astra account on : https://astra.datastax.com");
+        System.out.println("   • Create an authentication token following: https://dtsx.io/create-astra-token");
         
-        LoggerShell.println("\nHow it works ?\n", Ansi.Color.CYAN);
-        System.out.println("Astra Cli and shell (interactive) leverage a configuration file (~/.astrarc) avoiding users to have to enter credentials each time. "
-                + "The file is divided in sections identified by a name. If user does not specify section name the [default] is used."
-                + " For each section, key 'ASTRA_DB_APPLICATION_TOKEN' is mandatory: it is the authentication token "
-                + " used to invoke Astra Apis. More keys can be added to change scope or settings. Here is a sample file:");
-        
-        System.out.println("\n[default]");
-        System.out.println(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + "=AstraCS:aaaaa......");
-        System.out.println("\n[my_dev_env]");
-        System.out.println(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + "=AstraCS:abcde......");
-        System.out.println(AstraClientConfig.ASTRA_DB_ID + "=924e6ab3-eeb5-45e1-9861-5abcdc62f343");
-        System.out.println(AstraClientConfig.ASTRA_DB_REGION + "=europe-west-1");
-        System.out.println("\n[my_prod_env]");
-        System.out.println(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + "=AstraCS:12345......");
-        System.out.println(AstraClientConfig.ASTRA_DB_ID + "=924e6ab3-eeb5-45e1-9861-5abcdc62f34444");
-        System.out.println(AstraClientConfig.ASTRA_DB_REGION + "=europe-west-1");
-        
-        LoggerShell.println("\nGetting Started\n", Ansi.Color.CYAN);
-        System.out.println("You need an Astra token, here is the procedure to create one :\nhttps://awesome-astra.github.io/docs/pages/astra/create-token/");
-        
-        System.out.println("\nWe will now create a section. "
-                + "(if first, will be set as default).");
-        
+        LoggerShell.println("\n[Cli Setup]\n", Ansi.Color.CYAN);
+        System.out.println("You will be asked to enter your token, it will be saved locally.");  
         String token = null;
         try(Scanner scanner = new Scanner(System.in)) {
             boolean valid_token = false;
             while (!valid_token) {
-                LoggerShell.print("\n - Enter a token (eg: AstraCS...) : ", Ansi.Color.CYAN);
+                LoggerShell.print("\n• Enter your token (AstraCS...) : ", Ansi.Color.MAGENTA);
                 token = scanner.nextLine();
                 if (!token.startsWith("AstraCS:")) {
                     LoggerShell.error("Your token should start with 'AstraCS:'");
                 } else {
                     try {
-                        AstraClient.builder()
-                            .withToken(token)
-                            .build()
-                            .apiDevopsOrganizations()
-                            .organization();
-                        valid_token = true;
+                       ;
                         ConfigCreate ccc = new ConfigCreate();
                         ccc.token = token;
+                        ccc.sectionName =  new OrganizationsClient(token).organization().getName();
                         ccc.run();
+                        valid_token = true;
                         
-                    } catch(IllegalArgumentException iexo) {
-                        LoggerShell.error("Your token seems invalid, it was not possible to connect to Astra.");
+                        ShowConfigsCommand configs = new ShowConfigsCommand();
+                        configs.astraRc         = this.astraRc;
+                        configs.configFilename  = this.configFilename;
+                        configs.run();
+                        
+                    } catch(Exception e) {
+                        LoggerShell.error("Token provided is invalid. Please enter a valid token or quit with CTRL+C");
                     }
                 }
             }
-           
-            ShowConfigsCommand configs = new ShowConfigsCommand();
-            configs.astraRc         = this.astraRc;
-            configs.configFilename  = this.configFilename;
-            configs.run();
-            System.out.println("");
             
-            System.out.println("\nTo change default organization: astra config default <section>");
+            LoggerShell.println("\n[What's NEXT ?]\n", Ansi.Color.CYAN);
+            System.out.println("You are all set you can now:");
+            System.out.println("   • Use any command, 'astra help' will get you the list");
+            System.out.println("   • Try with 'astra db list'");
+            System.out.println("   • Enter interactive mode using 'astra'");
+            System.out.println("\nHappy Coding !");
+            System.out.println("");
         }
     }
     
