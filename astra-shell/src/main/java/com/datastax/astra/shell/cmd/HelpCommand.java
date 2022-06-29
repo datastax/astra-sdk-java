@@ -17,15 +17,5 @@ public class HelpCommand<T> extends Help<T> {
     @Override
     public void run() {
         super.run();
-        /*
-        try {
-            if (!command.isEmpty()) {
-                new CliGlobalUsageSummaryGenerator<T>(false)
-                    .usage(global, System.out);
-                return;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error generating usage documentation", e);
-        }*/
     }
 }

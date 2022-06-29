@@ -1,8 +1,8 @@
 package com.datastax.astra.shell.cmd.db;
 
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -12,10 +12,8 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(
-    name = BaseCommand.DELETE, 
-    description = "Delete an existing database")
-public class DbDelete extends BaseShellCommand {
+@Command(name = BaseCommand.DELETE, description = "Delete an existing database")
+public class DbDeleteCli extends BaseCliCommand {
     
     /**
      * Database name or identifier
@@ -26,13 +24,7 @@ public class DbDelete extends BaseShellCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return ExitCode.SUCCESS;
-        /*
-        retrieveDatabaseClient(databaseId).ifPresent(dbClient -> {
-            dbClient.delete();
-            LoggerShell.info("Deleting Database " + databaseId + " (async)");
-            LoggerShell.info("Use 'show dbs' or 'show db <dbId>' to see status");
-        });*/
+        return Db.deleteDb(this, databaseId);
     }
     
 }

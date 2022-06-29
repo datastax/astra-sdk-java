@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.datastax.astra.sdk.databases.DatabaseClient;
 import com.datastax.astra.sdk.databases.DatabasesClient;
 import com.datastax.astra.sdk.databases.domain.CloudProviderType;
@@ -14,7 +16,6 @@ import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegionServerless;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.OutputFormat;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
@@ -40,7 +41,6 @@ public class Db {
     /** Allow Snake case. */
     public static final String KEYSPACE_NAME_PATTERN = "^[_a-z0-9]+$";
     
-    
     /** column names. */
     public static final String COLUMN_ID                = "id";
     /** column names. */
@@ -49,7 +49,10 @@ public class Db {
     public static final String COLUMN_DEFAULT_REGION    = "default-region";
     /** column names. */
     public static final String COLUMN_STATUS            = "status";
-    
+    /** column names. */
+    public static final String COLUMN_DEFAULT_KEYSPACE  = "default-keyspace";
+    /** column names. */
+    public static final String COLUMN_CREATION_TIME     = "creation-time";
     
     /**
      * Hide default constructor.
@@ -64,7 +67,7 @@ public class Db {
      * @return
      *      db id
      */
-    public static Optional<DatabaseClient> getDatabaseClient(String db, OutputFormat fmt) {
+    public static Optional<DatabaseClient> getDatabaseClient(BaseCommand cmd, String db) {
         DatabasesClient dbsClient = ShellContext.getInstance().getApiDevopsDatabases();
         
         // Try with the id (fastest)
@@ -80,7 +83,7 @@ public class Db {
         
         // Multiple db with this name
         if (dbs.size() > 1) {
-            LoggerShell.error("There are '" + dbs.size() + "' dbs with this name, try with id.");
+            cmd.outputError(ExitCode.INVALID_PARAMETER, "There are '" + dbs.size() + "' dbs with this name, try with id.");
             return Optional.empty();
         }
         
@@ -89,7 +92,7 @@ public class Db {
             return Optional.ofNullable(dbsClient.database(dbs.get(0).getId()));
         }
         
-        LoggerShell.error("'" + db + "' database not found.");
+        cmd.outputError(ExitCode.NOT_FOUND,"'" + db + "' database not found.");
         return Optional.empty();
     }
     
@@ -121,6 +124,11 @@ public class Db {
         if (!regionMap.containsKey(databaseRegion)) {
             cmd.outputError(ExitCode.NOT_FOUND, "Database region '" + databaseRegion + "' has not been found");
             return ExitCode.NOT_FOUND;
+        }
+        
+        // Defaulting keyspace (if needed)
+        if (StringUtils.isEmpty(defaultKeyspace)) {
+            defaultKeyspace = databaseName.toLowerCase().replaceAll(" ", "_");
         }
         
         // Validate keyspace
@@ -174,6 +182,56 @@ public class Db {
         return ExitCode.SUCCESS;
     }
     
+    /**
+     * Delete a dabatase if exist.
+     * 
+     * @param cmd
+     *      current command options
+     * @param databaseName
+     *      db name or db id
+     * @return
+     *      status
+     */
+    public static ExitCode deleteDb(BaseCommand cmd, String databaseName) {
+        Optional<DatabaseClient> dbClient = getDatabaseClient(cmd, databaseName);
+        if (dbClient.isPresent()) {
+            dbClient.get().delete();
+            cmd.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
+            return ExitCode.SUCCESS;
+        }
+        return ExitCode.NOT_FOUND;
+    }
     
-    
+    /**
+     * Show database details.
+     *
+     * @param cmd
+     *      current command
+     * @param databaseName
+     *      database name and id
+     * @return
+     *      status code
+     */
+    public static ExitCode showDb(BaseCommand cmd, String databaseName) {
+        Optional<DatabaseClient> dbClient = getDatabaseClient(cmd, databaseName);
+        if (dbClient.isPresent()) {
+            Database db = dbClient.get().find().get();
+            ShellTable sht = new ShellTable();
+            sht.getColumnSize().put("Name", 15);
+            sht.getColumnSize().put("Value", 40);
+            sht.getColumnTitlesNames().add("Name");
+            sht.getColumnTitlesNames().add("Value");
+            sht.getCellValues().add(ShellTable.addProperty(COLUMN_ID, db.getId()));
+            sht.getCellValues().add(ShellTable.addProperty(COLUMN_NAME, db.getInfo().getName()));
+            sht.getCellValues().add(ShellTable.addProperty(COLUMN_DEFAULT_REGION, db.getInfo().getRegion()));
+            sht.getCellValues().add(ShellTable.addProperty(COLUMN_STATUS, db.getStatus().toString()));
+            sht.getCellValues().add(ShellTable.addProperty(COLUMN_DEFAULT_KEYSPACE, db.getInfo().getKeyspace()));
+            sht.getCellValues().add(ShellTable.addProperty("Creation Time", db.getCreationTime()));
+            
+            sht.show();
+            cmd.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
+            return ExitCode.SUCCESS;
+        }
+        return ExitCode.NOT_FOUND;
+    }
 }

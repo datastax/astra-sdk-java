@@ -4,154 +4,76 @@
 
 ## Overview
 
-Astra Shell is a standalone command line interface. 
+_This component is in heavy development that can lead to breaking changes_
 
-- (1). It can be used as a stateless cli providing all options in the command line for automation purposes.
+## Installation
 
-```
-astra create db 
- --token AstraCS:...... \ 
- --name workshop \
- --region eu-central-1 \
- --keyspace nosql1
-```
+Installing ASTRA-CLI on UNIX-like platforms is as easy as ever. ASTRA-CLI installs smoothly on macOS, Linux, WSL, Cygwin, Solaris and FreeBSD. We also support Bash and ZSH shells.
 
-- (2). It provides a configuration file to avoid users to enter credentials (tokens) each time.
+- Open a new terminal and enter:
 
 ```
-astra create db 
- --config my_env_dev \ 
- --name workshop \
- --region eu-central-1 \
- --keyspace nosql1
+curl -Ls curl -s "https://dtsx.io/get-astra-cli" | bash
 ```
 
-- (3). It provides a shell, an interactive repl with users interactions.
+- Follow the instructions on-screen to complete installation. Next, open a new terminal or enter:
+
+$ source "$HOME/.astra/install/astra-init.sh"
+
+- Lastly, run the following code snippet to ensure that installation succeeded:
 
 ```
-astra --config my_env_dev
-
-$myAstraOrganization>create db  --name workshop --region eu-central-1 --keyspace nosql1
+astra -v
 ```
 
-## Prequisites
-
-- A JRE/JDK 8+ installed is required.
-
-## Installations
-
-- Download and extract the zip archive
+If all went well, the version should be displayed. Something like:
 
 ```
-unzip astra-shell-alpha1.zip
+0.3.2-SNAPSHOT
 ```
 
-- Initialization 
+## Setup
 
-```
-cd astra-shell
-chmod 700 astra
-source auto-completions.bash
-```
-
-- Configuration
-
-
-You are already set and can start typing commands
-
-```
-astra show dbs -t <TOKEN>
-```
-
-But it is annoying each time having to provide a token. What if you could save it ?
+- Run the following command and provide your token when needed
 
 ```
 astra setup
 ```
 
-- You can now 
+- You should be good to go
 
 ```
-astra show dbs
-```
-
-## Configuration file
-
-- List available configurations
-
-```
-astra show configs
 astra config list
 ```
 
-- Create a new configuration providing a name
-
-```
-astra config create dev -t <TOKEN>
-astra config list
-```
-
-- Show details of a dev
-
-```
-astra config show dev
+>```
++-----------------------------------------+
+| configuration                           |
++-----------------------------------------+
+| default (cedrick.lunven@datastax.com)   |
+| DatastaxDevs                            |
+| cedrick.lunven@datastax.com             |
++-----------------------------------------+
 ```
 
-- Set a configuration as default
+- And access Astra
 
 ```
-astra config default my_new_section
+astra db list
 ```
 
-- Rename on organization
-
-```
-astra config rename my_new_section --name section2
-```
-
-- Delete a configuration
-
-```
-astra config delete dev
-astra config list
-```
-
-## Let's start the SHOW
-
-```
-astra show dbs
-```
-
-```
-astra show roles
-```
-
-```
-astra show role <ROLE>
-```
-
-```
-astra show users
-```
-
-```
-astra show user <USER>
-```
-
-## Shell we started now ?
-
-
-```
-astra shell
+>```
++---------------------+--------------------------------------+---------------------+----------------+
+| name                | id                                   | default-region      | status         |
++---------------------+--------------------------------------+---------------------+----------------+
+| mtg                 | dde308f5-a8b0-474d-afd6-81e5689e3e25 | eu-central-1        | ACTIVE         |
+| workshops           | 3ed83de7-d97f-4fb6-bf9f-82e9f7eafa23 | eu-west-1           | ACTIVE         |
+| sdk_tests           | 06a9675a-ca62-4cd0-9b94-aefaf395922b | us-east-1           | ACTIVE         |
+| api_days_dubai_2022 | 53f07b2a-8856-4741-b595-72b03be56bc6 | us-east1            | ACTIVE         |
+| free_db             | 8642763c-8ba7-4ede-a031-82355c7c34a7 | us-east1            | ACTIVE         |
++---------------------+--------------------------------------+---------------------+----------------+
 ```
 
 
-## Configuration
 
-```
-show config <CONFIG>
-config load --name <CONFIG>
-config save --name <CONFIG>
-config setdefault --name <XXX>
-```
 
