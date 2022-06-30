@@ -33,28 +33,24 @@ import io.aexp.nodes.graphql.GraphQLTemplate;
  */
 public class ApiGraphQLClient {
 
+    private static final String DB_ID     = "<change_me>";
+    private static final String DB_REGION = "<change_me>";
+    private static final String DB_TOKEN = "<change_me>";
+    
+    
     private static final String URL = "https://"
-            + "3ed83de7-d97f-4fb6-bf9f-82e9f7eafa23-"
-            + "eu-west-1"
-            + ".apps.astra.datastax.com/api/"
-            + "graphql-schema";
-    private static final String TOKEN = 
-            "AstraCS:gdZaqzmFZszaBTOlLgeecuPs:edd25600df1c01506f5388340f138f277cece2c93cb70f4b5fa386490daa5d44";
+            + DB_ID + "-" + DB_REGION 
+            + ".apps.astra.datastax.com/api/graphql-schema";
     
     public static <T> GraphQLResponseEntity<T> callGraphQLService(String query, Class<T> clazz)
     throws Exception {
-              
-        GraphQLTemplate graphQLTemplate = new GraphQLTemplate();
-        
         Map<String, String > headers = new HashMap<>();
-        headers.put("x-cassandra-token", TOKEN); 
-        
-        GraphQLRequestEntity requestEntity = GraphQLRequestEntity.Builder()
-              .url(URL)
-              .request(query)
-              .headers(headers)
-              .build();
-        return graphQLTemplate.query(requestEntity, clazz);
+        headers.put("x-cassandra-token", DB_TOKEN); 
+        return new GraphQLTemplate().query(GraphQLRequestEntity.Builder()
+                .url(URL)
+                .request(query)
+                .headers(headers)
+                .build(), clazz);
     }
     
     /**
@@ -63,18 +59,18 @@ public class ApiGraphQLClient {
     public static void main(String[] args)  
     throws Exception {
         
-        // Building a request (with DSG codegen)
+        // List Keyspaces
         GraphQLQueryRequest graphQLQueryRequest =
                 new GraphQLQueryRequest(
                         new KeyspacesGraphQLQuery.Builder().build(),
                         new KeyspacesProjectionRoot().name());
         
-        // Executing query (with American Express Nodes)
+        // Executing query
         GraphQLResponseEntity<KeyspaceList> res = callGraphQLService(
                 graphQLQueryRequest.serialize(), 
                 KeyspaceList.class);
         
-        System.out.println("Keyspaces");
+        // Showing results
         res.getResponse().getKeyspaces().stream().forEach(ks -> {
             System.out.println(ks.getName());
         });
