@@ -14,7 +14,7 @@ public class GenerateBashCompletion {
         Cli<Runnable> cli = new Cli<Runnable>(AstraCli.class);
         GlobalUsageGenerator<Runnable> helpGenerator = new BashCompletionGenerator<>();
         try {
-            helpGenerator.usage(cli.getMetadata(), new FileOutputStream("src/main/resources/auto-completions.bash"));
+            helpGenerator.usage(cli.getMetadata(), new FileOutputStream("dist/astra-init.sh"));
         } catch (IOException e) {
             e.printStackTrace();
         }

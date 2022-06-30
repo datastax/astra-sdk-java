@@ -16,33 +16,26 @@ echo_failed_command() {
 }
 trap echo_failed_command EXIT
 
-
 # Global variables
-ASTRA_VERSION="5.15.0"
-ASTRA_PLATFORM=$(uname)
-
-if [ -z "$ASTRA_DIR" ]; then
-    ASTRA_DIR="$HOME/.astra"
-    ASTRA_DIR_RAW='$HOME/.astra'
-else
-    ASTRA_DIR_RAW="$ASTRA_DIR"
-fi
+ASTRA_CLI_VERSION="0.3.2-alpha1"
+ASTRA_CLI_PLATFORM=$(uname)
+ASTRA_CLI_DIR="$HOME/.astra/cli"
+ASTRA_CLI_DIR_RAW='$HOME/.astra/cli'
 
 # Local variables
-astra_tmp_folder="${ASTRA_DIR}/tmp"
-astra_zip_file="${astra_tmp_folder}/astra-cli-${ASTRA_VERSION}.zip"
-astra_zip_base_folder="${astra_tmp_folder}/astra-cli-${ASTRA_VERSION}"
+astra_tmp_folder="$HOME/.astra/tmp"
+astra_zip_file="${astra_tmp_folder}/astra-cli-${ASTRA_CLI_VERSION}.zip"
+astra_zip_base_folder="${astra_tmp_folder}/astra-cli-${ASTRA_CLI_VERSION}"
 
-astra_config_file="${ASTRA_DIR}/config"
+# Config Files
 astra_bash_profile="${HOME}/.bash_profile"
 astra_profile="${HOME}/.profile"
 astra_bashrc="${HOME}/.bashrc"
 astra_zshrc="${ZDOTDIR:-${HOME}}/.zshrc"
-
 astra_init_snippet=$( cat << EOF
 #THIS MUST BE AT THE END OF THE FILE FOR ASTRA TO WORK!!!
-export ASTRADIR="$ASTRADIR_RAW"
-[[ -s "${ASTRA_DIR_RAW}/bin/astra-init.sh" ]] && source "${ASTRA_DIR_RAW}/bin/astra-init.sh"
+export ASTRADIR="$ASTRA_CLI_DIR_RAW"
+[[ -s "${ASTRADIR}/astra-init.sh" ]] && source "${ASTRADIR}/astra-init.sh"
 EOF
 )
 
@@ -75,7 +68,7 @@ if [ -d "$ASTRA_DIR" ]; then
 	echo " You already have ASTRA-CLI installed."
 	echo " ASTRA-CLI was found at:"
 	echo ""
-	echo "    ${ASTRA_DIR}"
+	echo "    ${ASTRA_CLI_DIR}"
 	echo ""
 	echo " Please delete this folder if you need to upgrade."
 	echo "======================================================================================================"
@@ -150,20 +143,19 @@ else
 	fi
 fi
 
-echo "Installing ASTRA-CLI scripts..."
-
+echo "Installing Astra Cli scripts..."
 
 # Create directory structure
 
 echo "Create distribution directories..."
 mkdir -p "$astra_tmp_folder"
+mkdir -p "$ASTRA_CLI_DIR_RAW"
 
 # script cli distribution
 echo "Installing script cli archive..."
 # fetch distribution
 download_url="${ASTRA_SERVICE}/...."
-astra_zip_file="${astra_tmp_folder}/sdkman-${ASTRAVERSION}.zip"
-astra_zip_base_folder="${astra_tmp_folder}/sdkman-${ASTRA)VERSION}"
+astra_zip_file="${astra_tmp_folder}/astra-cli-${ASTRAVERSION}.zip"
 echo "* Downloading..."
 curl --fail --location --progress-bar "$download_url" > "$astra_zip_file"
 
@@ -201,21 +193,20 @@ rm -rf "$astra_zip_file"
 echo ""
 
 
-echo "Set version to $ASTRA_VERSION ..."
-echo "$ASTRA_VERSION" > "${ASTRA_DIR}/var/version"
-
+echo "Set version to $ASTRA_CLI_VERSION ..."
+echo "$ASTRA_CLI_VERSION" > "${ASTRA_CLI_DIR}/var/version"
 
 if [[ $darwin == true ]]; then
   touch "$astra_bash_profile"
   echo "Attempt update of login bash profile on OSX..."
-  if [[ -z $(grep 'sdkman-init.sh' "$astra_bash_profile") ]]; then
+  if [[ -z $(grep 'astra-init.sh' "$astra_bash_profile") ]]; then
     echo -e "\n$astra_init_snippet" >> "$astra_bash_profile"
     echo "Added astra init snippet to $astra_bash_profile"
   fi
 else
   echo "Attempt update of interactive bash profile on regular UNIX..."
   touch "${astra_bashrc}"
-  if [[ -z $(grep 'sdkman-init.sh' "$astra_bashrc") ]]; then
+  if [[ -z $(grep 'astra-init.sh' "$astra_bashrc") ]]; then
       echo -e "\n$astra_init_snippet" >> "$astra_bashrc"
       echo "Added astra init snippet to $astra_bashrc"
   fi
@@ -234,7 +225,7 @@ echo -e "\n\n\nAll done!\n\n"
 echo ""
 echo "Please open a new terminal, or run the following in the existing one:"
 echo ""
-echo "    source \"${ASTRA_DIR}/bin/astra-init.sh\""
+echo "    source \"${ASTRA_CLI_DIR}/astra-init.sh\""
 echo ""
 echo "Then issue the following command:"
 echo ""

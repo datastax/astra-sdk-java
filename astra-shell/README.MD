@@ -2,9 +2,8 @@
 
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-## Overview
+_This component is in heavy development that can lead to breaking changes._
 
-_This component is in heavy development that can lead to breaking changes_
 
 ## Installation
 
@@ -16,9 +15,13 @@ Installing ASTRA-CLI on UNIX-like platforms is as easy as ever. ASTRA-CLI instal
 curl -Ls curl -s "https://dtsx.io/get-astra-cli" | bash
 ```
 
-- Follow the instructions on-screen to complete installation. Next, open a new terminal or enter:
+- Follow the instructions on-screen to complete installation. 
 
-$ source "$HOME/.astra/install/astra-init.sh"
+- To get autocompletion open a new terminal :
+
+```
+source "$HOME/.astra/install/astra-init.sh"
+```
 
 - Lastly, run the following code snippet to ensure that installation succeeded:
 
@@ -46,7 +49,7 @@ astra setup
 astra config list
 ```
 
->```
+```
 +-----------------------------------------+
 | configuration                           |
 +-----------------------------------------+
@@ -62,7 +65,7 @@ astra config list
 astra db list
 ```
 
->```
+```
 +---------------------+--------------------------------------+---------------------+----------------+
 | name                | id                                   | default-region      | status         |
 +---------------------+--------------------------------------+---------------------+----------------+
