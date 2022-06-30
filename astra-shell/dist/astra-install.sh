@@ -173,9 +173,6 @@ echo "$(tput setaf 2)[OK]$(tput setaf 7) - File moved to $ASTRA_CLI_DIR"
 rm -rf "${astra_tmp_folder}"
 echo "$(tput setaf 2)[OK]$(tput setaf 7) - Installation cleaned up"
 
-echo $astra_init_snippet
-
-
 if [[ $darwin == true ]]; then
   # Adding on MAC OS
   touch "$astra_bash_profile"
@@ -200,7 +197,7 @@ if [[ -z $(grep 'astra-init.sh' "$astra_zshrc") ]]; then
 fi
 
 
-echo -e "\n\n\nAll done!\n\n"
+echo "$(tput setaf 2)[OK]$(tput setaf 7) - ALL DONE"
 
 echo ""
 echo "Please open a new terminal, or run the following in the existing one:"
@@ -209,6 +206,5 @@ echo "    source \"${ASTRA_CLI_DIR}/astra-init.sh\""
 echo ""
 echo "Then issue the following command:"
 echo ""
-echo "    astra help"
+echo "    astra setup"
 echo ""
-echo "Enjoy!!!"
