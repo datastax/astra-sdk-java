@@ -12,12 +12,21 @@
 		<version>0.3.2-SNAPSHOT</version>
 	</parent>
 
+	<properties>
+		<dgs.codegen.version>5.1.16</dgs.codegen.version>
+		<nodes.version>0.5.0</nodes.version>
+		<retry4j.version>0.15.0</retry4j.version>
+		<graphql-codegen.version>1.16</graphql-codegen.version>
+	</properties>
+	
 	<dependencies>
+	    
 	    <!--  Support for Cqlsession -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-core</artifactId>
 		</dependency>
+		
 		<!--  http Client v5 -->
 		<dependency>
     		<groupId>org.apache.httpcomponents.client5</groupId>
@@ -31,7 +40,7 @@
 		<dependency>
 		    <groupId>com.evanlennick</groupId>
 		    <artifactId>retry4j</artifactId>
-		    <version>0.15.0</version>
+		    <version>${retry4j.version}</version>
 		</dependency>
 
 		<!-- Support for JSON Api -->
@@ -61,6 +70,13 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 		</dependency>
+		<!-- GraphQL -->
+		<dependency>
+			<groupId>com.netflix.graphql.dgs.codegen</groupId>
+			<artifactId>graphql-dgs-codegen-client-core</artifactId>
+			<version>${dgs.codegen.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- GRPC -->
 		 <dependency>
 	        <groupId>io.stargate.grpc</groupId>
@@ -89,6 +105,29 @@
 	</dependencies>
 	<build>
 		<plugins>
+		
+			<plugin>
+				<groupId>io.github.deweyjose</groupId>
+				<artifactId>graphqlcodegen-maven-plugin</artifactId>
+				<version>${graphql-codegen.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<packageName>com.datastax.stargate.graphql</packageName>
+					<schemaPaths>
+						<path>src/main/resources/graphql</path>
+					</schemaPaths>
+					<generateBoxedTypes>true</generateBoxedTypes>
+					<generateClient>true</generateClient>
+					<writeToFiles>true</writeToFiles>
+				</configuration>
+			</plugin>
+		
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>

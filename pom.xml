@@ -251,7 +251,40 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	
+	
+
 	<build>
+	
+	<pluginManagement>
+  <plugins>
+    <plugin>
+     <groupId>org.eclipse.m2e</groupId>
+     <artifactId>lifecycle-mapping</artifactId>
+     <version>1.0.0</version>
+     <configuration>
+       <lifecycleMappingMetadata>
+         <pluginExecutions>
+           <pluginExecution>
+             <pluginExecutionFilter>
+               <groupId>io.github.deweyjose</groupId>
+			   <artifactId>graphqlcodegen-maven-plugin</artifactId>
+               <versionRange>[1.16,)</versionRange>
+               <goals>
+                 <goal>generate</goal>
+               </goals>
+             </pluginExecutionFilter>
+             <action>
+               <ignore/>
+             </action>
+           </pluginExecution>
+         </pluginExecutions>
+       </lifecycleMappingMetadata>
+     </configuration>
+    </plugin>
+  </plugins>
+</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
@@ -360,14 +393,14 @@
 			</plugin>
 		</plugins>
 	</build>
-	<!-- 
+	
+	<!-- Required for the dgs generator -->
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
-	-->
 	
 	<distributionManagement>
 		<repository>
@@ -375,12 +408,14 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
+	
 	<scm>
 		<connection>scm:git:git@github.com:datastax/astra-sdk-java.git</connection>
 		<developerConnection>scm:git:git@github.com:datastax/astra-sdk-java.git</developerConnection>
 		<url>https://github.com/datastax/astra-sdk-java</url>
 		<tag>HEAD</tag>
 	</scm>
+	
 	<developers>
 		<developer>
 			<id>clunven</id>

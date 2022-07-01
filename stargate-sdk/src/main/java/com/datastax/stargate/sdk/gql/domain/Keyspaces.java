@@ -1,10 +1,16 @@
-package com.datastax.stargate.sdk.gql;
+package com.datastax.stargate.sdk.gql.domain;
 
 import java.util.List;
 
-public class KeyspaceList {
+import com.datastax.stargate.graphql.types.Keyspace;
+
+/**
+ * List of keyspaces.
+ * @author Cedrick LUNVEN (@clunven)
+ */
+public class Keyspaces {
     
-    private List<KeyspaceResponse> keyspaces;
+    private List<Keyspace> keyspaces;
 
     /**
      * Getter accessor for attribute 'keyspaces'.
@@ -12,7 +18,7 @@ public class KeyspaceList {
      * @return
      *       current value of 'keyspaces'
      */
-    public List<KeyspaceResponse> getKeyspaces() {
+    public List<Keyspace> getKeyspaces() {
         return keyspaces;
     }
 
@@ -21,7 +27,7 @@ public class KeyspaceList {
      * @param keyspaces
      * 		new value for 'keyspaces '
      */
-    public void setKeyspaces(List<KeyspaceResponse> keyspaces) {
+    public void setKeyspaces(List<Keyspace> keyspaces) {
         this.keyspaces = keyspaces;
     }
 

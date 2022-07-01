@@ -1,10 +1,20 @@
 package com.datastax.stargate.sdk.gql;
 
-import java.util.function.Function;
+import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import com.datastax.stargate.graphql.client.KeyspacesGraphQLQuery;
+import com.datastax.stargate.graphql.client.KeyspacesProjectionRoot;
+import com.datastax.stargate.graphql.types.Keyspace;
 import com.datastax.stargate.sdk.StargateClientNode;
 import com.datastax.stargate.sdk.StargateHttpClient;
+import com.datastax.stargate.sdk.core.ApiResponse;
 import com.datastax.stargate.sdk.core.ApiResponseHttp;
+import com.datastax.stargate.sdk.gql.domain.Keyspaces;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
 
 /**
  * Implementations of CQL First Approaches, DDL.
@@ -48,8 +58,24 @@ public class CqlSchemaClient {
      * @return
      *      list of keyspaces.
      */
-    public String keyspaces() {
-        return query(GraphQLQueryBuilder.queryListKeyspaces());
+    public Stream<Keyspace> keyspaces() {
+        return this.keyspaces(new KeyspacesProjectionRoot().name());
+    }
+    
+    /**
+     * List keyspaces.
+     *
+     * @return
+     *      list of keyspaces.
+     */
+    public Stream<Keyspace> keyspaces(KeyspacesProjectionRoot projection) {
+        String res = query(new GraphQLQueryRequest(
+                new KeyspacesGraphQLQuery.Builder().build(),
+                projection).serialize());
+        return unmarshallType(res, new TypeReference<ApiResponse<Keyspaces>>(){})
+                .getData()
+                .getKeyspaces()
+                .stream();
     }
     
     /**
