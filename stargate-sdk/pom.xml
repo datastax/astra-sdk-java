@@ -13,7 +13,7 @@
 	</parent>
 
 	<properties>
-		<dgs.codegen.version>5.1.16</dgs.codegen.version>
+		<dgs.codegen.version>5.1.17</dgs.codegen.version>
 		<nodes.version>0.5.0</nodes.version>
 		<retry4j.version>0.15.0</retry4j.version>
 		<graphql-codegen.version>1.16</graphql-codegen.version>
