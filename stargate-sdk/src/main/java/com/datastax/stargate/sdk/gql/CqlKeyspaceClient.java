@@ -51,16 +51,6 @@ public class CqlKeyspaceClient {
     }
     
     /**
-     * List tables.
-     *
-     * @return
-     *      return list of table
-     */
-    public String listTables() {
-        return query(GraphQLQueryBuilder.queryListTables(this.keyspace));
-    }
-    
-    /**
      * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
     public Function<StargateClientNode, String> cqlKeyspaceResource = 

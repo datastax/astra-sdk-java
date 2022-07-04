@@ -2,9 +2,12 @@ package com.datastax.stargate.sdk.gql;
 
 import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.datastax.stargate.graphql.client.KeyspaceGraphQLQuery;
+import com.datastax.stargate.graphql.client.KeyspaceProjectionRoot;
 import com.datastax.stargate.graphql.client.KeyspacesGraphQLQuery;
 import com.datastax.stargate.graphql.client.KeyspacesProjectionRoot;
 import com.datastax.stargate.graphql.types.Keyspace;
@@ -69,13 +72,37 @@ public class CqlSchemaClient {
      *      list of keyspaces.
      */
     public Stream<Keyspace> keyspaces(KeyspacesProjectionRoot projection) {
-        String res = query(new GraphQLQueryRequest(
+        // Shape your request
+        String graphQLRequest = new GraphQLQueryRequest(
                 new KeyspacesGraphQLQuery.Builder().build(),
-                projection).serialize());
-        return unmarshallType(res, new TypeReference<ApiResponse<Keyspaces>>(){})
+                projection).serialize();
+        // Invoke endpoint
+        ApiResponseHttp res = stargateHttpClient.POST_GRAPHQL(cqlSchemaResource, graphQLRequest);
+        // Marshall output
+        return unmarshallType(res.getBody(), new TypeReference<ApiResponse<Keyspaces>>(){})
                 .getData()
                 .getKeyspaces()
                 .stream();
+    }
+    
+    /**
+     * Using the keyspace(...) functions about cqlShema.
+     *
+     * @param keyspaceName
+     *      keyspace name
+     * @param projection
+     *      
+     * @return
+     */
+    public Optional<Keyspace> keyspace(String keyspaceName, KeyspaceProjectionRoot projection) {
+        String graphQLRequest = new GraphQLQueryRequest(
+                new KeyspaceGraphQLQuery.Builder().name(keyspaceName).build(), 
+                projection).serialize();
+        // Invoke endpoint
+        ApiResponseHttp res = stargateHttpClient.POST_GRAPHQL(cqlSchemaResource, graphQLRequest);
+        // Marshall output
+        return Optional.ofNullable(unmarshallType(res.getBody(), 
+                new TypeReference<ApiResponse<Keyspace>>(){}).getData());
     }
     
     /**

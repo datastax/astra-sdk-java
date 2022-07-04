@@ -82,6 +82,7 @@ if [ -d "$ASTRA_DIR" ]; then
 	echo "    ${ASTRA_CLI_DIR}"
 	echo ""
 	echo " Please delete this folder if you need to upgrade."
+	echo " rm -Rf ${ASTRA_CLI_DIR}"
 	echo "======================================================================================================"
 	echo ""
 	exit 0
@@ -131,7 +132,6 @@ mkdir -p "$astra_tmp_folder"
 echo "$(tput setaf 2)[OK]$(tput setaf 7) - Created $astra_tmp_folder"
 mkdir -p "$ASTRA_CLI_DIR"
 echo "$(tput setaf 2)[OK]$(tput setaf 7) - Created $ASTRA_CLI_DIR"
-
 echo ""
 echo "Downloading archive:"
 download_url="https://github.com/datastaxdevs/datastaxdevs.github.io/raw/master/cli/${ASTRA_CLI_VERSION}.zip"
@@ -193,18 +193,10 @@ touch "$astra_zshrc"
 if [[ -z $(grep 'astra-init.sh' "$astra_zshrc") ]]; then
     echo -e "\n$astra_init_snippet" >> "$astra_zshrc"
     echo "$(tput setaf 2)[OK]$(tput setaf 7) - astra added to ${astra_zshrc}"
-    echo "Updated existing ${astra_zshrc}"
 fi
 
-
-echo "$(tput setaf 2)[OK]$(tput setaf 7) - ALL DONE"
-
+echo "$(tput setaf 2)[OK]$(tput setaf 7) - Installation Successful"
 echo ""
-echo "Please open a new terminal, or run the following in the existing one:"
+echo "Open $(tput setaf 2)A NEW TERMINAL$(tput setaf 7) and run: $(tput setaf 3)astra setup$(tput setaf 7)"
 echo ""
-echo "    source \"${ASTRA_CLI_DIR}/astra-init.sh\""
-echo ""
-echo "Then issue the following command:"
-echo ""
-echo "    astra setup"
-echo ""
+echo "You can close this window."

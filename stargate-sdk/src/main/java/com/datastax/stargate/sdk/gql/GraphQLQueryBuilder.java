@@ -11,17 +11,7 @@ public class GraphQLQueryBuilder {
      * Hide default constructor.
      */
     private GraphQLQueryBuilder() {}
-    
-    /**
-     * List keyspaces.
-     *
-     * @return
-     *      a query.
-     */
-    public static String queryListKeyspaces() {
-        return "{ keyspaces { name } }";
-    }
-    
+   
     /**
      * List tables in a keyspace.
      * 
