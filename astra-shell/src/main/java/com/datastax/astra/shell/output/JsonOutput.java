@@ -1,6 +1,8 @@
-package com.datastax.astra.shell;
+package com.datastax.astra.shell.output;
 
 import java.io.Serializable;
+
+import com.datastax.astra.shell.ExitCode;
 
 /**
  * Wrapper for Json outputs.

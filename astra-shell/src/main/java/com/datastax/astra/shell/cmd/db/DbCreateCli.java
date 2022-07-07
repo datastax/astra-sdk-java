@@ -30,7 +30,7 @@ public class DbCreateCli extends BaseCliCommand {
      */
     @Option(name = { "-r", "--region" }, title = "DB_REGION", arity = 1, 
             description = "Cloud provider region to provision")
-    protected String databaseRegion = Db.DEFAULT_REGION;
+    protected String databaseRegion = OperationsDb.DEFAULT_REGION;
     
     /**
      * Default keyspace created with the Db
@@ -42,7 +42,7 @@ public class DbCreateCli extends BaseCliCommand {
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        return Db.createDb(this, databaseName, databaseRegion, defaultKeyspace);
+        return OperationsDb.createDb(this, databaseName, databaseRegion, defaultKeyspace);
     }
     
 }

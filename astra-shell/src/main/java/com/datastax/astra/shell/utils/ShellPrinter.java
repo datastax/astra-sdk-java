@@ -2,8 +2,8 @@ package com.datastax.astra.shell.utils;
 
 import org.fusesource.jansi.Ansi;
 
-import com.datastax.astra.shell.OutputFormat;
 import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.output.OutputFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

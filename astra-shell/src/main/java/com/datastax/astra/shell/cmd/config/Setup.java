@@ -8,7 +8,6 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.astra.shell.cmd.show.ShowConfigsCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Command;
@@ -58,7 +57,7 @@ public class Setup extends BaseConfigCommand implements Runnable {
                         ccc.run();
                         valid_token = true;
                         
-                        ShowConfigsCommand configs = new ShowConfigsCommand();
+                        ConfigShow configs      = new ConfigShow();
                         configs.astraRc         = this.astraRc;
                         configs.configFilename  = this.configFilename;
                         configs.run();
@@ -70,7 +69,7 @@ public class Setup extends BaseConfigCommand implements Runnable {
             }
             
             LoggerShell.println("\n[What's NEXT ?]\n", Ansi.Color.CYAN);
-            System.out.println("You are all set you can now:");
+            System.out.println("You are all set. You can now:");
             System.out.println("   • Use any command, 'astra help' will get you the list");
             System.out.println("   • Try with 'astra db list'");
             System.out.println("   • Enter interactive mode using 'astra'");

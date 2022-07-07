@@ -11,8 +11,8 @@ import static org.fusesource.jansi.Ansi.Color.BLUE;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 
-import com.datastax.astra.shell.CsvOutput;
-import com.datastax.astra.shell.JsonOutput;
+import com.datastax.astra.shell.output.CsvOutput;
+import com.datastax.astra.shell.output.JsonOutput;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

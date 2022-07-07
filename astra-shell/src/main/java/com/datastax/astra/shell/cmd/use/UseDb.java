@@ -2,7 +2,7 @@ package com.datastax.astra.shell.cmd.use;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.cmd.BaseShellCommand;
-import com.datastax.astra.shell.cmd.db.Db;
+import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -13,7 +13,7 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(
-        name = Db.DB, 
+        name = OperationsDb.DB, 
         description = "Scope a database")
 public class UseDb extends BaseShellCommand {
     

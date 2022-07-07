@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.datastax.astra.shell.CsvOutput;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.JsonOutput;
-import com.datastax.astra.shell.OutputFormat;
+import com.datastax.astra.shell.output.CsvOutput;
+import com.datastax.astra.shell.output.JsonOutput;
+import com.datastax.astra.shell.output.OutputFormat;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Option;
 
@@ -60,7 +60,7 @@ public abstract class BaseCommand implements Runnable {
                 LoggerShell.json(new JsonOutput(code, code.name() + ": " + msg));
             break;
             case csv:
-                LoggerShell.csv(new CsvOutput(code.getCode(),  code.name() + ": " + msg));
+                LoggerShell.csv(new CsvOutput(code,  code.name() + ": " + msg));
             break;
             case human:
             default:
@@ -104,7 +104,7 @@ public abstract class BaseCommand implements Runnable {
                 LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, msg));
             break;
             case csv:
-                LoggerShell.csv(new CsvOutput(ExitCode.SUCCESS.getCode(), msg));
+                LoggerShell.csv(new CsvOutput(ExitCode.SUCCESS, msg));
             break;
             case human:
             default:

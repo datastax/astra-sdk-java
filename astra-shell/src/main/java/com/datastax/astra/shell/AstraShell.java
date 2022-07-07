@@ -3,10 +3,13 @@ package com.datastax.astra.shell;
 import com.datastax.astra.shell.cmd.ExitCommand;
 import com.datastax.astra.shell.cmd.HelpCommand;
 import com.datastax.astra.shell.cmd.QuitCommand;
-import com.datastax.astra.shell.cmd.db.Db;
 import com.datastax.astra.shell.cmd.db.DbCreateShell;
 import com.datastax.astra.shell.cmd.db.DbDeleteShell;
 import com.datastax.astra.shell.cmd.db.DbListShell;
+import com.datastax.astra.shell.cmd.db.OperationsDb;
+import com.datastax.astra.shell.cmd.iam.RoleListShell;
+import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.UserListShell;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.CqlShCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
@@ -35,18 +38,21 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     CqlShCommand.class
 },
   groups = {
-          @Group(name = Db.DB, description = "Commands acting of database", commands = { 
+          @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = {
                   DbCreateShell.class,
                   DbDeleteShell.class,
                   DbListShell.class
           }),
-          @Group(
-               name = "use",
-               description = "Focus on an entity (context & prompt changed)",
-               commands = {
-                   UseDb.class
-               }
-          )
+          @Group(name= "role", description = "Manage the roles (RBAC)", commands = {
+                  RoleListShell.class,
+                  RoleShowCli.class
+          }),
+          @Group(name= "user", description = "Manage the users permission", commands = {
+                  UserListShell.class
+          }),
+          @Group(name = "use", description = "Focus on an entity (context & prompt changed)", commands = {
+                 UseDb.class
+          }),
     })
 public class AstraShell {
     

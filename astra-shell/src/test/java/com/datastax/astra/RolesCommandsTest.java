@@ -9,14 +9,20 @@ import org.junit.jupiter.api.Test;
  */
 public class RolesCommandsTest extends AbstractAstraCliTest {
 
+
     @Test
-    public void showRoles()  throws Exception {
-        astraCli("show", "roles");
+    public void interactive()  throws Exception {
+        astraCli();
+    }
+    
+    @Test
+    public void listRoles()  throws Exception {
+        astraCli("role", "list");
     }
     
     @Test
     public void showRole() throws Exception {
-        astraCli("show", "role", "dde8a0e9-f4ae-4b42-b642-9f257436c8da");
+        astraCli("role", "show", "dde8a0e9-f4ae-4b42-b642-9f257436c8da");
     }
     
 }

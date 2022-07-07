@@ -1,4 +1,4 @@
-package com.datastax.astra.shell;
+package com.datastax.astra.shell.output;
 
 
 import java.io.Serializable;
@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.datastax.astra.shell.ExitCode;
 
 /**
  * Show cli output as CSV.
@@ -55,10 +57,10 @@ public class CsvOutput implements Serializable{
      * @param errorMessage
      *      error message
      */
-    public CsvOutput(int errorCode, String errorMessage) {
+    public CsvOutput(ExitCode errorCode, String errorMessage) {
        setHeaders(ERROR_CODE_COLUMN, ERROR_MESSAGE_COLUMN);
        Map<String, String > error = new HashMap<>();
-       error.put(ERROR_CODE_COLUMN, String.valueOf(errorCode));
+       error.put(ERROR_CODE_COLUMN, String.valueOf(errorCode.getCode()));
        error.put(ERROR_MESSAGE_COLUMN, errorMessage);
        rows.add(error);
     }
@@ -79,7 +81,7 @@ public class CsvOutput implements Serializable{
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        StringBuilder csv = new StringBuilder(String.join(";",headers));
+        StringBuilder csv = new StringBuilder(String.join(",",headers));
         csv.append(LINE_SEPARATOR);
         rows.stream().forEach(row -> {
             List<String> values = new ArrayList<>();

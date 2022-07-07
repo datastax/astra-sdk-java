@@ -11,12 +11,17 @@ public class DatabasesCommandsTest extends AbstractAstraCliTest {
     
     @Test
     public void showDbs()  throws Exception {
-        astraCli("show", "dbs");
+        astraCli("db", "list");
+    }
+    
+    @Test
+    public void createDb()  throws Exception {
+        astraCli("db", "create", "test", "-r", "eu-central-1", "-ks", "ks1");
     }
 
     @Test
-    public void createDb()  throws Exception {
-        astraCli("create", "db", "-n","shell_tests", "-r", "us-east1", "-ks", "ks1");
+    public void deleteDb()  throws Exception {
+        astraCli("db", "delete","sky_session1");
     }
     
     

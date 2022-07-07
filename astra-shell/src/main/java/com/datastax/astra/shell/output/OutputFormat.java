@@ -1,4 +1,4 @@
-package com.datastax.astra.shell;
+package com.datastax.astra.shell.output;
 
 /**
  * Output of the commands.

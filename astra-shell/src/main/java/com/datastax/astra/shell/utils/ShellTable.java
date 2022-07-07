@@ -10,9 +10,9 @@ import java.util.Set;
 
 import org.fusesource.jansi.Ansi;
 
-import com.datastax.astra.shell.CsvOutput;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.JsonOutput;
+import com.datastax.astra.shell.output.CsvOutput;
+import com.datastax.astra.shell.output.JsonOutput;
 
 /**
  * Standardize output for tables.
@@ -23,7 +23,13 @@ public class ShellTable implements Serializable {
     
     /** Serial */
     private static final long serialVersionUID = -2134504321420499395L;
-
+    
+    /** Column name. */
+    public static final String COLUMN_PROPERTY_NAME    = "Attribute";
+    
+    /** Column name. */
+    public static final String COLUMN_PROPERTY_VALUE   = "Value";
+    
     /**
      * Color of table. 
      */
@@ -70,6 +76,23 @@ public class ShellTable implements Serializable {
         setColumnTitlesColor(Ansi.Color.YELLOW);
         setCellColor(Ansi.Color.WHITE);
         setTableColor(Ansi.Color.CYAN);
+    }
+    
+    /**
+     * Create a property table
+     * 
+     * @param widthName
+     *      name
+     * @param widthValue
+     *      value
+     * @return
+     *      table initialized
+     */
+    public static ShellTable propertyTable(int widthName, int widthValue) {
+        ShellTable sht = new ShellTable();
+        sht.addColumn(COLUMN_PROPERTY_NAME, widthName);
+        sht.addColumn(COLUMN_PROPERTY_VALUE, widthValue);
+        return sht;
     }
     
     /**
@@ -144,6 +167,41 @@ public class ShellTable implements Serializable {
     }
     
     /**
+     * Add a property in a table.
+     * 
+     * @param name
+     *      key name
+     * @param value
+     *      key value
+     */
+    public void addPropertyRow(String name, String value) {
+        getCellValues().add(buildProperty(name, value));
+    }
+    
+    /**
+     * Show a list in the table.
+     * @param name
+     *      attribute names
+     * @param values
+     *      items of the list
+     */
+    public void addPropertyListRows(String name, List<String> values) {
+        if (values != null && !values.isEmpty()) {
+            addPropertyRow(" ", "  ");
+            int idx = 0;
+            for(String rsc: values) {
+                if (idx == 0) {
+                    addPropertyRow(name, "[" + idx + "] " + rsc);
+                } else {
+                    addPropertyRow(" ",  "[" + idx + "] " + rsc);
+                }
+                idx++;
+            }
+            addPropertyRow(" ", "  ");
+        }
+    }
+    
+    /**
      * Add property in a table.
      *
      * @param name
@@ -153,10 +211,10 @@ public class ShellTable implements Serializable {
      * @return
      *      new row
      */
-    public static Map<String, String > addProperty(String name, String value) {
+    public static Map<String, String > buildProperty(String name, String value) {
         Map <String, String> rf = new HashMap<>();
-        rf.put("Name", name);
-        rf.put("Value", value);
+        rf.put(COLUMN_PROPERTY_NAME, name);
+        rf.put(COLUMN_PROPERTY_VALUE, value);
         return rf;
     }
     
@@ -173,6 +231,9 @@ public class ShellTable implements Serializable {
         getColumnSize().put(colName, colwidth);
     }
     
+    public void addRow(Map<String, String> row) {
+        getCellValues().add(row);
+    }
 
     /**
      * Getter accessor for attribute 'tableColor'.

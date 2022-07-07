@@ -23,7 +23,10 @@ public enum ExitCode {
     PARSE_ERROR(-1),
     
     /** code. */
-    CANNOT_CONNECT(408);
+    CANNOT_CONNECT(408), 
+    
+    /** Internal error. */
+    INTERNAL_ERROR(500);
     
     /* Exit code. */
     private int code;

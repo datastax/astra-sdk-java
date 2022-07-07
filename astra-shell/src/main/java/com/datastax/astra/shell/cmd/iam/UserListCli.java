@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.cmd.db;
+package com.datastax.astra.shell.cmd.iam;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.cmd.BaseCliCommand;
@@ -6,16 +6,16 @@ import com.datastax.astra.shell.cmd.BaseCommand;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
- * Show Databases for an organization 
- *
+ * Display roles.
+ * 
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = BaseCommand.LIST, description = "Display the list of Databases in an organization")
-public class DbListCli extends BaseCliCommand {
+@Command(name = BaseCommand.LIST, description = "Display the list of Users in an organization")
+public class UserListCli extends BaseCliCommand {
    
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationsDb.listDb(this);
+        return OperationIam.listUsers(this);
     }
-
+    
 }

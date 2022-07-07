@@ -9,10 +9,13 @@ import com.datastax.astra.shell.cmd.config.ConfigDelete;
 import com.datastax.astra.shell.cmd.config.ConfigList;
 import com.datastax.astra.shell.cmd.config.ConfigShow;
 import com.datastax.astra.shell.cmd.config.Setup;
-import com.datastax.astra.shell.cmd.db.Db;
 import com.datastax.astra.shell.cmd.db.DbCreateCli;
 import com.datastax.astra.shell.cmd.db.DbDeleteCli;
 import com.datastax.astra.shell.cmd.db.DbListCli;
+import com.datastax.astra.shell.cmd.db.OperationsDb;
+import com.datastax.astra.shell.cmd.iam.RoleListCli;
+import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.UserListCli;
 import com.datastax.astra.shell.cmd.shell.ShellCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
@@ -34,7 +37,7 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     ShellCommand.class
   },
   groups = {
-          @Group(name = Db.DB, description = "Commands acting of database", commands = { 
+          @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = { 
                   DbCreateCli.class,
                   DbDeleteCli.class,
                   DbListCli.class
@@ -45,8 +48,21 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   ConfigDelete.class,
                   ConfigShow.class,
                   ConfigList.class
-          }
-     ),
+          }),
+          @Group(name= "role", description = "Manage the roles (RBAC)", commands = {
+                  RoleListCli.class,
+                  RoleShowCli.class
+          }),
+          @Group(name= "user", description = "Manage the users permissions", commands = {
+                  UserListCli.class
+          }),
+          @Group(name= "token", description = "Manage the security tokens", commands = {
+                  
+          }),
+          @Group(name= "acl", description = "Manage the access lists", commands = {
+                  
+          })
+          
   })
 public class AstraCli {
     

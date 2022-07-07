@@ -27,7 +27,7 @@ import com.datastax.astra.shell.utils.ShellTable;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class Db {
+public class OperationsDb {
 
     /** Command constants. */
     public static final String DB                    = "db";
@@ -57,7 +57,7 @@ public class Db {
     /**
      * Hide default constructor.
      */
-    private Db() {}
+    private OperationsDb() {}
     
     /**
      * Load the databaseClient by user input.
@@ -132,7 +132,7 @@ public class Db {
         }
         
         // Validate keyspace
-        if (!defaultKeyspace.matches(Db.KEYSPACE_NAME_PATTERN)) {
+        if (!defaultKeyspace.matches(OperationsDb.KEYSPACE_NAME_PATTERN)) {
             cmd.outputError(ExitCode.INVALID_PARAMETER, "The keyspace name is not valid, please use snake_case: [a-z0-9_]");
             return ExitCode.INVALID_PARAMETER;
         }
@@ -141,7 +141,7 @@ public class Db {
         String dbId = ShellContext.getInstance().getApiDevopsDatabases()
                 .createDatabase(DatabaseCreationRequest.builder()
                         .name(databaseName)
-                        .tier(Db.DEFAULT_TIER)
+                        .tier(OperationsDb.DEFAULT_TIER)
                         .cloudProvider(CloudProviderType.valueOf(regionMap
                                 .get(databaseRegion)
                                 .getCloudProvider()
@@ -221,12 +221,12 @@ public class Db {
             sht.getColumnSize().put("Value", 40);
             sht.getColumnTitlesNames().add("Name");
             sht.getColumnTitlesNames().add("Value");
-            sht.getCellValues().add(ShellTable.addProperty(COLUMN_ID, db.getId()));
-            sht.getCellValues().add(ShellTable.addProperty(COLUMN_NAME, db.getInfo().getName()));
-            sht.getCellValues().add(ShellTable.addProperty(COLUMN_DEFAULT_REGION, db.getInfo().getRegion()));
-            sht.getCellValues().add(ShellTable.addProperty(COLUMN_STATUS, db.getStatus().toString()));
-            sht.getCellValues().add(ShellTable.addProperty(COLUMN_DEFAULT_KEYSPACE, db.getInfo().getKeyspace()));
-            sht.getCellValues().add(ShellTable.addProperty("Creation Time", db.getCreationTime()));
+            sht.getCellValues().add(ShellTable.buildProperty(COLUMN_ID, db.getId()));
+            sht.getCellValues().add(ShellTable.buildProperty(COLUMN_NAME, db.getInfo().getName()));
+            sht.getCellValues().add(ShellTable.buildProperty(COLUMN_DEFAULT_REGION, db.getInfo().getRegion()));
+            sht.getCellValues().add(ShellTable.buildProperty(COLUMN_STATUS, db.getStatus().toString()));
+            sht.getCellValues().add(ShellTable.buildProperty(COLUMN_DEFAULT_KEYSPACE, db.getInfo().getKeyspace()));
+            sht.getCellValues().add(ShellTable.buildProperty("Creation Time", db.getCreationTime()));
             
             sht.show();
             cmd.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");

@@ -24,7 +24,7 @@ public class DbDeleteShell extends BaseShellCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return Db.deleteDb(this, databaseId);
+        return OperationsDb.deleteDb(this, databaseId);
     }
     
 }
