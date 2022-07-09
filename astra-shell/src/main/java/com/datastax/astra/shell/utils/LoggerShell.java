@@ -1,12 +1,11 @@
 package com.datastax.astra.shell.utils;
 
 import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.Color.CYAN;
+import static org.fusesource.jansi.Ansi.Color.GREEN;
 import static org.fusesource.jansi.Ansi.Color.RED;
 import static org.fusesource.jansi.Ansi.Color.YELLOW;
-import static org.fusesource.jansi.Ansi.Color.GREEN;
-import static org.fusesource.jansi.Ansi.Color.BLUE;
-
 
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
@@ -145,7 +144,10 @@ public class LoggerShell {
     public static void json(JsonOutput json) {
         if (json != null) {
             try {
-                System.out.println(OM.writeValueAsString(json));
+                String myJson = OM
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(json);
+                System.out.println(myJson);
             } catch (JsonProcessingException e) {
                 error("Cannot create JSON :" + e.getMessage());
             }

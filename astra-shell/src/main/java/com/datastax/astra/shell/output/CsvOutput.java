@@ -78,6 +78,25 @@ public class CsvOutput implements Serializable{
        this.headers = headers;
     }
     
+    /**
+     * Escape String to fit csv;
+     * 
+     * @param s
+     *      data to escape
+     * @return
+     *      escaped data
+     */
+    protected String csvEscape(String s) {
+        if (s==null) {
+          return "";
+        } else if (s.contains("\"")) {
+          return s.substring(0,s.indexOf("\"")) + "\"" + csvEscape(s.substring(s.indexOf("\"")+1));
+        } else if (s.contains(",")) {
+          return "\""+s+"\"";
+        }
+        return s;
+    }
+    
     /** {@inheritDoc} */
     @Override
     public String toString() {
@@ -87,9 +106,9 @@ public class CsvOutput implements Serializable{
             List<String> values = new ArrayList<>();
             for(int colIdx = 0;colIdx < headers.size();colIdx++) {
                 String colName = headers.get(colIdx);
-                values.add(row.containsKey(colName) ? row.get(colName) : "");
+                values.add(row.containsKey(colName) ? csvEscape(row.get(colName)) : "");
             }
-            csv.append(String.join(";",values));
+            csv.append(String.join(",",values));
             csv.append(LINE_SEPARATOR);
         });
         return csv.toString();

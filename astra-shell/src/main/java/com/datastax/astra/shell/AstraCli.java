@@ -15,7 +15,10 @@ import com.datastax.astra.shell.cmd.db.DbListCli;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListCli;
 import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.UserDeleteCli;
+import com.datastax.astra.shell.cmd.iam.UserInviteCli;
 import com.datastax.astra.shell.cmd.iam.UserListCli;
+import com.datastax.astra.shell.cmd.iam.UserShowCli;
 import com.datastax.astra.shell.cmd.shell.ShellCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
@@ -54,7 +57,10 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   RoleShowCli.class
           }),
           @Group(name= "user", description = "Manage the users permissions", commands = {
-                  UserListCli.class
+                  UserListCli.class,
+                  UserShowCli.class,
+                  UserInviteCli.class,
+                  UserDeleteCli.class
           }),
           @Group(name= "token", description = "Manage the security tokens", commands = {
                   

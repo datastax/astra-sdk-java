@@ -1,10 +1,15 @@
 package com.datastax.astra.shell.cmd.iam;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Role;
+import com.datastax.astra.sdk.organizations.domain.User;
+import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
@@ -88,7 +93,8 @@ public class OperationIam {
     }
     
     /**
-     * Show Role details
+     * Show Role details.
+     *
      * @param cmd
      *      command
      * @param role
@@ -103,7 +109,7 @@ public class OperationIam {
                     .getApiDevopsOrganizations()
                     .findRoleByName(role);
             
-            if (!optRole.isPresent()) {
+            if (!optRole.isPresent() && IdUtils.isUUID(role)) {
                 optRole = ShellContext
                         .getInstance()
                         .getApiDevopsOrganizations()
@@ -122,17 +128,24 @@ public class OperationIam {
             sht.addPropertyRow("Name",          r.getName());
             sht.addPropertyRow("Description",   r.getPolicy().getDescription());
             sht.addPropertyRow("Effect",        r.getPolicy().getEffect());
-            sht.addPropertyListRows("Resources", r.getPolicy().getResources());
-            sht.addPropertyListRows("Actions", r.getPolicy().getActions());
             switch(cmd.getFormat()) {
-                case human:
-                    sht.show();
+                case csv:
+                    sht.addPropertyRow("Resources", r.getPolicy().getResources().toString());
+                    sht.addPropertyRow("Actions", r.getPolicy().getActions().toString());
+                    ShellPrinter.printShellTable(sht, cmd.getFormat());
+                break;
                 case json:
                     LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, "role show " + role, r));
-                case csv:
+                break;
+                case human:
                 default:
+                    sht.addPropertyListRows("Resources", r.getPolicy().getResources());
+                    sht.addPropertyListRows("Actions",   r.getPolicy().getActions());
+                    ShellPrinter.printShellTable(sht, cmd.getFormat());
                 break;
             }
+            
+           
             
         } catch(RuntimeException e) {
             cmd.outputError(ExitCode.INTERNAL_ERROR,"Cannot show role, technical error " + e.getMessage());
@@ -142,5 +155,147 @@ public class OperationIam {
         return ExitCode.SUCCESS;
     }
     
+    /**
+     * Show User details.
+     *
+     * @param cmd
+     *      command
+     * @param user
+     *      user email
+     * @return
+     *      exit code
+     */
+    public static ExitCode showUser(BaseCommand cmd, String user) {
+        try {
+            Optional<User> optUser = ShellContext
+                    .getInstance()
+                    .getApiDevopsOrganizations()
+                    .findUserByEmail(user);
+            
+            if (!optUser.isPresent() && IdUtils.isUUID(user)) {
+                optUser = ShellContext
+                        .getInstance()
+                        .getApiDevopsOrganizations()
+                        .user(user)
+                        .find();
+            }
+            
+            if (!optUser.isPresent()) {
+                cmd.outputError(ExitCode.NOT_FOUND, "User '" + user + "' has not been found.");
+                return ExitCode.NOT_FOUND;
+            }
+            
+            User r = optUser.get();
+            ShellTable sht = ShellTable.propertyTable(15, 40);
+            sht.addPropertyRow("Identifier",   r.getUserId());
+            sht.addPropertyRow("Email",        r.getEmail());
+            sht.addPropertyRow("Status",       r.getStatus().name());
+            
+            List<String> roleNames =  r.getRoles()
+                    .stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toList());
+            
+            switch(cmd.getFormat()) {
+                case csv:
+                    sht.addPropertyRow("Roles", roleNames.toString());
+                    ShellPrinter.printShellTable(sht, cmd.getFormat());
+                break;
+                case json:
+                    LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, "user show " + user, r));
+                break;
+                case human:
+                default:
+                    sht.addPropertyListRows("Roles", roleNames);
+                    ShellPrinter.printShellTable(sht, cmd.getFormat());
+                break;
+            }
+            
+        } catch(RuntimeException e) {
+            cmd.outputError(ExitCode.INTERNAL_ERROR,"Cannot show user, technical error " + e.getMessage());
+            return ExitCode.INTERNAL_ERROR;
+        }
+        
+        return ExitCode.SUCCESS;
+    }
+    
+    /**
+     * Invite User.
+     *
+     * @param cmd
+     *      command
+     * @param user
+     *      user email
+     * @param role
+     *      target role for the user
+     * @return
+     *      exit code
+     */
+    public static ExitCode inviteUser(BaseCommand cmd, String user, String role) {
+        try {
+            OrganizationsClient oc = ShellContext.getInstance().getApiDevopsOrganizations();
+            Optional<User> optUser = oc.findUserByEmail(user);
+            
+            if (optUser.isPresent()) {
+                cmd.outputWarning(ExitCode.ALREADY_EXIST, "User '" + user + "' already exist in the organization.");
+                return ExitCode.ALREADY_EXIST;
+            }
+            
+            Optional<Role> optRole = oc.findRoleByName(role);
+            if (!optRole.isPresent() && IdUtils.isUUID(role)) {
+                optRole = oc.role(role).find();
+            }
+            
+            if (!optRole.isPresent()) {
+                cmd.outputError(ExitCode.NOT_FOUND, "Role '" + role + "' has not been found");
+                return ExitCode.NOT_FOUND;
+            }
+            
+            oc.inviteUser(user, optRole.get().getId());
+            
+            cmd.outputSuccess(role);
+            
+        } catch(RuntimeException e) {
+            cmd.outputError(ExitCode.INTERNAL_ERROR,"Cannot invite user, technical error " + e.getMessage());
+            return ExitCode.INTERNAL_ERROR;
+        }
+        return ExitCode.SUCCESS;          
+    }
 
+    /**
+     * Delete a user if exist.
+     * 
+     * @param cmd
+     *      current command options
+     * @param user
+     *      user email of technial identifier
+     * @return
+     *      status
+     */
+    public static ExitCode deleteUser(BaseCommand cmd, String user) {
+        try {
+            OrganizationsClient oc = ShellContext.getInstance().getApiDevopsOrganizations();
+            
+            Optional<User> optUser = oc.findUserByEmail(user);
+            
+            if (!optUser.isPresent() && IdUtils.isUUID(user)) {
+                optUser = oc.user(user).find();
+            }
+            
+            if (!optUser.isPresent()) {
+                cmd.outputError(ExitCode.NOT_FOUND, "User '" + user + "' has not been found.");
+                return ExitCode.NOT_FOUND;
+            }
+            
+            oc.user(optUser.get().getUserId()).delete();
+            cmd.outputSuccess("Deleting user '" + user + "' (async operation)");
+            
+        } catch(RuntimeException e) {
+            cmd.outputError(ExitCode.INTERNAL_ERROR,"Cannot delete user, technical error " + e.getMessage());
+            return ExitCode.INTERNAL_ERROR;
+        }
+        
+        return ExitCode.SUCCESS;
+    }
+    
 }

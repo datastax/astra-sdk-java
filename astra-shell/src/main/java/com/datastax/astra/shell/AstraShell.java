@@ -9,7 +9,9 @@ import com.datastax.astra.shell.cmd.db.DbListShell;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListShell;
 import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.UserInviteShell;
 import com.datastax.astra.shell.cmd.iam.UserListShell;
+import com.datastax.astra.shell.cmd.iam.UserShowShell;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.CqlShCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
@@ -48,7 +50,9 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   RoleShowCli.class
           }),
           @Group(name= "user", description = "Manage the users permission", commands = {
-                  UserListShell.class
+                  UserListShell.class,
+                  UserShowShell.class,
+                  UserInviteShell.class
           }),
           @Group(name = "use", description = "Focus on an entity (context & prompt changed)", commands = {
                  UseDb.class

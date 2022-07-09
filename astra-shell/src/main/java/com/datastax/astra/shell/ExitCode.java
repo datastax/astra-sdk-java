@@ -19,6 +19,9 @@ public enum ExitCode {
     /** conflict. */
     CONFLICT(409),
     
+    /** conflict. */
+    ALREADY_EXIST(409),
+    
     /** code. */
     PARSE_ERROR(-1),
     

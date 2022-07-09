@@ -70,6 +70,29 @@ public abstract class BaseCommand implements Runnable {
     }
     
     /**
+     * Exit program with no operation
+     *
+     * @param code
+     *      error code
+     * @param msg
+     *      error message
+     */
+    public void outputWarning(ExitCode code, String msg) {
+        switch(format) {
+            case json:
+                LoggerShell.json(new JsonOutput(code, code.name() + ": " + msg));
+            break;
+            case csv:
+                LoggerShell.csv(new CsvOutput(code,  code.name() + ": " + msg));
+            break;
+            case human:
+            default:
+                LoggerShell.warning( code.name() + ": " + msg);
+            break;
+        }
+    }
+    
+    /**
      * Exit program with error.
      *
      * @param msg

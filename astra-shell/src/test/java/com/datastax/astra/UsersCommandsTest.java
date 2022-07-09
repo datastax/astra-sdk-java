@@ -11,12 +11,22 @@ public class UsersCommandsTest extends AbstractAstraCliTest {
 
     @Test
     public void showUsers()  throws Exception {
-        astraCli("show", "users");
+        astraCli("user", "list");
     }
     
     @Test
     public void showUser()  throws Exception {
-        astraCli("show", "user", "cedrick.lunven@datastax.com");
+        astraCli("user", "show", "cedrick.lunven@datastax.com");
+    }
+    
+    @Test
+    public void userInvite()  throws Exception {
+        astraCli("user", "invite", "celphys@gmail.com");
+    }
+    
+    @Test
+    public void userDelete()  throws Exception {
+        astraCli("user", "delete", "celphys@gmail.com");
     }
     
 }
