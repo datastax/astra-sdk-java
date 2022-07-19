@@ -24,5 +24,10 @@ public class DatabasesCommandsTest extends AbstractAstraCliTest {
         astraCli("db", "delete","sky_session1");
     }
     
+    @Test
+    public void showDB()  throws Exception {
+        astraCli("db", "show","foo");
+    }
+    
     
 }

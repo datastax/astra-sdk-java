@@ -2,8 +2,9 @@ package com.datastax.astra.shell.cmd.shell;
 
 import java.io.IOException;
 
+import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.cmd.BaseCommand;
+import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.utils.CqlShellUtils;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Command;
@@ -14,17 +15,17 @@ import com.github.rvesse.airline.annotations.Command;
  * @author Cedrick LUNVEN (@clunven)
  */
 @Command(name = "cqlsh", description = "Start cqlSH (db must be selected first)")
-public class CqlShCommand extends BaseCommand {
+public class CqlShCommand extends BaseCliCommand {
 
     /** {@inheritDoc} */
     //@Override
-    public void execute() {
+    public ExitCode execute() {
         if (null == ShellContext.getInstance().getDatabase()) {
             LoggerShell.warning("You have no base selected.");
         } else {
             LoggerShell.info("Launching CqlSh");
             try {
-               CqlShellUtils.runCqlShellAstra(
+               CqlShellUtils.runCqlShellAstra(this,
                        ShellContext.getInstance().getToken(), 
                        ShellContext.getInstance().getDatabase().getId(), 
                        ShellContext.getInstance().getDatabaseRegion());
@@ -37,12 +38,8 @@ public class CqlShCommand extends BaseCommand {
             LoggerShell.info("Exiting Cqlsh");
             System.exit(0);
         }
+        return ExitCode.SUCCESS;
     }
 
-    @Override
-    public void run() {
-        // TODO Auto-generated method stub
-        
-    }
     
 }

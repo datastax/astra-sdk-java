@@ -17,7 +17,7 @@ public class RolesCommandsTest extends AbstractAstraCliTest {
     
     @Test
     public void listRoles()  throws Exception {
-        astraCli("role", "list" /*, "-f", "csv"*/);
+        astraCli("role", "list", "--verbose" /*, "-f", "csv"*/);
     }
     
     @Test

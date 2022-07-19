@@ -1,7 +1,14 @@
 package com.datastax.astra.shell.cmd;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.datastax.astra.sdk.utils.AstraRc;
+import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
@@ -36,19 +43,45 @@ public abstract class BaseCliCommand extends BaseShellCommand {
             description= "Section in configuration file (default = ~/.astrarc)")
     protected String configSectionName = AstraRc.ASTRARC_DEFAULT;
     
-    // -- Option on CLI --
-    
     /**
      * No log but provide output as a JSON
      */
     @Option(name = { "--log"}, title = "LOG_FILE", description = "Logs will go in the file plus on console")
     protected String logFile;
     
+    /**
+     * Reference to write data into log file.
+     */
+    protected FileWriter logFileWriter;
+    
+    /**
+     * If logger is required, write in dedicated file.
+     */
+    private void initLogFile() {
+        if (!StringUtils.isEmpty(logFile)) {
+            try {
+               logFileWriter = new FileWriter(logFile, true);
+            } catch (IOException e) {
+               System.out.println("[ERROR] - Cannot open log file " + logFile + ":" + e.getMessage());
+               ExitCode.INVALID_PARAMETER.exit();
+            }
+        }
+    }
+    
     /** {@inheritDoc} */
     @Override
     public void run() {
+        // Initialization of Logger
+        initLogFile();
+       
        // Initialization of context
        ShellContext.getInstance().init(this);
+       
+       LoggerShell.trace("Command " + getClass().getName());
+       LoggerShell.trace("Token: " + token);
+       LoggerShell.trace("ConfigFilename: " + configFilename);
+       LoggerShell.trace("ConfigSectionName: " + configSectionName);
+       
        // Execute command and exit program
        execute().exit();
     }
@@ -91,6 +124,17 @@ public abstract class BaseCliCommand extends BaseShellCommand {
      */
     public String getLogFile() {
         return logFile;
+    }
+
+
+    /**
+     * Getter accessor for attribute 'logFileWriter'.
+     *
+     * @return
+     *       current value of 'logFileWriter'
+     */
+    public FileWriter getLogFileWriter() {
+        return logFileWriter;
     }
    
    

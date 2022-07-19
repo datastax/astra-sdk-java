@@ -243,7 +243,6 @@ public class StargateClient implements Closeable {
                 if (null != conf.getCqlRequestTracker()) {
                     sessionBuilder.withRequestTracker(conf.getCqlRequestTracker());
                 }
-                
                 cqlSession = sessionBuilder.build();
             }
             

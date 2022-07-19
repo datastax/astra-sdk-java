@@ -3,6 +3,9 @@ package com.datastax.astra.shell;
 import static com.datastax.astra.shell.ExitCode.CANNOT_CONNECT;
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
@@ -14,6 +17,8 @@ import com.datastax.astra.sdk.streaming.StreamingClient;
 import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.cmd.BaseCommand;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
+import com.datastax.astra.shell.utils.LoggerShell;
 
 /**
  * Hold the context of CLI to know where we are.
@@ -72,6 +77,15 @@ public class ShellContext {
     
     // -- Selection --
     
+    /** Current command. */
+    private BaseCliCommand startCommand;
+    
+    /** Current shell command (overriding Cli eventually). */
+    private BaseShellCommand currentShellCommand;
+    
+    /** History of commands in shell. */
+    private List<BaseShellCommand> history = new ArrayList<>();
+    
     /** Organization informations (prompt). */
     private Organization organization;
     
@@ -80,7 +94,7 @@ public class ShellContext {
     
     /** Database informations. */
     private String databaseRegion;
-        
+    
     /**
      * Valid section.
      *
@@ -127,7 +141,8 @@ public class ShellContext {
      *      command line cli
      */
     public void init(BaseCliCommand cli) {
-        this.token = cli.getToken();
+        this.startCommand = cli;
+        this.token        = cli.getToken();
         
         // No token = use configuration file
         if (this.token == null) {
@@ -150,7 +165,8 @@ public class ShellContext {
         }
         
         if (token != null) {
-            connect(cli, token);
+            LoggerShell.trace("Token retrieved: " + token);
+            connect(token);
         } else {
             INVALID_PARAMETER.exit();
         }
@@ -162,13 +178,13 @@ public class ShellContext {
      * @param token
      *      token loaded from param
      */
-    public void connect(BaseCommand cmd, String token) {
+    public void connect(String token) {
 
         // Persist Token
         this.token = token;
         
         if (!token.startsWith(token)) {
-            cmd.outputError(INVALID_PARAMETER, "Token provided is invalid. It should start with 'AstraCS:...'. Try [astra setup]");
+            startCommand.outputError(INVALID_PARAMETER, "Token provided is invalid. It should start with 'AstraCS:...'. Try [astra setup]");
             INVALID_PARAMETER.exit();
         }
 
@@ -178,8 +194,9 @@ public class ShellContext {
         
         try {
             this.organization = apiDevopsOrganizations.organization();
+            LoggerShell.success("Cli successfully initialized");
         } catch(Exception e) {
-            cmd.outputError(CANNOT_CONNECT, "Token provided is invalid. Try [astra setup]");
+            startCommand.outputError(CANNOT_CONNECT, "Token provided is invalid. Try [astra setup]");
             INVALID_PARAMETER.exit();
         }
     }
@@ -320,6 +337,46 @@ public class ShellContext {
      */
     public AstraRc getAstraRc() {
         return astraRc;
+    }
+
+    /**
+     * Getter accessor for attribute 'startCommand'.
+     *
+     * @return
+     *       current value of 'startCommand'
+     */
+    public BaseCliCommand getStartCommand() {
+        return startCommand;
+    }
+    
+    /**
+     * Getter accessor for attribute 'currentShellCommand'.
+     *
+     * @return
+     *       current value of 'currentShellCommand'
+     */
+    public BaseShellCommand getCurrentShellCommand() {
+        return currentShellCommand;
+    }
+
+    /**
+     * Setter accessor for attribute 'currentShellCommand'.
+     * @param currentShellCommand
+     * 		new value for 'currentShellCommand '
+     */
+    public void setCurrentShellCommand(BaseShellCommand currentShellCommand) {
+        this.currentShellCommand = currentShellCommand;
+        this.history.add(currentShellCommand);
+    }
+
+    /**
+     * Getter accessor for attribute 'history'.
+     *
+     * @return
+     *       current value of 'history'
+     */
+    public List<BaseShellCommand> getHistory() {
+        return history;
     }
     
 }

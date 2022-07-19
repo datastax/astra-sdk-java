@@ -1,19 +1,19 @@
 package com.datastax.astra.shell.utils;
 
 import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.Color.CYAN;
 import static org.fusesource.jansi.Ansi.Color.GREEN;
 import static org.fusesource.jansi.Ansi.Color.RED;
 import static org.fusesource.jansi.Ansi.Color.YELLOW;
 
-import org.apache.commons.lang3.StringUtils;
-import org.fusesource.jansi.Ansi;
+import java.io.IOException;
+import java.util.Date;
 
-import com.datastax.astra.shell.output.CsvOutput;
-import com.datastax.astra.shell.output.JsonOutput;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+
+import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.cmd.BaseCliCommand;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
 
 /**
  * Work with terminal.
@@ -27,60 +27,51 @@ public class LoggerShell {
 	 */
 	private LoggerShell() {}
 	
-	/**
-	 * Json Object Mapper. 
-	 */
-	public static final ObjectMapper OM = new ObjectMapper();
-	
     /**
-     * Output.
+     * Log in the console only if verbose is enabled.
      *
-     * @param text
-     *      text to display
-     * @param color
-     *      colot
+     * @return
+     *      if verbose
      */
-    public static void print(String text, Ansi.Color color) {
-        System.out.print(ansi().fg(color).a(text).reset());
+    private static boolean isVerbose() {
+        BaseShellCommand sh = ShellContext.getInstance().getCurrentShellCommand();
+        return (ShellContext.getInstance().getStartCommand().isVerbose() || 
+               (sh != null && sh.isVerbose()));
     }
     
     /**
-     * Show text in the console.
+     * If log provided the output will go to the logfile.
      * 
      * @param text
-     *      content of the message
-     * @param size
-     *      text size
-     * @param color
-     *      text color
+     *      text to log
      */
-    public static void print(String text, Ansi.Color color, int size) {
-        print(StringUtils.rightPad(text, size), color);
+    private static void logToFile(String level, String text) {
+        BaseCliCommand  cli = ShellContext.getInstance().getStartCommand();
+        if (cli.getLogFileWriter() != null) {
+            try {
+                cli.getLogFileWriter().write(new Date().toString() 
+                        + " - " 
+                        + StringUtils.rightPad(level, 5) 
+                        + " - " + text + System.lineSeparator());
+            } catch (IOException e) {
+                System.out.println("Writes in log file failed: " + e.getMessage());
+            }
+        }
     }
     
     /**
-     * Output.
-     *
-     * @param text
-     *      text to display
-     * @param color
-     *      colot
-     */
-    public static void println(String text, Ansi.Color color) {
-        System.out.println(ansi().fg(color).a(text).reset());
-    }
-    
-    /**
-     * Print property in the shell.
+     * Syntax sugar for OK.
      * 
-     * @param name
-     *      property name
-     * @param value
-     *      property value
+     * @param cmd
+     *      current command with option to format 
+     * @param text
+     *      text to show in success
      */
-    public static void printProperty(String name, String value ) {
-        print("+ " + name + " = ", Ansi.Color.CYAN);
-        System.out.println(value);
+    public static void success(String text) {
+        if (isVerbose()) {
+            System.out.println(ansi().fg(GREEN).a("[ OK  ] - ").reset().a(text));
+        }
+        logToFile("INFO", text);
     }
     
     /**
@@ -90,80 +81,55 @@ public class LoggerShell {
      *       text to be displayed
      */
     public static void error(String text) {
-        System.out.println(ansi().fg(RED).a("[ERROR] - ").reset().a(text));
+        if (isVerbose()) {
+            System.out.println(ansi().fg(RED).a("[ERROR] - ").reset().a(text));
+        }
+        logToFile("ERROR", text);
     }
     
     /**
      * Log warning.
      *
+     * @param cmd
+     *      current command with option to format 
      * @param text
      *       text to be displayed
      */
     public static void warning(String text) {
-        System.out.println(ansi().fg(YELLOW).a("[WARN ] - ").reset().a(text));
+        if (isVerbose()) {
+            System.out.println(ansi().fg(YELLOW).a("[WARN ] - ").reset().a(text));
+        }
+        logToFile("WARN", text);
     }
     
     /**
      * Syntax sugar for OK.
      * 
-     * @param text
-     *      text to show in success
-     */
-    public static void success(String text) {
-        System.out.println(ansi().fg(GREEN).a("[ OK  ] - ").reset().a(text));
-    }
-    
-    /**
-     * Syntax sugar for OK.
-     * 
+     * @param cmd
+     *      current command with option to format 
      * @param text
      *      text to show in success
      */
     public static void trace(String text) {
-        System.out.println(ansi().fg(BLUE).a("[TRACE] - ").reset().a(text));
+        if (isVerbose()) {
+            System.out.println(ansi().fg(YELLOW).a("[DEBUG ] - ").reset().a(text));
+        }
+        logToFile("DEBUG", text);
     }
     
     /**
      * Syntax sugar for OK.
-     * 
+     *
+     * @param cmd
+     *      current command with option to format 
      * @param text
      *      text to show in success
      */
     public static void info(String text) {
-        System.out.println(ansi()
-                .fg(CYAN)
-                .a("[INFO ] - ").reset().a(text));
-    }
-    
-    /**
-     * Log as JSON in the console.
-     *
-     * @param json
-     *      json in the console
-     */
-    public static void json(JsonOutput json) {
-        if (json != null) {
-            try {
-                String myJson = OM
-                        .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(json);
-                System.out.println(myJson);
-            } catch (JsonProcessingException e) {
-                error("Cannot create JSON :" + e.getMessage());
-            }
+        if (isVerbose()) {
+            System.out.println(ansi().fg(CYAN).a("[INFO ] - ").reset().a(text));
         }
-    }
-    
-    /**
-     * Log as CSV in the output.
-     *
-     * @param csv
-     *      create CSV for the output
-     */
-    public static void csv(CsvOutput csv) {
-        if (csv != null) {
-            System.out.println(csv.toString());
-        }
+        logToFile("INFO", text);
     }
     
 }

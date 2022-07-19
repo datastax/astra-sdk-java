@@ -12,6 +12,7 @@ import com.datastax.astra.shell.cmd.config.Setup;
 import com.datastax.astra.shell.cmd.db.DbCreateCli;
 import com.datastax.astra.shell.cmd.db.DbDeleteCli;
 import com.datastax.astra.shell.cmd.db.DbListCli;
+import com.datastax.astra.shell.cmd.db.DbShow;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListCli;
 import com.datastax.astra.shell.cmd.iam.RoleShowCli;
@@ -43,7 +44,8 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
           @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = { 
                   DbCreateCli.class,
                   DbDeleteCli.class,
-                  DbListCli.class
+                  DbListCli.class,
+                  DbShow.class
           }),
           @Group(name = "config", description = "Edit configuration file", commands = { 
                   ConfigCreate.class,

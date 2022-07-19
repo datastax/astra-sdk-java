@@ -3,7 +3,7 @@ package com.datastax.astra;
 import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.shell.AstraCli;
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.utils.ShellPrinter;
 
 /**
  * Super class for tests.
@@ -20,8 +20,10 @@ public abstract class AbstractAstraCliTest {
      */
     protected void astraCli(String... args) {
         System.out.println("----- TESTED COMMAND ------");
-        LoggerShell.print(" astra ", Ansi.Color.GREEN);
-        for (String string : args) LoggerShell.print(string + " ", Ansi.Color.GREEN);
+        ShellPrinter.print(" astra ", Ansi.Color.GREEN);
+        for (String string : args) { 
+            ShellPrinter.print(string + " ", Ansi.Color.GREEN);
+        }
         System.out.println();
         System.out.println("---------------------------");
         System.out.println();

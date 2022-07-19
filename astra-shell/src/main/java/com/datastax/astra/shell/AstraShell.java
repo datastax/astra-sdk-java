@@ -9,6 +9,7 @@ import com.datastax.astra.shell.cmd.db.DbListShell;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListShell;
 import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.UserDeleteShell;
 import com.datastax.astra.shell.cmd.iam.UserInviteShell;
 import com.datastax.astra.shell.cmd.iam.UserListShell;
 import com.datastax.astra.shell.cmd.iam.UserShowShell;
@@ -52,7 +53,8 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
           @Group(name= "user", description = "Manage the users permission", commands = {
                   UserListShell.class,
                   UserShowShell.class,
-                  UserInviteShell.class
+                  UserInviteShell.class,
+                  UserDeleteShell.class
           }),
           @Group(name = "use", description = "Focus on an entity (context & prompt changed)", commands = {
                  UseDb.class

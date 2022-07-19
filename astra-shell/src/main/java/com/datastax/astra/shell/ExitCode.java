@@ -11,25 +11,22 @@ public enum ExitCode {
     SUCCESS(0),
     
     /** code. */
-    INVALID_PARAMETER(400),
+    PARSE_ERROR(1),
+    /** code. */
+    INVALID_PARAMETER(10),
     
     /** code. */
-    NOT_FOUND(404),
-    
+    NOT_FOUND(20),
     /** conflict. */
-    CONFLICT(409),
-    
+    CONFLICT(21),
     /** conflict. */
-    ALREADY_EXIST(409),
+    ALREADY_EXIST(22),
     
     /** code. */
-    PARSE_ERROR(-1),
-    
-    /** code. */
-    CANNOT_CONNECT(408), 
+    CANNOT_CONNECT(30), 
     
     /** Internal error. */
-    INTERNAL_ERROR(500);
+    INTERNAL_ERROR(40);
     
     /* Exit code. */
     private int code;

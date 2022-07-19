@@ -10,6 +10,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
+import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.stargate.sdk.utils.Utils;
 
 /**
@@ -47,7 +48,6 @@ public class CqlShellUtils {
      */
     private static boolean isCqlShellInstalled() {
        File cqlshAstra = new File(CQLSH_HOME + File.separator + CQLSH_FOLDER);
-       System.out.println(cqlshAstra.getPath());
        return cqlshAstra.exists() && cqlshAstra.isDirectory();
     }
     
@@ -62,27 +62,20 @@ public class CqlShellUtils {
      *      error during opening archive
      */
     private static void unTarFile(File tarFile, File destFile) throws IOException{
-      FileInputStream fis = new FileInputStream(tarFile);
-      TarArchiveInputStream tis = new TarArchiveInputStream(fis);
-      TarArchiveEntry tarEntry = null;
-          
-      // tarIn is a TarArchiveInputStream
+      FileInputStream       fis      = new FileInputStream(tarFile);
+      TarArchiveInputStream tis      = new TarArchiveInputStream(fis);
+      TarArchiveEntry       tarEntry = null;
       while ((tarEntry = tis.getNextTarEntry()) != null) {
-        File outputFile = new File(destFile + File.separator + tarEntry.getName());        
-        if(tarEntry.isDirectory()){            
-          System.out.println("outputFile Directory ---- " 
-              + outputFile.getAbsolutePath());
-          if(!outputFile.exists()){
-            outputFile.mkdirs();
-          }
-        }else{
-          //File outputFile = new File(destFile + File.separator + tarEntry.getName());
-          System.out.println("outputFile File ---- " + outputFile.getAbsolutePath());
-          outputFile.getParentFile().mkdirs();
-          //outputFile.createNewFile();
-          FileOutputStream fos = new FileOutputStream(outputFile); 
-          IOUtils.copy(tis, fos);
-          fos.close();
+        File outputFile = new File(destFile + File.separator + tarEntry.getName());
+        if (tarEntry.isDirectory()) {
+            if (!outputFile.exists()) {
+                outputFile.mkdirs();
+            }
+        } else {
+            outputFile.getParentFile().mkdirs();
+            FileOutputStream fos = new FileOutputStream(outputFile);
+            IOUtils.copy(tis, fos);
+            fos.close();
         }
       }
       tis.close();
@@ -90,8 +83,11 @@ public class CqlShellUtils {
     
     /**
      * Download targz and unzip.
+     *
+     * @param cmd
+     *      current command with option to format 
      */
-    public static void installCqlShellAstra() {
+    public static void installCqlShellAstra(BaseCommand cmd) {
         if (!isCqlShellInstalled()) {
             LoggerShell.info("CqlSh has not been found, downloading...");
             Utils.downloadFile(CQLSH_URL, CQLSH_HOME + File.separator + CQLSH_TARBALL);
@@ -115,6 +111,8 @@ public class CqlShellUtils {
     /**
      * Install CqlShell if needed and start the program.
      * 
+     * @param cmd
+     *      current command with option to format 
      * @param token
      *      authentication token
      * @param dbId
@@ -126,9 +124,9 @@ public class CqlShellUtils {
      * @throws IOException
      *      errors occured
      */
-    public static Process runCqlShellAstra(String token, String dbId, String dbRegion) 
+    public static Process runCqlShellAstra(BaseCommand cmd, String token, String dbId, String dbRegion) 
     throws IOException {
-        installCqlShellAstra();
+        installCqlShellAstra(cmd);
         
         StringBuilder startCqlsh = new StringBuilder()
                 .append(System.getProperty(ENV_USER_HOME) + File.separator)
@@ -140,7 +138,7 @@ public class CqlShellUtils {
         startCqlsh.append(" -b " + System.getProperty(ENV_USER_HOME) + 
                 File.separator + ".astra" + 
                 File.separator + AstraClientConfig.buildScbFileName(dbId, dbRegion));
-        LoggerShell.info(startCqlsh.toString());
+        System.out.println(startCqlsh.toString());
         return Runtime.getRuntime().exec(startCqlsh.toString());
     }
    

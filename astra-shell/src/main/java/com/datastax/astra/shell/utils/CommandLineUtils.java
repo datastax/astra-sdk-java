@@ -3,9 +3,6 @@ package com.datastax.astra.shell.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-
-import org.fusesource.jansi.Ansi;
 
 /**
  * Utililities for the command line.
@@ -86,23 +83,5 @@ public class CommandLineUtils {
         }
         return chunks.toArray(new String[0]);
     }
-
-    /**
-     * This behaviour will happen again and again.
-     * 
-     * @param scanner
-     *      current user input scanner
-     * @param message
-     *      question asked
-     * @return
-     *      response of user
-     */
-    public static boolean askForConfirmation(Scanner scanner, String message) {
-        String response = null;
-        while (!"y".equalsIgnoreCase(response) && !"n".equalsIgnoreCase(response)) {
-            LoggerShell.print(message + " (y/n) ? ", Ansi.Color.CYAN);
-            response = scanner.nextLine();
-        }
-        return "y".equalsIgnoreCase(response);
-    }
+    
 }

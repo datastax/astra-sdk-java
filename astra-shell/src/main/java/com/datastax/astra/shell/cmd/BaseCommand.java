@@ -1,14 +1,15 @@
 package com.datastax.astra.shell.cmd;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.output.CsvOutput;
 import com.datastax.astra.shell.output.JsonOutput;
 import com.datastax.astra.shell.output.OutputFormat;
 import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
@@ -35,8 +36,14 @@ public abstract class BaseCommand implements Runnable {
     /** 
      * Each command can have a verbose mode. 
      **/
-    @Option(name = { "--debug" }, description = "Enter Debug mode")
-    protected boolean debug = false;
+    @Option(name = { "--verbose" }, description = "Enter Debug mode")
+    protected boolean verbose = false;
+    
+    /** 
+     * Each command can have a verbose mode. 
+     **/
+    @Option(name = { "--no-color" }, description = "Remove all colors in output")
+    protected boolean noColor = false;
     
     /**
      * No log but provide output as a JSON
@@ -57,10 +64,10 @@ public abstract class BaseCommand implements Runnable {
     public void outputError(ExitCode code, String msg) {
         switch(format) {
             case json:
-                LoggerShell.json(new JsonOutput(code, code.name() + ": " + msg));
+                ShellPrinter.printJson(new JsonOutput(code, code.name() + ": " + msg));
             break;
             case csv:
-                LoggerShell.csv(new CsvOutput(code,  code.name() + ": " + msg));
+                ShellPrinter.printCsv(new CsvOutput(code,  code.name() + ": " + msg));
             break;
             case human:
             default:
@@ -80,14 +87,14 @@ public abstract class BaseCommand implements Runnable {
     public void outputWarning(ExitCode code, String msg) {
         switch(format) {
             case json:
-                LoggerShell.json(new JsonOutput(code, code.name() + ": " + msg));
+                ShellPrinter.printJson(new JsonOutput(code, code.name() + ": " + msg));
             break;
             case csv:
-                LoggerShell.csv(new CsvOutput(code,  code.name() + ": " + msg));
+                ShellPrinter.printCsv(new CsvOutput(code,  code.name() + ": " + msg));
             break;
             case human:
             default:
-                LoggerShell.warning( code.name() + ": " + msg);
+                LoggerShell.warning(code.name() + ": " + msg);
             break;
         }
     }
@@ -101,12 +108,12 @@ public abstract class BaseCommand implements Runnable {
     public void outputData(String label, String data) {
         switch(format) {
             case json:
-                LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, label, data));
+                ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, label, data));
             break;
             case csv:
                 Map<String, String> m = new HashMap<>();
                 m.put(label, data);
-                LoggerShell.csv(new CsvOutput(Arrays.asList(label), Arrays.asList(m)));
+                ShellPrinter.printCsv(new CsvOutput(Arrays.asList(label), Arrays.asList(m)));
             break;
             case human:
             default:
@@ -124,10 +131,10 @@ public abstract class BaseCommand implements Runnable {
     public void outputSuccess(String msg) {
         switch(format) {
             case json:
-                LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, msg));
+                ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, msg));
             break;
             case csv:
-                LoggerShell.csv(new CsvOutput(ExitCode.SUCCESS, msg));
+                ShellPrinter.printCsv(new CsvOutput(ExitCode.SUCCESS, msg));
             break;
             case human:
             default:
@@ -152,8 +159,8 @@ public abstract class BaseCommand implements Runnable {
      * @return
      *       current value of 'debug'
      */
-    public boolean isDebug() {
-        return debug;
+    public boolean isVerbose() {
+        return verbose;
     }
     
 

@@ -21,7 +21,7 @@ public class UsersCommandsTest extends AbstractAstraCliTest {
     
     @Test
     public void userInvite()  throws Exception {
-        astraCli("user", "invite", "celphys@gmail.com");
+        astraCli("user", "invite", "david.dieruf@datastax.com");
     }
     
     @Test

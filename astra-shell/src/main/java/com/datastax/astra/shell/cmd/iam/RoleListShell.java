@@ -15,7 +15,7 @@ public class RoleListShell extends BaseShellCommand {
    
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationIam.listRoles(this);
+        return OperationIam.listRoles();
     }
     
 }

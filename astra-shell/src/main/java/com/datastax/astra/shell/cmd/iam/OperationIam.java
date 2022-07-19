@@ -14,7 +14,6 @@ import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.output.JsonOutput;
-import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.datastax.astra.shell.utils.ShellTable;
 
@@ -47,7 +46,7 @@ public class OperationIam {
      * @return
      *      returned code
      */
-    public static ExitCode listRoles(BaseCommand cmd) {
+    public static ExitCode listRoles() {
         ShellTable sht = new ShellTable();
         sht.addColumn(COLUMN_ROLE_ID, 37);
         sht.addColumn(COLUMN_ROLE_NAME, 20);
@@ -62,7 +61,7 @@ public class OperationIam {
              rf.put(COLUMN_ROLE_DESCRIPTION, role.getPolicy().getDescription());
              sht.getCellValues().add(rf);
         });
-        ShellPrinter.printShellTable(sht, cmd.getFormat());
+        ShellPrinter.printShellTable(sht, ShellContext.getInstance().getStartCommand().getFormat());
         return ExitCode.SUCCESS;
     }
     
@@ -135,7 +134,7 @@ public class OperationIam {
                     ShellPrinter.printShellTable(sht, cmd.getFormat());
                 break;
                 case json:
-                    LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, "role show " + role, r));
+                    ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, "role show " + role, r));
                 break;
                 case human:
                 default:
@@ -202,7 +201,7 @@ public class OperationIam {
                     ShellPrinter.printShellTable(sht, cmd.getFormat());
                 break;
                 case json:
-                    LoggerShell.json(new JsonOutput(ExitCode.SUCCESS, "user show " + user, r));
+                    ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, "user show " + user, r));
                 break;
                 case human:
                 default:

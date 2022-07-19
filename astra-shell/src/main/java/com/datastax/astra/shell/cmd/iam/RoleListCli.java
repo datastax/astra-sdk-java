@@ -12,10 +12,10 @@ import com.github.rvesse.airline.annotations.Command;
  */
 @Command(name = BaseCommand.LIST, description = "Display the list of Roles in an organization")
 public class RoleListCli extends BaseCliCommand {
-   
+    
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationIam.listRoles(this);
+        return OperationIam.listRoles();
     }
     
 }
