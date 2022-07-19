@@ -53,6 +53,7 @@ public class LoggerShell {
                         + " - " 
                         + StringUtils.rightPad(level, 5) 
                         + " - " + text + System.lineSeparator());
+                cli.getLogFileWriter().flush();
             } catch (IOException e) {
                 System.out.println("Writes in log file failed: " + e.getMessage());
             }
@@ -112,7 +113,7 @@ public class LoggerShell {
      */
     public static void trace(String text) {
         if (isVerbose()) {
-            System.out.println(ansi().fg(YELLOW).a("[DEBUG ] - ").reset().a(text));
+            System.out.println(ansi().fg(YELLOW).a("[DEBUG] - ").reset().a(text));
         }
         logToFile("DEBUG", text);
     }

@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
@@ -72,15 +71,10 @@ public abstract class BaseCliCommand extends BaseShellCommand {
     @Override
     public void run() {
         // Initialization of Logger
-        initLogFile();
-       
+       initLogFile();
+        
        // Initialization of context
        ShellContext.getInstance().init(this);
-       
-       LoggerShell.trace("Command " + getClass().getName());
-       LoggerShell.trace("Token: " + token);
-       LoggerShell.trace("ConfigFilename: " + configFilename);
-       LoggerShell.trace("ConfigSectionName: " + configSectionName);
        
        // Execute command and exit program
        execute().exit();

@@ -4,6 +4,7 @@ import static com.datastax.astra.shell.ExitCode.CANNOT_CONNECT;
 import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +84,9 @@ public class ShellContext {
     /** Current shell command (overriding Cli eventually). */
     private BaseShellCommand currentShellCommand;
     
+    /** Raw command. */
+    private List<String> rawCommand = new ArrayList<>();
+    
     /** History of commands in shell. */
     private List<BaseShellCommand> history = new ArrayList<>();
     
@@ -142,19 +146,25 @@ public class ShellContext {
      */
     public void init(BaseCliCommand cli) {
         this.startCommand = cli;
+        LoggerShell.info("-----------------------------------------------------");
+        LoggerShell.info("Command : astra " + String.join(" ", ShellContext.getInstance().getRawCommand()));
+        LoggerShell.info("Class   : " + cli.getClass());
         this.token        = cli.getToken();
         
         // No token = use configuration file
         if (this.token == null) {
             // Overriding default config
             if (cli.getConfigFilename() != null) {
+                LoggerShell.trace("ConfigFilename: " + cli.getConfigFilename());
                 this.astraRc = new AstraRc(cli.getConfigFilename());
             } else {
+                LoggerShell.trace("ConfigFilename: " + AstraRc.getDefaultConfigurationFileName());
                 this.astraRc = new AstraRc();
             }
             // Overriding default section
             if (!StringUtils.isEmpty(cli.getConfigSectionName())) {
                 this.configSection = cli.getConfigSectionName();
+                LoggerShell.trace("ConfigSectionName: " + configSection);
             }
             
             if (isSectionValid(cli) && isSectionTokenValid(cli)) {
@@ -377,6 +387,26 @@ public class ShellContext {
      */
     public List<BaseShellCommand> getHistory() {
         return history;
+    }
+
+    /**
+     * Getter accessor for attribute 'rawCommand'.
+     *
+     * @return
+     *       current value of 'rawCommand'
+     */
+    public List<String> getRawCommand() {
+        return rawCommand;
+    }
+
+    /**
+     * Setter accessor for attribute 'rawCommand'.
+     *
+     * @param args
+     * 		input arguments for the command.
+     */
+    public void setRawCommand(String... args) {
+        this.rawCommand = Arrays.asList(args);
     }
     
 }
