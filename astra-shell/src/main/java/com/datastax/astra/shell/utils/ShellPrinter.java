@@ -57,8 +57,6 @@ public class ShellPrinter {
         return versionPackage;
     }
     
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    
     /**
      * Json Object Mapper. 
      */
@@ -166,7 +164,7 @@ public class ShellPrinter {
      */
     public static final void printObjectAsJson(Object obj, Ansi.Color color) {
         try {
-            println(MAPPER
+            println(OM
                   .writerWithDefaultPrettyPrinter()
                   .writeValueAsString(obj), color);
         } catch (JsonProcessingException e) {

@@ -111,7 +111,7 @@ public class LoggerShell {
      * @param text
      *      text to show in success
      */
-    public static void trace(String text) {
+    public static void debug(String text) {
         if (isVerbose()) {
             System.out.println(ansi().fg(YELLOW).a("[DEBUG] - ").reset().a(text));
         }

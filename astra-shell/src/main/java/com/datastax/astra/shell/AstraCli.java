@@ -85,7 +85,7 @@ public class AstraCli {
         try {
             
             // Enable Colored outputs
-            //AnsiConsole.systemInstall();
+            AnsiConsole.systemInstall();
             
             // Save the command line to log it later
             ShellContext.getInstance().setRawCommand(args);

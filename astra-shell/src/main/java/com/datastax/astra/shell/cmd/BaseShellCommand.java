@@ -20,7 +20,6 @@ public abstract class BaseShellCommand extends BaseCommand {
        } else {
            // Keep history of commands and options of the shell
            ShellContext.getInstance().setCurrentShellCommand(this);
-           this.verbose = true;
            this.format  = OutputFormat.human;
            execute();
        }

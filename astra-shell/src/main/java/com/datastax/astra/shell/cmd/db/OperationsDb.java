@@ -116,7 +116,7 @@ public class OperationsDb {
                 .regionsServerless()
                 .collect(Collectors
                 .toMap(DatabaseRegionServerless::getName, Function.identity()));
-        LoggerShell.trace("Available regions :" + regionMap);
+        LoggerShell.debug("Available regions :" + regionMap);
         
         // Validate region
         if (!regionMap.containsKey(databaseRegion)) {

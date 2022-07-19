@@ -147,7 +147,7 @@ public class ShellContext {
     public void init(BaseCliCommand cli) {
         this.startCommand = cli;
         LoggerShell.info("-----------------------------------------------------");
-        LoggerShell.info("Command : astra " + String.join(" ", ShellContext.getInstance().getRawCommand()));
+        LoggerShell.info("Command : " + ShellContext.getInstance().getRawCommandString());
         LoggerShell.info("Class   : " + cli.getClass());
         this.token        = cli.getToken();
         
@@ -155,16 +155,16 @@ public class ShellContext {
         if (this.token == null) {
             // Overriding default config
             if (cli.getConfigFilename() != null) {
-                LoggerShell.trace("ConfigFilename: " + cli.getConfigFilename());
+                LoggerShell.debug("ConfigFilename: " + cli.getConfigFilename());
                 this.astraRc = new AstraRc(cli.getConfigFilename());
             } else {
-                LoggerShell.trace("ConfigFilename: " + AstraRc.getDefaultConfigurationFileName());
+                LoggerShell.debug("ConfigFilename: " + AstraRc.getDefaultConfigurationFileName());
                 this.astraRc = new AstraRc();
             }
             // Overriding default section
             if (!StringUtils.isEmpty(cli.getConfigSectionName())) {
                 this.configSection = cli.getConfigSectionName();
-                LoggerShell.trace("ConfigSectionName: " + configSection);
+                LoggerShell.debug("ConfigSectionName: " + configSection);
             }
             
             if (isSectionValid(cli) && isSectionTokenValid(cli)) {
@@ -175,7 +175,7 @@ public class ShellContext {
         }
         
         if (token != null) {
-            LoggerShell.trace("Token retrieved: " + token);
+            LoggerShell.debug("Token retrieved: " + token);
             connect(token);
         } else {
             INVALID_PARAMETER.exit();
@@ -409,4 +409,13 @@ public class ShellContext {
         this.rawCommand = Arrays.asList(args);
     }
     
+    /**
+     * Get Current command as a String.
+     *
+     * @return
+     *      current command as a String
+     */
+    public String getRawCommandString() {
+        return "astra " + StringUtils.join(" ", getRawCommand());
+    }
 }
