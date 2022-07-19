@@ -24,7 +24,7 @@ public class DbDeleteCli extends BaseCliCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationsDb.deleteDb(this, databaseId);
+        return OperationsDb.deleteDb(databaseId);
     }
     
 }

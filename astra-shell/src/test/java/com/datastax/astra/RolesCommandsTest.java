@@ -12,12 +12,12 @@ public class RolesCommandsTest extends AbstractAstraCliTest {
 
     @Test
     public void interactive()  throws Exception {
-        astraCli();
+        astraCli( "--verbose");
     }
     
     @Test
     public void listRoles()  throws Exception {
-        astraCli("role", "list", /*"-f", "csv" ,  "--verbose",*/ "--log", "/Users/cedricklunven/Downloads/log2.txt");
+        astraCli("role", "list", "-f", "json" , "--verbose");
     }
     
     @Test

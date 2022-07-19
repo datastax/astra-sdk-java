@@ -20,7 +20,7 @@ public class UserShowCli extends BaseCliCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationIam.showUser(this, user);
+        return OperationIam.showUser(user);
     }
 
 }

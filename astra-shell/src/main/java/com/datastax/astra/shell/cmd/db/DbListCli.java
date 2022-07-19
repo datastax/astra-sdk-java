@@ -15,7 +15,7 @@ public class DbListCli extends BaseCliCommand {
    
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationsDb.listDb(this);
+        return OperationsDb.listDb();
     }
 
 }

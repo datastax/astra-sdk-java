@@ -11,6 +11,7 @@ import java.util.Set;
 import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.output.CsvOutput;
 import com.datastax.astra.shell.output.JsonOutput;
 
@@ -100,8 +101,12 @@ public class ShellTable implements Serializable {
      * @param title
      *      title
      */
-    public void showJson(String title) {
-        ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, title, getCellValues()));
+    public void showJson() {
+        String currentCommand = ShellContext.getInstance().getRawCommandString();
+        if (ShellContext.getInstance().getRawShellCommand() != null) {
+            currentCommand = ShellContext.getInstance().getRawShellCommand();
+        }
+        ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, currentCommand, getCellValues()));
     }
     
     /**

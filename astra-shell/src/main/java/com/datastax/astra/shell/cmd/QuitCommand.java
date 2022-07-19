@@ -15,8 +15,8 @@ public class QuitCommand extends BaseShellCommand {
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        if (null != getContext().getDatabase()) {
-            getContext().exitDatabase();
+        if (null != ctx().getDatabase()) {
+            ctx().exitDatabase();
             return ExitCode.SUCCESS;
         }
         LoggerShell.warning("You have no base selected.");

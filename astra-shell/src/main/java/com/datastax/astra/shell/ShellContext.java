@@ -19,7 +19,9 @@ import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.cmd.BaseShellCommand;
+import com.datastax.astra.shell.output.OutputFormat;
 import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.utils.ShellPrinter;
 
 /**
  * Hold the context of CLI to know where we are.
@@ -87,6 +89,9 @@ public class ShellContext {
     /** Raw command. */
     private List<String> rawCommand = new ArrayList<>();
     
+    /** Raw command. */
+    private String rawShellCommand;
+    
     /** History of commands in shell. */
     private List<BaseShellCommand> history = new ArrayList<>();
     
@@ -109,7 +114,7 @@ public class ShellContext {
      */
     private boolean isSectionValid(BaseCommand cmd) {
         if (!this.astraRc.isSectionExists(this.configSection)) {
-            cmd.outputError(CANNOT_CONNECT, "No token provided (-t), no config provided (--config), section '" + this.configSection 
+            ShellPrinter.outputError(CANNOT_CONNECT, "No token provided (-t), no config provided (--config), section '" + this.configSection 
                     + "' has not been found in config file '" 
                     + this.astraRc.getConfigFile().getPath() + "'. Try [astra setup]");
             return false;
@@ -129,7 +134,7 @@ public class ShellContext {
         if (StringUtils.isEmpty(this.astraRc
                 .getSection(this.configSection)
                 .get(AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN))) {
-            cmd.outputError(
+            ShellPrinter.outputError(
                     INVALID_PARAMETER, 
                     "Key '" + AstraClientConfig.ASTRA_DB_APPLICATION_TOKEN + 
                     "' has not found been in config [section '" + this.configSection + "']");
@@ -175,7 +180,7 @@ public class ShellContext {
         }
         
         if (token != null) {
-            LoggerShell.debug("Token retrieved: " + token);
+            LoggerShell.debug("Token: " + token);
             connect(token);
         } else {
             INVALID_PARAMETER.exit();
@@ -194,7 +199,7 @@ public class ShellContext {
         this.token = token;
         
         if (!token.startsWith(token)) {
-            startCommand.outputError(INVALID_PARAMETER, "Token provided is invalid. It should start with 'AstraCS:...'. Try [astra setup]");
+            ShellPrinter.outputError(INVALID_PARAMETER, "Token provided is invalid. It should start with 'AstraCS:...'. Try [astra setup]");
             INVALID_PARAMETER.exit();
         }
 
@@ -206,7 +211,7 @@ public class ShellContext {
             this.organization = apiDevopsOrganizations.organization();
             LoggerShell.success("Cli successfully initialized");
         } catch(Exception e) {
-            startCommand.outputError(CANNOT_CONNECT, "Token provided is invalid. Try [astra setup]");
+            ShellPrinter.outputError(CANNOT_CONNECT, "Token provided is invalid. Try [astra setup]");
             INVALID_PARAMETER.exit();
         }
     }
@@ -289,6 +294,57 @@ public class ShellContext {
         this.databaseRegion = null;
     }
 
+    /**
+     * user flag as no color to get a fixed size output.
+     * 
+     * @return
+     *      if no color flag is toggled.
+     */
+    public boolean isNoColor() {
+        BaseShellCommand sh   = getCurrentShellCommand();
+        BaseCliCommand   cli  = getStartCommand();
+        if (cli == null) return false;
+        return (cli.isNoColor() || (sh != null && sh.isNoColor()));
+    }
+    
+    /**
+     * Log in the console only if verbose is enabled.
+     *
+     * @return
+     *      if verbose
+     */
+    public boolean isVerbose() {
+        BaseShellCommand sh  = getCurrentShellCommand();
+        BaseCliCommand   cli = getStartCommand();
+        if (cli == null) return false;
+        return (cli.isVerbose() || (sh != null && sh.isVerbose()));
+    }
+    
+    /**
+     * Trigger a log only if relevant.
+     * 
+     * @return
+     *      check if logger is enabled
+     */
+    public boolean isFileLoggerEnabled() {
+        BaseCliCommand  cli = getStartCommand();
+        return (cli != null && cli.getLogFileWriter() != null);
+    }
+    
+    /**
+     * Retrieve output format based on raw command.
+     *
+     * @return
+     *      output format
+     */
+    public OutputFormat getOutputFormat() {
+        BaseCliCommand  cli = getStartCommand();
+        BaseShellCommand sh = getCurrentShellCommand();
+        if (cli == null) return OutputFormat.human;
+        if (sh != null)  return sh.getFormat();
+        return cli.getFormat();
+    }
+    
     /**
      * Getter accessor for attribute 'apiDevopsDatabases'.
      *
@@ -416,6 +472,25 @@ public class ShellContext {
      *      current command as a String
      */
     public String getRawCommandString() {
-        return "astra " + StringUtils.join(" ", getRawCommand());
+        return "astra " + StringUtils.join(getRawCommand(), " ");
+    }
+
+    /**
+     * Getter accessor for attribute 'rawShellCommand'.
+     *
+     * @return
+     *       current value of 'rawShellCommand'
+     */
+    public String getRawShellCommand() {
+        return rawShellCommand;
+    }
+
+    /**
+     * Setter accessor for attribute 'rawShellCommand'.
+     * @param rawShellCommand
+     * 		new value for 'rawShellCommand '
+     */
+    public void setRawShellCommand(String rawShellCommand) {
+        this.rawShellCommand = rawShellCommand;
     }
 }

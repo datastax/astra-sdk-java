@@ -15,7 +15,7 @@ public class DbListShell extends BaseShellCommand {
    
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationsDb.listDb(this);
+        return OperationsDb.listDb();
     }
 
 }

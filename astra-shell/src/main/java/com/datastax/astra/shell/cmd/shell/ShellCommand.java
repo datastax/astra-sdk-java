@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import com.datastax.astra.shell.AstraShell;
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.utils.CommandLineUtils;
 import com.datastax.astra.shell.utils.ShellPrinter;
@@ -28,7 +29,7 @@ public class ShellCommand extends BaseCliCommand {
     public ExitCode execute() {
         
         if (version) {
-            outputData("version", ShellPrinter.version());
+            ShellPrinter.outputData("version", ShellPrinter.version());
             ExitCode.SUCCESS.exit();
         }
         
@@ -40,6 +41,10 @@ public class ShellCommand extends BaseCliCommand {
             while(true) {
                 ShellPrinter.prompt();
                 String readline = scanner.nextLine();
+                
+                // Save User input as shell command
+                ShellContext.getInstance().setRawShellCommand(readline);
+                
                 if (null!= readline) {
                     AstraShell.main(CommandLineUtils.parseCommand(readline.trim()));
                 }

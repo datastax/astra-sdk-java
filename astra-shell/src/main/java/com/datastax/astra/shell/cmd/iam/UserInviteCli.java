@@ -25,7 +25,7 @@ public class UserInviteCli extends BaseCliCommand {
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        return OperationIam.inviteUser(this, user, role);
+        return OperationIam.inviteUser(user, role);
     }
 
 }

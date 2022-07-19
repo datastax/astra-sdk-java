@@ -20,7 +20,7 @@ public class RoleShowShell extends BaseShellCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationIam.showRole(this, role);
+        return OperationIam.showRole(role);
     }
     
 }

@@ -6,6 +6,7 @@ import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.Option;
@@ -36,11 +37,11 @@ public class ConfigCreate extends BaseConfigCommand implements Runnable {
     @Override
     public void run() {
         if (token == null) {
-            outputError(ExitCode.INVALID_PARAMETER, "Please Provide a token with option -t, --token");
+            ShellPrinter.outputError(ExitCode.INVALID_PARAMETER, "Please Provide a token with option -t, --token");
             ExitCode.INVALID_PARAMETER.exit();
         }
         if (!token.startsWith("AstraCS:")) {
-            outputError(ExitCode.INVALID_PARAMETER, "Your token should start with 'AstraCS:'");
+            ShellPrinter.outputError(ExitCode.INVALID_PARAMETER, "Your token should start with 'AstraCS:'");
             ExitCode.INVALID_PARAMETER.exit();
         }
         
@@ -52,9 +53,9 @@ public class ConfigCreate extends BaseConfigCommand implements Runnable {
             }
             getAstraRc().createSectionWithToken(sectionName, token);
             getAstraRc().save();
-            outputSuccess("Configuration Saved.\n");
+            ShellPrinter.outputSuccess("Configuration Saved.\n");
         } catch(Exception e) {
-            outputError(CANNOT_CONNECT, "Token provided is invalid. It was not possible to connect to Astra.");
+            ShellPrinter.outputError(CANNOT_CONNECT, "Token provided is invalid. It was not possible to connect to Astra.");
             INVALID_PARAMETER.exit();
         }
     }

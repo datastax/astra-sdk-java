@@ -20,7 +20,7 @@ public class RoleShowCli extends BaseCliCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationIam.showRole(this, role);
+        return OperationIam.showRole(role);
     }
     
 }

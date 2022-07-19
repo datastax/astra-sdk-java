@@ -1,6 +1,7 @@
 package com.datastax.astra.shell.cmd;
 
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -14,7 +15,7 @@ public class ExitCommand extends BaseShellCommand {
    /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-       outputSuccess("Exiting Astra Cli");
+       ShellPrinter.outputSuccess("Exiting Astra Cli");
        ExitCode.SUCCESS.exit();
        // Nerver reachede
        return ExitCode.SUCCESS;

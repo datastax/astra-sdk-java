@@ -53,7 +53,7 @@ public class ConfigList extends BaseConfigCommand {
             rf.put(COLUMN_TITLE, org);
             sht.getCellValues().add(rf);
         }
-        ShellPrinter.printShellTable(sht, format);
+        ShellPrinter.printShellTable(sht);
     }
     
     /**

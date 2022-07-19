@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCliCommand;
-import com.datastax.astra.shell.cmd.BaseShellCommand;
 
 /**
  * Work with terminal.
@@ -27,18 +26,6 @@ public class LoggerShell {
 	 */
 	private LoggerShell() {}
 	
-    /**
-     * Log in the console only if verbose is enabled.
-     *
-     * @return
-     *      if verbose
-     */
-    private static boolean isVerbose() {
-        BaseShellCommand sh = ShellContext.getInstance().getCurrentShellCommand();
-        return (ShellContext.getInstance().getStartCommand().isVerbose() || 
-               (sh != null && sh.isVerbose()));
-    }
-    
     /**
      * If log provided the output will go to the logfile.
      * 
@@ -69,10 +56,18 @@ public class LoggerShell {
      *      text to show in success
      */
     public static void success(String text) {
-        if (isVerbose()) {
-            System.out.println(ansi().fg(GREEN).a("[ OK  ] - ").reset().a(text));
+        
+        if (ShellContext.getInstance().isFileLoggerEnabled()) {
+            logToFile("INFO", text);
         }
-        logToFile("INFO", text);
+        
+        if (ShellContext.getInstance().isVerbose()) {
+            if (ShellContext.getInstance().isNoColor()) {
+                System.out.println("[ OK  ] - " + text);
+            } else {
+                System.out.println(ansi().fg(GREEN).a("[ OK  ] - ").reset().a(text));
+            }
+        }
     }
     
     /**
@@ -82,10 +77,17 @@ public class LoggerShell {
      *       text to be displayed
      */
     public static void error(String text) {
-        if (isVerbose()) {
-            System.out.println(ansi().fg(RED).a("[ERROR] - ").reset().a(text));
+        if (ctx().isVerbose()) {
+            if (ctx().isNoColor()) {
+                System.out.println("[ERROR] - " + text);
+            } else {
+                System.out.println(ansi().fg(RED).a("[ERROR] - ").reset().a(text));
+            }
         }
-        logToFile("ERROR", text);
+        
+        if (ctx().isFileLoggerEnabled()) {
+            logToFile("ERROR", text);
+        }
     }
     
     /**
@@ -97,10 +99,17 @@ public class LoggerShell {
      *       text to be displayed
      */
     public static void warning(String text) {
-        if (isVerbose()) {
-            System.out.println(ansi().fg(YELLOW).a("[WARN ] - ").reset().a(text));
+        if (ctx().isVerbose()) {
+            if (ctx().isNoColor()) {
+                System.out.println("[WARN ] - " + text);
+            } else {
+                System.out.println(ansi().fg(YELLOW).a("[WARN ] - ").reset().a(text));
+            }
         }
-        logToFile("WARN", text);
+        
+        if (ctx().isFileLoggerEnabled()) {
+            logToFile("WARN", text);
+        }
     }
     
     /**
@@ -112,10 +121,17 @@ public class LoggerShell {
      *      text to show in success
      */
     public static void debug(String text) {
-        if (isVerbose()) {
-            System.out.println(ansi().fg(YELLOW).a("[DEBUG] - ").reset().a(text));
+        if (ctx().isVerbose()) {
+            if (ctx().isNoColor()) {
+                System.out.println("[DEBUG] - " + text);
+            } else {
+                System.out.println(ansi().fg(YELLOW).a("[DEBUG] - ").reset().a(text));
+            }
         }
-        logToFile("DEBUG", text);
+        
+        if (ctx().isFileLoggerEnabled()) {
+            logToFile("DEBUG", text);
+        }
     }
     
     /**
@@ -127,10 +143,28 @@ public class LoggerShell {
      *      text to show in success
      */
     public static void info(String text) {
-        if (isVerbose()) {
-            System.out.println(ansi().fg(CYAN).a("[INFO ] - ").reset().a(text));
+        
+        if (ctx().isVerbose()) {
+            if (ctx().isNoColor()) {
+                System.out.println("[INFO ] - " + text);
+            } else {
+                System.out.println(ansi().fg(CYAN).a("[INFO ] - ").reset().a(text));
+            }
         }
-        logToFile("INFO", text);
+        
+        if (ctx().isFileLoggerEnabled()) {
+            logToFile("INFO", text);
+        }
+    }
+    
+    /**
+     * Get context.
+     *
+     * @return
+     *      cli context
+     */
+    private static ShellContext ctx() {
+        return ShellContext.getInstance();
     }
     
 }

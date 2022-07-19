@@ -42,7 +42,7 @@ public class DbCreateCli extends BaseCliCommand {
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        return OperationsDb.createDb(this, databaseName, databaseRegion, defaultKeyspace);
+        return OperationsDb.createDb(databaseName, databaseRegion, defaultKeyspace);
     }
     
 }

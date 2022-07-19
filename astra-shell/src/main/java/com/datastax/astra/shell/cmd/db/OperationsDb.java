@@ -17,7 +17,6 @@ import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegionServerless;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.datastax.astra.shell.utils.ShellPrinter;
 import com.datastax.astra.shell.utils.ShellTable;
@@ -67,7 +66,7 @@ public class OperationsDb {
      * @return
      *      db id
      */
-    public static Optional<DatabaseClient> getDatabaseClient(BaseCommand cmd, String db) {
+    public static Optional<DatabaseClient> getDatabaseClient(String db) {
         DatabasesClient dbsClient = ShellContext.getInstance().getApiDevopsDatabases();
         
         // Try with the id (fastest)
@@ -83,7 +82,7 @@ public class OperationsDb {
         
         // Multiple db with this name
         if (dbs.size() > 1) {
-            cmd.outputError(ExitCode.INVALID_PARAMETER, "There are '" + dbs.size() + "' dbs with this name, try with id.");
+            ShellPrinter.outputError(ExitCode.INVALID_PARAMETER, "There are '" + dbs.size() + "' dbs with this name, try with id.");
             return Optional.empty();
         }
         
@@ -92,7 +91,7 @@ public class OperationsDb {
             return Optional.ofNullable(dbsClient.database(dbs.get(0).getId()));
         }
         
-        cmd.outputError(ExitCode.NOT_FOUND,"'" + db + "' database not found.");
+        ShellPrinter.outputError(ExitCode.NOT_FOUND,"'" + db + "' database not found.");
         return Optional.empty();
     }
     
@@ -109,7 +108,7 @@ public class OperationsDb {
      *      db ks
      * @return
      */
-    public static ExitCode createDb(BaseCommand cmd, String databaseName, String databaseRegion, String defaultKeyspace) {
+    public static ExitCode createDb(String databaseName, String databaseRegion, String defaultKeyspace) {
         
         // Lookup for available serverless regions
         Map<String, DatabaseRegionServerless> regionMap = ShellContext.getInstance().getApiDevopsOrganizations()
@@ -120,7 +119,7 @@ public class OperationsDb {
         
         // Validate region
         if (!regionMap.containsKey(databaseRegion)) {
-            cmd.outputError(ExitCode.NOT_FOUND, "Database region '" + databaseRegion + "' has not been found");
+            ShellPrinter.outputError(ExitCode.NOT_FOUND, "Database region '" + databaseRegion + "' has not been found");
             return ExitCode.NOT_FOUND;
         }
         
@@ -131,7 +130,7 @@ public class OperationsDb {
         
         // Validate keyspace
         if (!defaultKeyspace.matches(OperationsDb.KEYSPACE_NAME_PATTERN)) {
-            cmd.outputError(ExitCode.INVALID_PARAMETER, "The keyspace name is not valid, please use snake_case: [a-z0-9_]");
+            ShellPrinter.outputError(ExitCode.INVALID_PARAMETER, "The keyspace name is not valid, please use snake_case: [a-z0-9_]");
             return ExitCode.INVALID_PARAMETER;
         }
         
@@ -147,7 +146,7 @@ public class OperationsDb {
                         .cloudRegion(databaseRegion)
                         .keyspace(defaultKeyspace)
                         .build());
-        cmd.outputSuccess("Database [" + dbId + "] created.");
+        ShellPrinter.outputSuccess("Database [" + dbId + "] created.");
         return ExitCode.SUCCESS;
     }
     
@@ -159,7 +158,7 @@ public class OperationsDb {
      * @return
      *      returned code
      */
-    public static ExitCode listDb(BaseCommand cmd) {
+    public static ExitCode listDb() {
         ShellTable sht = new ShellTable();
         sht.addColumn(COLUMN_NAME,    20);
         sht.addColumn(COLUMN_ID,      37);
@@ -176,25 +175,23 @@ public class OperationsDb {
                 rf.put(COLUMN_STATUS,  db.getStatus().name());
                 sht.getCellValues().add(rf);
         });
-        ShellPrinter.printShellTable(sht, cmd.getFormat());
+        ShellPrinter.printShellTable(sht);
         return ExitCode.SUCCESS;
     }
     
     /**
      * Delete a dabatase if exist.
      * 
-     * @param cmd
-     *      current command options
      * @param databaseName
      *      db name or db id
      * @return
      *      status
      */
-    public static ExitCode deleteDb(BaseCommand cmd, String databaseName) {
-        Optional<DatabaseClient> dbClient = getDatabaseClient(cmd, databaseName);
+    public static ExitCode deleteDb(String databaseName) {
+        Optional<DatabaseClient> dbClient = getDatabaseClient(databaseName);
         if (dbClient.isPresent()) {
             dbClient.get().delete();
-            cmd.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
+            ShellPrinter.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
             return ExitCode.SUCCESS;
         }
         return ExitCode.NOT_FOUND;
@@ -210,8 +207,8 @@ public class OperationsDb {
      * @return
      *      status code
      */
-    public static ExitCode showDb(BaseCommand cmd, String databaseName) {
-        Optional<DatabaseClient> dbClient = getDatabaseClient(cmd, databaseName);
+    public static ExitCode showDb(String databaseName) {
+        Optional<DatabaseClient> dbClient = getDatabaseClient(databaseName);
         if (dbClient.isPresent()) {
             Database db = dbClient.get().find().get();
             ShellTable sht = new ShellTable();
@@ -227,7 +224,7 @@ public class OperationsDb {
             sht.getCellValues().add(ShellTable.buildProperty("Creation Time", db.getCreationTime()));
             
             sht.show();
-            cmd.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
+            ShellPrinter.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
             return ExitCode.SUCCESS;
         }
         return ExitCode.NOT_FOUND;

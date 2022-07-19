@@ -1,15 +1,6 @@
 package com.datastax.astra.shell.cmd;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.output.CsvOutput;
-import com.datastax.astra.shell.output.JsonOutput;
 import com.datastax.astra.shell.output.OutputFormat;
-import com.datastax.astra.shell.utils.LoggerShell;
-import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
@@ -54,96 +45,6 @@ public abstract class BaseCommand implements Runnable {
     protected OutputFormat format = OutputFormat.human;
     
     /**
-     * Exit program with error.
-     *
-     * @param code
-     *      error code
-     * @param msg
-     *      error message
-     */
-    public void outputError(ExitCode code, String msg) {
-        switch(format) {
-            case json:
-                ShellPrinter.printJson(new JsonOutput(code, code.name() + ": " + msg));
-            break;
-            case csv:
-                ShellPrinter.printCsv(new CsvOutput(code,  code.name() + ": " + msg));
-            break;
-            case human:
-            default:
-                LoggerShell.error( code.name() + ": " + msg);
-            break;
-        }
-    }
-    
-    /**
-     * Exit program with no operation
-     *
-     * @param code
-     *      error code
-     * @param msg
-     *      error message
-     */
-    public void outputWarning(ExitCode code, String msg) {
-        switch(format) {
-            case json:
-                ShellPrinter.printJson(new JsonOutput(code, code.name() + ": " + msg));
-            break;
-            case csv:
-                ShellPrinter.printCsv(new CsvOutput(code,  code.name() + ": " + msg));
-            break;
-            case human:
-            default:
-                LoggerShell.warning(code.name() + ": " + msg);
-            break;
-        }
-    }
-    
-    /**
-     * Exit program with error.
-     *
-     * @param msg
-     *      return message
-     */
-    public void outputData(String label, String data) {
-        switch(format) {
-            case json:
-                ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, label, data));
-            break;
-            case csv:
-                Map<String, String> m = new HashMap<>();
-                m.put(label, data);
-                ShellPrinter.printCsv(new CsvOutput(Arrays.asList(label), Arrays.asList(m)));
-            break;
-            case human:
-            default:
-               System.out.println(data);
-            break;
-        }
-    }
-    
-    /**
-     * Exit program with error.
-     *
-     * @param msg
-     *      return message
-     */
-    public void outputSuccess(String msg) {
-        switch(format) {
-            case json:
-                ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, msg));
-            break;
-            case csv:
-                ShellPrinter.printCsv(new CsvOutput(ExitCode.SUCCESS, msg));
-            break;
-            case human:
-            default:
-                LoggerShell.success(msg);
-            break;
-        }
-    }
-
-    /**
      * Getter accessor for attribute 'format'.
      *
      * @return
@@ -161,6 +62,16 @@ public abstract class BaseCommand implements Runnable {
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     * Getter accessor for attribute 'noColor'.
+     *
+     * @return
+     *       current value of 'noColor'
+     */
+    public boolean isNoColor() {
+        return noColor;
     }
     
 

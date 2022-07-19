@@ -2,7 +2,8 @@ package com.datastax.astra.shell.cmd;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.output.OutputFormat;
+import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.utils.ShellPrinter;
 
 /**
  * Base command.
@@ -15,12 +16,12 @@ public abstract class BaseShellCommand extends BaseCommand {
     public void run() {
        
        // As a shell command it should be initialized
-       if (!ShellContext.getInstance().isInitialized()) {
-           outputError(ExitCode.CONFLICT, "A shell command should have the connection set");
+       if (!ctx().isInitialized()) {
+           ShellPrinter.outputError(ExitCode.CONFLICT, "A shell command should have the connection set");
        } else {
-           // Keep history of commands and options of the shell
-           ShellContext.getInstance().setCurrentShellCommand(this);
-           this.format  = OutputFormat.human;
+           ctx().setCurrentShellCommand(this);
+           LoggerShell.info("Shell : " + ShellContext.getInstance().getRawShellCommand());
+           LoggerShell.info("Class : " + getClass().getName());
            execute();
        }
     }
@@ -36,7 +37,7 @@ public abstract class BaseShellCommand extends BaseCommand {
      * @return
      *      current context
      */
-    protected ShellContext getContext() {
+    protected ShellContext ctx() {
         return ShellContext.getInstance();
     }
    

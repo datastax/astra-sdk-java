@@ -1,6 +1,7 @@
 package com.datastax.astra.shell.cmd.config;
 
 import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.utils.ShellPrinter;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -25,12 +26,12 @@ public class ConfigDelete extends BaseConfigCommand {
     /** {@inheritDoc} */
     public void run() {
         if (!getAstraRc().isSectionExists(sectionName)) {
-            outputError(ExitCode.INVALID_PARAMETER, "Section '" + sectionName + "' has not been found in config.");
+            ShellPrinter.outputError(ExitCode.INVALID_PARAMETER, "Section '" + sectionName + "' has not been found in config.");
             ExitCode.INVALID_PARAMETER.exit();
         } else {
             getAstraRc().deleteSection(sectionName);
             getAstraRc().save();
-            outputSuccess("Section '" + sectionName + "' has been deleted.");
+            ShellPrinter.outputSuccess("Section '" + sectionName + "' has been deleted.");
         }
      }
 

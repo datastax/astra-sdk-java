@@ -2,13 +2,17 @@ package com.datastax.astra.shell.utils;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 
+import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.output.CsvOutput;
 import com.datastax.astra.shell.output.JsonOutput;
-import com.datastax.astra.shell.output.OutputFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -71,7 +75,11 @@ public class ShellPrinter {
      *      colot
      */
     public static void print(String text, Ansi.Color color) {
-        System.out.print(ansi().fg(color).a(text).reset());
+        if (ctx().isNoColor()) {
+            System.out.print(text);
+        } else {
+            System.out.print(ansi().fg(color).a(text).reset());
+        }
     }
     
     /**
@@ -83,7 +91,11 @@ public class ShellPrinter {
      *      colot
      */
     public static void println(String text, Ansi.Color color) {
-        System.out.println(ansi().fg(color).a(text).reset());
+        if (ctx().isNoColor()) {
+            System.out.println(text);
+        } else {
+            System.out.println(ansi().fg(color).a(text).reset());
+        }
     }
     
     /**
@@ -139,10 +151,10 @@ public class ShellPrinter {
      * @param fmt
      *      format
      */
-    public static void printShellTable(ShellTable sht, OutputFormat fmt) {
-        switch(fmt) {
+    public static void printShellTable(ShellTable sht) {
+        switch(ctx().getOutputFormat()) {
             case json:
-                sht.showJson("db list");
+                sht.showJson();
             break;
             case csv: 
                 sht.showCsv(); 
@@ -189,5 +201,106 @@ public class ShellPrinter {
         }
 	    print("> ", Ansi.Color.GREEN);
 	}
+	
+	
+	/**
+     * Exit program with error.
+     *
+     * @param code
+     *      error code
+     * @param msg
+     *      error message
+     */
+    public static void outputError(ExitCode code, String msg) {
+        switch(ctx().getOutputFormat()) {
+            case json:
+                printJson(new JsonOutput(code, code.name() + ": " + msg));
+            break;
+            case csv:
+                printCsv(new CsvOutput(code,  code.name() + ": " + msg));
+            break;
+            case human:
+            default:
+                LoggerShell.error(code.name() + ": " + msg);
+            break;
+        }
+    }
+    
+    /**
+     * Exit program with no operation
+     *
+     * @param code
+     *      error code
+     * @param msg
+     *      error message
+     */
+    public static void outputWarning(ExitCode code, String msg) {
+        switch(ctx().getOutputFormat()) {
+            case json:
+                printJson(new JsonOutput(code, code.name() + ": " + msg));
+            break;
+            case csv:
+                printCsv(new CsvOutput(code,  code.name() + ": " + msg));
+            break;
+            case human:
+            default:
+                LoggerShell.warning(code.name() + ": " + msg);
+            break;
+        }
+    }
+    
+    /**
+     * Exit program with error.
+     *
+     * @param msg
+     *      return message
+     */
+    public static void outputData(String label, String data) {
+        switch(ctx().getOutputFormat()) {
+            case json:
+                printJson(new JsonOutput(ExitCode.SUCCESS, label, data));
+            break;
+            case csv:
+                Map<String, String> m = new HashMap<>();
+                m.put(label, data);
+                printCsv(new CsvOutput(Arrays.asList(label), Arrays.asList(m)));
+            break;
+            case human:
+            default:
+               System.out.println(data);
+            break;
+        }
+    }
+    
+    /**
+     * Exit program with error.
+     *
+     * @param msg
+     *      return message
+     */
+    public static void outputSuccess(String msg) {
+        switch(ctx().getOutputFormat()) {
+            case json:
+                printJson(new JsonOutput(ExitCode.SUCCESS, msg));
+            break;
+            case csv:
+                printCsv(new CsvOutput(ExitCode.SUCCESS, msg));
+            break;
+            case human:
+            default:
+                LoggerShell.success(msg);
+            break;
+        }
+    }
+    
+	 /**
+     * Get context.
+     *
+     * @return
+     *      cli context
+     */
+    private static ShellContext ctx() {
+        return ShellContext.getInstance();
+    }
 	
 }
