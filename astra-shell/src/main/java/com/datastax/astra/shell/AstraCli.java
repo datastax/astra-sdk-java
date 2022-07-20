@@ -8,7 +8,7 @@ import com.datastax.astra.shell.cmd.config.ConfigDefault;
 import com.datastax.astra.shell.cmd.config.ConfigDelete;
 import com.datastax.astra.shell.cmd.config.ConfigList;
 import com.datastax.astra.shell.cmd.config.ConfigShow;
-import com.datastax.astra.shell.cmd.config.Setup;
+import com.datastax.astra.shell.cmd.config.ConfigSetup;
 import com.datastax.astra.shell.cmd.db.DbCreateCli;
 import com.datastax.astra.shell.cmd.db.DbDeleteCli;
 import com.datastax.astra.shell.cmd.db.DbListCli;
@@ -36,41 +36,39 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
   description    = "CLI for DataStax Astra™ including an interactive mode",
   defaultCommand = ShellCommand.class, // no command => interactive
   commands       = { 
-    Setup.class,
+    ConfigSetup.class,
     HelpCommand.class,
     ShellCommand.class
   },
   groups = {
-          @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = { 
+          @Group(name = OperationsDb.DB, description = "Manage databases", commands = { 
                   DbCreateCli.class,
                   DbDeleteCli.class,
                   DbListCli.class,
                   DbShow.class
           }),
-          @Group(name = "config", description = "Edit configuration file", commands = { 
+          @Group(name = "config", description = "Manage configuration file", commands = { 
                   ConfigCreate.class,
                   ConfigDefault.class,
                   ConfigDelete.class,
                   ConfigShow.class,
                   ConfigList.class
           }),
-          @Group(name= "role", description = "Manage the roles (RBAC)", commands = {
+          @Group(name= "role", description = "Manage roles (RBAC)", commands = {
                   RoleListCli.class,
                   RoleShowCli.class
           }),
-          @Group(name= "user", description = "Manage the users permissions", commands = {
+          @Group(name= "user", description = "Manage users", commands = {
                   UserListCli.class,
                   UserShowCli.class,
                   UserInviteCli.class,
                   UserDeleteCli.class
           }),
-          @Group(name= "token", description = "Manage the security tokens", commands = {
-                  
+          /*
+          @Group(name= "token", description = "Manage security tokens", commands = {
           }),
-          @Group(name= "acl", description = "Manage the access lists", commands = {
-                  
-          })
-          
+          @Group(name= "acl", description = "Manage Access lists", commands = {
+          })*/
   })
 public class AstraCli {
     

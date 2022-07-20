@@ -22,6 +22,9 @@ public abstract class BaseCommand implements Runnable {
     /** Command constants. */
     public static final String LIST       = "list";
     
+    /** Command constants. */
+    public static final String USE       = "use";
+    
     // --- Flags ---
     
     /** 

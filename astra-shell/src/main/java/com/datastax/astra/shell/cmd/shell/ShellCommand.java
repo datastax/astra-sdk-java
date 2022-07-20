@@ -16,7 +16,7 @@ import com.github.rvesse.airline.annotations.Option;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "shell", description = "Enter interactive mode")
+@Command(name = "shell", description = "Interactive mode (default if no command provided)")
 public class ShellCommand extends BaseCliCommand {
     
     /** 

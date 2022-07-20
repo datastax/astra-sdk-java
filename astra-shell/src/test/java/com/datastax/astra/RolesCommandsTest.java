@@ -12,7 +12,7 @@ public class RolesCommandsTest extends AbstractAstraCliTest {
 
     @Test
     public void interactive()  throws Exception {
-        astraCli( "--verbose");
+        astraCli();
     }
     
     @Test

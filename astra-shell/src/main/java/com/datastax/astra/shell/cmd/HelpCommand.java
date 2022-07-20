@@ -10,7 +10,7 @@ import com.github.rvesse.airline.help.Help;
  *
  * @param <T>
  */
-@Command(name = "help", description = "Display help information")
+@Command(name = "help", description = "View help for any command")
 public class HelpCommand<T> extends Help<T> {
    
     /** {@inheritDoc} */

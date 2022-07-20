@@ -17,10 +17,8 @@ import com.github.rvesse.airline.annotations.Command;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(
-   name = "setup", 
-   description = "Intialize configuration")
-public class Setup extends BaseConfigCommand implements Runnable {
+@Command(name = "setup", description = "Initialize configuration file")
+public class ConfigSetup extends BaseConfigCommand implements Runnable {
     
     /** {@inheritDoc} */
     @Override

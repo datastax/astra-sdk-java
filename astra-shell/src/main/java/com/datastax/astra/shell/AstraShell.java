@@ -6,6 +6,7 @@ import com.datastax.astra.shell.cmd.QuitCommand;
 import com.datastax.astra.shell.cmd.db.DbCreateShell;
 import com.datastax.astra.shell.cmd.db.DbDeleteShell;
 import com.datastax.astra.shell.cmd.db.DbListShell;
+import com.datastax.astra.shell.cmd.db.DbUseShell;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListShell;
 import com.datastax.astra.shell.cmd.iam.RoleShowCli;
@@ -16,7 +17,6 @@ import com.datastax.astra.shell.cmd.iam.UserShowShell;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.CqlShCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
-import com.datastax.astra.shell.cmd.use.UseDb;
 import com.datastax.astra.shell.utils.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
@@ -44,7 +44,8 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
           @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = {
                   DbCreateShell.class,
                   DbDeleteShell.class,
-                  DbListShell.class
+                  DbListShell.class,
+                  DbUseShell.class
           }),
           @Group(name= "role", description = "Manage the roles (RBAC)", commands = {
                   RoleListShell.class,
@@ -55,10 +56,7 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   UserShowShell.class,
                   UserInviteShell.class,
                   UserDeleteShell.class
-          }),
-          @Group(name = "use", description = "Focus on an entity (context & prompt changed)", commands = {
-                 UseDb.class
-          }),
+          })
     })
 public class AstraShell {
     
