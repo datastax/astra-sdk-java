@@ -40,7 +40,7 @@ public class DbCqlShellCli extends BaseCliCommand {
     
     /** Cqlsh Options. */
     @Option(name = { "--version" }, 
-            description = "Remove all colors in output")
+            description = "Display information of cqlsh.")
     protected boolean cqlShOptionVersion = false;
     
     /** Cqlsh Options. */
