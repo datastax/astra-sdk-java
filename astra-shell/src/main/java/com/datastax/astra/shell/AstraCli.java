@@ -5,6 +5,7 @@ import java.io.File;
 import org.fusesource.jansi.AnsiConsole;
 
 import com.datastax.astra.shell.cmd.HelpCommand;
+import com.datastax.astra.shell.cmd.config.BaseConfigCommand;
 import com.datastax.astra.shell.cmd.config.ConfigCreate;
 import com.datastax.astra.shell.cmd.config.ConfigDefault;
 import com.datastax.astra.shell.cmd.config.ConfigDelete;
@@ -13,11 +14,13 @@ import com.datastax.astra.shell.cmd.config.ConfigGet;
 import com.datastax.astra.shell.cmd.config.ConfigSetup;
 import com.datastax.astra.shell.cmd.db.DbCqlShellCli;
 import com.datastax.astra.shell.cmd.db.DbCreateCli;
+import com.datastax.astra.shell.cmd.db.DbCreateKeyspaceCli;
 import com.datastax.astra.shell.cmd.db.DbDeleteCli;
 import com.datastax.astra.shell.cmd.db.DbListCli;
 import com.datastax.astra.shell.cmd.db.DbGetCli;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListCli;
+import com.datastax.astra.shell.cmd.iam.OperationIam;
 import com.datastax.astra.shell.cmd.iam.RoleGetCli;
 import com.datastax.astra.shell.cmd.iam.UserDeleteCli;
 import com.datastax.astra.shell.cmd.iam.UserInviteCli;
@@ -50,19 +53,20 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   DbDeleteCli.class,
                   DbGetCli.class,
                   DbListCli.class,
+                  DbCreateKeyspaceCli.class
           }),
-          @Group(name = "config", description = "Manage configuration file", commands = { 
+          @Group(name = BaseConfigCommand.COMMAND_CONFIG, description = "Manage configuration file", commands = { 
                   ConfigCreate.class,
                   ConfigDefault.class,
                   ConfigDelete.class,
                   ConfigGet.class,
                   ConfigList.class
           }),
-          @Group(name= "role", description = "Manage roles (RBAC)", commands = {
+          @Group(name= OperationIam.COMMAND_ROLE, description = "Manage roles (RBAC)", commands = {
                   RoleListCli.class,
                   RoleGetCli.class
           }),
-          @Group(name= "user", description = "Manage users", commands = {
+          @Group(name= OperationIam.COMMAND_USER, description = "Manage users", commands = {
                   UserListCli.class,
                   UserGetCli.class,
                   UserInviteCli.class,

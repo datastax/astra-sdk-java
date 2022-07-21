@@ -8,6 +8,11 @@ import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.Option;
 import com.github.rvesse.airline.annotations.restrictions.Required;
 
+/**
+ * Invite user.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @Command(name = "invite", description = "Invite a user to an organization")
 public class UserInviteShell extends BaseShellCommand {
 

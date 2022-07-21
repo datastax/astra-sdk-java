@@ -9,12 +9,13 @@ import com.datastax.astra.shell.cmd.db.DbGetShell;
 import com.datastax.astra.shell.cmd.db.DbListShell;
 import com.datastax.astra.shell.cmd.db.DbUseShell;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
-import com.datastax.astra.shell.cmd.iam.RoleListShell;
+import com.datastax.astra.shell.cmd.iam.OperationIam;
 import com.datastax.astra.shell.cmd.iam.RoleGetCli;
+import com.datastax.astra.shell.cmd.iam.RoleListShell;
 import com.datastax.astra.shell.cmd.iam.UserDeleteShell;
+import com.datastax.astra.shell.cmd.iam.UserGetShell;
 import com.datastax.astra.shell.cmd.iam.UserInviteShell;
 import com.datastax.astra.shell.cmd.iam.UserListShell;
-import com.datastax.astra.shell.cmd.iam.UserGetShell;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
 import com.datastax.astra.shell.out.LoggerShell;
@@ -47,11 +48,11 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   DbGetShell.class,
                   DbUseShell.class
           }),
-          @Group(name= "role", description = "Manage the roles (RBAC)", commands = {
+          @Group(name= OperationIam.COMMAND_ROLE, description = "Manage the roles (RBAC)", commands = {
                   RoleListShell.class,
                   RoleGetCli.class
           }),
-          @Group(name= "user", description = "Manage the users permission", commands = {
+          @Group(name= OperationIam.COMMAND_USER, description = "Manage the users permission", commands = {
                   UserListShell.class,
                   UserGetShell.class,
                   UserInviteShell.class,

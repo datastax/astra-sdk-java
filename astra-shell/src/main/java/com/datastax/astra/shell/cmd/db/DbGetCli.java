@@ -18,11 +18,11 @@ public class DbGetCli extends BaseCliCommand {
     /** name of the DB. */
     @Required
     @Arguments(title = "DB", description = "Database name or identifier")
-    public String databaseId;
+    public String database;
     
     /** {@inheritDoc} */
     public ExitCode execute() {
-        return OperationsDb.showDb(databaseId);
+        return OperationsDb.showDb(database);
     }
 
 }

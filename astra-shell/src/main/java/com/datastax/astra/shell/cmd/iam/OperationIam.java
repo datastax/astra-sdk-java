@@ -24,6 +24,11 @@ import com.datastax.astra.shell.out.ShellTable;
  */
 public class OperationIam {
     
+    /** worki with roles. */
+    public static final String COMMAND_ROLE = "role";
+    /** worki with users. */
+    public static final String COMMAND_USER = "user";
+    
     /** Column name. */
     private static final String COLUMN_ROLE_ID          = "Role Id";
     /** Column name. */
@@ -130,7 +135,8 @@ public class OperationIam {
                     ShellPrinter.printShellTable(sht);
                 break;
                 case json:
-                    ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, "role show " + role, r));
+                    ShellPrinter.printJson(new JsonOutput(ExitCode.SUCCESS, 
+                            OperationIam.COMMAND_ROLE + " " + BaseCommand.GET + " " + role, r));
                 break;
                 case human:
                 default:

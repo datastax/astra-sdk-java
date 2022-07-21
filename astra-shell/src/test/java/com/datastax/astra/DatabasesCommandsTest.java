@@ -18,20 +18,20 @@ public class DatabasesCommandsTest extends AbstractAstraCliTest {
     public void createDb()  throws Exception {
         astraCli("db", "create", "test", "-r", "eu-central-1", "-ks", "ks1");
     }
-
-    @Test
-    public void deleteDb()  throws Exception {
-        astraCli("db", "delete","sky_session1");
-    }
     
     @Test
-    public void showDB()  throws Exception {
-        astraCli("db", "show","foo");
+    public void getDb()  throws Exception {
+        astraCli("db", "get","foo");
     }
     
     @Test
     public void cqlSHDB()  throws Exception {
         astraCli("db", "cqlsh", "foo", "-v");
+    }
+    
+    @Test
+    public void createKeyspace()  throws Exception {
+        astraCli("db", "create-keyspace", "foo", "-k", "ks3", "-v");
     }
     
     

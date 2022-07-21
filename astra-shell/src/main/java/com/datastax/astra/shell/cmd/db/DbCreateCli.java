@@ -18,6 +18,11 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
 @Command(name = BaseCommand.CREATE, description = "Create a database with cli")
 public class DbCreateCli extends BaseCliCommand {
     
+    /** Cqlsh Options. */
+    @Option(name = { "--if-not-exist" }, 
+            description = "will create a new DB only if none with same name")
+    protected boolean ifNotExist = false;
+    
     /**
      * Database name or identifier
      */
@@ -35,14 +40,14 @@ public class DbCreateCli extends BaseCliCommand {
     /**
      * Default keyspace created with the Db
      */
-    @Option(name = { "-ks", "--keyspace" }, title = "KEYSPACE", arity = 1, 
+    @Option(name = { "-k", "--keyspace" }, title = "KEYSPACE", arity = 1, 
             description = "Default keyspace created with the Db")
     protected String defaultKeyspace;
     
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        return OperationsDb.createDb(databaseName, databaseRegion, defaultKeyspace);
+        return OperationsDb.createDb(databaseName, databaseRegion, defaultKeyspace, ifNotExist);
     }
     
 }

@@ -18,6 +18,11 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
 @Command(name = BaseCommand.CREATE, description = "Create a database with shell")
 public class DbCreateShell extends BaseShellCommand {
     
+    /** Cqlsh Options. */
+    @Option(name = { "--if-not-exist" }, 
+            description = "will create a new DB only if none with same name")
+    protected boolean ifNotExist = false;
+    
     /**
      * Database name or identifier
      */
@@ -42,7 +47,7 @@ public class DbCreateShell extends BaseShellCommand {
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        return OperationsDb.createDb(databaseName, databaseRegion, defaultKeyspace);
+        return OperationsDb.createDb(databaseName, databaseRegion, defaultKeyspace, ifNotExist);
     }
     
 }

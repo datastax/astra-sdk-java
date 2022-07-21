@@ -11,6 +11,9 @@ import com.github.rvesse.airline.annotations.Option;
  */
 public abstract class BaseConfigCommand extends BaseCommand {
     
+    /** worki with roles. */
+    public static final String COMMAND_CONFIG = "config";
+    
     /**
      * File on disk to reuse configuration.
      */
