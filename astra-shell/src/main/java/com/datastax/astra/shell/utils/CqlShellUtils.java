@@ -1,16 +1,19 @@
 package com.datastax.astra.shell.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.shell.cmd.BaseCommand;
+import com.datastax.astra.sdk.databases.domain.Database;
+import com.datastax.astra.shell.AstraCli;
+import com.datastax.astra.shell.ExitCode;
+import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.cmd.db.DbCqlShellCli;
+import com.datastax.astra.shell.out.LoggerShell;
 import com.datastax.stargate.sdk.utils.Utils;
 
 /**
@@ -20,14 +23,8 @@ import com.datastax.stargate.sdk.utils.Utils;
  */
 public class CqlShellUtils {
     
-    /** Environment variable coding user home. */
-    public static final String ENV_USER_HOME = "user.home";
-
     /** where to Download CqlSH. */
     public static final String CQLSH_URL = "https://downloads.datastax.com/enterprise/cqlsh-astra.tar.gz";
-    
-    /** Path to save third-parties. */
-    public static final String CQLSH_HOME = System.getProperty(ENV_USER_HOME) + File.separator + ".astra";
     
     /** Folder name of Cqlsh once untar. */
     public static final String CQLSH_FOLDER = "cqlsh-astra";
@@ -41,70 +38,38 @@ public class CqlShellUtils {
     private CqlShellUtils() {}
     
     /**
-     * Check if cqlshel has been installed.
-     *
-     * @return
-     *      if the folder exist
-     */
-    private static boolean isCqlShellInstalled() {
-       File cqlshAstra = new File(CQLSH_HOME + File.separator + CQLSH_FOLDER);
-       return cqlshAstra.exists() && cqlshAstra.isDirectory();
-    }
-    
-    /**
-     * Un Tar file.
-     *
-     * @param tarFile
-     *      source file
-     * @param destFile
-     *      destination folder
-     * @throws IOException
-     *      error during opening archive
-     */
-    private static void unTarFile(File tarFile, File destFile) throws IOException{
-      FileInputStream       fis      = new FileInputStream(tarFile);
-      TarArchiveInputStream tis      = new TarArchiveInputStream(fis);
-      TarArchiveEntry       tarEntry = null;
-      while ((tarEntry = tis.getNextTarEntry()) != null) {
-        File outputFile = new File(destFile + File.separator + tarEntry.getName());
-        if (tarEntry.isDirectory()) {
-            if (!outputFile.exists()) {
-                outputFile.mkdirs();
-            }
-        } else {
-            outputFile.getParentFile().mkdirs();
-            FileOutputStream fos = new FileOutputStream(outputFile);
-            IOUtils.copy(tis, fos);
-            fos.close();
-        }
-      }
-      tis.close();
-    }
-    
-    /**
      * Download targz and unzip.
-     *
-     * @param cmd
-     *      current command with option to format 
      */
-    public static void installCqlShellAstra(BaseCommand cmd) {
+    public static void installCqlShellAstra() {
         if (!isCqlShellInstalled()) {
-            LoggerShell.info("CqlSh has not been found, downloading...");
-            Utils.downloadFile(CQLSH_URL, CQLSH_HOME + File.separator + CQLSH_TARBALL);
-            File cqlshtarball = new File (CQLSH_HOME + File.separator + CQLSH_TARBALL);
+            LoggerShell.info("CqlSh has not been found, downloading, please wait...");
+            String destination = AstraCli.ASTRA_HOME + File.separator + CQLSH_TARBALL;
+            Utils.downloadFile(CQLSH_URL, destination);
+            File cqlshtarball = new File (destination);
             if (cqlshtarball.exists()) {
-                LoggerShell.info("File Downloaded. Unzipping...");
+                LoggerShell.info("File Downloaded. Extracting archive, please wait...");
                 try {
-                    unTarFile(cqlshtarball, new File (CQLSH_HOME));
-                    if (!isCqlShellInstalled()) {
-                        LoggerShell.success("Cqlsh installed");
+                    FileUtils.extactTargz(cqlshtarball, new File (AstraCli.ASTRA_HOME));
+                    if (isCqlShellInstalled()) {
+                        // Change file permission
+                        File cqlshFile = new File(AstraCli.ASTRA_HOME + File.separator  
+                                + CQLSH_FOLDER + File.separator 
+                                + "bin" + File.separator  
+                                + "cqlsh");
+                        cqlshFile.setExecutable(true, false);
+                        cqlshFile.setReadable(true, false);
+                        cqlshFile.setWritable(true, false);
+                        
+                        LoggerShell.success("Cqlsh is installed");
+                        cqlshtarball.delete();
                     }
                 } catch (IOException e) {
                     LoggerShell.error("Cannot extract tar archive:" + e.getMessage());
+                    ExitCode.PARSE_ERROR.exit();
                 }
             }
         } else {
-            LoggerShell.success("Cqlsh is installed.");
+            LoggerShell.info("Cqlsh is already installed");
         }
     }
    
@@ -112,34 +77,77 @@ public class CqlShellUtils {
      * Install CqlShell if needed and start the program.
      * 
      * @param cmd
-     *      current command with option to format 
-     * @param token
-     *      authentication token
-     * @param dbId
-     *      database id
-     * @param dbRegion
-     *      database region
+     *      command to start cqlsh
+     * @param db
+     *      database retrieved
      * @return
-     *      linux process
+     *      unix process for cqlsh
      * @throws IOException
      *      errors occured
      */
-    public static Process runCqlShellAstra(BaseCommand cmd, String token, String dbId, String dbRegion) 
+    public static Process runCqlShellAstra(DbCqlShellCli cmd, Database db) 
     throws IOException {
-        installCqlShellAstra(cmd);
-        
-        StringBuilder startCqlsh = new StringBuilder()
-                .append(System.getProperty(ENV_USER_HOME) + File.separator)
-                .append(".astra" + File.separator + CQLSH_FOLDER)
+        List<String> commandCqlSh = new ArrayList<>();
+        commandCqlSh.add(new StringBuilder()
+                .append(AstraCli.ASTRA_HOME + File.separator + CQLSH_FOLDER)
                 .append(File.separator + "bin")
-                .append(File.separator + "cqlsh");
-        startCqlsh.append(" -u token");
-        startCqlsh.append(" -p " + token);
-        startCqlsh.append(" -b " + System.getProperty(ENV_USER_HOME) + 
-                File.separator + ".astra" + 
-                File.separator + AstraClientConfig.buildScbFileName(dbId, dbRegion));
-        System.out.println(startCqlsh.toString());
-        return Runtime.getRuntime().exec(startCqlsh.toString());
+                .append(File.separator + "cqlsh")
+                .toString());
+        commandCqlSh.add("-u");
+        commandCqlSh.add("token");
+        commandCqlSh.add("-p");
+        commandCqlSh.add(ShellContext.getInstance().getToken());
+        commandCqlSh.add("-b");
+        File scb = new File(new StringBuilder()
+                .append(AstraCli.ASTRA_HOME + File.separator + AstraCli.SCB_FOLDER + File.separator)
+                .append(AstraClientConfig.buildScbFileName(db.getId(), db.getInfo().getRegion()))
+                .toString());
+        if (!scb.exists()) {
+            LoggerShell.error("Cloud Secure Bundle '" + scb.getAbsolutePath() + "' has not been found.");
+            ExitCode.NOT_FOUND.exit();
+        }
+        commandCqlSh.add(scb.getAbsolutePath());
+        
+        // -- Custom options of Cqlsh itself
+        
+        if (cmd.isCqlShOptionDebug()) {
+            commandCqlSh.add("--debug");
+        }
+        if (cmd.isCqlShOptionVersion()) {
+            commandCqlSh.add("--version");
+        }
+        if (cmd.getCqlshOptionExecute() != null) {
+            commandCqlSh.add("-e");
+            commandCqlSh.add(cmd.getCqlshOptionExecute());
+        }
+        if (cmd.getCqlshOptionFile() != null) {
+            commandCqlSh.add("-f");
+            commandCqlSh.add(cmd.getCqlshOptionFile());
+        }
+        if (cmd.getCqlshOptionKeyspace() != null) {
+            commandCqlSh.add("-k");
+            commandCqlSh.add(cmd.getCqlshOptionKeyspace());
+        }
+        if (cmd.getCqlshOptionEncoding() != null) {
+            commandCqlSh.add("--encoding");
+            commandCqlSh.add(cmd.getCqlshOptionEncoding());
+        }
+        
+        LoggerShell.info("RUNNING: " + StringUtils.join(commandCqlSh, " "));
+        ProcessBuilder pb =  new ProcessBuilder(commandCqlSh.toArray(new String[0]));
+        pb.inheritIO();
+        return pb.start();
+    }
+    
+    /**
+     * Check if cqlshel has been installed.
+     *
+     * @return
+     *      if the folder exist
+     */
+    private static boolean isCqlShellInstalled() {
+       File cqlshAstra = new File(AstraCli.ASTRA_HOME + File.separator + CQLSH_FOLDER);
+       return cqlshAstra.exists() && cqlshAstra.isDirectory();
     }
    
 }

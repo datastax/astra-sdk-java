@@ -11,6 +11,7 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
 @Command(name = "invite", description = "Invite a user to an organization")
 public class UserInviteCli extends BaseCliCommand {
 
+    /** identifier or email. */
     @Required
     @Arguments(title = "EMAIL", description = "User Email")
     public String user;

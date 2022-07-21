@@ -2,8 +2,8 @@ package com.datastax.astra.shell.cmd;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.utils.LoggerShell;
-import com.datastax.astra.shell.utils.ShellPrinter;
+import com.datastax.astra.shell.out.LoggerShell;
+import com.datastax.astra.shell.out.ShellPrinter;
 
 /**
  * Base command.
@@ -27,7 +27,10 @@ public abstract class BaseShellCommand extends BaseCommand {
     }
     
     /**
-     * Return execution code (CLI)
+     * Return execution code (CLI).
+     * 
+     * @return
+     *      returned code by the command
      */
     public abstract ExitCode execute();
     

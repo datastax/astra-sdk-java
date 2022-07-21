@@ -1,6 +1,6 @@
 package com.datastax.astra.shell.cmd;
 
-import com.datastax.astra.shell.output.OutputFormat;
+import com.datastax.astra.shell.out.OutputFormat;
 import com.github.rvesse.airline.annotations.Option;
 
 /**
@@ -17,7 +17,7 @@ public abstract class BaseCommand implements Runnable {
     public static final String DELETE     = "delete";
     
     /** Command constants. */
-    public static final String SHOW       = "show";
+    public static final String GET       = "get";
     
     /** Command constants. */
     public static final String LIST       = "list";
@@ -30,7 +30,7 @@ public abstract class BaseCommand implements Runnable {
     /** 
      * Each command can have a verbose mode. 
      **/
-    @Option(name = { "--verbose" }, description = "Enter Debug mode")
+    @Option(name = { "-v","--verbose" }, description = "Verbose mode with log in console")
     protected boolean verbose = false;
     
     /** 
@@ -42,10 +42,10 @@ public abstract class BaseCommand implements Runnable {
     /**
      * No log but provide output as a JSON
      */
-    @Option(name = { "-f", "--format" }, 
+    @Option(name = { "-o", "--output" }, 
             title = "FORMAT",
             description = "Output format, valid values are: human,json,csv")
-    protected OutputFormat format = OutputFormat.human;
+    protected OutputFormat output = OutputFormat.human;
     
     /**
      * Getter accessor for attribute 'format'.
@@ -53,8 +53,8 @@ public abstract class BaseCommand implements Runnable {
      * @return
      *       current value of 'format'
      */
-    public OutputFormat getFormat() {
-        return format;
+    public OutputFormat getOutput() {
+        return output;
     }
 
     /**

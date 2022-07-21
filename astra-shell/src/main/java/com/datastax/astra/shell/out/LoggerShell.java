@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.utils;
+package com.datastax.astra.shell.out;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.Ansi.Color.CYAN;
@@ -29,6 +29,8 @@ public class LoggerShell {
     /**
      * If log provided the output will go to the logfile.
      * 
+     * @param level
+     *      level to log
      * @param text
      *      text to log
      */
@@ -50,8 +52,6 @@ public class LoggerShell {
     /**
      * Syntax sugar for OK.
      * 
-     * @param cmd
-     *      current command with option to format 
      * @param text
      *      text to show in success
      */
@@ -77,12 +77,10 @@ public class LoggerShell {
      *       text to be displayed
      */
     public static void error(String text) {
-        if (ctx().isVerbose()) {
-            if (ctx().isNoColor()) {
-                System.out.println("[ERROR] - " + text);
-            } else {
-                System.out.println(ansi().fg(RED).a("[ERROR] - ").reset().a(text));
-            }
+        if (ctx().isNoColor()) {
+            System.out.println("[ERROR] - " + text);
+        } else {
+            System.out.println(ansi().fg(RED).a("[ERROR] - ").reset().a(text));
         }
         
         if (ctx().isFileLoggerEnabled()) {
@@ -93,8 +91,6 @@ public class LoggerShell {
     /**
      * Log warning.
      *
-     * @param cmd
-     *      current command with option to format 
      * @param text
      *       text to be displayed
      */
@@ -115,8 +111,6 @@ public class LoggerShell {
     /**
      * Syntax sugar for OK.
      * 
-     * @param cmd
-     *      current command with option to format 
      * @param text
      *      text to show in success
      */
@@ -137,8 +131,6 @@ public class LoggerShell {
     /**
      * Syntax sugar for OK.
      *
-     * @param cmd
-     *      current command with option to format 
      * @param text
      *      text to show in success
      */

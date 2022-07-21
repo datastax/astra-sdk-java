@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.output;
+package com.datastax.astra.shell.out;
 
 import java.io.Serializable;
 

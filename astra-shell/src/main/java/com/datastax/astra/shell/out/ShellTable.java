@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.utils;
+package com.datastax.astra.shell.out;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,8 +12,6 @@ import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.output.CsvOutput;
-import com.datastax.astra.shell.output.JsonOutput;
 
 /**
  * Standardize output for tables.
@@ -97,9 +95,6 @@ public class ShellTable implements Serializable {
     
     /**
      * Show as Json.
-     * 
-     * @param title
-     *      title
      */
     public void showJson() {
         String currentCommand = ShellContext.getInstance().getRawCommandString();
@@ -183,6 +178,7 @@ public class ShellTable implements Serializable {
     
     /**
      * Show a list in the table.
+     *
      * @param name
      *      attribute names
      * @param values
@@ -234,6 +230,12 @@ public class ShellTable implements Serializable {
         getColumnSize().put(colName, colwidth);
     }
     
+    /**
+     * Add a row providing key/values.
+     * 
+     * @param row
+     *      row as a key/value hashmap
+     */
     public void addRow(Map<String, String> row) {
         getCellValues().add(row);
     }

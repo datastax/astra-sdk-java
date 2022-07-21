@@ -2,7 +2,8 @@
 # Generate the Asset (for now)
 
 ```
- mvn package -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+mvn package -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+cp ./target/astra-shell-0.3.2-SNAPSHOT-shaded.jar ~/.astra/cli/astra-shell.jar
 ```
 
 # Executing the command

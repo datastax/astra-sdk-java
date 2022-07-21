@@ -6,7 +6,7 @@ import static com.datastax.astra.shell.ExitCode.INVALID_PARAMETER;
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
 import com.datastax.astra.sdk.organizations.domain.Organization;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.utils.ShellPrinter;
+import com.datastax.astra.shell.out.ShellPrinter;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.Option;

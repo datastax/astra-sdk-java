@@ -1,7 +1,8 @@
 package com.datastax.astra.shell.cmd.config;
 
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.utils.ShellPrinter;
+import com.datastax.astra.shell.cmd.BaseCommand;
+import com.datastax.astra.shell.out.ShellPrinter;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -12,8 +13,8 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
  * astra config show default
  * astra show config default 
  */
-@Command(name = "show", description = "Show details for a configuration.")
-public class ConfigShow extends BaseConfigCommand implements Runnable {
+@Command(name = BaseCommand.GET, description = "Show details for a configuration.")
+public class ConfigGet extends BaseConfigCommand implements Runnable {
     
     /**
      * Section in configuration file to as as default.

@@ -1,5 +1,6 @@
 package com.datastax.astra.shell.cmd.db;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +16,12 @@ import com.datastax.astra.sdk.databases.domain.CloudProviderType;
 import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
 import com.datastax.astra.sdk.databases.domain.DatabaseRegionServerless;
+import com.datastax.astra.shell.AstraCli;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.utils.LoggerShell;
-import com.datastax.astra.shell.utils.ShellPrinter;
-import com.datastax.astra.shell.utils.ShellTable;
+import com.datastax.astra.shell.out.LoggerShell;
+import com.datastax.astra.shell.out.ShellPrinter;
+import com.datastax.astra.shell.out.ShellTable;
 
 /**
  * Utility class for command `db`
@@ -98,8 +100,6 @@ public class OperationsDb {
     /**
      * Mutualization of create db code (shell and cli)
      * 
-     * @param cmd
-     *      get all options of the command
      * @param databaseName
      *      db name
      * @param databaseRegion
@@ -107,6 +107,7 @@ public class OperationsDb {
      * @param defaultKeyspace
      *      db ks
      * @return
+     *      exit code
      */
     public static ExitCode createDb(String databaseName, String databaseRegion, String defaultKeyspace) {
         
@@ -153,8 +154,6 @@ public class OperationsDb {
     /**
      * List Databases.
      * 
-     * @param cmd
-     *      current command
      * @return
      *      returned code
      */
@@ -200,8 +199,6 @@ public class OperationsDb {
     /**
      * Show database details.
      *
-     * @param cmd
-     *      current command
      * @param databaseName
      *      database name and id
      * @return
@@ -224,7 +221,27 @@ public class OperationsDb {
             sht.getCellValues().add(ShellTable.buildProperty("Creation Time", db.getCreationTime()));
             
             sht.show();
-            ShellPrinter.outputSuccess("Deleting Database '" + databaseName + "' (async operation)");
+            return ExitCode.SUCCESS;
+        }
+        return ExitCode.NOT_FOUND;
+    }
+    
+    
+    /**
+     * Download the cloud secure bundles.
+     * 
+     * @param databaseName
+     *      database name and id
+     * @return
+     *      status code
+     */
+    public static ExitCode downloadCloudSecureBundles(String databaseName) {
+        Optional<DatabaseClient> dbClient = getDatabaseClient(databaseName);
+        if (dbClient.isPresent()) {
+            dbClient
+                .get()
+                .downloadAllSecureConnectBundles(AstraCli.ASTRA_HOME + File.separator + AstraCli.SCB_FOLDER);
+            LoggerShell.success("Secure connect bundles have been downloaded.");
             return ExitCode.SUCCESS;
         }
         return ExitCode.NOT_FOUND;

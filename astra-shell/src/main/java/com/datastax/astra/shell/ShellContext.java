@@ -19,9 +19,9 @@ import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.astra.shell.cmd.BaseCliCommand;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.cmd.BaseShellCommand;
-import com.datastax.astra.shell.output.OutputFormat;
-import com.datastax.astra.shell.utils.LoggerShell;
-import com.datastax.astra.shell.utils.ShellPrinter;
+import com.datastax.astra.shell.out.LoggerShell;
+import com.datastax.astra.shell.out.OutputFormat;
+import com.datastax.astra.shell.out.ShellPrinter;
 
 /**
  * Hold the context of CLI to know where we are.
@@ -180,7 +180,7 @@ public class ShellContext {
         }
         
         if (token != null) {
-            LoggerShell.debug("Token: " + token);
+            LoggerShell.debug("Token: " + token.substring(0, 20) + "...");
             connect(token);
         } else {
             INVALID_PARAMETER.exit();
@@ -341,8 +341,8 @@ public class ShellContext {
         BaseCliCommand  cli = getStartCommand();
         BaseShellCommand sh = getCurrentShellCommand();
         if (cli == null) return OutputFormat.human;
-        if (sh != null)  return sh.getFormat();
-        return cli.getFormat();
+        if (sh != null)  return sh.getOutput();
+        return cli.getOutput();
     }
     
     /**

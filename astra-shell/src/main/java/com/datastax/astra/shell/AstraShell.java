@@ -5,19 +5,19 @@ import com.datastax.astra.shell.cmd.HelpCommand;
 import com.datastax.astra.shell.cmd.QuitCommand;
 import com.datastax.astra.shell.cmd.db.DbCreateShell;
 import com.datastax.astra.shell.cmd.db.DbDeleteShell;
+import com.datastax.astra.shell.cmd.db.DbGetShell;
 import com.datastax.astra.shell.cmd.db.DbListShell;
 import com.datastax.astra.shell.cmd.db.DbUseShell;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListShell;
-import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.RoleGetCli;
 import com.datastax.astra.shell.cmd.iam.UserDeleteShell;
 import com.datastax.astra.shell.cmd.iam.UserInviteShell;
 import com.datastax.astra.shell.cmd.iam.UserListShell;
-import com.datastax.astra.shell.cmd.iam.UserShowShell;
+import com.datastax.astra.shell.cmd.iam.UserGetShell;
 import com.datastax.astra.shell.cmd.shell.ConnectCommand;
-import com.datastax.astra.shell.cmd.shell.CqlShCommand;
 import com.datastax.astra.shell.cmd.shell.EmptyCommand;
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
 import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException;
@@ -37,23 +37,23 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     EmptyCommand.class,
     HelpCommand.class,
     ExitCommand.class,
-    QuitCommand.class,
-    CqlShCommand.class
+    QuitCommand.class
 },
   groups = {
           @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = {
                   DbCreateShell.class,
                   DbDeleteShell.class,
                   DbListShell.class,
+                  DbGetShell.class,
                   DbUseShell.class
           }),
           @Group(name= "role", description = "Manage the roles (RBAC)", commands = {
                   RoleListShell.class,
-                  RoleShowCli.class
+                  RoleGetCli.class
           }),
           @Group(name= "user", description = "Manage the users permission", commands = {
                   UserListShell.class,
-                  UserShowShell.class,
+                  UserGetShell.class,
                   UserInviteShell.class,
                   UserDeleteShell.class
           })

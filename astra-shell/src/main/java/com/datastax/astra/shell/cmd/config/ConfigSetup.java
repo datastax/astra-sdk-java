@@ -8,8 +8,8 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 
 import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.astra.shell.utils.LoggerShell;
-import com.datastax.astra.shell.utils.ShellPrinter;
+import com.datastax.astra.shell.out.LoggerShell;
+import com.datastax.astra.shell.out.ShellPrinter;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -57,7 +57,7 @@ public class ConfigSetup extends BaseConfigCommand implements Runnable {
                         ccc.run();
                         valid_token = true;
                         
-                        ConfigShow configs      = new ConfigShow();
+                        ConfigGet configs      = new ConfigGet();
                         configs.astraRc         = this.astraRc;
                         configs.configFilename  = this.configFilename;
                         configs.run();
@@ -76,7 +76,5 @@ public class ConfigSetup extends BaseConfigCommand implements Runnable {
             System.out.println("");
         }
     }
-    
-    
 
 }

@@ -1,5 +1,7 @@
 package com.datastax.astra.shell;
 
+import java.io.File;
+
 import org.fusesource.jansi.AnsiConsole;
 
 import com.datastax.astra.shell.cmd.HelpCommand;
@@ -7,21 +9,22 @@ import com.datastax.astra.shell.cmd.config.ConfigCreate;
 import com.datastax.astra.shell.cmd.config.ConfigDefault;
 import com.datastax.astra.shell.cmd.config.ConfigDelete;
 import com.datastax.astra.shell.cmd.config.ConfigList;
-import com.datastax.astra.shell.cmd.config.ConfigShow;
+import com.datastax.astra.shell.cmd.config.ConfigGet;
 import com.datastax.astra.shell.cmd.config.ConfigSetup;
+import com.datastax.astra.shell.cmd.db.DbCqlShellCli;
 import com.datastax.astra.shell.cmd.db.DbCreateCli;
 import com.datastax.astra.shell.cmd.db.DbDeleteCli;
 import com.datastax.astra.shell.cmd.db.DbListCli;
-import com.datastax.astra.shell.cmd.db.DbShow;
+import com.datastax.astra.shell.cmd.db.DbGetCli;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
 import com.datastax.astra.shell.cmd.iam.RoleListCli;
-import com.datastax.astra.shell.cmd.iam.RoleShowCli;
+import com.datastax.astra.shell.cmd.iam.RoleGetCli;
 import com.datastax.astra.shell.cmd.iam.UserDeleteCli;
 import com.datastax.astra.shell.cmd.iam.UserInviteCli;
 import com.datastax.astra.shell.cmd.iam.UserListCli;
-import com.datastax.astra.shell.cmd.iam.UserShowCli;
+import com.datastax.astra.shell.cmd.iam.UserGetCli;
 import com.datastax.astra.shell.cmd.shell.ShellCommand;
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
 import com.github.rvesse.airline.annotations.Group;
 import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException;
@@ -43,24 +46,25 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
   groups = {
           @Group(name = OperationsDb.DB, description = "Manage databases", commands = { 
                   DbCreateCli.class,
+                  DbCqlShellCli.class,
                   DbDeleteCli.class,
+                  DbGetCli.class,
                   DbListCli.class,
-                  DbShow.class
           }),
           @Group(name = "config", description = "Manage configuration file", commands = { 
                   ConfigCreate.class,
                   ConfigDefault.class,
                   ConfigDelete.class,
-                  ConfigShow.class,
+                  ConfigGet.class,
                   ConfigList.class
           }),
           @Group(name= "role", description = "Manage roles (RBAC)", commands = {
                   RoleListCli.class,
-                  RoleShowCli.class
+                  RoleGetCli.class
           }),
           @Group(name= "user", description = "Manage users", commands = {
                   UserListCli.class,
-                  UserShowCli.class,
+                  UserGetCli.class,
                   UserInviteCli.class,
                   UserDeleteCli.class
           }),
@@ -71,6 +75,18 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
           })*/
   })
 public class AstraCli {
+    
+    /** Environment variable coding user home. */
+    public static final String ENV_USER_HOME = "user.home";
+    
+    /** Path to save third-parties. */
+    public static final String ASTRA_HOME = System.getProperty(ENV_USER_HOME) + File.separator + ".astra";
+    
+    /** Folder name where to download SCB. */
+    public static final String SCB_FOLDER = "scb";
+    
+    /** Folder name to download archives */
+    public static final String TMP_FOLDER = "tmp";
     
     /**
      * Main Program.
@@ -94,6 +110,7 @@ public class AstraCli {
                 .run();       // Run the command
             
         } catch(ParseArgumentsUnexpectedException ex) {
+            
             LoggerShell.error("Invalid command: " + ex.getMessage());
             //ex.printStackTrace();
         } catch(Exception e) {

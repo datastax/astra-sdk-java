@@ -29,5 +29,10 @@ public class DatabasesCommandsTest extends AbstractAstraCliTest {
         astraCli("db", "show","foo");
     }
     
+    @Test
+    public void cqlSHDB()  throws Exception {
+        astraCli("db", "cqlsh", "foo", "-v");
+    }
+    
     
 }

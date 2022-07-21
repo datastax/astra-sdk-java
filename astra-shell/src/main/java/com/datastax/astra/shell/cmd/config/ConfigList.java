@@ -11,8 +11,8 @@ import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.sdk.utils.AstraRc;
-import com.datastax.astra.shell.utils.ShellPrinter;
-import com.datastax.astra.shell.utils.ShellTable;
+import com.datastax.astra.shell.out.ShellPrinter;
+import com.datastax.astra.shell.out.ShellTable;
 import com.github.rvesse.airline.annotations.Command;
 
 /**

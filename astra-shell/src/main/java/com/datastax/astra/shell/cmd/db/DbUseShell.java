@@ -6,7 +6,7 @@ import com.datastax.astra.sdk.databases.DatabaseClient;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.cmd.BaseCommand;
 import com.datastax.astra.shell.cmd.BaseShellCommand;
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.restrictions.Required;
@@ -19,6 +19,7 @@ import com.github.rvesse.airline.annotations.restrictions.Required;
 @Command(name = BaseCommand.USE, description = "Select a database in the shell")
 public class DbUseShell extends BaseShellCommand {
 
+    /** Database name of identifier. */
     @Required
     @Arguments(title = "DB", description = "Database name or identifier")
     public String database;

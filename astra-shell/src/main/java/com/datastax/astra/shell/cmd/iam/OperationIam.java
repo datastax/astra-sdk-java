@@ -13,9 +13,9 @@ import com.datastax.astra.sdk.utils.IdUtils;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseCommand;
-import com.datastax.astra.shell.output.JsonOutput;
-import com.datastax.astra.shell.utils.ShellPrinter;
-import com.datastax.astra.shell.utils.ShellTable;
+import com.datastax.astra.shell.out.JsonOutput;
+import com.datastax.astra.shell.out.ShellPrinter;
+import com.datastax.astra.shell.out.ShellTable;
 
 /**
  * Utility class for command `eolw`
@@ -41,8 +41,6 @@ public class OperationIam {
     /**
      * List Roles.
      * 
-     * @param cmd
-     *      current command
      * @return
      *      returned code
      */
@@ -94,8 +92,6 @@ public class OperationIam {
     /**
      * Show Role details.
      *
-     * @param cmd
-     *      command
      * @param role
      *      role name
      * @return
@@ -144,8 +140,6 @@ public class OperationIam {
                 break;
             }
             
-           
-            
         } catch(RuntimeException e) {
             ShellPrinter.outputError(ExitCode.INTERNAL_ERROR,"Cannot show role, technical error " + e.getMessage());
             return ExitCode.INTERNAL_ERROR;
@@ -157,8 +151,6 @@ public class OperationIam {
     /**
      * Show User details.
      *
-     * @param cmd
-     *      command
      * @param user
      *      user email
      * @return
@@ -221,8 +213,6 @@ public class OperationIam {
     /**
      * Invite User.
      *
-     * @param cmd
-     *      command
      * @param user
      *      user email
      * @param role

@@ -1,4 +1,4 @@
-package com.datastax.astra.shell.utils;
+package com.datastax.astra.shell.out;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
@@ -11,8 +11,6 @@ import org.fusesource.jansi.Ansi;
 
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.output.CsvOutput;
-import com.datastax.astra.shell.output.JsonOutput;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -148,8 +146,6 @@ public class ShellPrinter {
      * 
      * @param sht
      *      table
-     * @param fmt
-     *      format
      */
     public static void printShellTable(ShellTable sht) {
         switch(ctx().getOutputFormat()) {
@@ -252,8 +248,10 @@ public class ShellPrinter {
     /**
      * Exit program with error.
      *
-     * @param msg
-     *      return message
+     * @param label
+     *      error label
+     * @param data
+     *      show data
      */
     public static void outputData(String label, String data) {
         switch(ctx().getOutputFormat()) {

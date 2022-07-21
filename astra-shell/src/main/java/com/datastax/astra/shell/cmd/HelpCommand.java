@@ -9,6 +9,7 @@ import com.github.rvesse.airline.help.Help;
  * @author Cedrick LUNVEN (@clunven)
  *
  * @param <T>
+ *      generic for the Help Command
  */
 @Command(name = "help", description = "View help for any command")
 public class HelpCommand<T> extends Help<T> {

@@ -1,7 +1,7 @@
 package com.datastax.astra.shell.cmd;
 
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.utils.LoggerShell;
+import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
