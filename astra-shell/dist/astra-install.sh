@@ -28,7 +28,7 @@ echo " "
 
 echo "Installing Astra Cli, please wait...      "
 # Global variables
-ASTRA_CLI_VERSION="0.3.2-alpha1"
+ASTRA_CLI_VERSION="0.3.2-alpha2"
 ASTRA_CLI_PLATFORM=$(uname)
 ASTRA_CLI_DIR="$HOME/.astra/cli"
 
