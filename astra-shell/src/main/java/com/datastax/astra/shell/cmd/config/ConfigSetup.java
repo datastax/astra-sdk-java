@@ -56,10 +56,12 @@ public class ConfigSetup extends BaseConfigCommand implements Runnable {
                         ccc.sectionName =  new OrganizationsClient(token).organization().getName();
                         ccc.run();
                         valid_token = true;
+                        System.out.println("OK");
                         
                         ConfigGet configs      = new ConfigGet();
                         configs.astraRc         = this.astraRc;
                         configs.configFilename  = this.configFilename;
+                        configs.sectionName     = ccc.sectionName;
                         configs.run();
                         
                     } catch(Exception e) {

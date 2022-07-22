@@ -34,6 +34,7 @@ ASTRA_CLI_DIR="$HOME/.astra/cli"
 
 # Local variables
 astra_tmp_folder="$HOME/.astra/tmp"
+astra_scb_folder="$HOME/.astra/cli/scb"
 astra_zip_file="${astra_tmp_folder}/astra-cli-${ASTRA_CLI_VERSION}.zip"
 astra_zip_base_folder="${astra_tmp_folder}/astra-cli-${ASTRA_CLI_VERSION}"
 
@@ -132,6 +133,10 @@ mkdir -p "$astra_tmp_folder"
 echo "$(tput setaf 2)[OK]$(tput setaf 7) - Created $astra_tmp_folder"
 mkdir -p "$ASTRA_CLI_DIR"
 echo "$(tput setaf 2)[OK]$(tput setaf 7) - Created $ASTRA_CLI_DIR"
+mkdir -p "$astra_scb_folder"
+echo "$(tput setaf 2)[OK]$(tput setaf 7) - Created $astra_scb_folder"
+
+
 echo ""
 echo "Downloading archive:"
 download_url="https://github.com/datastaxdevs/datastaxdevs.github.io/raw/master/cli/${ASTRA_CLI_VERSION}.zip"
