@@ -1,6 +1,9 @@
 package com.datastax.astra.shell.cmd.db;
 
+import static com.datastax.astra.shell.utils.CqlShellUtils.installCqlShellAstra;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +30,8 @@ import com.datastax.astra.shell.out.JsonOutput;
 import com.datastax.astra.shell.out.LoggerShell;
 import com.datastax.astra.shell.out.ShellPrinter;
 import com.datastax.astra.shell.out.ShellTable;
+import com.datastax.astra.shell.utils.CqlShellOptions;
+import com.datastax.astra.shell.utils.CqlShellUtils;
 
 /**
  * Utility class for command `db`
@@ -39,16 +44,22 @@ public class OperationsDb {
     public static final String DB                    = "db";
     
     /** Command constants. */
+    public static final String CMD_KEYSPACE          = "keyspace";
+    
+    /** Command constants. */
+    public static final String CMD_INFO              = "info";
+    
+    /** Command constants. */
     public static final String CMD_CREATE_KEYSPACE   = "create-keyspace";
     
     /** Command constants. */
     public static final String CMD_DELETE_KEYSPACE   = "delete-keyspace";
     
     /** Command constants. */
-    public static final String CMD_CREATE_REGION   = "create-region";
+    public static final String CMD_CREATE_REGION     = "create-region";
     
     /** Command constants. */
-    public static final String CMD_DELETE_REGION   = "delete-region";
+    public static final String CMD_DELETE_REGION     = "delete-region";
     
     /** Command constants. */
     public static final String CMD_DOWNLOAD_SCB      = "download-scb";
@@ -346,5 +357,41 @@ public class OperationsDb {
         
         // Db not found bummer !
         return ExitCode.NOT_FOUND;
+    }
+    
+    
+    /**
+     * Start CqlShell when needed.
+     * 
+     * @param options
+     *      shell options
+     * @param database
+     *      current db
+     * @return
+     */
+    public static ExitCode startCqlShell(CqlShellOptions options, String database) {
+        
+        // Install Cqlsh for Astra and set permissions
+        installCqlShellAstra();
+        
+        // Download SCB for target db if needed
+        downloadCloudSecureBundles(database);    
+        
+        try {
+            Optional<DatabaseClient> dbClient = OperationsDb.getDatabaseClient(database);
+            if (dbClient.isPresent()) {
+                Database db = dbClient.get().find().get();
+                System.out.println("\nCqlsh is starting please wait for connection establishment...");
+                Process cqlShProc = CqlShellUtils.runCqlShellAstra(options, db);
+                if (cqlShProc == null) ExitCode.INTERNAL_ERROR.exit();
+                cqlShProc.waitFor();
+            } else {
+                return ExitCode.NOT_FOUND;
+            }
+        } catch (IOException e) {
+            LoggerShell.error("Cannot start CQLSH");
+            ExitCode.INTERNAL_ERROR.exit();
+        } catch (InterruptedException e) {}
+        return ExitCode.SUCCESS;
     }
 }

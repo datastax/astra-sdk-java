@@ -43,5 +43,19 @@ public abstract class BaseShellCommand extends BaseCommand {
     protected ShellContext ctx() {
         return ShellContext.getInstance();
     }
+    
+    /**
+     * Db Selected.
+     * @return
+     *      if a db is selected or not
+     */
+    protected boolean dbSelected() {
+        boolean selected = (null != ctx().getDatabase()) ;
+        if (!selected) {
+            LoggerShell.error("You must select a DB first with 'db use <dbname>'");
+        }
+        return selected;
+    }
+    
    
 }

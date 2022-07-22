@@ -12,7 +12,6 @@ import com.datastax.astra.sdk.databases.domain.Database;
 import com.datastax.astra.shell.AstraCli;
 import com.datastax.astra.shell.ExitCode;
 import com.datastax.astra.shell.ShellContext;
-import com.datastax.astra.shell.cmd.db.DbCqlShellCli;
 import com.datastax.astra.shell.out.LoggerShell;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -76,7 +75,7 @@ public class CqlShellUtils {
     /**
      * Install CqlShell if needed and start the program.
      * 
-     * @param cmd
+     * @param options
      *      command to start cqlsh
      * @param db
      *      database retrieved
@@ -85,7 +84,7 @@ public class CqlShellUtils {
      * @throws IOException
      *      errors occured
      */
-    public static Process runCqlShellAstra(DbCqlShellCli cmd, Database db) 
+    public static Process runCqlShellAstra(CqlShellOptions options, Database db) 
     throws IOException {
         List<String> commandCqlSh = new ArrayList<>();
         commandCqlSh.add(new StringBuilder()
@@ -110,27 +109,27 @@ public class CqlShellUtils {
         
         // -- Custom options of Cqlsh itself
         
-        if (cmd.isCqlShOptionDebug()) {
+        if (options.isDebug()) {
             commandCqlSh.add("--debug");
         }
-        if (cmd.isCqlShOptionVersion()) {
+        if (options.isVersion()) {
             commandCqlSh.add("--version");
         }
-        if (cmd.getCqlshOptionExecute() != null) {
+        if (options.getExecute() != null) {
             commandCqlSh.add("-e");
-            commandCqlSh.add(cmd.getCqlshOptionExecute());
+            commandCqlSh.add(options.getExecute());
         }
-        if (cmd.getCqlshOptionFile() != null) {
+        if (options.getFile() != null) {
             commandCqlSh.add("-f");
-            commandCqlSh.add(cmd.getCqlshOptionFile());
+            commandCqlSh.add(options.getFile());
         }
-        if (cmd.getCqlshOptionKeyspace() != null) {
+        if (options.getKeyspace() != null) {
             commandCqlSh.add("-k");
-            commandCqlSh.add(cmd.getCqlshOptionKeyspace());
+            commandCqlSh.add(options.getKeyspace());
         }
-        if (cmd.getCqlshOptionEncoding() != null) {
+        if (options.getEncoding() != null) {
             commandCqlSh.add("--encoding");
-            commandCqlSh.add(cmd.getCqlshOptionEncoding());
+            commandCqlSh.add(options.getEncoding() );
         }
         
         LoggerShell.info("RUNNING: " + StringUtils.join(commandCqlSh, " "));

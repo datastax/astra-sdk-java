@@ -1,32 +1,19 @@
 package com.datastax.astra.shell.cmd.db;
 
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.cmd.BaseCliCommand;
+import com.datastax.astra.shell.ShellContext;
+import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.datastax.astra.shell.utils.CqlShellOptions;
-import com.github.rvesse.airline.annotations.Arguments;
 import com.github.rvesse.airline.annotations.Command;
 import com.github.rvesse.airline.annotations.Option;
-import com.github.rvesse.airline.annotations.restrictions.Required;
 
 /**
- * Start CqlSh for a DB.
- * 
- * https://cassandra.apache.org/doc/latest/cassandra/tools/cqlsh.html
- * 
+ * Start Cqlsh when a db is selected.
+ *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Command(name = "cqlsh", description = "Start Cqlsh")
-public class DbCqlShellCli extends BaseCliCommand {
-
-    /**
-     * Database name or identifier
-     */
-    @Required
-    @Arguments(title = "DB", 
-               description = "Database name or identifier")
-    public String database;
-    
-    // -- Cqlsh --
+@Command(name = "cqlsh", description = "Start Cqlsh (db must be selected first)")
+public class DbCqlShellShell extends BaseShellCommand {
     
     /** Cqlsh Options. */
     @Option(name = { "--version" }, 
@@ -60,6 +47,9 @@ public class DbCqlShellCli extends BaseCliCommand {
     
     /** {@inheritDoc} */
     public ExitCode execute() {
+        if (!dbSelected()) {
+            return ExitCode.CONFLICT;
+        }
         CqlShellOptions options = new CqlShellOptions();
         options.setDebug(cqlShOptionDebug);
         options.setEncoding(cqlshOptionEncoding);
@@ -67,7 +57,7 @@ public class DbCqlShellCli extends BaseCliCommand {
         options.setFile(cqlshOptionFile);
         options.setKeyspace(cqlshOptionKeyspace);
         options.setVersion(cqlShOptionVersion);
-        return OperationsDb.startCqlShell(options, database);
+        return OperationsDb.startCqlShell(options, ShellContext.getInstance().getDatabase().getId());
     }
-    
+
 }

@@ -1,81 +1,212 @@
-# Astra Shell
+# Getting Started with Astra CLI
 
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-_This component is in heavy development that can lead to breaking changes._
+Astra Shell is a standalone command line interface proposing functions to operate the Datastax Astra platform.
 
+## A. Installation
 
-## Installation
+### Prequisites
 
-Installing ASTRA-CLI on UNIX-like platforms is as easy as ever. ASTRA-CLI installs smoothly on macOS, Linux, WSL, Cygwin, Solaris and FreeBSD. We also support Bash and ZSH shells.
+On your machine you will need :
+- A bash shell
+- Commands: `unzip`, `curl`
+- A Java JRE or JDK 8+ (temporary)
 
-- Open a new terminal and enter:
+You will also need to:
+- [Create an Astra account](https://astra.datastax.com)
+- [Create an authentication token](https://dtsx.io/create-astra-token)
 
-```
-curl -Ls curl -s "https://dtsx.io/get-astra-cli" | bash
-```
-
-- Follow the instructions on-screen to complete installation. 
-
-- To get autocompletion open a new terminal :
-
-```
-source "$HOME/.astra/install/astra-init.sh"
-```
-
-- Lastly, run the following code snippet to ensure that installation succeeded:
+### Installation
 
 ```
-astra -v
+curl -Ls "https://dtsx.io/get-astra-cli" | bash
 ```
 
-If all went well, the version should be displayed. Something like:
+### Setup
 
-```
-0.3.2-SNAPSHOT
-```
-
-## Setup
-
-- Run the following command and provide your token when needed
-
+- 1/3 - Execute the following
 ```
 astra setup
 ```
 
-- You should be good to go
+- 2/3 When asked provides a token of your choice:
+
+```
+• Enter your token (AstraCS...) : 
+AstraCS:.......
+```
+ - 3/3 Open a new TAB to finalize install
+
+```
+astra --version
+astra help
+```
+
+## B. Working with configurations
+
+- **List Configurations**
 
 ```
 astra config list
 ```
 
+- **Create new configuration** 
+
+If you have multiple organizations it could be useful to switch from one to another. To create another config, the latest created org will become the default.
+
 ```
-+-----------------------------------------+
-| configuration                           |
-+-----------------------------------------+
-| default (cedrick.lunven@datastax.com)   |
-| DatastaxDevs                            |
-| cedrick.lunven@datastax.com             |
-+-----------------------------------------+
+astra config create dev -t <token_of_org_2>
 ```
 
-- And access Astra
+```
+astra config list
+```
+
+When you issue any command the config is now loaded for you:
+
+```
+astra user list
+```
+
+- **Change default configuration**: 
+
+You can change the default org at any time with the following command:
+
+```
+astra config default dev && astra config list
+```
+
+- Test again, user list should be different
+
+```
+astra user list
+```
+
+- Back to original org (change with your email)
+
+```
+astra config default cedrick.lunven@datastax.com && astra config list
+```
+
+- You can use any organization without switching default configuration with `--config` or `-t`
+
+```
+astra user list --config dev
+```
+
+- **Delete configuration**
+
+You can delete any organization. I see you.. if you delete the default one you are on your own and you would need to define a new one.
+
+```
+astra config delete dev
+astra config list
+```
+
+## C. Working with Databases
+
+- **List Databases**:
 
 ```
 astra db list
 ```
 
+- **Create a new database:** 
+
+If not provided the region will be the default free region and the keyspace will be the database name but you can change then with `-r` and `-k` respectivitely.
+
 ```
-+---------------------+--------------------------------------+---------------------+----------------+
-| name                | id                                   | default-region      | status         |
-+---------------------+--------------------------------------+---------------------+----------------+
-| mtg                 | dde308f5-a8b0-474d-afd6-81e5689e3e25 | eu-central-1        | ACTIVE         |
-| workshops           | 3ed83de7-d97f-4fb6-bf9f-82e9f7eafa23 | eu-west-1           | ACTIVE         |
-| sdk_tests           | 06a9675a-ca62-4cd0-9b94-aefaf395922b | us-east-1           | ACTIVE         |
-| api_days_dubai_2022 | 53f07b2a-8856-4741-b595-72b03be56bc6 | us-east1            | ACTIVE         |
-| free_db             | 8642763c-8ba7-4ede-a031-82355c7c34a7 | us-east1            | ACTIVE         |
-+---------------------+--------------------------------------+---------------------+----------------+
+astra db create demo
+astra db list
 ```
+
+- **Get information on your database**
+
+Notice how you never provide any the technical ids.
+
+```
+astra db get demo
+```
+
+- **Change output format**
+
+This CLI wil be used by CI/CD and script, sometimes the output must be parsed. There are 3 outputs: *human,json,csv"
+
+```
+astra db list -o json
+```
+
+```
+astra db list -o csv
+```
+
+The return type is also important to check the errors. O mean everything is OK
+
+```
+echo $?
+```
+
+```
+astra db get i_do_not_exist && echo $?
+```
+
+Error codes tables
+
+| Error             | Code      |
+|-------------------|-----------|
+| SUCCESS           | 0         |
+| PARSE_ERROR       | 1         |
+| INVALID_PARAMETER | 10        |
+| NOT_FOUND         | 20        |
+| CONFLICT          | 21        |
+| ALREADY_EXIST     | 22        |
+| CANNOT_CONNECT    | 30        |
+| INTERNAL_ERROR    | 40        |
+
+
+- The cli implemented `If not Exist` for both keyspace and database (convenient for workshops and training)
+
+```
+astra help db create
+astra db create demo --if-not-exist
+```
+
+- All commands can also be in versbose mode anytime with `-v`
+
+```
+astra db create demo --if-not-exist -v
+```
+
+Make sure the database is now Active or you will get some expected errors.
+
+- **Create a new keyspace**
+
+```
+astra db create-keyspace demo -k ks2
+```
+
+Need helps ?
+```
+astra help db create-keyspace
+```
+
+- Now let's blow your mind 🥁
+
+```
+astra db cqlsh demo
+```
+
+
+## D. Interactive mode
+
+
+## E. Working with Users
+
+
+## F. Working with Roles
+
+
 
 
 

@@ -3,6 +3,8 @@ package com.datastax.astra.shell;
 import com.datastax.astra.shell.cmd.ExitCommand;
 import com.datastax.astra.shell.cmd.HelpCommand;
 import com.datastax.astra.shell.cmd.QuitCommand;
+import com.datastax.astra.shell.cmd.db.DbCqlShellShell;
+import com.datastax.astra.shell.cmd.db.DbCreateKeyspaceShell;
 import com.datastax.astra.shell.cmd.db.DbCreateShell;
 import com.datastax.astra.shell.cmd.db.DbDeleteShell;
 import com.datastax.astra.shell.cmd.db.DbGetShell;
@@ -38,7 +40,12 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     EmptyCommand.class,
     HelpCommand.class,
     ExitCommand.class,
-    QuitCommand.class
+    
+    // With selected db
+    DbCreateKeyspaceShell.class,
+    DbGetShell.class,
+    DbCqlShellShell.class,
+    QuitCommand.class,
 },
   groups = {
           @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = {
@@ -46,13 +53,17 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   DbDeleteShell.class,
                   DbListShell.class,
                   DbGetShell.class,
-                  DbUseShell.class
+                  
+                  DbUseShell.class,
           }),
-          @Group(name= OperationIam.COMMAND_ROLE, description = "Manage the roles (RBAC)", commands = {
+          @Group(name = OperationsDb.CMD_KEYSPACE, description = "Manage keyspaces (db must be selected)", commands = {
+                  DbCreateKeyspaceShell.class,
+          }),
+          @Group(name= OperationIam.COMMAND_ROLE, description = "Manage roles (RBAC)", commands = {
                   RoleListShell.class,
                   RoleGetCli.class
           }),
-          @Group(name= OperationIam.COMMAND_USER, description = "Manage the users permission", commands = {
+          @Group(name= OperationIam.COMMAND_USER, description = "Manage users permission", commands = {
                   UserListShell.class,
                   UserGetShell.class,
                   UserInviteShell.class,

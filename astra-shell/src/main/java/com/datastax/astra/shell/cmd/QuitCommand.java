@@ -1,7 +1,6 @@
 package com.datastax.astra.shell.cmd;
 
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Command;
 
 /**
@@ -15,12 +14,11 @@ public class QuitCommand extends BaseShellCommand {
     /** {@inheritDoc} */
     @Override
     public ExitCode execute() {
-        if (null != ctx().getDatabase()) {
-            ctx().exitDatabase();
-            return ExitCode.SUCCESS;
+        if (!dbSelected()) {
+            return ExitCode.CONFLICT;
         }
-        LoggerShell.warning("You have no base selected.");
-        return ExitCode.NOT_FOUND;
+        ctx().exitDatabase();
+        return ExitCode.SUCCESS;
     }
 
 }

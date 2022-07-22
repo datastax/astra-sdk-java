@@ -11,7 +11,7 @@ public class SetupCommandsTest extends AbstractAstraCliTest {
     
     @Test
     public void should_display_config()  throws Exception {
-        astraCli("show", "configs");
+        astraCli("config", "list");
     }
     
     @Test
