@@ -4,9 +4,19 @@
 
 Astra Shell is a standalone command line interface proposing functions to operate the Datastax Astra platform.
 
-## A. Installation
+## 📋 Table of content
 
-### Prequisites
+<img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-shell.png?raw=true" align="right" width="400px"/>
+
+1. [Installation](#1-objectives)
+2. [Working with Configuration](#2-acknowledgements)
+3. [Working with Databases](#3-frequently-asked-questions)
+4. [Working with users](#4-materials-for-the-session)
+5. [Working with roles](#5-create-astra-db-instance)
+
+## 1. Installation
+
+### 1.1 - Prequisites
 
 On your machine you will need :
 - A bash shell
@@ -17,26 +27,28 @@ You will also need to:
 - [Create an Astra account](https://astra.datastax.com)
 - [Create an authentication token](https://dtsx.io/create-astra-token)
 
-### Installation
+### 1.2 - Installation
 
 ```
 curl -Ls "https://dtsx.io/get-astra-cli" | bash
 ```
 
-### Setup
+### 1.3 - Setup
 
-- 1/3 - Execute the following
+#### ✅ Step 1.3.a. Execute `startup` command
+
 ```
 astra setup
 ```
 
-- 2/3 When asked provides a token of your choice:
+#### ✅ Step 1.3.b. Provide a token of your choice when needed
 
 ```
-• Enter your token (AstraCS...) : 
+Enter your token (AstraCS...) : 
 AstraCS:.......
 ```
- - 3/3 Open a new TAB to finalize install
+
+#### ✅ Step 1.3.b. Open a `new` shell to finalize install
 
 ```
 astra --version
