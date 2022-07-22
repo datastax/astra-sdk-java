@@ -9,10 +9,10 @@ Astra Shell is a standalone command line interface proposing functions to operat
 <img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-shell.png?raw=true" align="right" width="400px"/>
 
 1. [Installation](#1-installation)
-2. [Configuration Management](#2-acknowledgements)
-3. [Working with Databases](#3-frequently-asked-questions)
-4. [Working with Users](#4-materials-for-the-session)
-5. [Working with Roles](#5-create-astra-db-instance)
+2. [Configuration Management](#2-configuration-management)
+3. [Working with Databases](#3-working-with-databases)
+4. [Working with Users](#4-working-with-users)
+5. [Working with Roles](#5-working-with-roles)
 
 ## 1. Installation
 
