@@ -34,7 +34,7 @@ ASTRA_CLI_DIR="$HOME/.astra/cli"
 
 # Local variables
 astra_tmp_folder="$HOME/.astra/tmp"
-astra_scb_folder="$HOME/.astra/cli/scb"
+astra_scb_folder="$HOME/.astra/scb"
 astra_zip_file="${astra_tmp_folder}/astra-cli-${ASTRA_CLI_VERSION}.zip"
 astra_zip_base_folder="${astra_tmp_folder}/astra-cli-${ASTRA_CLI_VERSION}"
 

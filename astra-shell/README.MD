@@ -35,13 +35,13 @@ curl -Ls "https://dtsx.io/get-astra-cli" | bash
 
 ### 1.3 - Setup
 
-#### ✅ Step 1.3.a. Execute `startup` command
+#### ✅ Step 1.3.a - Execute `startup` command
 
 ```
 astra setup
 ```
 
-#### ✅ Step 1.3.b. Provide a token of your choice when needed
+#### ✅ Step 1.3.b - Provide a token of your choice when needed
 
 ```
 Enter your token (AstraCS...) : 
@@ -50,48 +50,84 @@ AstraCS:.......
 
 ![](https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-shell-config.png?raw=true")
 
-#### ✅ Step 1.3.b. Open a `new` shell to finalize install
+```
+[What's NEXT ?]
+You are all set. You can now:
+   • Use any command, 'astra help' will get you the list
+   • Try with 'astra db list'
+   • Enter interactive mode using 'astra'
+
+Happy Coding !
+```
+
+#### ✅ Step 1.3.c - Open a `NEW` shell to finalize install
+
+- Get the current version
 
 ```
 astra --version
+```
+
+- Get some more informations
+
+```
 astra help
 ```
 
-## 2. Configuration Management
-
-- **List Configurations**
-
-```
-astra config list
-```
-
-- **Create new configuration** 
-
-If you have multiple organizations it could be useful to switch from one to another. To create another config, the latest created org will become the default.
-
-```
-astra config create dev -t <token_of_org_2>
-```
-
-```
-astra config list
-```
-
-When you issue any command the config is now loaded for you:
+- Use you configuration (spoiler)
 
 ```
 astra user list
 ```
 
-- **Change default configuration**: 
+## 2. Configuration Management
+
+#### ✅ Step 2.1 - List Configuration
+
+- In your configuration file you see all config and one is the default. This is the one used when no option provided.
+
+```
+astra config list
+```
+
+#### ✅ Step 2.2 - Create new configuration
+
+If you have multiple organizations it could be useful to switch from one to another.
+
+- Create another org called `dev`
+
+```
+astra config create dev -t <token_of_org_2>
+```
+
+- Look at the new list with `dev`
+
+```
+astra config list
+```
+
+- But nothing change your are still on default
+
+```
+astra user list
+```
+
+#### ✅ Step 2.3 - Change default configuration
 
 You can change the default org at any time with the following command:
 
+- Change the default
 ```
-astra config default dev && astra config list
+astra config default dev
 ```
 
-- Test again, user list should be different
+- See your new list 
+
+ ```
+ astra config list
+ ```
+
+- Test again, user list should be different now
 
 ```
 astra user list
@@ -109,63 +145,85 @@ astra config default cedrick.lunven@datastax.com && astra config list
 astra user list --config dev
 ```
 
-- **Delete configuration**
+#### ✅ Step 2.4 = Delete configuration
 
 You can delete any organization. I see you.. if you delete the default one you are on your own and you would need to define a new one.
 
+- Delete you config
 ```
 astra config delete dev
+```
+
+- See the new list
+
+```
 astra config list
 ```
 
 ## 3. Working with Databases
 
-- **List Databases**:
+#### ✅ Step 3.1 List Databases
 
 ```
 astra db list
 ```
 
-- **Create a new database:** 
+#### ✅ Step 3.2 Create a new database
 
 If not provided the region will be the default free region and the keyspace will be the database name but you can change then with `-r` and `-k` respectivitely.
 
+- Create the Database
+
 ```
 astra db create demo
+```
+
+- Check the status
+
+```
 astra db list
 ```
 
-- **Get information on your database**
-
-Notice how you never provide any the technical ids.
+#### ✅ Step 3.3 Get information on your database
 
 ```
 astra db get demo
 ```
 
-- **Change output format**
+> **Note:** You never provided any the technical ids.
+
+
+#### ✅ Step 3.4 Output Format
 
 This CLI wil be used by CI/CD and script, sometimes the output must be parsed. There are 3 outputs: *human,json,csv"
+
+- Show the list as a json
 
 ```
 astra db list -o json
 ```
 
+- Show the list as a csv
+
 ```
 astra db list -o csv
 ```
 
+#### ✅ Step 3.5 Error Code
+
 The return type is also important to check the errors. O mean everything is OK
 
+- Execute command with error
+```
+astra db get i_do_not_exist -v
+```
+
+- Get the error code
 ```
 echo $?
 ```
 
-```
-astra db get i_do_not_exist && echo $?
-```
-
-Error codes tables
+- Error codes table:
 
 | Error             | Code      |
 |-------------------|-----------|
@@ -179,10 +237,14 @@ Error codes tables
 | INTERNAL_ERROR    | 40        |
 
 
-- The cli implemented `If not Exist` for both keyspace and database (convenient for workshops and training)
+#### ✅ Step 3.6 - If not Exists
+
+The cli implemented `If not Exist` for both keyspace and database (convenient for workshops and training)
+
+
+- Run the command with `--if-not-exist`
 
 ```
-astra help db create
 astra db create demo --if-not-exist
 ```
 
@@ -194,21 +256,27 @@ astra db create demo --if-not-exist -v
 
 Make sure the database is now Active or you will get some expected errors.
 
-- **Create a new keyspace**
+```
+astra db get demo | grep ACTIVE
+```
 
+#### ✅ Step 3.7 - Create Keyspace
 ```
 astra db create-keyspace demo -k ks2
 ```
 
-Need helps ?
-```
-astra help db create-keyspace
-```
-
-- Now let's blow your mind 🥁
+- Keyspace is created
 
 ```
-astra db cqlsh demo
+astra db get demo
+```
+
+#### ✅ Step 3.8 - Blow your mind 🥁
+
+The first execution is expected to be slow we are downloading cqlsh if not present on your machine. This is why we put the `-v`.
+
+```
+astra db cqlsh demo -v
 ```
 
 - Quit the shell
@@ -217,15 +285,17 @@ astra db cqlsh demo
 quit;
 ```
 
-- Execute CQL (or CQL file)
+- Execute a CQL statement (or a CQL file with `-f`)
 
 ```
 astra db cqlsh demo -e "describe keyspaces;"
 ```
 
-### D. Interactive mode
+#### ✅ Step 3.9 - Interactive Shell
 
 Commands we used so far are stateless, no connection is maintained after the execution. What if you need more an interactive shell than a cli ?
+
+- Start the shell by do not providing any command
 
 ```
 astra
@@ -243,11 +313,13 @@ db list
 db get demo
 ```
 
-Now what if we want some commands on this particular db ?
+- Now what if we want some commands on this particular db ?
 
 ```
 db use demo
 ```
+
+- Get info of a 
 
 ```
 info
@@ -267,7 +339,7 @@ create keyspace kso
 cqlsh -k kso
 ```
 
-Now quit:
+- No Quit:
 
 ```
 quit;
@@ -275,20 +347,27 @@ quit;
 
 ## 4. Working with Users
 
-- List your users
+#### ✅ Step 4.1 - List your users
 
 ```
 astra user list
 ```
 
-- Invite your best friend (me). The role will be DataStax Administrator by default
+#### ✅ Step 4.2 - Invite your best friend (me). 
+
+- The role will be `DataStax Administrator` by default
 
 ```
 astra user invite cedrick.lunven@datastax.com
-astra db list
 ```
 
-- Delete a user
+- And here I am 
+
+```
+astra user list
+```
+
+#### ✅ Step 4.3 - Delete a user
 
 ```
 astra user delete cedrick.lunven@datastax.com
@@ -296,13 +375,13 @@ astra user delete cedrick.lunven@datastax.com
 
 ## 5. Working with Roles
 
-- List your users
+#### ✅ Step 5.1 - List your roles
 
 ```
 astra role list
 ```
 
-- Delete a user
+#### ✅ Step 5.2 - Get a role
 
 ```
 astra role get "Organization Administrator"
