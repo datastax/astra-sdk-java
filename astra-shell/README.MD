@@ -9,10 +9,10 @@ Astra Shell is a standalone command line interface proposing functions to operat
 <img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-shell.png?raw=true" align="right" width="400px"/>
 
 1. [Installation](#1-objectives)
-2. [Working with Configuration](#2-acknowledgements)
+2. [Configuration Management](#2-acknowledgements)
 3. [Working with Databases](#3-frequently-asked-questions)
-4. [Working with users](#4-materials-for-the-session)
-5. [Working with roles](#5-create-astra-db-instance)
+4. [Working with Users](#4-materials-for-the-session)
+5. [Working with Roles](#5-create-astra-db-instance)
 
 ## 1. Installation
 
@@ -47,6 +47,8 @@ astra setup
 Enter your token (AstraCS...) : 
 AstraCS:.......
 ```
+
+![](https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-shell-config.png?raw=true")
 
 #### ✅ Step 1.3.b. Open a `new` shell to finalize install
 
