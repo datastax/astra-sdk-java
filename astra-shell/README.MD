@@ -197,11 +197,90 @@ astra help db create-keyspace
 astra db cqlsh demo
 ```
 
+- Quit the shell
+
+```
+quit;
+```
+
+- Execute CQL (or CQL file)
+
+```
+astra db cqlsh demo -e "describe keyspaces;"
+```
 
 ## D. Interactive mode
 
+Commands we used so far are stateless, no connection is maintained after the execution. What if you need more an interactive shell than a cli ?
+
+```
+astra
+```
+
+- List the DB 
+
+```
+db list
+```
+
+- Show a db
+
+```
+db get demo
+```
+
+Now what if we want some commands on this particular db ?
+
+```
+db use demo
+```
+
+```
+info
+```
+
+> **Note**: *Still not sure about the info command to display the current context of the shell.*
+
+- Create a keyspace
+
+```
+create keyspace kso
+```
+
+- Access the keyspace
+
+```
+cqlsh -k kso
+```
+
+Now quit:
+
+```
+quit;
+```
 
 ## E. Working with Users
+
+- List your users
+
+```
+astra user list
+```
+
+- Invite your best friend (me). The role will be DataStax Administrator by default
+
+```
+astra user invite cedrick.lunven@datastax.com
+astra db list
+```
+
+- Delete a user
+
+```
+astra user delete cedrick.lunven@datastax.com
+```
+
+
 
 
 ## F. Working with Roles

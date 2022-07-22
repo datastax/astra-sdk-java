@@ -130,7 +130,7 @@ public class OperationsDb {
             return Optional.ofNullable(dbsClient.database(dbs.get(0).getId()));
         }
         
-        ShellPrinter.outputError(ExitCode.NOT_FOUND,"'" + db + "' database not found.");
+        LoggerShell.warning("Database " + db + " has not been found");
         return Optional.empty();
     }
     
