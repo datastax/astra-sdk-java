@@ -8,7 +8,7 @@ Astra Shell is a standalone command line interface proposing functions to operat
 
 <img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-shell.png?raw=true" align="right" width="400px"/>
 
-1. [Installation](#1-objectives)
+1. [Installation](#1-installation)
 2. [Configuration Management](#2-acknowledgements)
 3. [Working with Databases](#3-frequently-asked-questions)
 4. [Working with Users](#4-materials-for-the-session)
@@ -57,7 +57,7 @@ astra --version
 astra help
 ```
 
-## B. Working with configurations
+## 2. Configuration Management
 
 - **List Configurations**
 
@@ -118,7 +118,7 @@ astra config delete dev
 astra config list
 ```
 
-## C. Working with Databases
+## 3. Working with Databases
 
 - **List Databases**:
 
@@ -223,7 +223,7 @@ quit;
 astra db cqlsh demo -e "describe keyspaces;"
 ```
 
-## D. Interactive mode
+### D. Interactive mode
 
 Commands we used so far are stateless, no connection is maintained after the execution. What if you need more an interactive shell than a cli ?
 
@@ -273,7 +273,7 @@ Now quit:
 quit;
 ```
 
-## E. Working with Users
+## 4. Working with Users
 
 - List your users
 
@@ -294,11 +294,19 @@ astra db list
 astra user delete cedrick.lunven@datastax.com
 ```
 
+## 5. Working with Roles
 
+- List your users
 
+```
+astra role list
+```
 
-## F. Working with Roles
+- Delete a user
 
+```
+astra role get "Organization Administrator"
+```
 
 
 
