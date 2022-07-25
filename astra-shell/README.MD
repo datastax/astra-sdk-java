@@ -339,7 +339,7 @@ cqlsh -k kso
 quit
 ```
 
-- You can exist the shell with
+- You can exit the shell with
 
 ```
 exit
