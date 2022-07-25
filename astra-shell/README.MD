@@ -279,7 +279,7 @@ The first execution is expected to be slow we are downloading cqlsh if not prese
 astra db cqlsh demo -v
 ```
 
-- Quit the shell
+- Quit the `cqlshell` not forgetting the `;`
 
 ```
 quit;
