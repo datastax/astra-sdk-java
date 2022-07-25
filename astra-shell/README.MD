@@ -307,12 +307,6 @@ astra
 db list
 ```
 
-- Show a db
-
-```
-db get demo
-```
-
 - Now what if we want some commands on this particular db ?
 
 ```
@@ -339,10 +333,16 @@ create keyspace kso
 cqlsh -k kso
 ```
 
-- No Quit:
+- You can quit the db with 
 
 ```
-quit;
+quit
+```
+
+- You can exist the shell with
+
+```
+exit
 ```
 
 ## 4. Working with Users
