@@ -147,7 +147,7 @@ astra config default <your_email>
 ```
 
 - Check the modification
-- 
+
 ```
 astra config list
 ```
@@ -216,9 +216,17 @@ astra db list -o json
 astra db list -o csv
 ```
 
-#### ✅ Step 3.5 Error Code
+#### ✅ Step 3.5 Troubleshooting
 
 The return type is also important to check the errors. O mean everything is OK
+
+- Any command can be execute as `verbose` addin `-v`
+
+```
+astra db list -v
+```
+
+Return codes are carefully designed to ease their usage later:
 
 - Execute command with error
 ```
