@@ -294,9 +294,15 @@ The first execution is expected to be slow we are downloading cqlsh if not prese
 astra db cqlsh demo -v
 ```
 
+- Run a cql command
+
+```sql
+describe keyspace demo;
+```
+
 - Quit the `cqlshell` not forgetting the `;`
 
-```
+```sql
 quit;
 ```
 
