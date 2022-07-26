@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.astra.shell.ExitCode;
-import com.datastax.astra.shell.ShellContext;
 import com.datastax.astra.shell.cmd.BaseShellCommand;
 import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Arguments;

@@ -8,6 +8,7 @@ import com.datastax.astra.shell.cmd.db.DbCreateKeyspaceShell;
 import com.datastax.astra.shell.cmd.db.DbCreateShell;
 import com.datastax.astra.shell.cmd.db.DbDeleteShell;
 import com.datastax.astra.shell.cmd.db.DbGetShell;
+import com.datastax.astra.shell.cmd.db.DbInfoShell;
 import com.datastax.astra.shell.cmd.db.DbListShell;
 import com.datastax.astra.shell.cmd.db.DbUseShell;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
@@ -43,18 +44,18 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
     
     // With selected db
     DbCreateKeyspaceShell.class,
-    DbGetShell.class,
+    DbInfoShell.class,
     DbCqlShellShell.class,
     QuitCommand.class,
 },
   groups = {
           @Group(name = OperationsDb.DB, description = "Commands acting of database", commands = {
-                  DbCreateShell.class,
-                  DbDeleteShell.class,
+                  DbCreateShell.class, 
+                  DbDeleteShell.class, 
                   DbListShell.class,
-                  DbGetShell.class,
-                  
-                  DbUseShell.class,
+                  DbGetShell.class, 
+                  DbInfoShell.class, 
+                  DbUseShell.class
           }),
           @Group(name = OperationsDb.CMD_KEYSPACE, description = "Manage keyspaces (db must be selected)", commands = {
                   DbCreateKeyspaceShell.class,
@@ -64,9 +65,9 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   RoleGetCli.class
           }),
           @Group(name= OperationIam.COMMAND_USER, description = "Manage users permission", commands = {
-                  UserListShell.class,
-                  UserGetShell.class,
-                  UserInviteShell.class,
+                  UserListShell.class, 
+                  UserGetShell.class, 
+                  UserInviteShell.class, 
                   UserDeleteShell.class
           })
     })

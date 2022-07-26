@@ -70,7 +70,7 @@ public class ConfigSetup extends BaseConfigCommand implements Runnable {
                 }
             }
             ShellPrinter.println("\n[What's NEXT ?]", Ansi.Color.CYAN);
-            System.out.println("You are all set. You can now:");
+            System.out.println("You are all set.(configuration is stored in ~/.astrarc) You can now:");
             System.out.println("   • Use any command, 'astra help' will get you the list");
             System.out.println("   • Try with 'astra db list'");
             System.out.println("   • Enter interactive mode using 'astra'");
