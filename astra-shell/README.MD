@@ -106,11 +106,18 @@ astra config create dev -t <token_of_org_2>
 astra config list
 ```
 
-- But nothing change your are still on default
+- But nothing changed, your organization is still selected as `default`
 
 ```
 astra user list
 ```
+
+- You can use any organization anytime with `--config <onfig_name>` or `-t <token>`
+
+```
+astra user list --config dev
+```
+
 
 #### ✅ Step 2.3 - Change default configuration
 
@@ -136,13 +143,13 @@ astra user list
 - Back to original org (change with your email)
 
 ```
-astra config default cedrick.lunven@datastax.com && astra config list
+astra config default <your_email>
 ```
 
-- You can use any organization without switching default configuration with `--config` or `-t`
-
+- Check the modification
+- 
 ```
-astra user list --config dev
+astra config list
 ```
 
 #### ✅ Step 2.4 = Delete configuration
