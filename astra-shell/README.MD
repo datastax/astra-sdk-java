@@ -106,11 +106,18 @@ astra config create dev -t <token_of_org_2>
 astra config list
 ```
 
-- But nothing change your are still on default
+- But nothing changed, your organization is still selected as `default`
 
 ```
 astra user list
 ```
+
+- You can use any organization anytime with `--config <onfig_name>` or `-t <token>`
+
+```
+astra user list --config dev
+```
+
 
 #### ✅ Step 2.3 - Change default configuration
 
@@ -136,13 +143,13 @@ astra user list
 - Back to original org (change with your email)
 
 ```
-astra config default cedrick.lunven@datastax.com && astra config list
+astra config default <your_email>
 ```
 
-- You can use any organization without switching default configuration with `--config` or `-t`
+- Check the modification
 
 ```
-astra user list --config dev
+astra config list
 ```
 
 #### ✅ Step 2.4 = Delete configuration
@@ -209,9 +216,17 @@ astra db list -o json
 astra db list -o csv
 ```
 
-#### ✅ Step 3.5 Error Code
+#### ✅ Step 3.5 Troubleshooting
 
 The return type is also important to check the errors. O mean everything is OK
+
+- Any command can be execute as `verbose` addin `-v`
+
+```
+astra db list -v
+```
+
+Return codes are carefully designed to ease their usage later:
 
 - Execute command with error
 ```
@@ -279,9 +294,15 @@ The first execution is expected to be slow we are downloading cqlsh if not prese
 astra db cqlsh demo -v
 ```
 
-- Quit the shell
+- Run a cql command
 
+```sql
+describe keyspace demo;
 ```
+
+- Quit the `cqlshell` not forgetting the `;`
+
+```sql
 quit;
 ```
 
@@ -307,12 +328,6 @@ astra
 db list
 ```
 
-- Show a db
-
-```
-db get demo
-```
-
 - Now what if we want some commands on this particular db ?
 
 ```
@@ -333,16 +348,28 @@ info
 create keyspace kso
 ```
 
-- Access the keyspace
+- See the created keyspace 
+
+```
+info
+```
+
+- With Database back to active you can now access the keyspace:
 
 ```
 cqlsh -k kso
 ```
 
-- No Quit:
+- You can quit the db with 
 
 ```
-quit;
+quit
+```
+
+- You can exit the shell with
+
+```
+exit
 ```
 
 ## 4. Working with Users
