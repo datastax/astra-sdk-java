@@ -348,7 +348,13 @@ info
 create keyspace kso
 ```
 
-- Access the keyspace
+- See the created keyspace 
+
+```
+info
+```
+
+- With Database back to active you can now access the keyspace:
 
 ```
 cqlsh -k kso
