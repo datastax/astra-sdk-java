@@ -1,10 +1,13 @@
 package com.datastax.astra.sdk.databases.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Hold object returned by accessing servlerss list.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseRegionServerless {
     
     /** Region Name. */

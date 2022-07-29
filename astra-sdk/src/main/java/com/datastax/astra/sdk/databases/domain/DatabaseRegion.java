@@ -16,9 +16,12 @@
 
 package com.datastax.astra.sdk.databases.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseRegion {
 
     //private DatabaseTierType tier = DatabaseTierType.developer;

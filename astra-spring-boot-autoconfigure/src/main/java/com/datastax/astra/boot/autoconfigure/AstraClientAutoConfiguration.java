@@ -133,12 +133,15 @@ public class AstraClientAutoConfiguration {
                 
                 // Secure Bundle
                 DownloadSecureBundle dscb = cql.getDownloadScb();
+                
                 if (dscb !=null && dscb.isEnabled()) {
                     LOGGER.debug("+ Secure connect bundle will be downloaded into {}", dscb.getPath());
                     builder.enableDownloadSecureConnectBundle()
                            .withCqlSecureConnectBundleFolder(dscb.getPath());
                 } else {
+                    LOGGER.info("+ Load Secure connect bundle locally from {}", dscb.getPath());
                     builder.disableDownloadSecureConnectBundle();
+                    builder.secureConnectBundleFolder(dscb.getPath());
                 }
                 
                 // Metrics

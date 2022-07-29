@@ -29,6 +29,8 @@ public enum DatabaseStatusType {
     /** */
     HIBERNATED,
     /** */
+    HIBERNATING,
+    /** */
     INITIALIZING,
     /** */
     MAINTENANCE,
@@ -44,6 +46,8 @@ public enum DatabaseStatusType {
     PREPARING,
     /** */
     RESIZING,
+    /** */
+    RESUMING,
     /** */
     TERMINATED,
     /** */

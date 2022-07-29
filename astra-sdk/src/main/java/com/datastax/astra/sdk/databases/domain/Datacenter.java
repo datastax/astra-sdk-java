@@ -18,11 +18,14 @@ package com.datastax.astra.sdk.databases.domain;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Represent a Cassandra DataCenter (ring) in a database instance.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Datacenter implements Serializable {
     
     /** Serial. */
@@ -36,6 +39,12 @@ public class Datacenter implements Serializable {
     
     /** Reference tier. */
     private String tier;
+    
+    /** status. */
+    private String status;
+    
+    /** Created Date. */
+    private String dateCreated;
     
     /** Reference cloud provider. */
     private CloudProviderType cloudProvider;
@@ -290,6 +299,44 @@ public class Datacenter implements Serializable {
      */
     public void setSecureBundleMigrationProxyInternalUrl(String secureBundleMigrationProxyInternalUrl) {
         this.secureBundleMigrationProxyInternalUrl = secureBundleMigrationProxyInternalUrl;
+    }
+
+    /**
+     * Getter accessor for attribute 'status'.
+     *
+     * @return
+     *       current value of 'status'
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * Setter accessor for attribute 'status'.
+     * @param status
+     * 		new value for 'status '
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    /**
+     * Getter accessor for attribute 'dateCreated'.
+     *
+     * @return
+     *       current value of 'dateCreated'
+     */
+    public String getDateCreated() {
+        return dateCreated;
+    }
+
+    /**
+     * Setter accessor for attribute 'dateCreated'.
+     * @param dateCreated
+     * 		new value for 'dateCreated '
+     */
+    public void setDateCreated(String dateCreated) {
+        this.dateCreated = dateCreated;
     }
 
 }

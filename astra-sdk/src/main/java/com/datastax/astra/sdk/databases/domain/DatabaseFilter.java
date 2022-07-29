@@ -18,11 +18,14 @@ package com.datastax.astra.sdk.databases.domain;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Create a filter.
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseFilter {
     
     /** default limit */

@@ -16,11 +16,14 @@
 
 package com.datastax.astra.sdk.databases.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Represents Storage information for the db.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseStorage {
     
     private int nodeCount;

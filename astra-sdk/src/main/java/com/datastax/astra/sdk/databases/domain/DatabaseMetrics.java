@@ -16,11 +16,14 @@
 
 package com.datastax.astra.sdk.databases.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Wrap Database Metrics.
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseMetrics {
     
     private int writeRequestsTotalCount;

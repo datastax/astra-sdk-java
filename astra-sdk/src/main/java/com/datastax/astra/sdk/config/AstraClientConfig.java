@@ -303,6 +303,19 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
+     * Provide path of the SCB.
+     * 
+     * @param path
+     *      target scb
+     * @return
+     *      reference to current scb
+     */
+    public AstraClientConfig secureConnectBundleFolder(String path) {
+        this.secureConnectBundleFolder = path;
+        return this;
+    }
+    
+    /**
      * Getter for downloadSecureConnectBundle.
      *
      * @return

@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * @author Cedrick LUNVEN (@clunven)
  */
-@JsonIgnoreProperties
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Database {
     
     private String id;
@@ -32,9 +32,11 @@ public class Database {
     
     private String creationTime;
     private String terminationTime;
+    private String lastUsageTime;
     
     private DatabaseInfo       info;
     private DatabaseStatusType status;
+    private DatabaseStatusType observedStatus;
     private DatabaseStorage    storage;
     private DatabaseCost       cost;
     private DatabaseMetrics    metrics;
@@ -348,6 +350,44 @@ public class Database {
      */
     public Set<String> getAvailableActions() {
         return availableActions;
+    }
+
+    /**
+     * Getter accessor for attribute 'lastUsageTime'.
+     *
+     * @return
+     *       current value of 'lastUsageTime'
+     */
+    public String getLastUsageTime() {
+        return lastUsageTime;
+    }
+
+    /**
+     * Setter accessor for attribute 'lastUsageTime'.
+     * @param lastUsageTime
+     * 		new value for 'lastUsageTime '
+     */
+    public void setLastUsageTime(String lastUsageTime) {
+        this.lastUsageTime = lastUsageTime;
+    }
+
+    /**
+     * Getter accessor for attribute 'observedStatus'.
+     *
+     * @return
+     *       current value of 'observedStatus'
+     */
+    public DatabaseStatusType getObservedStatus() {
+        return observedStatus;
+    }
+
+    /**
+     * Setter accessor for attribute 'observedStatus'.
+     * @param observedStatus
+     * 		new value for 'observedStatus '
+     */
+    public void setObservedStatus(DatabaseStatusType observedStatus) {
+        this.observedStatus = observedStatus;
     }
        
 

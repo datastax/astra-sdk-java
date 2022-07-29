@@ -16,9 +16,12 @@
 
 package com.datastax.astra.sdk.databases.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /** 
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseCost {
     
     double costPerMinCents         = 0;
@@ -34,6 +37,9 @@ public class DatabaseCost {
     double costPerDayParkedCents   = 0;
     double costPerMonthParkedCents = 0;
     double costPerNetworkGbCents   = 0;
+    double costPerWrittenGbCents   = 0;
+    double costPerReadGbCents      = 0;
+    
     /**
      * Getter accessor for attribute 'costPerMinCents'.
      *
@@ -254,5 +260,39 @@ public class DatabaseCost {
      */
     public void setCostPerNetworkGbCents(double costPerNetworkGbCents) {
         this.costPerNetworkGbCents = costPerNetworkGbCents;
+    }
+    /**
+     * Getter accessor for attribute 'costPerWrittenGbCents'.
+     *
+     * @return
+     *       current value of 'costPerWrittenGbCents'
+     */
+    public double getCostPerWrittenGbCents() {
+        return costPerWrittenGbCents;
+    }
+    /**
+     * Setter accessor for attribute 'costPerWrittenGbCents'.
+     * @param costPerWrittenGbCents
+     * 		new value for 'costPerWrittenGbCents '
+     */
+    public void setCostPerWrittenGbCents(double costPerWrittenGbCents) {
+        this.costPerWrittenGbCents = costPerWrittenGbCents;
+    }
+    /**
+     * Getter accessor for attribute 'costPerReadGbCents'.
+     *
+     * @return
+     *       current value of 'costPerReadGbCents'
+     */
+    public double getCostPerReadGbCents() {
+        return costPerReadGbCents;
+    }
+    /**
+     * Setter accessor for attribute 'costPerReadGbCents'.
+     * @param costPerReadGbCents
+     * 		new value for 'costPerReadGbCents '
+     */
+    public void setCostPerReadGbCents(double costPerReadGbCents) {
+        this.costPerReadGbCents = costPerReadGbCents;
     }
 }

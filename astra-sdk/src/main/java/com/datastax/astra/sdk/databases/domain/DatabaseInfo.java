@@ -18,11 +18,14 @@ package com.datastax.astra.sdk.databases.domain;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Wrapper for DatabaseInfo attribut in findDatabase.
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseInfo {
     
     /** Name of the database--user friendly identifier. */
