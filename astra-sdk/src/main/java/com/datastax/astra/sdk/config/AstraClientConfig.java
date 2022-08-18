@@ -36,6 +36,12 @@ public class AstraClientConfig implements Serializable {
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraClientConfig.class);
+    
+    /** User home folder. */
+    public static final String ENV_USER_HOME              = "user.home";
+    
+    /** Where yo download cloud secure bundles. */
+    public static final String DEFAULT_SCB_FOLDER = System.getProperty(ENV_USER_HOME) + File.separator + ".astra" + File.separator + "scb";
    
     /** Initialize parameters from Environment variables. */
     public static final String ASTRA_DB_ID                = "ASTRA_DB_ID";
@@ -51,9 +57,7 @@ public class AstraClientConfig implements Serializable {
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
     /** SECURE BUNDLE FOR EACH RECGIONS. */
     public static final String ASTRA_DB_SCB_FOLDER        = "ASTRA_DB_SCB_FOLDER";
-    /** User home folder. */
-    public static final String ENV_USER_HOME              = "user.home";
-
+    
     /** Port for grpc in Astra. */
     public static final int GRPC_PORT                     = 443;
     
@@ -290,7 +294,7 @@ public class AstraClientConfig implements Serializable {
     private boolean downloadSecureConnectBundle = true;
     
     /** Folder to load secure connect bundle with formated names scb_dbid_region.zip */
-    private String secureConnectBundleFolder  = System.getProperty(ENV_USER_HOME) + File.separator + ".astra";
+    private String secureConnectBundleFolder  = DEFAULT_SCB_FOLDER;
     
     /**
      * Getter accessor for attribute 'secureConnectBundleFolder'.

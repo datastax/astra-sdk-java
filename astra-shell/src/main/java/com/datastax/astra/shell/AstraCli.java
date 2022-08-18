@@ -114,9 +114,8 @@ public class AstraCli {
                 .run();       // Run the command
             
         } catch(ParseArgumentsUnexpectedException ex) {
+            LoggerShell.error("Invalid command\n - try 'astra help' to get general help\n - try 'astra help <cmd>' to get help on a particular command (eg: astra help db create)\n - [TAB][TAB] help you with autocompletion." );
             
-            LoggerShell.error("Invalid command: " + ex.getMessage());
-            //ex.printStackTrace();
         } catch(Exception e) {
             LoggerShell.error("Execution error:" + e.getMessage());
             //e.printStackTrace();

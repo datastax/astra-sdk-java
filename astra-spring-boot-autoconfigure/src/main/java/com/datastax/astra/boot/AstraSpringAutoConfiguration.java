@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.boot.autoconfigure;
+package com.datastax.astra.boot;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,11 +31,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import com.datastax.astra.boot.autoconfigure.AstraClientProperties.Api;
-import com.datastax.astra.boot.autoconfigure.AstraClientProperties.Cql;
-import com.datastax.astra.boot.autoconfigure.AstraClientProperties.DownloadSecureBundle;
-import com.datastax.astra.boot.autoconfigure.AstraClientProperties.Grpc;
-import com.datastax.astra.boot.autoconfigure.AstraClientProperties.Metrics;
+import com.datastax.astra.boot.AstraClientProperties.Api;
+import com.datastax.astra.boot.AstraClientProperties.Cql;
+import com.datastax.astra.boot.AstraClientProperties.DownloadSecureBundle;
+import com.datastax.astra.boot.AstraClientProperties.Grpc;
+import com.datastax.astra.boot.AstraClientProperties.Metrics;
 import com.datastax.astra.boot.utils.DataStaxDriverSpringConfig;
 import com.datastax.astra.boot.utils.SdkDriverConfigLoaderBuilderSpring;
 import com.datastax.astra.sdk.AstraClient;
@@ -60,10 +60,10 @@ import io.micrometer.core.instrument.MeterRegistry;
 @Configuration
 @ConditionalOnClass(AstraClient.class)
 @EnableConfigurationProperties(AstraClientProperties.class)
-public class AstraClientAutoConfiguration {
+public class AstraSpringAutoConfiguration {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AstraClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraSpringAutoConfiguration.class);
 
     /** Reference Properties. */
     @Autowired
@@ -135,11 +135,11 @@ public class AstraClientAutoConfiguration {
                 DownloadSecureBundle dscb = cql.getDownloadScb();
                 
                 if (dscb !=null && dscb.isEnabled()) {
-                    LOGGER.debug("+ Secure connect bundle will be downloaded into {}", dscb.getPath());
+                    LOGGER.info("+ Enabling SCB download into {}", dscb.getPath());
                     builder.enableDownloadSecureConnectBundle()
                            .withCqlSecureConnectBundleFolder(dscb.getPath());
                 } else {
-                    LOGGER.info("+ Load Secure connect bundle locally from {}", dscb.getPath());
+                    LOGGER.info("+ Load SCB locally from {}", dscb.getPath());
                     builder.disableDownloadSecureConnectBundle();
                     builder.secureConnectBundleFolder(dscb.getPath());
                 }

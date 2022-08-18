@@ -17,9 +17,7 @@ public class ParseOutput {
     @Test
     public void test() throws StreamReadException, DatabindException, IOException {
         ObjectMapper om = new ObjectMapper();
-        List<Database> db = om.readValue(new File("src/test/resources/output.json"), new TypeReference<List<Database>>(){});
-        
-        
+        om.readValue(new File("src/test/resources/output.json"), new TypeReference<List<Database>>(){});
     }
 
-}
+} 

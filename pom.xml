@@ -28,7 +28,7 @@
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
 		<pulsar.version>2.10.0</pulsar.version>
-		<stargate-grpc.version>1.0.58</stargate-grpc.version>
+		<stargate-grpc.version>1.0.63</stargate-grpc.version>
 		<grpc-netty.version>1.47.0</grpc-netty.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<!-- Spring -->
@@ -62,8 +62,6 @@
 		<module>astra-sdk</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
-		<!-- We do not want shell to be deployed to central -->
-		<!-- <module>astra-shell</module> -->
 		<module>stargate-sdk</module>
 	</modules>
 	

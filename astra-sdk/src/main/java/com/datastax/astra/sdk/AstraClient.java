@@ -105,7 +105,6 @@ public class AstraClient implements Closeable {
                 .withDatabaseRegion(dbRegion));
     }
     
-    
     /**
      * Initialization through builder.
      * 

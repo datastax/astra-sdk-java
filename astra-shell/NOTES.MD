@@ -44,6 +44,11 @@ mvn clean install -Dmaven.test.skip=true
 
 (2) mvn clean install -Dmaven.test.skip=true -Pnative
 
+# Clean the ZIP
+zip -d 0.3.2-alpha2.zip __MACOSX/\*
+zip -d 0.3.2-alpha2.zip \*/.DS_Store
+
+
 
 
 

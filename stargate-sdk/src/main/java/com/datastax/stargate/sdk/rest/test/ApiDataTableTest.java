@@ -252,11 +252,13 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         // Given
         TableClient videoTable = ksClient.table(TEST_TABLE);
         Assertions.assertTrue(videoTable.exist());
+        videoTable.updateOptions(new TableOptions(0,null));
         Assertions.assertNotEquals(25, videoTable.find().get().getTableOptions().getDefaultTimeToLive());
         // When
         videoTable.updateOptions(new TableOptions(25, null));
+        Thread.sleep(1000);
         // Then
-        Assertions.assertNotEquals(25, videoTable.find().get().getTableOptions().getDefaultTimeToLive());
+        Assertions.assertEquals(25, videoTable.find().get().getTableOptions().getDefaultTimeToLive());
         videoTable.updateOptions(new TableOptions(0,null));
     }
     

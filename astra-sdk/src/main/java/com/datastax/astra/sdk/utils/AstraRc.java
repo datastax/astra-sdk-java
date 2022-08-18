@@ -304,7 +304,6 @@ public class AstraRc {
     public String renderSection(String sectionName) {
         StringBuilder sb = new StringBuilder();
         if (sectionName!= null && sections.containsKey(sectionName)) {
-            sb.append(LINE_SEPARATOR + "[" + sectionName + "]"+ LINE_SEPARATOR);
             sections.get(sectionName).entrySet().forEach(line -> {
                 sb.append(line.getKey() + "=" + line.getValue() + LINE_SEPARATOR);
             });

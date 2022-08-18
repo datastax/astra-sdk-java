@@ -68,6 +68,8 @@ public class CqlSchemaClient {
     /**
      * List keyspaces.
      *
+     * @param projection
+     *      projection to get output in Java
      * @return
      *      list of keyspaces.
      */
@@ -91,8 +93,9 @@ public class CqlSchemaClient {
      * @param keyspaceName
      *      keyspace name
      * @param projection
-     *      
+     *      projection
      * @return
+     *      keyspace if exists
      */
     public Optional<Keyspace> keyspace(String keyspaceName, KeyspaceProjectionRoot projection) {
         String graphQLRequest = new GraphQLQueryRequest(

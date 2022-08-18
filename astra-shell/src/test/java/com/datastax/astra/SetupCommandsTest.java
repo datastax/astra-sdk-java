@@ -15,6 +15,26 @@ public class SetupCommandsTest extends AbstractAstraCliTest {
     }
     
     @Test
+    public void should_display_default()  throws Exception {
+        astraCli("config", "get", "default");
+    }
+    
+    @Test
+    public void should_display_default_key()  throws Exception {
+        astraCli("config", "get", "default", "-k", "ASTRA_DB_APPLICATION_TOKEN");
+    }
+    
+    @Test
+    public void should_display_default_key_invalid()  throws Exception {
+        astraCli("config", "get", "default", "-k", "INVALID");
+    }
+    
+    @Test
+    public void invalid_command()  throws Exception {
+        astraCli("config", "create", "aaa", "-s", "INVALID");
+    }
+    
+    @Test
     public void should_asktoken()  throws Exception {
         astraCli("setup");
     }
@@ -31,17 +51,12 @@ public class SetupCommandsTest extends AbstractAstraCliTest {
     
     @Test
     public void should_show_config()  throws Exception {
-        astraCli("config", "show", "celphys@gmail.com");
+        astraCli("config", "get", "default");
     }
     
     @Test
     public void should_show_help()  throws Exception {
         astraCli("help", "config");
-    }
-    
-    @Test
-    public void should_list()  throws Exception {
-        astraCli("config", "list");
     }
     
     @Test

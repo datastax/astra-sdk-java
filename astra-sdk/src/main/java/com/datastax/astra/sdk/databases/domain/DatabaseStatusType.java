@@ -1,4 +1,5 @@
 /*
+
  * Copyright DataStax, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +27,8 @@ public enum DatabaseStatusType {
     ACTIVE,
     /** */
     ERROR,
+    /** */
+    DEGRADED,
     /** */
     HIBERNATED,
     /** */

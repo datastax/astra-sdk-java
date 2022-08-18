@@ -16,7 +16,14 @@
 
 package com.datastax.astra.sdk;
 
+import java.io.File;
+
 import org.junit.Ignore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.datastax.astra.sdk.utils.AstraRc;
 
 /**
  * Create Astrarc to execute test locally.
@@ -26,20 +33,25 @@ import org.junit.Ignore;
 @Ignore
 public class AstraRcTest {
     
-    /*
+    /** Could be reused for tests. */
+    public File tmpAstraRC = new File(System.getProperty("java.io.tmpdir") + File.separator + ".astrarc");
+    
     @Test
     @DisplayName("Create .astraRC without clientId/clientSecret")
     public void should_create_astraRc_File() {
+        tmpAstraRC.delete();
         // Given
-        new File(System.getProperty("user.home") + "/.astrarc").delete();
-        Assertions.assertFalse(new File(System.getProperty("user.home") + "/.astrarc").exists());
+        Assertions.assertFalse(tmpAstraRC.exists());
         // When
-        AstraRc.create(AstraClient.builder().build().getToken().get());
-        // Then
-        Assertions.assertTrue(new File(System.getProperty("user.home") + "/.astrarc").exists());
-        // Then we should be able to load the file
-        AstraRc.load().print();
+        AstraRc arc = new AstraRc(tmpAstraRC.getAbsolutePath());
+        
+        arc.createSectionWithToken("default", "ABC");
+        arc.save();
+        //Then
+        Assertions.assertTrue(tmpAstraRC.exists());
+        System.out.println(arc.getSections());
     }
-    */
+    
+    
 
 }

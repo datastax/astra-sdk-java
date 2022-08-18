@@ -167,7 +167,7 @@ public class DatabaseClient {
                 Utils.downloadFile(dc.getSecureBundleUrl(), fileName);
                 LOGGER.info("+ Downloading file: {}", fileName);
             } else {
-                LOGGER.info("+ SecureBundle found : {}", buildScbFileName(odb.get().getId(), dc.getRegion()));
+                LOGGER.info("+ {} available (no download)", buildScbFileName(odb.get().getId(), dc.getRegion()));
             }
         });
     }

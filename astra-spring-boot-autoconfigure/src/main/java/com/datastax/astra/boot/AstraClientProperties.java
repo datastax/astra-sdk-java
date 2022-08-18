@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.datastax.astra.boot.autoconfigure;
-
-import java.io.File;
+package com.datastax.astra.boot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import com.datastax.astra.sdk.config.AstraClientConfig;
 
 /**
  * Load the client properties. 
@@ -313,7 +313,7 @@ public class AstraClientProperties {
         private boolean enabled = true;
 
         /** Path to Download. */
-        private String path = System.getProperty("user.home") + File.separator + ".astra";
+        private String path = AstraClientConfig.DEFAULT_SCB_FOLDER;
         
         /**
          * Getter accessor for attribute 'enabled'.
