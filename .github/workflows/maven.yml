@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       stargate:
-        image: stargateio/stargate-3_11:v1.0.58
+        image: stargateio/stargate-3_11:v1.0.63
         env:
           CLUSTER_NAME: stargate
           CLUSTER_VERSION: 3.11
@@ -39,3 +39,4 @@ jobs:
           distribution: "adopt"
       - name: Test with Maven
         run: mvn test
+        
