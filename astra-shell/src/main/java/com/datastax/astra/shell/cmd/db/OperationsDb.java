@@ -32,6 +32,7 @@ import com.datastax.astra.shell.out.ShellPrinter;
 import com.datastax.astra.shell.out.ShellTable;
 import com.datastax.astra.shell.utils.CqlShellOptions;
 import com.datastax.astra.shell.utils.CqlShellUtils;
+import com.datastax.astra.shell.utils.DsBulkUtils;
 
 /**
  * Utility class for command `db`
@@ -390,6 +391,36 @@ public class OperationsDb {
             }
         } catch (IOException e) {
             LoggerShell.error("Cannot start CQLSH");
+            ExitCode.INTERNAL_ERROR.exit();
+        } catch (InterruptedException e) {}
+        return ExitCode.SUCCESS;
+    }
+    
+    /**
+     * Start DsBulk when needed.
+     * 
+     * @param options
+     *      dsbulks options, database name is the first argument
+     * @return
+     *      exit code
+     */
+    public static ExitCode runDsBulk(List<String> options) {
+        // Install dsbulk for Astra and set permissions
+        DsBulkUtils.installDsBulk();
+        
+        try {
+            Optional<DatabaseClient> dbClient = OperationsDb.getDatabaseClient(options.get(0));
+            if (dbClient.isPresent()) {
+                Database db = dbClient.get().find().get();
+                System.out.println("\nDSBulk is starting please wait ...");
+                Process dsbulkProc = DsBulkUtils.runDsBulk(db, options.subList(1, options.size()));
+                if (dsbulkProc == null) ExitCode.INTERNAL_ERROR.exit();
+                dsbulkProc.waitFor();
+            } else {
+                return ExitCode.NOT_FOUND;
+            }
+        } catch (IOException e) {
+            LoggerShell.error("Cannot start DSBULK");
             ExitCode.INTERNAL_ERROR.exit();
         } catch (InterruptedException e) {}
         return ExitCode.SUCCESS;

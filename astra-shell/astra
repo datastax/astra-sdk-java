@@ -1,4 +1,0 @@
-#!/bin/bash
-
-java -jar target/astra-shell-0.3.2-SNAPSHOT-shaded.jar "$@"
-

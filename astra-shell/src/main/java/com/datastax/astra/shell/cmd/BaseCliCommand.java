@@ -21,7 +21,7 @@ public abstract class BaseCliCommand extends BaseShellCommand {
     // --- Authentication ---
     
     /** Authentication token used if not provided in config. */
-    @Option(name = { "-t", "--token" }, 
+    @Option(name = { "--token" }, 
             title = "AUTH_TOKEN",
             description = "Key to use authenticate each call.")
     protected String token;

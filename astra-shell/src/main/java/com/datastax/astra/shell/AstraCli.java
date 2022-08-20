@@ -9,23 +9,24 @@ import com.datastax.astra.shell.cmd.config.BaseConfigCommand;
 import com.datastax.astra.shell.cmd.config.ConfigCreate;
 import com.datastax.astra.shell.cmd.config.ConfigDefault;
 import com.datastax.astra.shell.cmd.config.ConfigDelete;
-import com.datastax.astra.shell.cmd.config.ConfigList;
 import com.datastax.astra.shell.cmd.config.ConfigGet;
+import com.datastax.astra.shell.cmd.config.ConfigList;
 import com.datastax.astra.shell.cmd.config.ConfigSetup;
 import com.datastax.astra.shell.cmd.db.DbCqlShellCli;
 import com.datastax.astra.shell.cmd.db.DbCreateCli;
 import com.datastax.astra.shell.cmd.db.DbCreateKeyspaceCli;
 import com.datastax.astra.shell.cmd.db.DbDeleteCli;
-import com.datastax.astra.shell.cmd.db.DbListCli;
+import com.datastax.astra.shell.cmd.db.DbDSBulkCli;
 import com.datastax.astra.shell.cmd.db.DbGetCli;
+import com.datastax.astra.shell.cmd.db.DbListCli;
 import com.datastax.astra.shell.cmd.db.OperationsDb;
-import com.datastax.astra.shell.cmd.iam.RoleListCli;
 import com.datastax.astra.shell.cmd.iam.OperationIam;
 import com.datastax.astra.shell.cmd.iam.RoleGetCli;
+import com.datastax.astra.shell.cmd.iam.RoleListCli;
 import com.datastax.astra.shell.cmd.iam.UserDeleteCli;
+import com.datastax.astra.shell.cmd.iam.UserGetCli;
 import com.datastax.astra.shell.cmd.iam.UserInviteCli;
 import com.datastax.astra.shell.cmd.iam.UserListCli;
-import com.datastax.astra.shell.cmd.iam.UserGetCli;
 import com.datastax.astra.shell.cmd.shell.ShellCommand;
 import com.datastax.astra.shell.out.LoggerShell;
 import com.github.rvesse.airline.annotations.Cli;
@@ -53,7 +54,8 @@ import com.github.rvesse.airline.parser.errors.ParseArgumentsUnexpectedException
                   DbDeleteCli.class,
                   DbGetCli.class,
                   DbListCli.class,
-                  DbCreateKeyspaceCli.class
+                  DbCreateKeyspaceCli.class,
+                  DbDSBulkCli.class
           }),
           @Group(name = BaseConfigCommand.COMMAND_CONFIG, description = "Manage configuration file", commands = { 
                   ConfigCreate.class,
@@ -118,6 +120,7 @@ public class AstraCli {
             
         } catch(Exception e) {
             LoggerShell.error("Execution error:" + e.getMessage());
+            e.printStackTrace();
             //e.printStackTrace();
         }
     }

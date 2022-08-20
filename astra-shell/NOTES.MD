@@ -3,15 +3,10 @@
 
 ```
 mvn package -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
-cp ./target/astra-shell-0.3.2-SNAPSHOT-shaded.jar ~/.astra/cli/astra-shell.jar
+cp ./target/astra-shell-0.1-alpha3-shaded.jar ~/.astra/cli/astra-shell.jar
 ```
 
-# Executing the command
 
-```
-java -jar ./target/astra-shell-0.3.1-SNAPSHOT-shaded.jar show-dbs
-```
- 
 
 
 sdk, brew, chocolaty

@@ -29,8 +29,7 @@ public class OperationsConfig {
     /**
      * Hide default constructor
      */
-    private OperationsConfig() {
-    }
+    private OperationsConfig() {}
     
     /**
      * Show configuration in the output.
@@ -82,6 +81,7 @@ public class OperationsConfig {
      * @param sections
      *      list of sections
      * @return
+     *      organization name if exists
      */
     public static Optional<String> findDefaultOrganizationName(Map<String, Map<String, String>> sections) {
         String defaultOrgName = null;
