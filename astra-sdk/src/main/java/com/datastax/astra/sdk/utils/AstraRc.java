@@ -263,7 +263,7 @@ public class AstraRc {
                         // Starting a new section
                         sectionName = line.replaceAll("\\[", "").replaceAll("\\]", "").trim();
                         sections.put(sectionName, new HashMap<>());
-                    } else if (!line.startsWith("#") && !"".equals(line)) {
+                    } else if (!line.isEmpty() && !line.startsWith("#") && !"".equals(line)) {
                         int off = line.indexOf("=");
                         if (off < 0) {
                             throw new IllegalArgumentException(
@@ -304,6 +304,7 @@ public class AstraRc {
     public String renderSection(String sectionName) {
         StringBuilder sb = new StringBuilder();
         if (sectionName!= null && sections.containsKey(sectionName)) {
+            sb.append(LINE_SEPARATOR + "[" + sectionName + "]" + LINE_SEPARATOR);
             sections.get(sectionName).entrySet().forEach(line -> {
                 sb.append(line.getKey() + "=" + line.getValue() + LINE_SEPARATOR);
             });
