@@ -94,7 +94,7 @@ public class ApiDevopsStreamingAstraTest {
         // When
         Assert.assertFalse(sc.tenant(tmpTenant).exist());
         LOGGER.info("Tenant " + tmpTenant + " does not exist");
-        sc.createTenant( new CreateTenant(tmpTenant, "cedrick.lunven@datastax.com"));
+        sc.createTenant( new CreateTenant(tmpTenant, "astra-cli@datastax.com"));
         Thread.sleep(1000);
         Assert.assertTrue(sc.tenant(tmpTenant).exist());
         LOGGER.info("Tenant " + tmpTenant + " now exist");
@@ -109,7 +109,7 @@ public class ApiDevopsStreamingAstraTest {
         
         try(PulsarAdmin admin = astraClient.apiDevopsStreaming()
                 .tenant(tmpTenant)
-                .pulsarAdmin()) {
+                .pulsarAdmin().get()) {
             Assert.assertTrue(admin
                  .namespaces()
                  .getNamespaces(tmpTenant).size() > 0);
