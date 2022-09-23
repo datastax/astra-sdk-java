@@ -116,6 +116,9 @@ public class AstraClientProperties {
         /** Astra database region. */
         private String databaseRegion;
         
+        /** If enabled try to failback. */
+        private Boolean crossRegionFailback;
+        
         /** Configuration regarding gRPC. */
         private Grpc grpc;
         
@@ -193,6 +196,25 @@ public class AstraClientProperties {
          */
         public void setGrpc(Grpc grpc) {
             this.grpc = grpc;
+        }
+
+        /**
+         * Getter accessor for attribute 'crossRegionFailback'.
+         *
+         * @return
+         *       current value of 'crossRegionFailback'
+         */
+        public Boolean getCrossRegionFailback() {
+            return crossRegionFailback;
+        }
+
+        /**
+         * Setter accessor for attribute 'crossRegionFailback'.
+         * @param crossRegionFailback
+         * 		new value for 'crossRegionFailback '
+         */
+        public void setCrossRegionFailback(Boolean crossRegionFailback) {
+            this.crossRegionFailback = crossRegionFailback;
         }
         
     }

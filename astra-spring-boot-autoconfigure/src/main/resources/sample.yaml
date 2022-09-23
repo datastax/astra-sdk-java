@@ -5,6 +5,8 @@ astra:
     database-region: CHANGE_ME
   grpc:
     enabled: false
+  grpc:
+    enabled: false
   cql:
     enabled: true
     download-scb: 

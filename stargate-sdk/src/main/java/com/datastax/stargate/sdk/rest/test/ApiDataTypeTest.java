@@ -36,7 +36,10 @@ public abstract class ApiDataTypeTest implements ApiDataTest {
     
     /** Tested Store. */
     protected static KeyspaceClient ksClient;
-    
+ 
+    /**
+     * Test.
+     */
     @Test
     @Order(1)
     @DisplayName("01-should-create-a-udt")
@@ -52,6 +55,9 @@ public abstract class ApiDataTypeTest implements ApiDataTest {
         Assertions.assertTrue(address.exist());
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(2)
     @DisplayName("01-should-update-a-udt")
@@ -78,6 +84,9 @@ public abstract class ApiDataTypeTest implements ApiDataTest {
          Assertions.assertFalse(fields.contains("city"));
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(3)
     @DisplayName("03-should-delete-a-udt")
@@ -88,6 +97,9 @@ public abstract class ApiDataTypeTest implements ApiDataTest {
         Assertions.assertFalse(address.exist());
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(4)
     @DisplayName("04-Full-flege test with udt")

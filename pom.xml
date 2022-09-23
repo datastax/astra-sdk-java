@@ -22,23 +22,23 @@
 	</licenses>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java-driver.version>4.14.1</java-driver.version>
-		<logback.version>1.2.9</logback.version>
-		<jackson.version>2.13.3</jackson.version>
+		<java-driver.version>4.15.0</java-driver.version>
+		<logback.version>1.4.1</logback.version>
+		<jackson.version>2.13.4</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
-		<pulsar.version>2.10.0</pulsar.version>
+		<pulsar.version>2.10.1</pulsar.version>
 		<stargate-grpc.version>1.0.63</stargate-grpc.version>
-		<grpc-netty.version>1.47.0</grpc-netty.version>
+		<grpc-netty.version>1.49.1</grpc-netty.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<!-- Spring -->
-		<spring.version>5.3.21</spring.version>
-		<spring-boot.version>2.7.0</spring-boot.version>
-		<spring-data.version>3.4.1</spring-data.version>
-		<spring-security.version>5.7.2</spring-security.version>
+		<spring.version>5.3.23</spring.version>
+		<spring-boot.version>2.7.4</spring-boot.version>
+		<spring-data.version>3.4.3</spring-data.version>
+		<spring-security.version>5.7.3</spring-security.version>
 		<!-- Junit -->
-		<junit-platform.version>1.8.2</junit-platform.version>
-		<junit-jupiter.version>5.8.2</junit-jupiter.version>
+		<junit-platform.version>1.9.1</junit-platform.version>
+		<junit-jupiter.version>5.9.1</junit-jupiter.version>
 		<!-- Java -->
 		<maven.plugin.compiler.source>1.8</maven.plugin.compiler.source>
 		<maven.plugin.compiler.target>1.8</maven.plugin.compiler.target>
@@ -359,6 +359,7 @@
 					</execution>
 				</executions>
 				<configuration>
+				    <excludePackageNames>com.datastax.stargate.graphql</excludePackageNames>
 					<source>${maven.plugin.javadoc.source}</source>
 				</configuration>
 			</plugin>

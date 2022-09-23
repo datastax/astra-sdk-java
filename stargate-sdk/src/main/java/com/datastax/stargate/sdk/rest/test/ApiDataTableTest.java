@@ -56,7 +56,7 @@ public abstract class ApiDataTableTest implements ApiDataTest {
         Assertions.assertFalse(tc.exist());
     }
     
-    /*
+    /**
      * Create a table videos
      * 
      * CREATE TABLE IF NOT EXISTS videos (
@@ -64,19 +64,21 @@ public abstract class ApiDataTableTest implements ApiDataTest {
      *   year      int,
      *   title     text,
      *   upload    timestamp,
-     *   tags      set <text>,
-     *   frames    list<int>,
-     *   tuples    tuple<text,text,text>,
-     *   formats   frozen<map <text,text>>,
+     *   tags      set  text ,
+     *   frames    list int ,
+     *   tuples    tuple text,text,text,
+     *   formats   frozen map text,text,
      *   PRIMARY KEY ((genre), year, title)
      * ) WITH CLUSTERING ORDER BY (year DESC, title ASC);
      * 
+     * @throws InterruptedException
+     *      error thrown
      */
     @Test
     @Order(1)
     @DisplayName("01-should-create-a-table")
-    public void a_should_create_a_table() 
-    throws InterruptedException { 
+    public void a_should_create_a_table() throws InterruptedException { 
+   
         // Given
         _deleteTableIfExist(TEST_TABLE_TMP);
         

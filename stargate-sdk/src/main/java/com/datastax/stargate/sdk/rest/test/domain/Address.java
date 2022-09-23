@@ -2,19 +2,38 @@ package com.datastax.stargate.sdk.rest.test.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Domain test
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 @JsonIgnoreProperties
 public class Address {
     
+    /** coti. */
     private String city;
+    
+    /** zip code. */
     private int zipCode;
     
+    /**
+     * Default constructor
+     */
     public Address() {}
     
+    /**
+     * Constructor.
+     * 
+     * @param city
+     *      city
+     * @param zip
+     *      zip
+     */
     public Address(String city, int zip) {
         this.city = city;
         this.zipCode = zip;
-                
     }
+    
     /**
      * Getter accessor for attribute 'city'.
      *

@@ -13,12 +13,17 @@ import org.springframework.core.env.EnumerablePropertySource;
 
 import com.typesafe.config.Config;
 
+/**
+ * Configuration Object.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class DataStaxDriverSpringConfig {
 
     /** Prefix to watch for custom driver configuration. */
     private static final String DRIVER_CONFIG_PREFIX = "astra.cql.driver-config";
+    /** Prefix to watch for custom driver configuration. */
     private static final String DRIVER_CONFIG_CORE   = "datastax-java-driver";
-    
     
     /**
      * Pattern to match "some-path.some-key[#]" to convert list value properties to TypeSafe format.
@@ -45,6 +50,8 @@ public class DataStaxDriverSpringConfig {
      * properties mechanism. These can come from a properties file (or YAML or XML file), system
      * properties, or some other mechanism by which Spring initializes properties.
      *
+     * @param env
+     *      current environment
      * @return {@link Map} object with driver-related configuration property values.
      */
     public static Map<String, String> driverConfigFromSpring(ConfigurableEnvironment env) {

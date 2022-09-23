@@ -271,7 +271,7 @@ public class AstraClientConfig implements Serializable {
         stargateConfig.withHttpObservers(observers);
         return this;
     }
-
+   
     // ------------------------------------------------
     // ----------------- Grpc -------------------------
     // ------------------------------------------------
@@ -287,11 +287,14 @@ public class AstraClientConfig implements Serializable {
     }
     
     // ------------------------------------------------
-    // -------------- CqlSession ----------------------
+    // -------------- Devops Apis ----------------------
     // ------------------------------------------------
     
     /** Enable SCB download to target folder. */
     private boolean downloadSecureConnectBundle = true;
+    
+    /** Enable SCB download to target folder. */
+    private boolean crossRegionFailOver = true;
     
     /** Folder to load secure connect bundle with formated names scb_dbid_region.zip */
     private String secureConnectBundleFolder  = DEFAULT_SCB_FOLDER;
@@ -330,6 +333,16 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
+     * Getter for crossRegionFailOver.
+     *
+     * @return
+     *      crossRegionFailOver value
+     */
+    public boolean isEnabledCrossRegionFailOver() {
+        return crossRegionFailOver;
+    }
+    
+    /**
      * Enable SCB downloads.
      * 
      * @return
@@ -337,6 +350,17 @@ public class AstraClientConfig implements Serializable {
      */
     public AstraClientConfig enableDownloadSecureConnectBundle() {
         this.downloadSecureConnectBundle = true;
+        return this;
+    }
+    
+    /**
+     * Enable crossRegionFailOver
+     * 
+     * @return
+     *      current reference.
+     */
+    public AstraClientConfig enableCrossRegionFailOver() {
+        this.crossRegionFailOver = true;
         return this;
     }
     
@@ -352,12 +376,13 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Enable CqlSession
+     * Disable crossRegionFailOver
      * 
-     * @return reference enforcing cqlsession disabled
+     * @return
+     *      current reference.
      */
-    public AstraClientConfig enableCql() {
-        stargateConfig.enableCql();
+    public AstraClientConfig disableCrossRegionFailOver() {
+        this.crossRegionFailOver = false;
         return this;
     }
     
@@ -370,6 +395,20 @@ public class AstraClientConfig implements Serializable {
      */
     public AstraClientConfig withCqlCloudSecureConnectBundle(String scbFile) {
         stargateConfig.withCqlCloudSecureConnectBundle(scbFile);
+        return this;
+    }
+    
+    // ------------------------------------------------
+    // -------------- CqlSession ----------------------
+    // ------------------------------------------------
+    
+    /**
+     * Enable CqlSession
+     * 
+     * @return reference enforcing cqlsession disabled
+     */
+    public AstraClientConfig enableCql() {
+        stargateConfig.enableCql();
         return this;
     }
     

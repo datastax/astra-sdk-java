@@ -2,6 +2,11 @@ package com.datastax.stargate.sdk.audit;
 
 import com.evanlennick.retry4j.Status;
 
+/**
+ * Default class for console.
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class AnsiConsoleLogger implements ApiInvocationObserver {
     
     /** {@inheritDoc} */

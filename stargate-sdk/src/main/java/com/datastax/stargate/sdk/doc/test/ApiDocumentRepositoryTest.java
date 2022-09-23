@@ -38,6 +38,12 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
     //        Operation on Repositories
     // -----------------------------------------
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(1)
     @DisplayName("01-Create document in a collection")
@@ -59,6 +65,12 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(2)
     @DisplayName("02-Create document with id")
@@ -77,6 +89,9 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         Assertions.assertEquals(20, john.get().getAge());
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(3)
     @DisplayName("03-Count number of items in a collections")
@@ -87,6 +102,9 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         Assertions.assertTrue(count > 0);
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(4)
     @DisplayName("04-Should find all the documents")
@@ -101,6 +119,12 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         Assertions.assertTrue(personList.size() > 1);
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(5)
     @DisplayName("05-Upsert document")
@@ -116,6 +140,12 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         Assertions.assertEquals("Johny",personRepository.find(id).get().getFirstname());
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(6)
     @DisplayName("06-Delete document")
@@ -137,6 +167,9 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         LOGGER.info("Document does not exist");
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(8)
     @DisplayName("08-Search Document with a filter Query")
@@ -157,6 +190,9 @@ public abstract class ApiDocumentRepositoryTest implements ApiDocumentTest {
         Assertions.assertNotEquals(page1.getResults().get(0), page2.getResults().get(0));
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(9)
     @DisplayName("09-Search Document with a filter Query")

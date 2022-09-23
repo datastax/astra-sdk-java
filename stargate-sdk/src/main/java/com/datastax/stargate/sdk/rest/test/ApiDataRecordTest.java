@@ -40,6 +40,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
     /** Tested Store. */
     protected static TableClient videoTable;
     
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(1)
     @DisplayName("01-should-add-a-row")
@@ -67,6 +73,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
         videoTable.upsert(data);
     }
     
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(2)
     @DisplayName("02-should-delete-a-row")
@@ -83,6 +95,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
         Assertions.assertTrue(rrp.getResults().size() == 0);
     }
     
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(3)
     @DisplayName("03-should-update-a-row")
@@ -114,6 +132,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
     }
     
    
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(4)
     @DisplayName("04-should-replace-a-row")
@@ -141,6 +165,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
         Assertions.assertEquals(1990, map.get("year"));
     }
     
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(5)
     @DisplayName("05-should-get-row-withpk")
@@ -155,6 +185,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
         Assertions.assertEquals(2, rrp.getResults().size());
     }
     
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(6)
     @DisplayName("06-should-get-row-mapper")
@@ -170,6 +206,12 @@ public abstract class ApiDataRecordTest implements ApiDataTest {
         Assertions.assertEquals(2, result.size());
     }
     
+    /**
+     * Test.
+     *
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(7)
     @DisplayName("07-should-search-a-table")

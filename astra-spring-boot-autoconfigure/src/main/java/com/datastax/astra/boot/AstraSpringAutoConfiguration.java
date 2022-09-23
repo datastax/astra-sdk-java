@@ -109,6 +109,11 @@ public class AstraSpringAutoConfiguration {
                 builder.withDatabaseRegion(api.getDatabaseRegion());
                 LOGGER.debug("+ Api /dbRegion detected {}", api.getDatabaseRegion());
             }
+            if (!api.getCrossRegionFailback()) {
+                builder.disableCrossRegionFailOver();
+                LOGGER.debug("+ Cross Region Failback is disabled");
+            }
+            
             if (api.getGrpc()!= null) {
                 Grpc grpc = api.getGrpc();
                 if (grpc.isEnabled()) {

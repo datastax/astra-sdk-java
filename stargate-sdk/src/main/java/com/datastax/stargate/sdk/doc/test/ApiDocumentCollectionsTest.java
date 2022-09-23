@@ -47,6 +47,12 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
     //         Operation on Collection
     // -----------------------------------------
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(1)
     @DisplayName("01-Create and delete empty collection")
@@ -72,6 +78,12 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         LOGGER.info("Collection now exist");
     }
 
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(2)
     @DisplayName("02-Should list collections")
@@ -87,6 +99,12 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         LOGGER.info("Collection is available in list");
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(3)
     @DisplayName("03-Find Collection by its name")
@@ -97,6 +115,12 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         LOGGER.info("Collection is available find find()");
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(4)
     @DisplayName("04-Delete a collection from its name")
@@ -119,6 +143,9 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         LOGGER.info("Collection deleted");
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(5)
     @DisplayName("05-Assign a Json Schema")
@@ -146,6 +173,12 @@ public abstract class ApiDocumentCollectionsTest implements ApiDocumentTest {
         Assertions.assertFalse(cc.exist());
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *      error
+     */
     @Test
     @Order(6)
     @DisplayName("06-Insert as a BACTH")

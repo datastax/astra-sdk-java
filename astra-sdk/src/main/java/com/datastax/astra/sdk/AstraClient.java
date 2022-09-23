@@ -166,34 +166,56 @@ public class AstraClient implements Closeable {
             // ---------------------------------------------------
             //     Stargate Node per region
             // ---------------------------------------------------
-            Optional<Database> db = apiDevopsDatabases.database(config.getDatabaseId()).find();
-            if (!db.isPresent()) {
-                throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
-            }
-
-            // Loop on regions
-            db.get().getInfo().getDatacenters().stream().forEach(dc -> {
-                config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
-                        new StargateNodeConfig(
-                                // node name = region, we got a single per region LB is done by Astra
-                                dc.getRegion(), 
-                                // url or rest api
-                                ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()),
-                                // url of graphql API
-                                ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), dc.getRegion()),
-                                // host for grpc
-                                ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()),
-                                // port for grpc
-                                AstraClientConfig.GRPC_PORT));
-                
-                config.getStargateConfig()
-                      .withCqlCloudSecureConnectBundleDC(dc.getRegion(),
-                          config.getSecureConnectBundleFolder() 
-                          + File.separator 
-                          + AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
-              }
-            );
             
+            if (config.isEnabledCrossRegionFailOver()) {
+                Optional<Database> db = apiDevopsDatabases.database(config.getDatabaseId()).find();
+                if (!db.isPresent()) {
+                    throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
+                }
+    
+                // Loop on regions
+                db.get().getInfo().getDatacenters().stream().forEach(dc -> {
+                    config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
+                            new StargateNodeConfig(
+                                    // node name = region, we got a single per region LB is done by Astra
+                                    dc.getRegion(), 
+                                    // url or rest api
+                                    ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()),
+                                    // url of graphql API
+                                    ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), dc.getRegion()),
+                                    // host for grpc
+                                    ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()),
+                                    // port for grpc
+                                    AstraClientConfig.GRPC_PORT));
+                    
+                    config.getStargateConfig()
+                          .withCqlCloudSecureConnectBundleDC(dc.getRegion(),
+                              config.getSecureConnectBundleFolder() 
+                              + File.separator 
+                              + AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
+                  }
+                );
+                
+            } else {
+                LOGGER.info("+ Cross-region failback is disabled.");
+                config.getStargateConfig().withApiNodeDC(currentDatabaseRegion, 
+                        new StargateNodeConfig(
+                        // node name = region, we got a single per region LB is done by Astra
+                        this.currentDatabaseRegion, 
+                        // url or rest api
+                        ApiLocator.getApiRestEndpoint(config.getDatabaseId(), currentDatabaseRegion),
+                        // url of graphql API
+                        ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), currentDatabaseRegion),
+                        // host for grpc
+                        ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), currentDatabaseRegion),
+                        // port for grpc
+                        AstraClientConfig.GRPC_PORT));
+                config.getStargateConfig()
+                      .withCqlCloudSecureConnectBundleDC(currentDatabaseRegion,
+                        config.getSecureConnectBundleFolder() 
+                        + File.separator 
+                        + AstraClientConfig.buildScbFileName(config.getDatabaseId(), currentDatabaseRegion));
+            }
             this.stargateClient =  config.getStargateConfig().build();
             
         } else {

@@ -52,6 +52,12 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
     //           Operation on Namespaces
     // -----------------------------------------
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(1)
     @DisplayName("01-Create document in a collection")
@@ -69,6 +75,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Document created");
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(2)
     @DisplayName("02-Count number of items in a collections")
@@ -81,6 +90,12 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         Assertions.assertTrue(count > 0);
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(3)
     @DisplayName("03-Upsert document")
@@ -98,6 +113,12 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Document created");
     }
 
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(4)
     @DisplayName("04-Update an existing documenr")
@@ -118,10 +139,16 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Document updated");
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *       exception
+     */
     @Test
     @Order(5)
     @DisplayName("05-Delete document")
-    public void e_should_delete_document() throws InterruptedException {
+    public void e_should_delete_document() throws InterruptedException  {
         LOGGER.info("should_delete_document");
         // Given
         String uid = UUID.randomUUID().toString();
@@ -152,6 +179,12 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Document deleted");
     }
 
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(6)
     @DisplayName("06-Update document")
@@ -172,6 +205,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Document updated");
     }
 
+    /**
+     * Test.
+     */
     @Test
     @Order(7)
     @DisplayName("07-Find all Person")
@@ -202,6 +238,12 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         resultsMapper.forEach(Assertions::assertNotNull);
     }
 
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(8)
     @DisplayName("08-Search Document with a filter Query")
@@ -246,6 +288,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         LOGGER.info("[OK]"  + " - Document list found");
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(9)
     @DisplayName("09-Find a sub document ")
@@ -284,6 +329,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Sub document retrieved");
     }
 
+    /**
+     * Test.
+     */
     @Test
     @Order(10)
     @DisplayName("10-Update sub doc")
@@ -305,6 +353,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Sub document updated");
     }
 
+    /**
+     * Test.
+     */
     @Test
     @Order(11)
     @DisplayName("11-Delete sub doc")
@@ -323,6 +374,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Sub document deleted");
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(12)
     @DisplayName("12-Invalid parameters")
@@ -346,6 +400,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         System.out.println( "[OK]"  + " - Validation OK");
     }
 
+    /**
+     * Test.
+     */
     @Test
     @Order(13)
     @DisplayName("13-Search Query")
@@ -383,6 +440,9 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         Assertions.assertNotNull(personClient.findPage(pQuery, Person.class));
     }
     
+    /**
+     * Test.
+     */
     @Test
     @Order(14)
     @DisplayName("14-Execute function")
@@ -401,6 +461,12 @@ public abstract class ApiDocumentDocumentTest implements ApiDocumentTest {
         Assertions.assertTrue(jsonOutput.contains("red"));
     }
     
+    /**
+     * Test.
+     * 
+     * @throws InterruptedException
+     *  error
+     */
     @Test
     @Order(15)
     @DisplayName("15-Find a doc document")

@@ -21,6 +21,11 @@ public abstract class ApiGraphQLCqlSchemaTest implements ApiGraphQLTest {
     /** Tested Store. */
     protected static StargateClient stargateClient;
     
+    /**
+     * Test.
+     * @throws InterruptedException
+     *      exception
+     */
     @Test
     @Order(1)
     @DisplayName("01-should_list_default_keyspaces")

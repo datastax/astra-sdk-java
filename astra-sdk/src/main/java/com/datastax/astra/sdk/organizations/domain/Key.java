@@ -12,7 +12,7 @@ public class Key implements Serializable {
     /** Serial key. */
     private static final long serialVersionUID = 3301168004898303754L;
     
-    /** organization for the key. */
+    /** organization for the. */
     private String organizationId;
     
     /* cloud provider. */

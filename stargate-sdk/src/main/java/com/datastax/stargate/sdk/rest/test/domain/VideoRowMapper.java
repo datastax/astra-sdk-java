@@ -19,6 +19,11 @@ package com.datastax.stargate.sdk.rest.test.domain;
 import com.datastax.stargate.sdk.rest.domain.Row;
 import com.datastax.stargate.sdk.rest.domain.RowMapper;
 
+/**
+ * Test row mapper.
+ * 
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class VideoRowMapper implements RowMapper<Video>{
 
     /** {@inheritDoc} */

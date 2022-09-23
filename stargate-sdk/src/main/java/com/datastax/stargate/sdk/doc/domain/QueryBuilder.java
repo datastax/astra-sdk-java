@@ -12,6 +12,11 @@ import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 
+/**
+ * Helper to build queries
+ *
+ * @author Cedrick LUNVEN (@clunven)
+ */
 public class QueryBuilder {
     
     /** Fields to search. */ 
