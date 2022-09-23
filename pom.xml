@@ -27,7 +27,7 @@
 		<jackson.version>2.13.3</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
-		<pulsar.version>2.10.0</pulsar.version>
+		<pulsar.version>2.10.1</pulsar.version>
 		<stargate-grpc.version>1.0.63</stargate-grpc.version>
 		<grpc-netty.version>1.47.0</grpc-netty.version>
 		<slf4j.version>1.7.36</slf4j.version>
@@ -273,7 +273,7 @@
                </goals>
              </pluginExecutionFilter>
              <action>
-               <ignore />
+               <ignore/>
              </action>
            </pluginExecution>
          </pluginExecutions>
