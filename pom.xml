@@ -156,7 +156,20 @@
 				<artifactId>grpc-netty-shaded</artifactId>
 				<version>${grpc-netty.version}</version>
 			</dependency>
-			
+			<!-- only needed to avoid issues with ranged version
+			     dependency, see issue [#49]
+			  -->
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-api</artifactId>
+				<version>${grpc-netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-core</artifactId>
+				<version>${grpc-netty.version}</version>
+			</dependency>
+
 			<!-- Astra Streaming -->
 			<dependency>
 				<groupId>org.apache.pulsar</groupId>
