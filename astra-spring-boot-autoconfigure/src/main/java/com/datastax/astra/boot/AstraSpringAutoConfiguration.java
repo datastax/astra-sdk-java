@@ -109,7 +109,7 @@ public class AstraSpringAutoConfiguration {
                 builder.withDatabaseRegion(api.getDatabaseRegion());
                 LOGGER.debug("+ Api /dbRegion detected {}", api.getDatabaseRegion());
             }
-            if (!api.getCrossRegionFailback()) {
+            if (api.getCrossRegionFailback() == null || !api.getCrossRegionFailback()) {
                 builder.disableCrossRegionFailOver();
                 LOGGER.debug("+ Cross Region Failback is disabled");
             }
