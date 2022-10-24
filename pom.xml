@@ -23,7 +23,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java-driver.version>4.15.0</java-driver.version>
-		<logback.version>1.4.1</logback.version>
+		<logback.version>1.4.3</logback.version>
 		<jackson.version>2.13.4</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
@@ -267,7 +267,7 @@
                </goals>
              </pluginExecutionFilter>
              <action>
-               <ignore />
+               <ignore/>
              </action>
            </pluginExecution>
          </pluginExecutions>
