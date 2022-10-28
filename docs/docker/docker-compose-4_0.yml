@@ -19,7 +19,7 @@ services:
     environment:
       - CASSANDRA_DC=datacenter1
       - CASSANDRA_SEEDS=stargate
-      - CASSANDRA_CLUSTER_NAME=stargate
+      - CLUSTER_NAME=stargate
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - JAVA_OPTS="-Xmx2G"
       - CLUSTER_VERSION=4.0

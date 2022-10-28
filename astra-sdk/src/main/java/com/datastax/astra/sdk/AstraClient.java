@@ -26,11 +26,11 @@ import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.Utils;
-import org.datastax.astra.sdk.databases.DatabasesClient;
-import org.datastax.astra.sdk.domain.Database;
-import org.datastax.astra.sdk.organizations.OrganizationsClient;
-import org.datastax.astra.sdk.streaming.StreamingClient;
-import org.datastax.astra.sdk.utils.ApiLocator;
+import com.dtsx.astra.sdk.databases.DatabasesClient;
+import com.dtsx.astra.sdk.databases.domain.Database;
+import com.dtsx.astra.sdk.organizations.OrganizationsClient;
+import com.dtsx.astra.sdk.streaming.StreamingClient;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

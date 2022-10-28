@@ -18,12 +18,11 @@ package com.datastax.astra.sdk;
 
 import java.io.File;
 
+import com.dtsx.astra.sdk.utils.AstraRc;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import com.datastax.astra.sdk.utils.AstraRc;
 
 /**
  * Create Astrarc to execute test locally.
@@ -39,12 +38,11 @@ public class AstraRcTest {
     @Test
     @DisplayName("Create .astraRC without clientId/clientSecret")
     public void should_create_astraRc_File() {
-        tmpAstraRC.delete();
         // Given
+        Assertions.assertTrue(tmpAstraRC.delete());
         Assertions.assertFalse(tmpAstraRC.exists());
         // When
         AstraRc arc = new AstraRc(tmpAstraRC.getAbsolutePath());
-        
         arc.createSectionWithToken("default", "ABC");
         arc.save();
         //Then

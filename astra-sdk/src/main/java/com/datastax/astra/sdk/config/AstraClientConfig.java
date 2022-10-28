@@ -10,7 +10,7 @@ import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
-import org.datastax.astra.sdk.utils.AstraRc;
+import com.dtsx.astra.sdk.utils.AstraRc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

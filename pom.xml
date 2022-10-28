@@ -66,6 +66,9 @@
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
 		<module>stargate-sdk</module>
+		<module>stargate-sdk-grpc</module>
+		<module>stargate-sdk-docapi</module>
+		<module>stargate-sdk-rest</module>
 	</modules>
 	
 	<dependencyManagement>

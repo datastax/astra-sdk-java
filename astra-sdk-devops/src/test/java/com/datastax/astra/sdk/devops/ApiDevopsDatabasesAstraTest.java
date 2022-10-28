@@ -16,11 +16,11 @@
 
 package com.datastax.astra.sdk.devops;
 
-import org.datastax.astra.sdk.databases.DatabasesClient;
-import org.datastax.astra.sdk.domain.CloudProviderType;
-import org.datastax.astra.sdk.domain.DatabaseRegion;
-import org.datastax.astra.sdk.domain.Organization;
-import org.datastax.astra.sdk.organizations.OrganizationsClient;
+import com.dtsx.astra.sdk.databases.DatabasesClient;
+import com.dtsx.astra.sdk.databases.domain.CloudProviderType;
+import com.dtsx.astra.sdk.databases.domain.DatabaseRegion;
+import com.dtsx.astra.sdk.organizations.domain.Organization;
+import com.dtsx.astra.sdk.organizations.OrganizationsClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;

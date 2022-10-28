@@ -1,9 +1,9 @@
 package com.datastax.astra.sdk.devops;
 
-import org.datastax.astra.sdk.domain.*;
-import org.datastax.astra.sdk.organizations.OrganizationsClient;
-import org.datastax.astra.sdk.organizations.RoleClient;
-import org.datastax.astra.sdk.organizations.UserClient;
+import com.dtsx.astra.sdk.organizations.OrganizationsClient;
+import com.dtsx.astra.sdk.organizations.RoleClient;
+import com.dtsx.astra.sdk.organizations.UserClient;
+import com.dtsx.astra.sdk.organizations.domain.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.slf4j.Logger;

@@ -1,7 +1,7 @@
 package com.datastax.astra.sdk.devops;
 
-import org.datastax.astra.sdk.utils.AstraRc;
-import org.datastax.astra.sdk.utils.Utils;
+import com.dtsx.astra.sdk.utils.AstraRc;
+import com.dtsx.astra.sdk.utils.Utils;
 
 /**
  * Superclass for test.

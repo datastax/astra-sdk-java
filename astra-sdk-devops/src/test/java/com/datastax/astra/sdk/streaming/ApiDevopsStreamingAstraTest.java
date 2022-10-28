@@ -1,9 +1,9 @@
 package com.datastax.astra.sdk.streaming;
 
 import com.datastax.astra.sdk.devops.AbstractDevopsApiTest;
-import org.datastax.astra.sdk.domain.CreateTenant;
-import org.datastax.astra.sdk.domain.Tenant;
-import org.datastax.astra.sdk.streaming.StreamingClient;
+import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
+import com.dtsx.astra.sdk.streaming.domain.Tenant;
+import com.dtsx.astra.sdk.streaming.StreamingClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;

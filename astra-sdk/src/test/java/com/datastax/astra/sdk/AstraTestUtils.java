@@ -1,20 +1,19 @@
 package com.datastax.astra.sdk;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.astra.sdk.databases.DatabaseClient;
-import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.databases.domain.CloudProviderType;
-import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.databases.domain.DatabaseCreationRequest;
-import com.datastax.astra.sdk.databases.domain.DatabaseStatusType;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
+import com.dtsx.astra.sdk.databases.DatabaseClient;
+import com.dtsx.astra.sdk.databases.DatabasesClient;
+import com.dtsx.astra.sdk.databases.domain.CloudProviderType;
+import com.dtsx.astra.sdk.databases.domain.Database;
+import com.dtsx.astra.sdk.databases.domain.DatabaseCreationRequest;
+import com.dtsx.astra.sdk.databases.domain.DatabaseStatusType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Helper for tetst.
@@ -93,7 +92,7 @@ public class AstraTestUtils {
     /**
      * Create the jave DB test is not present.
      *
-     * @param devopsDbCli
+     * @param astraClient
      *      current cli
      * @return
      *      db id.
