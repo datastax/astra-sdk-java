@@ -16,19 +16,7 @@
 
 package com.datastax.astra.sdk;
 
-import java.io.Closeable;
-import java.io.File;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astra.sdk.databases.DatabasesClient;
-import com.datastax.astra.sdk.databases.domain.Database;
-import com.datastax.astra.sdk.organizations.OrganizationsClient;
-import com.datastax.astra.sdk.streaming.StreamingClient;
-import com.datastax.astra.sdk.utils.ApiLocator;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.config.StargateNodeConfig;
@@ -38,6 +26,17 @@ import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.datastax.stargate.sdk.utils.Utils;
+import org.datastax.astra.sdk.databases.DatabasesClient;
+import org.datastax.astra.sdk.domain.Database;
+import org.datastax.astra.sdk.organizations.OrganizationsClient;
+import org.datastax.astra.sdk.streaming.StreamingClient;
+import org.datastax.astra.sdk.utils.ApiLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.File;
+import java.util.Optional;
 
 /**
  * Public interface to interact with ASTRA APIs.

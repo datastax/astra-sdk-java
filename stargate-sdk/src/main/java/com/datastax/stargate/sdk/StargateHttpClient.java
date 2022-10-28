@@ -288,6 +288,7 @@ public class StargateHttpClient implements ApiConstants {
                 lb = lookupStargateNode();
                 // Build Parameters
                 String targetEndPoint = mapper.apply(lb.getResource());
+                System.out.println(targetEndPoint);
                 if (null != suffix) targetEndPoint+= suffix;
                 // Invoke request
                 return HttpApisClient.getInstance()

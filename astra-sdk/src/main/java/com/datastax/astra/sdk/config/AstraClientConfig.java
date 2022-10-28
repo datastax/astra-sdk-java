@@ -1,20 +1,6 @@
 package com.datastax.astra.sdk.config;
 
-import static com.datastax.stargate.sdk.utils.Assert.hasLength;
-import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
-
-import java.io.File;
-import java.io.Serializable;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.hc.client5.http.config.RequestConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.utils.AstraRc;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
@@ -23,9 +9,22 @@ import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.datastax.astra.sdk.utils.AstraRc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.Serializable;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+
+import static com.datastax.stargate.sdk.utils.Assert.hasLength;
+import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
 
 /**
- * Helper and configurer for Astra.
+ * Helper and configure for Astra.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
@@ -40,22 +39,21 @@ public class AstraClientConfig implements Serializable {
     /** User home folder. */
     public static final String ENV_USER_HOME              = "user.home";
     
-    /** Where yo download cloud secure bundles. */
+    /** Where to download cloud secure bundles. */
     public static final String DEFAULT_SCB_FOLDER = System.getProperty(ENV_USER_HOME) + File.separator + ".astra" + File.separator + "scb";
    
     /** Initialize parameters from Environment variables. */
     public static final String ASTRA_DB_ID                = "ASTRA_DB_ID";
     /** ENV VAR to get current or default region (local datacenter). */
     public static final String ASTRA_DB_REGION            = "ASTRA_DB_REGION";
-    /** ENV VAR to get part of the token: client Id. */
+    /** ENV VAR to get part of the token: client id. */
     public static final String ASTRA_DB_CLIENT_ID         = "ASTRA_DB_CLIENT_ID";
     /** ENV VAR to get part of the token: client Secret. */
     public static final String ASTRA_DB_CLIENT_SECRET     = "ASTRA_DB_CLIENT_SECRET";
-    /** ENV VAR to get part of the token: application token. */
-    public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
+
     /** ENV VAR to get the keyspace to be selected. */
     public static final String ASTRA_DB_KEYSPACE          = "ASTRA_DB_KEYSPACE";
-    /** SECURE BUNDLE FOR EACH RECGIONS. */
+    /** SECURE BUNDLE FOR EACH REGIONS. */
     public static final String ASTRA_DB_SCB_FOLDER        = "ASTRA_DB_SCB_FOLDER";
     
     /** Port for grpc in Astra. */
@@ -206,7 +204,7 @@ public class AstraClientConfig implements Serializable {
     // ------------------------------------------------
      
     /** Configuring Stargate to work in Astra. */
-    private StargateClientConfig stargateConfig;
+    private final StargateClientConfig stargateConfig;
     
     /**
      * Getter accessor for attribute 'stargateConfig'.
@@ -250,7 +248,7 @@ public class AstraClientConfig implements Serializable {
      * Api Invocations trigger some events processed in observer.
      * 
      * @param name
-     *            unique identiier
+     *            unique identifier
      * @param observer
      *            instance of your Observer
      * @return self reference
@@ -279,7 +277,7 @@ public class AstraClientConfig implements Serializable {
     /**
      * Enable gRPC
      * 
-     * @return reference enforcing cqlsession disabled
+     * @return reference enforcing cqlSession disabled
      */
     public AstraClientConfig enableGrpc() {
         stargateConfig.enableGrpc();
@@ -296,7 +294,7 @@ public class AstraClientConfig implements Serializable {
     /** Enable SCB download to target folder. */
     private boolean crossRegionFailOver = true;
     
-    /** Folder to load secure connect bundle with formated names scb_dbid_region.zip */
+    /** Folder to load secure connect bundle with formatted names scb_dbId_region.zip */
     private String secureConnectBundleFolder  = DEFAULT_SCB_FOLDER;
     
     /**
@@ -405,7 +403,7 @@ public class AstraClientConfig implements Serializable {
     /**
      * Enable CqlSession
      * 
-     * @return reference enforcing cqlsession disabled
+     * @return reference enforcing cqlSession disabled
      */
     public AstraClientConfig enableCql() {
         stargateConfig.enableCql();
@@ -478,10 +476,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -510,10 +508,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -542,10 +540,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -574,10 +572,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -606,10 +604,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -638,10 +636,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -670,10 +668,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -702,10 +700,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -734,10 +732,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -766,10 +764,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -798,10 +796,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -830,10 +828,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -862,10 +860,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -894,10 +892,10 @@ public class AstraClientConfig implements Serializable {
     }
     
     /**
-     * Add a propery to the Cql Context.
+     * Add a property to the Cql Context.
      *
      * @param dc
-     *      targate datacenter
+     *      stargate datacenter
      * @param option
      *      current option
      * @param du
@@ -983,7 +981,7 @@ public class AstraClientConfig implements Serializable {
         }
         
         // Authentication
-        readEnvVariable(ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
+        readEnvVariable(AstraRc.ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
         readEnvVariable(ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
         readEnvVariable(ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
         
@@ -1007,10 +1005,10 @@ public class AstraClientConfig implements Serializable {
      */
     public AstraClientConfig loadFromAstraRc() {
         AstraRc arc = new AstraRc();
+        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, AstraRc.ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
         arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_ID).ifPresent(this::withDatabaseId);
         arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_ID).ifPresent(this::withDatabaseId);
         arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_REGION).ifPresent(this::withDatabaseRegion);
-        arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_APPLICATION_TOKEN).ifPresent(this::withToken);
         arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_CLIENT_ID).ifPresent(this::withClientId);
         arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_CLIENT_SECRET).ifPresent(this::withClientSecret);
         arc.getSectionKey(AstraRc.ASTRARC_DEFAULT, ASTRA_DB_KEYSPACE).ifPresent(this::withCqlKeyspace);

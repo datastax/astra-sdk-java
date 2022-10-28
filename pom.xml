@@ -62,6 +62,7 @@
 	</properties>
 	<modules>
 		<module>astra-sdk</module>
+		<module>astra-sdk-devops</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
 		<module>stargate-sdk</module>
