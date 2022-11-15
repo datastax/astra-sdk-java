@@ -1,0 +1,71 @@
+version: '2'
+
+services:
+  coordinator:
+    image: stargateio/coordinator-4_0:v2.0.1
+    networks:
+      - stargate
+    ports:
+      - "9042:9042"
+      - "8081:8081"
+      - "8084:8084"
+      - "8090:8090"
+    mem_limit: 2G
+    environment:
+      - JAVA_OPTS="-Xmx2G"
+      - CLUSTER_NAME=sgv2-cluster
+      - CLUSTER_VERSION=4.0
+      - RACK_NAME=rack1
+      - DATACENTER_NAME=datacenter1
+      - ENABLE_AUTH=true
+      - DEVELOPER_MODE=true
+
+  restapi:
+    image: stargateio/restapi:v2.0.1
+    depends_on:
+      - coordinator
+    networks:
+      - stargate
+    ports:
+      - "8082:8082"
+    mem_limit: 2G
+    command: /bin/bash -c "echo 'Waiting 30s for coordinator to start first... ' && sleep 30 && java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dvertx.disableURIValidation=true -Xms256m -Xmx1024m -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -cp "." -jar /deployments/quarkus-run.jar"
+    environment:
+      - QUARKUS_GRPC_CLIENTS_BRIDGE_HOST=coordinator
+      - QUARKUS_GRPC_CLIENTS_BRIDGE_PORT=8091
+      - QUARKUS_HTTP_ACCESS_LOG_ENABLED=FALSW
+      - QUARKUS_LOG_LEVEL=INFO
+
+  graphqlapi:
+    image: stargateio/graphqlapi:v2.0.1
+    depends_on:
+      - coordinator
+    networks:
+      - stargate
+    ports:
+      - "8080:8080"
+    mem_limit: 2G
+    command: /bin/bash -c "echo 'Waiting 30s for coordinator to start first... ' && sleep 32 && java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dvertx.disableURIValidation=true -Xms256m -Xmx1024m -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -cp "." -jar /deployments/quarkus-run.jar"
+    environment:
+      - QUARKUS_GRPC_CLIENTS_BRIDGE_HOST=coordinator
+      - QUARKUS_GRPC_CLIENTS_BRIDGE_PORT=8091
+      - QUARKUS_HTTP_ACCESS_LOG_ENABLED=FALSE
+      - QUARKUS_LOG_LEVEL=INFO
+
+  docsapi:
+    image: stargateio/docsapi:v2.0.1
+    depends_on:
+      - coordinator
+    networks:
+      - stargate
+    ports:
+      - "8180:8180"
+    mem_limit: 2G
+    command: /bin/bash -c "echo 'Waiting 30s for coordinator to start first... ' && sleep 34 && java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dvertx.disableURIValidation=true -Xms256m -Xmx1024m -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -cp "." -jar /deployments/quarkus-run.jar"
+    environment:
+      - QUARKUS_GRPC_CLIENTS_BRIDGE_HOST=coordinator
+      - QUARKUS_GRPC_CLIENTS_BRIDGE_PORT=8091
+      - QUARKUS_HTTP_ACCESS_LOG_ENABLED=FALSE
+      - QUARKUS_LOG_LEVEL=INFO
+networks:
+  stargate:

@@ -4,6 +4,7 @@
 	<artifactId>astra-sdk</artifactId>
 	<name>+ astra-sdk</name>
 	<description>Connecting Client APIS provided by ASTRA</description>
+
 	<parent>
 		<groupId>com.datastax.astra</groupId>
 		<artifactId>astra-sdk-parent</artifactId>
@@ -69,11 +70,5 @@
 			<artifactId>junit-platform-runner</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.datastax.astra</groupId>
-            <artifactId>astra-sdk-devops</artifactId>
-            <version>0.3.6-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>

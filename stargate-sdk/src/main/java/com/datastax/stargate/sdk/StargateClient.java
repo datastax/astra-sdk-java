@@ -16,20 +16,6 @@
 
 package com.datastax.stargate.sdk;
 
-import static com.datastax.stargate.sdk.utils.AnsiUtils.cyan;
-import static com.datastax.stargate.sdk.utils.AnsiUtils.green;
-import static com.datastax.stargate.sdk.utils.AnsiUtils.red;
-import static com.datastax.stargate.sdk.utils.AnsiUtils.yellow;
-
-import java.io.Closeable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
@@ -38,10 +24,22 @@ import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
 import com.datastax.stargate.sdk.config.StargateClientConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
+import com.datastax.stargate.sdk.gql.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
+import com.datastax.stargate.sdk.grpc.grpc.ApiGrpcClient;
 import com.datastax.stargate.sdk.rest.ApiDataClient;
-import com.datastax.stargate.sdk.utils.HttpApisClient;
+import com.datastax.stargate.sdk.http.RetryHttpClient;
 import com.datastax.stargate.sdk.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static com.datastax.stargate.sdk.utils.AnsiUtils.*;
 
 /**
  * Global Client to interact with a Stargate instance.
@@ -84,7 +82,7 @@ public class StargateClient implements Closeable {
     /** 
      * Wrapping failover and Load balancer on a delegated wrapper. 
      */
-    protected StargateHttpClient stargateHttpClient;
+    protected ServiceClient stargateHttpClient;
     
     /**
      * Cloud be use to recreate a CqlSession during DC fail-over
@@ -107,7 +105,7 @@ public class StargateClient implements Closeable {
         this.currentDatacenter = resolveDataCenterName(config);
         
         // Initializing the Stargate Http Clients
-        stargateHttpClient = new StargateHttpClient(this, config);
+        stargateHttpClient = new ServiceClient(this, config);
        
         // ------------- CQL ---------------------
         
@@ -142,14 +140,14 @@ public class StargateClient implements Closeable {
         // ------------- HTTP ---------------------
         
         if (config.getRetryConfig() != null) {
-            HttpApisClient.withRetryConfig(config.getRetryConfig());
+            RetryHttpClient.withRetryConfig(config.getRetryConfig());
         }
         if (config.getRequestConfig() != null) {
-            HttpApisClient.withRequestConfig(config.getRequestConfig());
+            RetryHttpClient.withRequestConfig(config.getRequestConfig());
         }
         if (!config.getObservers().isEmpty()) {
             for (Map.Entry<String, ApiInvocationObserver> obs : config.getObservers().entrySet()) {
-                HttpApisClient.registerListener(obs.getKey(), obs.getValue());
+                RetryHttpClient.registerListener(obs.getKey(), obs.getValue());
             }
         }
     }
@@ -397,7 +395,7 @@ public class StargateClient implements Closeable {
      * @return
      *       current value of 'stargateHttpClient'
      */
-    public StargateHttpClient getStargateHttpClient() {
+    public ServiceClient getStargateHttpClient() {
         return this.stargateHttpClient;
     }
     

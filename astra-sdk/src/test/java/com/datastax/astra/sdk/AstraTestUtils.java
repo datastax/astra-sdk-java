@@ -3,12 +3,12 @@ package com.datastax.astra.sdk;
 import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
-import com.dtsx.astra.sdk.databases.DatabaseClient;
-import com.dtsx.astra.sdk.databases.DatabasesClient;
-import com.dtsx.astra.sdk.databases.domain.CloudProviderType;
-import com.dtsx.astra.sdk.databases.domain.Database;
-import com.dtsx.astra.sdk.databases.domain.DatabaseCreationRequest;
-import com.dtsx.astra.sdk.databases.domain.DatabaseStatusType;
+import com.dtsx.astra.sdk.db.DatabaseClient;
+import com.dtsx.astra.sdk.db.DatabasesClient;
+import com.dtsx.astra.sdk.db.domain.CloudProviderType;
+import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
+import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

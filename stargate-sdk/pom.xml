@@ -15,52 +15,43 @@
 	<properties>
 		<dgs.codegen.version>5.1.16</dgs.codegen.version>
 		<nodes.version>0.5.0</nodes.version>
-		<retry4j.version>0.15.0</retry4j.version>
+
 		<graphql-codegen.version>1.16</graphql-codegen.version>
 	</properties>
 	
 	<dependencies>
-	    
+		<dependency>
+			<groupId>com.datastax.stargate</groupId>
+			<artifactId>stargate-sdk-docapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.stargate</groupId>
+			<artifactId>stargate-sdk-grpc</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.stargate</groupId>
+			<artifactId>stargate-sdk-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.stargate</groupId>
+			<artifactId>stargate-sdk-graphql</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.stargate</groupId>
+			<artifactId>stargate-sdk-http</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	    <!--  Support for Cqlsession -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-core</artifactId>
 		</dependency>
-		
-		<!--  http Client v5 -->
-		<dependency>
-    		<groupId>org.apache.httpcomponents.client5</groupId>
-  			<artifactId>httpclient5</artifactId>
-		</dependency>
-		<dependency>
-  			<groupId>org.apache.httpcomponents.client5</groupId>
-  			<artifactId>httpclient5-fluent</artifactId>
-		</dependency>
-		<!--  Implements retry HTTP CALLS -->
-		<dependency>
-		    <groupId>com.evanlennick</groupId>
-		    <artifactId>retry4j</artifactId>
-		    <version>${retry4j.version}</version>
-		</dependency>
 
-		<!-- Support for JSON Api -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<!-- Json Schema Validation -->
-		<dependency>
-	    	<groupId>org.everit.json</groupId>
-	    	<artifactId>org.everit.json.schema</artifactId>
-	    </dependency>
 		<!--  Logger -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>

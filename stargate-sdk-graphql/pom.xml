@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <groupId>com.datastax.stargate</groupId>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>stargate-sdk-graphql</artifactId>
+    <name>+ stargate-sdk-graphql</name>
+
+    <parent>
+        <artifactId>astra-sdk-parent</artifactId>
+        <groupId>com.datastax.astra</groupId>
+        <version>0.3.6-SNAPSHOT</version>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.datastax.stargate</groupId>
+            <artifactId>stargate-sdk-http</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>
