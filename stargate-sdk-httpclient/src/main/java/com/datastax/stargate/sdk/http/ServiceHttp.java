@@ -35,4 +35,12 @@ public class ServiceHttp extends Service {
                 .getCode();
     }
 
+    @Override
+    public String toString() {
+        return "ServiceHttp{" +
+                "id='" + id + '\'' +
+                ", endpoint='" + endpoint + '\'' +
+                ", healthCheckEndpoint='" + healthCheckEndpoint + '\'' +
+                '}';
+    }
 }

@@ -16,8 +16,8 @@
 
 package com.datastax.astra.sdk.stargate;
 
-import java.util.stream.Collectors;
-
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -25,9 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentTest;
+import java.util.stream.Collectors;
 
 /**
  * Multiple Connectivity mode for eacj parameters.
@@ -40,7 +38,11 @@ public class CqlSessionAstraTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(CqlSessionAstraTest.class);
     
     private static AstraClient client;
-    
+
+    /** Test constant. */
+    public static final String  TEST_NAMESPACE = "java";
+
+
     @BeforeAll
     public static void config() {
         
@@ -50,7 +52,7 @@ public class CqlSessionAstraTest {
         // Connect the client to the new created DB
         client = AstraClient.builder()
                 .withToken(client.getToken().get())
-                .withCqlKeyspace(ApiDocumentTest.TEST_NAMESPACE)
+                .withCqlKeyspace(TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .build();

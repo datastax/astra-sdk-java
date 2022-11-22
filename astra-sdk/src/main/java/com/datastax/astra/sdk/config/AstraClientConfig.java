@@ -5,8 +5,8 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
-import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
-import com.datastax.stargate.sdk.config.StargateClientConfig;
+import com.datastax.stargate.sdk.audit.ServiceCallObserver;
+import com.datastax.stargate.sdk.StargateClientBuilder;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -204,7 +204,7 @@ public class AstraClientConfig implements Serializable {
     // ------------------------------------------------
      
     /** Configuring Stargate to work in Astra. */
-    private final StargateClientConfig stargateConfig;
+    private final StargateClientBuilder stargateConfig;
     
     /**
      * Getter accessor for attribute 'stargateConfig'.
@@ -212,7 +212,7 @@ public class AstraClientConfig implements Serializable {
      * @return
      *       current value of 'stargateConfig'
      */
-    public StargateClientConfig getStargateConfig() {
+    public StargateClientBuilder getStargateConfig() {
         return stargateConfig;
     }
     
@@ -253,7 +253,7 @@ public class AstraClientConfig implements Serializable {
      *            instance of your Observer
      * @return self reference
      */
-    public AstraClientConfig addHttpObserver(String name, ApiInvocationObserver observer) {
+    public AstraClientConfig addHttpObserver(String name, ServiceCallObserver observer) {
         stargateConfig.addHttpObserver(name, observer);
         return this;
     }
@@ -265,7 +265,7 @@ public class AstraClientConfig implements Serializable {
      *           observers lists
      * @return self reference
      */
-    public AstraClientConfig withHttpObservers(Map<String, ApiInvocationObserver> observers) {
+    public AstraClientConfig withHttpObservers(Map<String, ServiceCallObserver> observers) {
         stargateConfig.withHttpObservers(observers);
         return this;
     }
@@ -973,7 +973,7 @@ public class AstraClientConfig implements Serializable {
         LOGGER.info("Initializing [" + AnsiUtils.yellow("AstraClient") + "]");
         
         // Loading Stargate Environment variable
-        stargateConfig = new StargateClientConfig();
+        stargateConfig = new StargateClientBuilder();
         
         // Loading ~/.astrarc section default if present
         if (AstraRc.isDefaultConfigFileExists()) {

@@ -1,6 +1,5 @@
 package com.datastax.stargate.sdk.doc;
 
-import com.datastax.stargate.sdk.StargateClient;
 import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.doc.domain.Collection;
 import com.datastax.stargate.sdk.doc.domain.PageableQuery;
@@ -10,7 +9,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Super class to help you working with the document API.
+ * Super class helping you to work with the document API.
  *
  * @author Cedrick LUNVEN (@clunven)
  *
@@ -39,7 +38,7 @@ public class StargateDocumentRepository <DOC> {
     }
     
     /**
-     * Constructor from {@link StargateClient}.
+     * Constructor from {@link NamespaceClient}.
      *
      * @param nc
      *      reference to the StargateClient
@@ -68,7 +67,7 @@ public class StargateDocumentRepository <DOC> {
      *          document identifier
      */
     public void delete(String docId) {
-        collectionClient.document(docId).delete();;
+        collectionClient.document(docId).delete();
     }
     
     /**
@@ -84,7 +83,7 @@ public class StargateDocumentRepository <DOC> {
     }
     
     /**
-     * Create a new document an generating identifier.
+     * Create a new document a generating identifier.
      *
      * @param p
      *      working document

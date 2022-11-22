@@ -4,11 +4,8 @@ import io.stargate.proto.QueryOuterClass.ColumnSpec;
 import io.stargate.proto.QueryOuterClass.ResultSet;
 import io.stargate.proto.QueryOuterClass.Row;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Helper to parse the grpoc output.
@@ -18,7 +15,7 @@ import java.util.stream.Collectors;
 public class ResultSetGrpc {
     
     /** Object returned by the grpc.*/
-    private final ResultSet rs;
+    private final ResultSet grpcResponse;
     
     /** Index columns names. */
     private final List<String> columnsNames = new ArrayList<>();
@@ -28,7 +25,41 @@ public class ResultSetGrpc {
     
     /** Access one column in particular. */
     private final Map<String, Integer> columnsIndexes = new HashMap<>();
-    
+
+    /**
+     * Get row counts.
+     *
+     * @return
+     *      rows counts
+     */
+    public int getRowCount() {
+        return grpcResponse.getRowsCount();
+    }
+
+    /**
+     * Get columns counts.
+     *
+     * @return
+     *      columns counts
+     */
+    public int getColumnsCount() {
+        return grpcResponse.getColumnsCount();
+    }
+
+    /**
+     * Get paging state
+     *
+     * @return
+     *      paging state
+     */
+    public Optional<String> getPagingState() {
+        Optional<String> pg = Optional.empty();
+        if (grpcResponse.hasPagingState()) {
+            pg = Optional.ofNullable(grpcResponse.getPagingState().getValue().toStringUtf8());
+        }
+        return pg;
+    }
+
     /**
      * Constructor for the wrapper.
      * 
@@ -36,7 +67,7 @@ public class ResultSetGrpc {
      *      resultset
      */
     public ResultSetGrpc(ResultSet rs) {
-        this.rs = rs;
+        this.grpcResponse = rs;
         for (int i=0; i<rs.getColumnsCount();i++) {
             ColumnSpec cs = rs.getColumns(i);
             this.columnsSpecs.put(cs.getName(), cs);
@@ -52,10 +83,10 @@ public class ResultSetGrpc {
      *      single row
      */
     public RowGrpc one() {
-        if (1 != rs.getRowsCount()) {
+        if (1 != grpcResponse.getRowsCount()) {
             throw new IllegalArgumentException("Resultset contains more than 1 row");
         }
-        return getRows().get(0);
+        return getRows().findFirst().get();
     }
     
     /**
@@ -67,10 +98,10 @@ public class ResultSetGrpc {
      *      row value
      */
     public Row getRow(int idx) {
-        if (idx > rs.getRowsCount()) {
-            throw new IllegalArgumentException("Resulset contains only " +  rs.getRowsCount() + " row(s).");
+        if (idx > grpcResponse.getRowsCount()) {
+            throw new IllegalArgumentException("Resulset contains only " +  grpcResponse.getRowsCount() + " row(s).");
         }
-        return rs.getRowsList().get(idx);
+        return grpcResponse.getRowsList().get(idx);
     }
     
     /**
@@ -79,11 +110,10 @@ public class ResultSetGrpc {
      * @return
      *      list if items
      */
-    public List<RowGrpc> getRows() {
-        return rs.getRowsList()
+    public Stream<RowGrpc> getRows() {
+        return grpcResponse.getRowsList()
                  .stream()
-                 .map(r -> new RowGrpc(this, r))
-                 .collect(Collectors.toList());
+                 .map(r -> new RowGrpc(this, r));
     }
     
     /**
@@ -92,8 +122,8 @@ public class ResultSetGrpc {
      * @return
      *      internal object
      */
-    public ResultSet getResultSet() {
-        return rs;
+    public ResultSet getGrpcResponse() {
+        return grpcResponse;
     }
     
     /**

@@ -1,7 +1,6 @@
 package com.datastax.astra.sdk;
 
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.doc.test.ApiDocumentNamespacesTest;
 import com.datastax.stargate.sdk.utils.AnsiUtils;
 import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.DatabasesClient;
@@ -27,7 +26,10 @@ public class AstraTestUtils {
     
     /** Test constant. */
     public static final String TEST_DBNAME = "sdk_tests";
-    
+
+    /** Test constant. */
+    public static final String  TEST_NAMESPACE = "java";
+
     /** Test constant. */
     public static final String TEST_REGION = "us-east-1";
     
@@ -100,7 +102,7 @@ public class AstraTestUtils {
      */
     public static String createTestDbIfNotExist(AstraClient astraClient) {
         return createDbAndKeyspaceIfNotExist(
-                astraClient.apiDevopsDatabases(), TEST_DBNAME, ApiDocumentNamespacesTest.TEST_NAMESPACE);
+                astraClient.apiDevopsDatabases(), TEST_DBNAME, TEST_NAMESPACE);
     }
     
     /**

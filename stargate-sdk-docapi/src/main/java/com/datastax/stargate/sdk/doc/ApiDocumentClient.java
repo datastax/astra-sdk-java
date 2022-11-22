@@ -16,16 +16,21 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import com.datastax.stargate.sdk.StargateClientNode;
-import com.datastax.stargate.sdk.ServiceClient;
-import com.datastax.stargate.sdk.core.ApiResponse;
+
+import com.datastax.stargate.sdk.ServiceDatacenter;
+import com.datastax.stargate.sdk.ServiceDeployment;
+import com.datastax.stargate.sdk.api.ApiResponse;
+import com.datastax.stargate.sdk.api.ApiTokenProvider;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
-import com.datastax.stargate.sdk.rest.domain.Keyspace;
+import com.datastax.stargate.sdk.http.ServiceHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.auth.ApiTokenProviderHttpAuth;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -51,17 +56,52 @@ public class ApiDocumentClient {
     
     /** Schema sub level. */
     public static final String PATH_V2                = "/v2";
-    
+
+    /** default endpoint. */
+    private static final String DEFAULT_ENDPOINT = "http://localhost:8180";
+
+    /** default service id. */
+    private static final String DEFAULT_SERVICE_ID = "sgv2-doc";
+
+    /** default datacenter id. */
+    private static final String DEFAULT_DATACENTER = "dc1";
+
+    /** default endpoint. */
+    private static final String PATH_HEALTH_CHECK = "/stargate/health";
+
     /** Get Topology of the nodes. */
-    protected final ServiceClient stargateHttpClient;
-    
+    protected final LoadBalancedHttpClient stargateHttpClient;
+
+    /**
+     * Default Constructor
+     */
+    public ApiDocumentClient() {
+        this(DEFAULT_ENDPOINT);
+    }
+
+    /**
+     * Single instance of Stargate, could be used for tests.
+     *
+     * @param endpoint
+     *      service endpoint
+     */
+    public ApiDocumentClient(String endpoint) {
+        Assert.hasLength(endpoint, "stargate endpoint");
+        ServiceHttp rest = new ServiceHttp(DEFAULT_SERVICE_ID, endpoint, endpoint + PATH_HEALTH_CHECK);
+        ApiTokenProvider tokenProvider = new ApiTokenProviderHttpAuth();
+        ServiceDatacenter sDc = new ServiceDatacenter(DEFAULT_DATACENTER, tokenProvider, Arrays.asList(rest));
+        ServiceDeployment deploy = new ServiceDeployment<ServiceHttp>().addDatacenter(sDc);
+        this.stargateHttpClient  = new LoadBalancedHttpClient(deploy);
+        System.out.println(this.stargateHttpClient.getDeployment().toString());
+    }
+
     /**
      * Constructor with StargateClient as argument.
      *
      * @param stargateHttpClient
      *      stargate http client
      */
-    public ApiDocumentClient(ServiceClient stargateHttpClient) {
+    public ApiDocumentClient(LoadBalancedHttpClient stargateHttpClient) {
         Assert.notNull(stargateHttpClient, "stargate client reference. ");
         this.stargateHttpClient = stargateHttpClient;
         LOGGER.info("+ API Document :[" + green("{}") + "]", "ENABLED");
@@ -88,7 +128,7 @@ public class ApiDocumentClient {
      *      stream of the namespaces
      */
     public Stream<String> namespaceNames() {
-        return namespaces().map(Keyspace::getName);
+        return namespaces().map(Namespace::getName);
     }
     
     // ---------------------------------
@@ -104,7 +144,20 @@ public class ApiDocumentClient {
     public NamespaceClient namespace(String namespace) {
         return new NamespaceClient(stargateHttpClient, this, namespace);
     }
-    
+
+    /**
+     * Current Dc for the client.
+     *
+     * @return
+     *      current Dc
+     */
+    public String getCurrentDatacenter() {
+        return stargateHttpClient
+                .getDeployment()
+                .getLocalDatacenterClient()
+                .getDatacenterName();
+    }
+
     // ---------------------------------
     // ----   Build Resources URLS  ----
     // ---------------------------------
@@ -112,13 +165,12 @@ public class ApiDocumentClient {
     /**
      * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
-    public Function<StargateClientNode, String> namespacesSchemaResource = 
-            (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
+    public Function<ServiceHttp, String> namespacesSchemaResource =
+            (node) -> node.getEndpoint() + PATH_V2 + PATH_SCHEMA + PATH_SCHEMA_NAMESPACES;
 
     /**
      * Mapping from root URL to rest endpoint listing keyspaces definitions.
      */
-    public Function<StargateClientNode, String> namespacesResource = 
-            (node) -> node.getApiRestEndpoint() + PATH_V2 + PATH_SCHEMA_NAMESPACES;
-            
+    public Function<ServiceHttp, String> namespacesResource =
+            (node) -> node.getEndpoint() + PATH_V2 + PATH_SCHEMA_NAMESPACES;
 }

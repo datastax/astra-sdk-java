@@ -91,4 +91,5 @@ public abstract class Service {
     public void setHealthCheckEndpoint(String healthCheckEndpoint) {
         this.healthCheckEndpoint = healthCheckEndpoint;
     }
+
 }

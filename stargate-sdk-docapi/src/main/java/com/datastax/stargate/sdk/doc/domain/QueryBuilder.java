@@ -1,7 +1,6 @@
 package com.datastax.stargate.sdk.doc.domain;
 
-import com.datastax.stargate.sdk.core.Filter;
-import com.datastax.stargate.sdk.rest.domain.SearchTableQuery;
+import com.datastax.stargate.sdk.http.domain.Filter;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 
@@ -32,10 +31,10 @@ public class QueryBuilder {
     protected List<Filter> filters = new ArrayList<>();
     
     /**
-     * Terminal call to build immutable instance of {@link SearchTableQuery}.
+     * Terminal call to build immutable instance of {@link Query}.
      *
      * @return
-     *      immutable instance of {@link SearchTableQuery}.
+     *      immutable instance of {@link Query}.
      */
     public Query build() {
         return new Query(this);
@@ -64,14 +63,14 @@ public class QueryBuilder {
     }
     
     /**
-     * Use 'where" to help you create 
+     * Use 'where' to help you create
      * 
      * @param where String
      * @return SearchDocumentQueryBuilder
      */
     public QueryBuilder jsonWhere(String where) {
         if (this.whereClause != null) {
-            throw new IllegalArgumentException("Only a single where clause is allowd in a query");
+            throw new IllegalArgumentException("Only a single where clause is allowed in a query");
         }
         Assert.hasLength(where, "where");
         this.whereClause = where;
@@ -111,7 +110,7 @@ public class QueryBuilder {
      * @return String
      */
     public String getWhereClause() {
-        // Explicit values (withWhereClause(0) will got priority on filters
+        // Explicit values (withWhereClause(0) will get priority on filters
         if (Utils.hasLength(whereClause)) {
             return whereClause;
         }

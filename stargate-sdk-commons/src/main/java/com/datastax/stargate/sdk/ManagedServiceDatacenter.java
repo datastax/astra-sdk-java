@@ -108,4 +108,13 @@ public class ManagedServiceDatacenter<SERVICE extends Service> {
         return tokenProvider;
     }
 
+    @Override
+    public String toString() {
+        return "ManagedServiceDatacenter{" +
+                "available=" + available +
+                ", datacenterName='" + datacenterName + '\'' +
+                ", tokenProvider=" + tokenProvider +
+                ", stargateNodesLB=" + stargateNodesLB +
+                '}';
+    }
 }

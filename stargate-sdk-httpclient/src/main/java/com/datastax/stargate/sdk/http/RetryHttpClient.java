@@ -1,12 +1,12 @@
 package com.datastax.stargate.sdk.http;
 
-import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
 import com.datastax.stargate.sdk.api.ApiConstants;
 import com.datastax.stargate.sdk.audit.ServiceCallObserver;
-import com.datastax.stargate.sdk.http.audit.ServiceHttpCallEvent;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.exception.AuthenticationException;
+import com.datastax.stargate.sdk.http.audit.ServiceHttpCallEvent;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.loadbalancer.UnavailableResourceException;
+import com.datastax.stargate.sdk.utils.CompletableFutures;
 import com.evanlennick.retry4j.CallExecutorBuilder;
 import com.evanlennick.retry4j.Status;
 import com.evanlennick.retry4j.config.RetryConfig;
@@ -413,7 +413,7 @@ public class RetryHttpClient implements ApiConstants {
                 .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
                 .collect(Collectors.toList()));
     }
-    
+
     /**
      * Initialize an HTTP request against Stargate.
      * 

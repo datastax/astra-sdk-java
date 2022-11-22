@@ -13,10 +13,7 @@
 	</parent>
 
 	<properties>
-		<dgs.codegen.version>5.1.16</dgs.codegen.version>
 		<nodes.version>0.5.0</nodes.version>
-
-		<graphql-codegen.version>1.16</graphql-codegen.version>
 	</properties>
 	
 	<dependencies>
@@ -46,13 +43,10 @@
 			<version>${project.version}</version>
 		</dependency>
 
-	    <!--  Support for Cqlsession -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-core</artifactId>
 		</dependency>
-
-		<!--  Logger -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -61,22 +55,7 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 		</dependency>
-		<!-- GraphQL -->
-		<dependency>
-			<groupId>com.netflix.graphql.dgs.codegen</groupId>
-			<artifactId>graphql-dgs-codegen-client-core</artifactId>
-			<version>${dgs.codegen.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<!-- GRPC -->
-		 <dependency>
-	        <groupId>io.stargate.grpc</groupId>
-	        <artifactId>grpc-proto</artifactId>
-   		</dependency>
-	    <dependency>
-	         <groupId>io.grpc</groupId>
-	         <artifactId>grpc-netty-shaded</artifactId>
-	    </dependency>
+
 		<!-- Unit tests -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -93,51 +72,11 @@
 			<artifactId>junit-platform-runner</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>
-		
-			<plugin>
-				<groupId>io.github.deweyjose</groupId>
-				<artifactId>graphqlcodegen-maven-plugin</artifactId>
-				<version>${graphql-codegen.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<packageName>com.datastax.stargate.graphql</packageName>
-					<schemaPaths>
-						<path>src/main/resources/graphql</path>
-					</schemaPaths>
-					<generateBoxedTypes>true</generateBoxedTypes>
-					<generateClient>true</generateClient>
-					<writeToFiles>true</writeToFiles>
-				</configuration>
-			</plugin>
-			
-			<plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>target/generated-sources</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>	
+
 		</plugins>
 	</build>
 </project>

@@ -168,4 +168,11 @@ public class ManagedServiceDeployment<SERVICE extends Service> {
                 .collect(Collectors.toSet());
     }
 
+    @Override
+    public String toString() {
+        return "ManagedServiceDeployment{" +
+                "datacenters=" + datacenters +
+                ", currentDatacenter='" + currentDatacenter + '\'' +
+                '}';
+    }
 }

@@ -16,14 +16,14 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import com.datastax.stargate.sdk.StargateClientNode;
-import com.datastax.stargate.sdk.ServiceClient;
-import com.datastax.stargate.sdk.core.ApiResponse;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.api.ApiResponse;
 import com.datastax.stargate.sdk.core.DataCenter;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
 import com.datastax.stargate.sdk.doc.domain.FunctionDefinition;
 import com.datastax.stargate.sdk.doc.domain.Namespace;
+import com.datastax.stargate.sdk.http.ServiceHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -56,7 +56,7 @@ public class NamespaceClient {
             new TypeReference<ApiResponse<Namespace>>(){};
             
     /** Column Definitions.*/
-    private static final TypeReference<ApiResponse<List<CollectionDefinition>>> RESPONSE_COLLECTIONS = 
+    private static final TypeReference<ApiResponse<List<CollectionDefinition>>> RESPONSE_COLLECTIONS =
             new TypeReference<ApiResponse<List<CollectionDefinition>>>(){};
             
     /** Functions Definitions.*/        
@@ -64,7 +64,7 @@ public class NamespaceClient {
            new TypeReference<Map<String,List<FunctionDefinition>>>(){};
     
     /** Get Topology of the nodes. */
-    protected final ServiceClient stargateHttpClient;
+    protected final LoadBalancedHttpClient stargateHttpClient;
     
     /** Astra Client. */
     private ApiDocumentClient apiDocument;
@@ -79,7 +79,7 @@ public class NamespaceClient {
      * @param docClient ApiDocumentClient
      * @param namespace String
      */
-    public NamespaceClient(ServiceClient stargateHttpClient, ApiDocumentClient docClient, String namespace) {
+    public NamespaceClient(LoadBalancedHttpClient stargateHttpClient, ApiDocumentClient docClient, String namespace) {
         this.apiDocument  = docClient;
         this.namespace    = namespace;
         this.stargateHttpClient = stargateHttpClient;
@@ -207,25 +207,25 @@ public class NamespaceClient {
     /**
      * /v2/schemas/namespaces/{namespace}
      */
-    public Function<StargateClientNode, String> namespaceSchemaResource = 
+    public Function<ServiceHttp, String> namespaceSchemaResource =
              (node) -> apiDocument.namespacesSchemaResource.apply(node) + "/" + namespace;
         
     /**
       * /v2/namespaces/{namespace}
       */
-    public Function<StargateClientNode, String> namespaceResource = 
+    public Function<ServiceHttp, String> namespaceResource =
              (node) -> apiDocument.namespacesResource.apply(node) + "/" + namespace;
              
      /**
        * /v2/namespaces/{namespace}/collections
        */
-     public Function<StargateClientNode, String> collectionsResource = 
+     public Function<ServiceHttp, String> collectionsResource =
                      (node) -> namespaceResource.apply(node) + PATH_COLLECTIONS; 
                      
       /**
        * /v2/namespaces/{namespace}/functions
        */
-      public Function<StargateClientNode, String> functionsResource = 
+      public Function<ServiceHttp, String> functionsResource =
                      (node) -> namespaceSchemaResource.apply(node) + PATH_FUNCTIONS;                      
     
 }

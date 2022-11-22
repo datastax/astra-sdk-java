@@ -20,7 +20,7 @@ package com.datastax.stargate.sdk.rest;
 import com.datastax.stargate.sdk.api.ApiResponse;
 import com.datastax.stargate.sdk.core.DataCenter;
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.CreateTable;
 import com.datastax.stargate.sdk.rest.domain.Keyspace;
 import com.datastax.stargate.sdk.rest.domain.TableDefinition;

@@ -18,8 +18,8 @@ package com.datastax.stargate.sdk.rest;
 
 import com.datastax.stargate.sdk.api.ApiResponse;
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.StargateHttpClient;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.ColumnDefinition;
 import com.datastax.stargate.sdk.rest.exception.ColumnsNotFoundException;
 import com.datastax.stargate.sdk.utils.Assert;
@@ -40,7 +40,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 public class ColumnsClient {
     
     /** Reference to http client. */
-    private final StargateHttpClient stargateClient;
+    private final LoadBalancedHttpClient stargateClient;
     
     /** Namespace. */
     private TableClient tableClient;
@@ -62,7 +62,7 @@ public class ColumnsClient {
      * @param columnId
      *      current column identifier
      */
-    public ColumnsClient(StargateHttpClient stargateHttpClient, TableClient tableClient, String columnId) {
+    public ColumnsClient(LoadBalancedHttpClient stargateHttpClient, TableClient tableClient, String columnId) {
         this.tableClient    = tableClient;
         this.stargateClient = stargateHttpClient;
         this.columnId       = columnId;

@@ -1,10 +1,8 @@
 package com.datastax.stargate.sdk.test.local.cql;
 
+import com.datastax.stargate.sdk.StargateClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.config.StargateNodeConfig;
 
 public class CqlSessionConnectivityTest {
     
@@ -15,7 +13,7 @@ public class CqlSessionConnectivityTest {
                 .withAuthCredentials("cassandra", "cassandra")
                 .withLocalDatacenter("datacenter1")
                 .withCqlContactPoints("localhost:9042")
-                .withApiNode(new StargateNodeConfig("127.0.0.1"))
+                .withCqlContactPoints("localhost:9042")
                 .build();
         Assertions.assertFalse(sc.cqlSession().isPresent());
     }

@@ -16,9 +16,9 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import com.datastax.stargate.sdk.StargateClientNode;
-import com.datastax.stargate.sdk.ServiceClient;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.http.ServiceHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 
@@ -38,7 +38,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallBean;
 public class DocumentClient {
     
     /** Get Topology of the nodes. */
-    private final ServiceClient stargateHttpClient;
+    private final LoadBalancedHttpClient stargateHttpClient;
     
     /** Namespace. */
     private CollectionClient collectionClient;
@@ -53,7 +53,7 @@ public class DocumentClient {
      * @param collectionClient CollectionClient
      * @param docId String
      */
-    public DocumentClient(ServiceClient stargateHttpClient, CollectionClient collectionClient, String docId) {
+    public DocumentClient(LoadBalancedHttpClient stargateHttpClient, CollectionClient collectionClient, String docId) {
         this.collectionClient   = collectionClient;
         this.docId              = docId;
         this.stargateHttpClient = stargateHttpClient;
@@ -354,8 +354,7 @@ public class DocumentClient {
     
     /**
      * marshallDocument
-     * 
-     * @param <DOC> DOC
+     *
      * @param body String
      * @param clazz DOC
      * @return DOC
@@ -375,7 +374,7 @@ public class DocumentClient {
     /** 
      * /v2/schemas/namespaces/{namespace}/collections/{collection}/{docId} 
      */
-    public Function<StargateClientNode, String> documentResource = 
+    public Function<ServiceHttp, String> documentResource =
             (node) -> collectionClient.collectionResource.apply(node) +  "/" + docId;
        
 }

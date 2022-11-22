@@ -1,7 +1,7 @@
 package com.datastax.stargate.sdk.doc.domain;
 
-import com.datastax.stargate.sdk.core.Filter;
-import com.datastax.stargate.sdk.core.FilterCondition;
+import com.datastax.stargate.sdk.http.domain.Filter;
+import com.datastax.stargate.sdk.http.domain.FilterCondition;
 
 import java.util.Collection;
 

@@ -18,8 +18,8 @@ package com.datastax.stargate.sdk.rest;
 
 
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.StargateHttpClient;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.CreateIndex;
 import com.datastax.stargate.sdk.rest.domain.IndexDefinition;
 import com.datastax.stargate.sdk.rest.exception.IndexNotFoundException;
@@ -39,7 +39,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 public class IndexClient {
     
     /** Reference to http client. */
-    private final StargateHttpClient stargateClient;
+    private final LoadBalancedHttpClient stargateClient;
     
     /** Namespace. */
     private TableClient tableClient;
@@ -57,7 +57,7 @@ public class IndexClient {
      * @param indexName
      *      current index identifier
      */
-    public IndexClient(StargateHttpClient stargateHttpClient, TableClient tableClient, String indexName) {
+    public IndexClient(LoadBalancedHttpClient stargateHttpClient, TableClient tableClient, String indexName) {
         this.tableClient    = tableClient;
         this.stargateClient = stargateHttpClient;
         this.indexName      = indexName;
@@ -97,6 +97,7 @@ public class IndexClient {
     public void create(CreateIndex ci) {
         Assert.notNull(ci, "CreateIndex");
         ci.setName(indexName);
+        System.out.println(marshall(ci));
         stargateClient.POST(tableClient.indexesSchemaResource, marshall(ci));
     }
     

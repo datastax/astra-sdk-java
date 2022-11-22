@@ -20,10 +20,10 @@ import com.datastax.stargate.sdk.ServiceDatacenter;
 import com.datastax.stargate.sdk.ServiceDeployment;
 import com.datastax.stargate.sdk.api.ApiResponse;
 import com.datastax.stargate.sdk.api.ApiTokenProvider;
-import com.datastax.stargate.sdk.http.auth.ApiTokenProviderHttpAuth;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.StargateHttpClient;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.auth.ApiTokenProviderHttpAuth;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.Keyspace;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -58,19 +58,19 @@ public class ApiDataClient {
     public static final String PATH_V2         = "/v2";
 
     /** default endpoint. */
-    private static final String DEFAULT_ENDPOINT = "http://localhost:8082";
+    public static final String DEFAULT_ENDPOINT = "http://localhost:8082";
 
     /** default service id. */
-    private static final String DEFAULT_SERVICE_ID = "sgv2-rest";
+    public static final String DEFAULT_SERVICE_ID = "sgv2-rest";
 
     /** default datacenter id. */
-    private static final String DEFAULT_DATACENTER = "dc1";
+    public static final String DEFAULT_DATACENTER = "dc1";
 
     /** default endpoint. */
-    private static final String PATH_HEALTH_CHECK = "/stargate/health";
+    public static final String PATH_HEALTH_CHECK = "/stargate/health";
 
     /** Get Topology of the nodes. */
-    protected final StargateHttpClient stargateHttpClient;
+    protected final LoadBalancedHttpClient stargateHttpClient;
 
     /**
      * Default Constructor
@@ -88,8 +88,7 @@ public class ApiDataClient {
     public ApiDataClient(String endpoint) {
         Assert.hasLength(endpoint, "stargate endpoint");
         // Single instance running
-        ServiceHttp rest =
-                new ServiceHttp(DEFAULT_SERVICE_ID, endpoint, endpoint + PATH_HEALTH_CHECK);
+        ServiceHttp rest = new ServiceHttp(DEFAULT_SERVICE_ID, endpoint, endpoint + PATH_HEALTH_CHECK);
         // Api provider
         ApiTokenProvider tokenProvider =
                 new ApiTokenProviderHttpAuth();
@@ -99,7 +98,7 @@ public class ApiDataClient {
         // Deployment with a single dc
         ServiceDeployment deploy =
                 new ServiceDeployment<ServiceHttp>().addDatacenter(sDc);
-        this.stargateHttpClient  = new StargateHttpClient(deploy);
+        this.stargateHttpClient  = new LoadBalancedHttpClient(deploy);
     }
 
     /**
@@ -110,7 +109,7 @@ public class ApiDataClient {
      */
     public ApiDataClient(ServiceDeployment<ServiceHttp> serviceDeployment) {
         Assert.notNull(serviceDeployment, "servide deployment topology");
-        this.stargateHttpClient = new StargateHttpClient(serviceDeployment);
+        this.stargateHttpClient = new LoadBalancedHttpClient(serviceDeployment);
         LOGGER.info("+ API Data     :[" + green("{}") + "]", "ENABLED");
     }
     
@@ -145,7 +144,7 @@ public class ApiDataClient {
      *
      * @return value of stargateHttpClient
      */
-    public StargateHttpClient getStargateHttpClient() {
+    public LoadBalancedHttpClient getStargateHttpClient() {
         return stargateHttpClient;
     }
 

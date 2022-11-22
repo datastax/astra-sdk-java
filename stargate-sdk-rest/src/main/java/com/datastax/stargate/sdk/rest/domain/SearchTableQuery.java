@@ -17,8 +17,8 @@
 package com.datastax.stargate.sdk.rest.domain;
 
 import com.datastax.stargate.sdk.core.Sort;
-import com.datastax.stargate.sdk.http.auth.domain.Filter;
-import com.datastax.stargate.sdk.http.auth.domain.FilterCondition;
+import com.datastax.stargate.sdk.http.domain.Filter;
+import com.datastax.stargate.sdk.http.domain.FilterCondition;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.Utils;
 

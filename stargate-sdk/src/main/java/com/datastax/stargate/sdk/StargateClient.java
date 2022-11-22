@@ -20,15 +20,13 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
-import com.datastax.stargate.sdk.audit.ApiInvocationObserver;
-import com.datastax.stargate.sdk.config.StargateClientConfig;
+import com.datastax.stargate.sdk.audit.ServiceCallObserver;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
-import com.datastax.stargate.sdk.gql.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
-import com.datastax.stargate.sdk.grpc.grpc.ApiGrpcClient;
-import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.http.RetryHttpClient;
+import com.datastax.stargate.sdk.http.ServiceHttp;
+import com.datastax.stargate.sdk.rest.ApiDataClient;
 import com.datastax.stargate.sdk.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +48,10 @@ public class StargateClient implements Closeable {
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(StargateClient.class);
-    
+
+    /** Configuration. */
+    private StargateClientBuilder conf;
+
     /** The Cql Session to interact with Cassandra through the DataStax CQL Drivers. */
     private CqlSession cqlSession;
     
@@ -78,37 +79,18 @@ public class StargateClient implements Closeable {
      * Wrapping Api GRPC resources.
      */
     protected ApiGrpcClient apiGrpcClient;
-    
-    /** 
-     * Wrapping failover and Load balancer on a delegated wrapper. 
-     */
-    protected ServiceClient stargateHttpClient;
-    
-    /**
-     * Cloud be use to recreate a CqlSession during DC fail-over
-     */
-    protected final StargateClientConfig conf;
-    
+
     // ------------------------------------------------
     // ---------------- Initializing   ----------------
     // ------------------------------------------------
-    
+
     /**
      * Initialize the client from builder parameters.
      *
      * @param config
      *      current builder.
      */
-    public StargateClient(StargateClientConfig config) {
-        LOGGER.info("Initializing [" + cyan("StargateClient") + "]");
-        this.conf = config;
-        this.currentDatacenter = resolveDataCenterName(config);
-        
-        // Initializing the Stargate Http Clients
-        stargateHttpClient = new ServiceClient(this, config);
-       
-        // ------------- CQL ---------------------
-        
+    public StargateClient(StargateClientBuilder config) {
         if (config.isEnabledCql()) {
             cqlSession = initCqlSession();
             LOGGER.info("+ API Cql      :[" + green("ENABLED") + "]");
@@ -119,24 +101,22 @@ public class StargateClient implements Closeable {
         // ------------- REST ---------------------
         
         // Initializing Apis
-        if (!config.getStargateNodes().isEmpty()) {
-            this.apiDataClient     = new ApiDataClient(stargateHttpClient);
-            this.apiDocumentClient = new ApiDocumentClient(stargateHttpClient);
-            this.apiGraphQLClient  = new ApiGraphQLClient(stargateHttpClient);
+        if (!config.getStargateNodesDC().isEmpty()) {
+            ServiceDeployment restDeploy = new ServiceDeployment<ServiceHttp>();
+            config.getStargateNodesDC().values().stream().forEach(dc -> {
+                // Current dc
+                restDeploy.addDatacenter(new ServiceDatacenter(dc.getId(), dc.getTokenProvider(), dc.getRestNodes()));
+            });
+            this.apiDataClient = new ApiDataClient(restDeploy);
+            //
+            //this.apiDocumentClient = new ApiDocumentClient();
+            //this.apiGraphQLClient  = new ApiGraphQLClient();
         } else {
             LOGGER.info("+ API Data     :[" + yellow("DISABLED") + "]");
             LOGGER.info("+ API Document :[" + yellow("DISABLED") + "]");
             LOGGER.info("+ API GraphQL  :[" + yellow("DISABLED") + "]");
         }
-        
-        // ------------- Grpc ---------------------
-        
-        if (!config.getStargateNodes().isEmpty() && config.isEnabledGrpc()) {
-            this.apiGrpcClient = new ApiGrpcClient(stargateHttpClient);
-        } else {
-            LOGGER.info("+ API Grpc     :[" + yellow("DISABLED") + "]");
-        }
-        
+
         // ------------- HTTP ---------------------
         
         if (config.getRetryConfig() != null) {
@@ -146,7 +126,7 @@ public class StargateClient implements Closeable {
             RetryHttpClient.withRequestConfig(config.getRequestConfig());
         }
         if (!config.getObservers().isEmpty()) {
-            for (Map.Entry<String, ApiInvocationObserver> obs : config.getObservers().entrySet()) {
+            for (Map.Entry<String, ServiceCallObserver> obs : config.getObservers().entrySet()) {
                 RetryHttpClient.registerListener(obs.getKey(), obs.getValue());
             }
         }
@@ -163,7 +143,7 @@ public class StargateClient implements Closeable {
      *      current configuration
      * @return
      */
-    private String resolveDataCenterName(StargateClientConfig config) {
+    private String resolveDataCenterName(StargateClientBuilder config) {
         // If not #1...
         if (!Utils.hasLength(config.getLocalDatacenter())) {
             LOGGER.info("Looking for local datacenter name");
@@ -173,15 +153,15 @@ public class StargateClient implements Closeable {
                 config.withLocalDatacenter(cqlDc);
                 LOGGER.info("+ Using value defined in cql configuration {}", cqlDc);
             // #3. Read from node topology
-            } else if (!config.getStargateNodes().isEmpty()) {
-                Set< String > dcs = config.getStargateNodes().keySet();
+            } else if (!config.getStargateNodesDC().isEmpty()) {
+                Set< String > dcs = config.getStargateNodesDC().keySet();
                 String dcPicked = dcs.iterator().next();
                 config.withLocalDatacenter(dcPicked);
                 LOGGER.info("+ Using value from node topology '{}' ( '{}' dc found)", dcPicked, dcs.size());
             // #4. Default
             } else {
-                LOGGER.warn("+ Using default '{}'", StargateClientConfig.DEFAULT_LOCALDC);
-                config.withLocalDatacenter(StargateClientConfig.DEFAULT_LOCALDC);
+                LOGGER.warn("+ Using default '{}'", StargateClientBuilder.DEFAULT_DATACENTER);
+                config.withLocalDatacenter(StargateClientBuilder.DEFAULT_DATACENTER);
             }
         }
         return config.getLocalDatacenter();
@@ -275,23 +255,13 @@ public class StargateClient implements Closeable {
      * Builder Pattern
      * @return StargateClientBuilder
      */
-    public static final StargateClientConfig builder() {
-        return new StargateClientConfig();
+    public static final StargateClientBuilder builder() {
+        return new StargateClientBuilder();
     }
     
     // ------------------------------------------------
     // ---------------- Utilities   -------------------
     // ------------------------------------------------
-    
-    /**
-     * Delegating to HTTP.
-     *
-     * @param datacenter
-     *      target datacenter
-     */
-    public void useDataCenter(String datacenter) {
-        stargateHttpClient.useDataCenter(datacenter);
-    }
     
     /** {@inheritDoc} */
     @Override
@@ -322,8 +292,7 @@ public class StargateClient implements Closeable {
      */
     public ApiDocumentClient apiDocument() {
         if (apiDocumentClient == null) {
-            throw new IllegalStateException("Api Document is not available "
-                    + "you need to provide a node and credentials at initialization.");
+            throw new IllegalStateException("Document Api is not available please provide a service deployment for Documentxs");
         }
        return this.apiDocumentClient;
     }
@@ -336,8 +305,7 @@ public class StargateClient implements Closeable {
      */
     public ApiDataClient apiRest() {
         if (apiDataClient == null) {
-            throw new IllegalStateException("Api Rest is not available "
-                    + "you need to provide a node and credentials at initialization.");
+            throw new IllegalStateException("REST Data Api is not available please provide a service deployment for Rest Data");
         }
         return this.apiDataClient;
     }
@@ -350,8 +318,7 @@ public class StargateClient implements Closeable {
      */
     public ApiGraphQLClient apiGraphQL() {
         if (apiGraphQLClient == null) {
-            throw new IllegalStateException("Api GraphQL is not available "
-                    + "you need to provide a node and credentials at initialization.");
+            throw new IllegalStateException("GraphQL Api is not available please provide a service deployment for GraphQL");
         }
         return this.apiGraphQLClient;
     }
@@ -364,39 +331,17 @@ public class StargateClient implements Closeable {
      */
     public ApiGrpcClient apiGrpc() {
         if (apiGrpcClient == null) {
-            throw new IllegalStateException("Api Grpc is not available "
-                    + "you need to provide a node and credentials at initialization.");
+            throw new IllegalStateException("GRPC Api is not available please provide a service deployment for gRPC");
         }
         return this.apiGrpcClient;
     }
 
     /**
-     * Getter accessor for attribute 'currentDatacenter'.
+     * Set value for currentDatacenter
      *
-     * @return
-     *       current value of 'currentDatacenter'
-     */
-    public String getCurrentDatacenter() {
-        return this.currentDatacenter;
-    }
-    
-    /**
-     * Setter accessor for attribute 'currentDatacenter'.
-     * @param currentDatacenter
-     *      new value for 'currentDatacenter '
+     * @param currentDatacenter new value for currentDatacenter
      */
     public void setCurrentDatacenter(String currentDatacenter) {
         this.currentDatacenter = currentDatacenter;
     }
-    
-    /**
-     * Getter accessor for attribute 'stargateHttpClient'.
-     *
-     * @return
-     *       current value of 'stargateHttpClient'
-     */
-    public ServiceClient getStargateHttpClient() {
-        return this.stargateHttpClient;
-    }
-    
 }

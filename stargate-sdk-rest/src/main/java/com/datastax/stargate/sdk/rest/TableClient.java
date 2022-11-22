@@ -17,11 +17,11 @@
 package com.datastax.stargate.sdk.rest;
 
 import com.datastax.stargate.sdk.api.ApiResponse;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.StargateHttpClient;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
 import com.datastax.stargate.sdk.rest.domain.*;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
@@ -53,7 +53,7 @@ public class TableClient {
     public static final String PATH_INDEXES  = "/indexes";
     
     /** Http Client with load balancing anf failover. */
-    private final StargateHttpClient stargateHttpClient;
+    private final LoadBalancedHttpClient stargateHttpClient;
     
     /** Namespace. */
     private KeyspaceClient keyspaceClient;
@@ -86,7 +86,7 @@ public class TableClient {
      * @param tableName 
      *          name of the table
      */
-    public TableClient(StargateHttpClient stargateHttpClient, KeyspaceClient keyspaceClient, String tableName) {
+    public TableClient(LoadBalancedHttpClient stargateHttpClient, KeyspaceClient keyspaceClient, String tableName) {
         this.stargateHttpClient = stargateHttpClient;
         this.keyspaceClient     = keyspaceClient;
         this.tableName          = tableName;

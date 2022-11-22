@@ -1,7 +1,7 @@
 package com.datastax.stargate.sdk.rest;
 
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.StargateHttpClient;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
 import com.datastax.stargate.sdk.rest.domain.CreateType;
 import com.datastax.stargate.sdk.rest.domain.TypeDefinition;
 import com.datastax.stargate.sdk.rest.domain.UpdateType;
@@ -20,7 +20,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.marshall;
 public class TypeClient {
     
     /** Http Client with load balancing anf failover. */
-    private final StargateHttpClient stargateHttpClient;
+    private final LoadBalancedHttpClient stargateHttpClient;
     
     /** Namespace. */
     private KeyspaceClient keyspaceClient;
@@ -35,7 +35,7 @@ public class TypeClient {
      * @param keyspaceClient KeyspaceClient
      * @param typeName String
      */
-    public TypeClient(StargateHttpClient stargateHttpClient, KeyspaceClient keyspaceClient, String typeName) {
+    public TypeClient(LoadBalancedHttpClient stargateHttpClient, KeyspaceClient keyspaceClient, String typeName) {
         this.keyspaceClient     = keyspaceClient;
         this.stargateHttpClient = stargateHttpClient;
         this.typeName           = typeName;

@@ -19,7 +19,6 @@ package com.datastax.astra.sdk;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.config.StargateNodeConfig;
 import com.datastax.stargate.sdk.doc.ApiDocumentClient;
 import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
 import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
@@ -172,7 +171,7 @@ public class AstraClient implements Closeable {
                     throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
                 }
     
-                // Loop on regions
+                /* Loop on regions
                 db.get().getInfo().getDatacenters().stream().forEach(dc -> {
                     config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
                             new StargateNodeConfig(
@@ -193,9 +192,10 @@ public class AstraClient implements Closeable {
                               + File.separator 
                               + AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
                   }
-                );
+                );*/
                 
             } else {
+                /*
                 LOGGER.info("+ Cross-region failback is disabled.");
                 config.getStargateConfig().withApiNodeDC(currentDatabaseRegion, 
                         new StargateNodeConfig(
@@ -214,9 +214,10 @@ public class AstraClient implements Closeable {
                         config.getSecureConnectBundleFolder() 
                         + File.separator 
                         + AstraClientConfig.buildScbFileName(config.getDatabaseId(), currentDatabaseRegion));
+                        */
             }
             this.stargateClient =  config.getStargateConfig().build();
-            
+
         } else {
            LOGGER.info("+ API(s) CqlSession [" + AnsiUtils.red("DISABLED")+ "]");
            LOGGER.info("+ API(s) Document   [" + AnsiUtils.red("DISABLED")+ "]");

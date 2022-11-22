@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -44,6 +45,7 @@ public class JsonUtils {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                .registerModule(new JavaTimeModule())
                 .setDateFormat(new SimpleDateFormat("dd/MM/yyyy"))
                 .setSerializationInclusion(Include.NON_NULL)
                 .setAnnotationIntrospector(new JacksonAnnotationIntrospector());

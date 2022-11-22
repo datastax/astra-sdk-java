@@ -16,14 +16,14 @@
 
 package com.datastax.stargate.sdk.doc;
 
-import com.datastax.stargate.sdk.StargateClientNode;
-import com.datastax.stargate.sdk.ServiceClient;
-import com.datastax.stargate.sdk.core.ApiResponse;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.api.ApiResponse;
 import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.doc.domain.CollectionDefinition;
 import com.datastax.stargate.sdk.doc.domain.PageableQuery;
 import com.datastax.stargate.sdk.doc.domain.Query;
+import com.datastax.stargate.sdk.http.ServiceHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.utils.Assert;
 import com.datastax.stargate.sdk.utils.JsonUtils;
 import com.datastax.stargate.sdk.utils.Utils;
@@ -57,7 +57,7 @@ public class CollectionClient {
     public static final String BATCH_ID_PATH = "id-path";
     
     /** Get Topology of the nodes. */
-    private final ServiceClient stargateHttpClient;
+    private final LoadBalancedHttpClient stargateHttpClient;
     
     /** Namespace. */
     protected NamespaceClient namespaceClient;
@@ -66,7 +66,7 @@ public class CollectionClient {
     protected String collectionName;
     
     /* Mapping type. */
-    private static TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>> RESPONSE_SEARCH =  
+    private static TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>> RESPONSE_SEARCH =
             new TypeReference<ApiResponse<Map<String, LinkedHashMap<?,?>>>>(){};
 
     /**
@@ -76,7 +76,7 @@ public class CollectionClient {
      * @param namespaceClient NamespaceClient
      * @param collectionName String
      */
-    public CollectionClient(ServiceClient stargateHttpClient, NamespaceClient namespaceClient, String collectionName) {
+    public CollectionClient(LoadBalancedHttpClient stargateHttpClient, NamespaceClient namespaceClient, String collectionName) {
         this.namespaceClient    = namespaceClient;
         this.collectionName     = collectionName;
         this.stargateHttpClient = stargateHttpClient;
@@ -667,24 +667,24 @@ public class CollectionClient {
     /** 
      * /v2/schemas/namespaces/{namespace}/collections/{collection} 
      */
-    public Function<StargateClientNode, String> collectionResource = 
+    public Function<ServiceHttp, String> collectionResource =
             (node) -> namespaceClient.collectionsResource.apply(node) +  "/" + collectionName;
     /** 
       * /v2/schemas/namespaces/{namespace}/collections/{collection}/upgrade?raw=true
       */
-    public Function<StargateClientNode, String> collectionUpgradeResource = 
+    public Function<ServiceHttp, String> collectionUpgradeResource =
             (node) -> collectionResource.apply(node) +  "/upgrade?raw=true";
 
      /** 
       * /v2/schemas/namespaces/{namespace}/collections/{collection}/batch
       */
-     public Function<StargateClientNode, String> collectionBatchResource = 
+     public Function<ServiceHttp, String> collectionBatchResource =
             (node) -> collectionResource.apply(node) +  "/batch";
                    
     /** 
       * /v2/schemas/namespaces/{namespace}/collections/{collection}/json-schema
       */
-    public Function<StargateClientNode, String> collectionJsonSchemaResource = 
+    public Function<ServiceHttp, String> collectionJsonSchemaResource =
             (node) -> collectionResource.apply(node) +  "/json-schema";
             
 }

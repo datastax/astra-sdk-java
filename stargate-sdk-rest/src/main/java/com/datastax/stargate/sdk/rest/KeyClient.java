@@ -21,8 +21,8 @@ import com.datastax.stargate.sdk.api.ApiResponse;
 import com.datastax.stargate.sdk.core.Page;
 import com.datastax.stargate.sdk.core.Sort;
 import com.datastax.stargate.sdk.http.ServiceHttp;
-import com.datastax.stargate.sdk.http.StargateHttpClient;
-import com.datastax.stargate.sdk.http.auth.domain.ApiResponseHttp;
+import com.datastax.stargate.sdk.http.LoadBalancedHttpClient;
+import com.datastax.stargate.sdk.http.domain.ApiResponseHttp;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey;
 import com.datastax.stargate.sdk.rest.domain.QueryWithKey.QueryRowBuilder;
 import com.datastax.stargate.sdk.rest.domain.Row;
@@ -51,7 +51,7 @@ import static com.datastax.stargate.sdk.utils.JsonUtils.unmarshallType;
 public class KeyClient {
     
     /** Reference to http client. */
-    private final StargateHttpClient stargateClient;
+    private final LoadBalancedHttpClient stargateClient;
     
     /** Collection name. */
     private TableClient tableClient;
@@ -73,7 +73,7 @@ public class KeyClient {
      * @param keys 
      *          Object
      */
-    public KeyClient(StargateHttpClient stargateHttpClient, TableClient tableClient, Object... keys) {
+    public KeyClient(LoadBalancedHttpClient stargateHttpClient, TableClient tableClient, Object... keys) {
         this.tableClient    = tableClient;
         this.key            = new ArrayList<>(Arrays.asList(keys));
         this.stargateClient = stargateHttpClient;
@@ -164,6 +164,7 @@ public class KeyClient {
         // Invoke endpoint
         ApiResponseHttp res = stargateClient.GET(primaryKeyResource, buildSearchUrlSuffix(query));
         // Marshall response
+        System.out.println(res.getBody());
         ApiResponse<List<LinkedHashMap<String,?>>> result = unmarshallType(res.getBody(), TYPE_RESULTS);
         // Build outout
         return new RowResultPage(query.getPageSize(), result.getPageState(), 
