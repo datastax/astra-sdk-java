@@ -1,7 +1,7 @@
 package com.datastax.astra.sdk;
 
-import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
+import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.utils.AnsiUtils;
 import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.DatabasesClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;

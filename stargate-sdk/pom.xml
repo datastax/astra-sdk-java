@@ -1,82 +1,342 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.datastax.stargate</groupId>
-	<artifactId>stargate-sdk</artifactId>
-	<name>+ stargate-sdk</name>
-	<description>Connect to Stargate Data Gateway</description>
-
-	<parent>
-		<groupId>com.datastax.astra</groupId>
-		<artifactId>astra-sdk-parent</artifactId>
-		<version>0.3.6-SNAPSHOT</version>
-	</parent>
+	<groupId>io.stargate</groupId>
+	<artifactId>stargate-sdk-parent</artifactId>
+	<version>2.0.1-SNAPSHOT</version>
+	<name>Stargate SDK Java</name>
+	<packaging>pom</packaging>
+	<inceptionYear>2022</inceptionYear>
+	<description>Stargate Sofware Development Kit. Tools and library to work with stargate.io</description>
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<properties>
-		<nodes.version>0.5.0</nodes.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java-driver.version>4.15.0</java-driver.version>
+		<logback.version>1.4.1</logback.version>
+		<jackson.version>2.13.4</jackson.version>
+		<json-schema.version>1.5.1</json-schema.version>
+		<httpclient.version>5.1.2</httpclient.version>
+		<stargate-grpc.version>1.0.63</stargate-grpc.version>
+		<grpc-netty.version>1.49.1</grpc-netty.version>
+		<slf4j.version>1.7.36</slf4j.version>
+		<!-- Junit -->
+		<junit-platform.version>1.9.1</junit-platform.version>
+		<junit-jupiter.version>5.9.1</junit-jupiter.version>
+		<!-- Java -->
+		<maven.plugin.compiler.source>1.8</maven.plugin.compiler.source>
+		<maven.plugin.compiler.target>1.8</maven.plugin.compiler.target>
+		<maven.plugin.javadoc.source>8</maven.plugin.javadoc.source>
+		<!-- Maven -->
+		<version.maven.plugin.failsafe>2.22.2</version.maven.plugin.failsafe>
+		<version.maven.plugin.surefire>2.22.2</version.maven.plugin.surefire>
+		<version.maven.plugin.gpg>3.0.1</version.maven.plugin.gpg>
+		<version.maven.plugin.resources>3.2.0</version.maven.plugin.resources>
+		<version.maven.plugin.release>2.5.2</version.maven.plugin.release>
+		<version.maven.plugin.javadoc>2.10.3</version.maven.plugin.javadoc>
+		<version.maven.plugin.source>2.2.1</version.maven.plugin.source>
+		<version.maven.plugin.nexus>1.6.8</version.maven.plugin.nexus>
+		<version.maven.plugin.compiler>3.8.1</version.maven.plugin.compiler>
+		<version.maven.plugin.jar>3.2.0</version.maven.plugin.jar>
+		<version.maven.plugin.dependency>2.8</version.maven.plugin.dependency>
+		<version.maven.plugin.xml-format>3.0.7</version.maven.plugin.xml-format>
+		<version.maven.plugin.fmt>2.2.0</version.maven.plugin.fmt>
+		<version.maven.plugin.coveralls>4.3.0</version.maven.plugin.coveralls>
+		<version.maven.plugin.jacoco>0.8.8</version.maven.plugin.jacoco>
 	</properties>
+
+	<modules>
+		<module>stargate-sdk-commons</module>
+		<module>stargate-sdk-cql</module>
+		<module>stargate-sdk-document</module>
+		<module>stargate-sdk-graphql</module>
+		<module>stargate-sdk-grpc</module>
+		<module>stargate-sdk-rest</module>
+		<module>stargate-sdk-test</module>
+		<module>stargate-sdk</module>
+	</modules>
 	
-	<dependencies>
-		<dependency>
-			<groupId>com.datastax.stargate</groupId>
-			<artifactId>stargate-sdk-docapi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.stargate</groupId>
-			<artifactId>stargate-sdk-grpc</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.stargate</groupId>
-			<artifactId>stargate-sdk-rest</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.stargate</groupId>
-			<artifactId>stargate-sdk-graphql</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.stargate</groupId>
-			<artifactId>stargate-sdk-http</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+	<dependencyManagement>
+		<dependencies>
+			
+			<!--  Http Client 5-->
+			<dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5-fluent</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
+			
+			<!-- Working with JSON -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+	    		<groupId>org.everit.json</groupId>
+	    		<artifactId>org.everit.json.schema</artifactId>
+	    		<version>${json-schema.version}</version>
+	    	</dependency>
+			
+			<!-- Java Drivers -->
+			<dependency>
+				<groupId>com.datastax.oss</groupId>
+				<artifactId>java-driver-core</artifactId>
+				<version>${java-driver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.datastax.oss</groupId>
+				<artifactId>java-driver-query-builder</artifactId>
+				<version>${java-driver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.datastax.oss</groupId>
+				<artifactId>java-driver-mapper-runtime</artifactId>
+				<version>${java-driver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.datastax.oss</groupId>
+				<artifactId>java-driver-mapper-processor</artifactId>
+				<version>${java-driver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.datastax.oss</groupId>
+				<artifactId>java-driver-metrics-micrometer</artifactId>
+				<version>${java-driver.version}</version>
+			</dependency>
+			
+			<!-- Logging -->
+			<dependency>
+        		<groupId>org.slf4j</groupId>
+        		<artifactId>slf4j-api</artifactId>
+        		<version>${slf4j.version}</version>
+    		</dependency> 
+			<dependency>
+        		<groupId>org.slf4j</groupId>
+        		<artifactId>slf4j-nop</artifactId>
+        		<version>${slf4j.version}</version>
+    		</dependency> 
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			
+			<!-- Working with gRPC -->
+			<dependency>
+				<groupId>io.stargate.grpc</groupId>
+				<artifactId>grpc-proto</artifactId>
+				<version>${stargate-grpc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-netty-shaded</artifactId>
+				<version>${grpc-netty.version}</version>
+			</dependency>
+			
+			<!-- JUNIT -->
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-api</artifactId>
+				<version>${junit-jupiter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>${junit-jupiter.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.platform</groupId>
+				<artifactId>junit-platform-runner</artifactId>
+				<version>${junit-platform.version}</version>
+				<scope>test</scope>
+			</dependency>
+			
+		</dependencies>
+	</dependencyManagement>
+	
+	
 
-		<dependency>
-			<groupId>com.datastax.oss</groupId>
-			<artifactId>java-driver-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
-
-		<!-- Unit tests -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-runner</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
 	<build>
-		<plugins>
+	
+	<pluginManagement>
+  <plugins>
+    <plugin>
+     <groupId>org.eclipse.m2e</groupId>
+     <artifactId>lifecycle-mapping</artifactId>
+     <version>1.0.0</version>
+     <configuration>
+       <lifecycleMappingMetadata>
+         <pluginExecutions>
+           <pluginExecution>
+             <pluginExecutionFilter>
+               <groupId>io.github.deweyjose</groupId>
+			   <artifactId>graphqlcodegen-maven-plugin</artifactId>
+               <versionRange>[1.16,)</versionRange>
+               <goals>
+                 <goal>generate</goal>
+               </goals>
+             </pluginExecutionFilter>
+             <action>
+               <ignore />
+             </action>
+           </pluginExecution>
+         </pluginExecutions>
+       </lifecycleMappingMetadata>
+     </configuration>
+    </plugin>
+  </plugins>
+</pluginManagement>
 
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${version.maven.plugin.compiler}</version>
+				<configuration>
+					<source>${maven.plugin.compiler.source}</source>
+					<target>${maven.plugin.compiler.target}</target>
+					<showWarnings>false</showWarnings>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${version.maven.plugin.surefire}</version>
+				 <configuration>
+	                <skipTests>false</skipTests>
+	                <testFailureIgnore>true</testFailureIgnore>
+	                <forkMode>once</forkMode>
+            	</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.junit.jupiter</groupId>
+						<artifactId>junit-jupiter-engine</artifactId>
+						<version>${junit-jupiter.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${version.maven.plugin.javadoc}</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+				    <excludePackageNames>com.datastax.stargate.graphql</excludePackageNames>
+					<source>${maven.plugin.javadoc.source}</source>
+				</configuration>
+				
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${version.maven.plugin.dependency}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${version.maven.plugin.jar}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${version.maven.plugin.resources}</version>
+				<configuration>
+					<escapeString>\</escapeString>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			 <!-- Coveralls.io -->
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${version.maven.plugin.coveralls}</version>
+                <configuration>
+      				<repoToken>7s9Lof8PakG3o8NftCupedDbnNegwN1dS</repoToken>
+			   </configuration>
+			   <dependencies>
+				<dependency>
+				    <groupId>javax.xml.bind</groupId>
+				    <artifactId>jaxb-api</artifactId>
+				    <version>2.3.1</version>
+				</dependency>  
+			   </dependencies>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${version.maven.plugin.jacoco}</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report-integration</id>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>           
 		</plugins>
-	</build>
+	</build>	
+	
+	<!-- Required for the dgs generator -->
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+	
 </project>

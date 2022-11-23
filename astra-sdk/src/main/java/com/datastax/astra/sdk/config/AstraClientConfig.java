@@ -5,9 +5,9 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
-import com.datastax.stargate.sdk.audit.ServiceCallObserver;
-import com.datastax.stargate.sdk.StargateClientBuilder;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
+import io.stargate.sdk.audit.ServiceCallObserver;
+import io.stargate.sdk.StargateClientBuilder;
+import io.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import com.dtsx.astra.sdk.utils.AstraRc;
@@ -20,8 +20,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import static com.datastax.stargate.sdk.utils.Assert.hasLength;
-import static com.datastax.stargate.sdk.utils.Utils.readEnvVariable;
+import static io.stargate.sdk.utils.Assert.hasLength;
+import static io.stargate.sdk.utils.Utils.readEnvVariable;
 
 /**
  * Helper and configure for Astra.

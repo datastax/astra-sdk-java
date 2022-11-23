@@ -43,7 +43,7 @@ import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.metrics.DefaultSessionMetric;
-import com.datastax.stargate.sdk.utils.Utils;
+import io.stargate.sdk.utils.Utils;
 
 import io.micrometer.core.instrument.MeterRegistry;
 

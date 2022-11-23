@@ -62,19 +62,11 @@
 	</properties>
 
 	<modules>
-		<module>stargate-sdk-commons</module>
-		<module>stargate-sdk-httpclient</module>
-		<module>stargate-sdk-rest</module>
-		<module>stargate-sdk-docapi</module>
-		<module>stargate-sdk-graphql</module>
-		<module>stargate-sdk-grpc</module>
-		<module>stargate-sdk</module>
-
 		<module>astra-sdk</module>
 		<module>astra-sdk-devops</module>
-		
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
+		<module>stargate-sdk</module>
 	</modules>
 	
 	<dependencyManagement>

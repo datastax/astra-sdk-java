@@ -3,7 +3,7 @@ package com.datastax.astra.sdk.stargate;
 import org.junit.jupiter.api.Assertions;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.stargate.sdk.grpc.domain.ResultSetGrpc;
+import io.stargate.sdk.grpc.domain.ResultSetGrpc;
 
 public class ApiGrpcAstraTest {
     

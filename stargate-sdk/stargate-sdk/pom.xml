@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>io.stargate</groupId>
+	<artifactId>stargate-sdk</artifactId>
+	<name>+ stargate-sdk</name>
+	<description>Connect to Stargate Data Gateway</description>
+
+	<parent>
+		<groupId>io.stargate</groupId>
+		<artifactId>stargate-sdk-parent</artifactId>
+		<version>2.0.1-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.stargate</groupId>
+			<artifactId>stargate-sdk-document</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.stargate</groupId>
+			<artifactId>stargate-sdk-grpc</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.stargate</groupId>
+			<artifactId>stargate-sdk-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.stargate</groupId>
+			<artifactId>stargate-sdk-graphql</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.stargate</groupId>
+			<artifactId>stargate-sdk-cql</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+ 	</dependencies>
+
+</project>

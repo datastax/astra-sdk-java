@@ -18,18 +18,17 @@ package com.datastax.astra.sdk;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.stargate.sdk.StargateClient;
-import com.datastax.stargate.sdk.doc.ApiDocumentClient;
-import com.datastax.stargate.sdk.gql.ApiGraphQLClient;
-import com.datastax.stargate.sdk.grpc.ApiGrpcClient;
-import com.datastax.stargate.sdk.rest.ApiDataClient;
-import com.datastax.stargate.sdk.utils.AnsiUtils;
-import com.datastax.stargate.sdk.utils.Utils;
+import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.doc.StargateDocumentApiClient;
+import io.stargate.sdk.gql.StargateGraphQLApiClient;
+import io.stargate.sdk.grpc.StargateGrpcApiClient;
+import io.stargate.sdk.rest.StargateRestApiClient;
+import io.stargate.sdk.utils.AnsiUtils;
+import io.stargate.sdk.utils.Utils;
 import com.dtsx.astra.sdk.db.DatabasesClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.org.OrganizationsClient;
 import com.dtsx.astra.sdk.streaming.StreamingClient;
-import com.dtsx.astra.sdk.utils.ApiLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -253,7 +252,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDocumentClient
      */
-    public ApiDocumentClient apiStargateDocument() {
+    public StargateDocumentApiClient apiStargateDocument() {
         if (stargateClient == null) {
             throw new IllegalStateException("Api Document is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
@@ -266,7 +265,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiRestClient
      */
-    public ApiDataClient apiStargateData() {
+    public StargateRestApiClient apiStargateData() {
         if (stargateClient == null) {
             throw new IllegalStateException("Api Rest is not available "
                     + "you need to provide dbId/dbRegion/username/password at initialization.");
@@ -279,7 +278,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiGraphQLClient
      */
-    public ApiGraphQLClient apiStargateGraphQL() {
+    public StargateGraphQLApiClient apiStargateGraphQL() {
         if (stargateClient == null) {
             throw new IllegalStateException("GraphQL Api is not available "
                     + "you need to provide dbId/dbRegion/token at initialization.");
@@ -293,7 +292,7 @@ public class AstraClient implements Closeable {
      * @return
      *      grpc Stargate API.
      */
-    public ApiGrpcClient apiStargateGrpc() {
+    public StargateGrpcApiClient apiStargateGrpc() {
         if (stargateClient == null) {
             throw new IllegalStateException("GRPC Api is not available "
                     + "you need to provide dbId/dbRegion/token at initialization.");

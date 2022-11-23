@@ -1,6 +1,6 @@
 package com.datastax.astra.sdk.stargate;
 
-import com.datastax.stargate.sdk.StargateClient;
+import io.stargate.sdk.StargateClient;
 
 /**
  * Execute some unit tests agains collections.
