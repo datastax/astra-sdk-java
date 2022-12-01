@@ -18,10 +18,14 @@ package com.datastax.astra.sdk;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.api.SimpleTokenProvider;
 import io.stargate.sdk.doc.StargateDocumentApiClient;
 import io.stargate.sdk.gql.StargateGraphQLApiClient;
+import io.stargate.sdk.grpc.ServiceGrpc;
 import io.stargate.sdk.grpc.StargateGrpcApiClient;
+import io.stargate.sdk.http.ServiceHttp;
 import io.stargate.sdk.rest.StargateRestApiClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import io.stargate.sdk.utils.Utils;
@@ -114,7 +118,6 @@ public class AstraClient implements Closeable {
         // ---------------------------------------------------
         //  Devops APIS
         // ---------------------------------------------------
-        
         if (Utils.hasLength(config.getToken())) {
             apiDevopsOrganizations  = new OrganizationsClient(config.getToken());
             apiDevopsDatabases      = new DatabasesClient(config.getToken());  
@@ -157,7 +160,6 @@ public class AstraClient implements Closeable {
                 } else {
                     config.getStargateConfig().withAuthCredentials("token", config.getToken());
                 }
-                
             }
             
             // ---------------------------------------------------
@@ -170,52 +172,82 @@ public class AstraClient implements Closeable {
                     throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
                 }
     
-                /* Loop on regions
+                /* Loop on regions. for each region a DC. */
                 db.get().getInfo().getDatacenters().stream().forEach(dc -> {
-                    config.getStargateConfig().withApiNodeDC(dc.getRegion(), 
-                            new StargateNodeConfig(
-                                    // node name = region, we got a single per region LB is done by Astra
-                                    dc.getRegion(), 
-                                    // url or rest api
-                                    ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()),
-                                    // url of graphql API
+                    // Rest Api
+                    config.getStargateConfig().addServiceRest(dc.getRegion(),
+                            new ServiceHttp(dc.getRegion() + "-rest",
+                            ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()),
+                            ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion())));
+                    // Document API
+                    config.getStargateConfig().addDocumentService(dc.getRegion(),
+                            new ServiceHttp(dc.getRegion() + "-doc",
+                                    ApiLocator.getApiDocumentEndpoint(config.getDatabaseId(), dc.getRegion()),
+                                    ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion())));
+                    // GraphQL
+                    config.getStargateConfig().addGraphQLService(dc.getRegion(),
+                            new ServiceHttp(dc.getRegion() + "-gql",
                                     ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), dc.getRegion()),
-                                    // host for grpc
-                                    ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()),
-                                    // port for grpc
-                                    AstraClientConfig.GRPC_PORT));
-                    
-                    config.getStargateConfig()
-                          .withCqlCloudSecureConnectBundleDC(dc.getRegion(),
-                              config.getSecureConnectBundleFolder() 
-                              + File.separator 
-                              + AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
-                  }
-                );*/
+                                    ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion())));
+
+                    if (config.getStargateConfig().isEnabledGrpc()) {
+                        // Grpc
+                        config.getStargateConfig().addGrpcService(dc.getRegion(), new ServiceGrpc(dc.getRegion() + "-grpc",
+                                ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()) + ":" + AstraClientConfig.GRPC_PORT,
+                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion()), true));
+                    }
+
+                    if (config.getStargateConfig().isEnabledCql()) {
+                        // Cloud Secure Bundle
+                        config.getStargateConfig().withCqlCloudSecureConnectBundleDC(dc.getRegion(),
+                                config.getSecureConnectBundleFolder()
+                                        + File.separator
+                                        + AstraClientConfig.buildScbFileName(config.getDatabaseId(), dc.getRegion()));
+                    }
+
+                    config.getStargateConfig().withApiTokenProviderDC(dc.getRegion(),
+                            new SimpleTokenProvider(config.getToken()));
+
+                });
                 
             } else {
-                /*
+
                 LOGGER.info("+ Cross-region failback is disabled.");
-                config.getStargateConfig().withApiNodeDC(currentDatabaseRegion, 
-                        new StargateNodeConfig(
-                        // node name = region, we got a single per region LB is done by Astra
-                        this.currentDatabaseRegion, 
-                        // url or rest api
-                        ApiLocator.getApiRestEndpoint(config.getDatabaseId(), currentDatabaseRegion),
-                        // url of graphql API
-                        ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), currentDatabaseRegion),
-                        // host for grpc
-                        ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), currentDatabaseRegion),
-                        // port for grpc
-                        AstraClientConfig.GRPC_PORT));
-                config.getStargateConfig()
-                      .withCqlCloudSecureConnectBundleDC(currentDatabaseRegion,
-                        config.getSecureConnectBundleFolder() 
-                        + File.separator 
-                        + AstraClientConfig.buildScbFileName(config.getDatabaseId(), currentDatabaseRegion));
-                        */
+                // Authentication for the DB
+                config.getStargateConfig().withApiTokenProviderDC(currentDatabaseRegion,
+                        new SimpleTokenProvider(config.getToken()));
+                // Rest Api
+                config.getStargateConfig().addServiceRest(currentDatabaseRegion,
+                        new ServiceHttp(currentDatabaseRegion+ "-rest",
+                                ApiLocator.getApiRestEndpoint(config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
+                // Document API
+                config.getStargateConfig().addDocumentService(currentDatabaseRegion,
+                        new ServiceHttp(currentDatabaseRegion + "-doc",
+                                ApiLocator.getApiDocumentEndpoint(config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
+                // GraphQL
+                config.getStargateConfig().addGraphQLService(currentDatabaseRegion,
+                        new ServiceHttp(currentDatabaseRegion + "-gql",
+                                ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(),currentDatabaseRegion)));
+                // Grpc
+                if (config.getStargateConfig().isEnabledGrpc()) {
+                    config.getStargateConfig().addGrpcService(currentDatabaseRegion, new ServiceGrpc(currentDatabaseRegion + "-grpc",
+                            ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), currentDatabaseRegion) + ":" + AstraClientConfig.GRPC_PORT,
+                            ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion), true));
+                }
+
+                // CQL
+                if (config.getStargateConfig().isEnabledCql()) {
+                    config.getStargateConfig()
+                            .withCqlCloudSecureConnectBundleDC(currentDatabaseRegion,
+                                    config.getSecureConnectBundleFolder()
+                                            + File.separator
+                                            + AstraClientConfig.buildScbFileName(config.getDatabaseId(), currentDatabaseRegion));
+                }
             }
-            this.stargateClient =  config.getStargateConfig().build();
+            this.stargateClient = config.getStargateConfig().build();
 
         } else {
            LOGGER.info("+ API(s) CqlSession [" + AnsiUtils.red("DISABLED")+ "]");
@@ -225,7 +257,6 @@ public class AstraClient implements Closeable {
         }
         LOGGER.info("[" + AnsiUtils.yellow("AstraClient") + "] has been initialized.");
     }
-    
     
     /**
      * Download the secure connect bundle files

@@ -30,8 +30,7 @@ public class ApiLocator {
     public static String getApiDevopsEndpoint() {
         return ASTRA_ENDPOINT_DEVOPS;
     } 
-   
-   
+
     /**
      * REST and DOCUMENT endpoint for a database and region.
      *
@@ -50,6 +49,32 @@ public class ApiLocator {
                 .append(ASTRA_ENDPOINT_SUFFIX)
                 .append("/api/rest")
                 .toString();
+    }
+
+    /**
+     * Document endpoint
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      database region
+     * @return
+     *      endpoint
+     */
+    public static final String getApiDocumentEndpoint(String dbId, String dbRegion) {
+        return getApiRestEndpoint(dbId, dbRegion);
+    }
+
+    /**
+     * Document endpoint
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      database region
+     * @return
+     *      endpoint
+     */
+    public static final String getEndpointHealthCheck(String dbId, String dbRegion) {
+        return getApiRestEndpoint(dbId, dbRegion) + "/swagger-ui/";
     }
 
     /**

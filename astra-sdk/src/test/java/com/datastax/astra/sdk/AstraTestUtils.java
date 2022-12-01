@@ -31,10 +31,10 @@ public class AstraTestUtils {
     public static final String  TEST_NAMESPACE = "java";
 
     /** Test constant. */
-    public static final String TEST_REGION = "us-east-1";
+    public static final String TEST_REGION = "us-east1";
     
     /** Test constant. */
-    public static final CloudProviderType TEST_PROVIDER = CloudProviderType.AWS;
+    public static final CloudProviderType TEST_PROVIDER = CloudProviderType.GCP;
     
     /** Test constant. */
     public static final String TEST_TIER = "serverless";

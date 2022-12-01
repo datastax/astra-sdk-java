@@ -1,5 +1,17 @@
 package com.datastax.astra.sdk.stargate;
 
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
+import io.stargate.sdk.doc.domain.Namespace;
+import io.stargate.sdk.test.doc.AbstractDocClientNamespacesTest;
+import io.stargate.sdk.test.doc.TestDocClientConstants;
+import org.junit.jupiter.api.*;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * Work with local stargate
  * 
@@ -16,42 +28,30 @@ package com.datastax.astra.sdk.stargate;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentNamespacesAstraTest /*extends ApiDocumentNamespacesTest */ {
-    
-   /*
-    * Init
-    *
-   @BeforeAll
-   public static void init() {
-       // Default client to create DB if needed
-       AstraClient client = AstraClient.builder().build();
-       String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-       // Connect the client to the new created DB
-       client = AstraClient.builder()
-               .withToken(client.getToken().get())
-               .withCqlKeyspace(ApiDocumentTest.TEST_NAMESPACE)
-               .withDatabaseId(dbId)
-               .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-               .withoutCqlSession()
-               .build();
-       stargateClient = client.getStargateClient();
+public class ApiDocumentNamespacesAstraTest extends AbstractDocClientNamespacesTest {
+
+    @BeforeAll
+    public static void init() {
+        // Default client to create DB if needed
+        AstraClient client = AstraClient.builder().build();
+        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
+
+        // Connect the client to the new created DB
+        client = AstraClient.builder()
+                .withToken(client.getToken().get())
+                .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
+                .withDatabaseId(dbId)
+                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
+                .build();
+
+        stargateDocumentApiClient = client.getStargateClient().apiDocument();
     }
-    
-    /**
-     * Close connections when ending
-     *
-    @AfterClass
-    public static void closing() {
-        if (stargateClient != null) {
-            stargateClient.close();
-        }
-    }
-    
+
     @Test
     @Order(1)
     @Override
     @DisplayName("01-Create a namespace java with simple Strategy")
-    public void a_should_create_namespace_withSimpleStrategy() {
+    public void createNamespaceWithSimpleStrategyTest() {
         // cannot create keyspace in Astra
     }
     
@@ -70,12 +70,22 @@ public class ApiDocumentNamespacesAstraTest /*extends ApiDocumentNamespacesTest 
     public void c_should_create_namespace_already_exist() {
        // cannot create keyspace in Astra
     }
-    
+
+    @Test
+    @Order(4)
+    @Override
+    @DisplayName("04-Get all namespaces")
+    public void d_should_list_namespaces() {
+        Assertions.assertTrue(((Set) stargateDocumentApiClient.namespaceNames().collect(Collectors.toSet())).contains("java"));
+        Map<String, Namespace> nsList = (Map) stargateDocumentApiClient.namespaces().collect(Collectors.toMap(Namespace::getName, Function.identity()));
+        Assertions.assertNotNull(nsList.get("java"));
+    }
+
     @Test
     @Order(7)
     @Override
     @DisplayName("07-Delete a namespace")
     public void g_should_delete_namespace() {
         // cannot create keyspace in Astra
-    }*/
+    }
 }

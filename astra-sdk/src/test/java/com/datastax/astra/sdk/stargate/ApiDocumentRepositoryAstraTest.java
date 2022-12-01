@@ -1,57 +1,47 @@
 package com.datastax.astra.sdk.stargate;
 
-import io.stargate.sdk.StargateClient;
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.AstraTestUtils;
+import io.stargate.sdk.doc.CollectionClient;
+import io.stargate.sdk.doc.NamespaceClient;
+import io.stargate.sdk.doc.StargateDocumentApiClient;
+import io.stargate.sdk.doc.StargateDocumentRepository;
+import io.stargate.sdk.test.doc.AbstractRepositoryTest;
+import io.stargate.sdk.test.doc.TestDocClientConstants;
+import io.stargate.sdk.test.doc.domain.Person;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
- * Execute some unit tests agains collections.
+ * Execute some unit tests against collections.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentRepositoryAstraTest /*extends ApiDocumentRepositoryTest*/ {
-     
-    protected static StargateClient stargateClient;
-    
-    /**
-     * Init
-     *
+public class ApiDocumentRepositoryAstraTest extends AbstractRepositoryTest {
+
     @BeforeAll
-    public static void init() { // Default client to create DB if needed
+    public static void init() {
+        // Default client to create DB if needed
         AstraClient client = AstraClient.builder().build();
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
+
         // Connect the client to the new created DB
         client = AstraClient.builder()
                 .withToken(client.getToken().get())
-                .withCqlKeyspace(ApiDocumentTest.TEST_NAMESPACE)
+                .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-                .withoutCqlSession()
                 .build();
-        stargateClient = client.getStargateClient();
-        
-        // We need the namespace
-        NamespaceClient nsClient = stargateClient.apiDocument().namespace(TEST_NAMESPACE);
-        if (!nsClient.exist()) {
-            nsClient.createSimple(1);
-        }
-        
-        // Create empty collection if needed
+
+        StargateDocumentApiClient stargateDocumentApiClient = client.getStargateClient().apiDocument();
+        NamespaceClient nsClient = stargateDocumentApiClient.namespace(TEST_NAMESPACE);
+
         CollectionClient personClient = nsClient.collection(TEST_COLLECTION_PERSON);
         if (!personClient.exist()) {
             personClient.create();
         }
         
         // Initializing a repository for a bean
-        personRepository = new StargateDocumentRepository<Person>(personClient, Person.class);
+        personRepository = new StargateDocumentRepository<>(personClient, Person.class);
     }
-    
-    /**
-     * Close connections when ending
-     *
-    @AfterClass
-    public static void closing() {
-        if (stargateClient != null) {
-            stargateClient.close();
-        }
-    }*/
 
 }

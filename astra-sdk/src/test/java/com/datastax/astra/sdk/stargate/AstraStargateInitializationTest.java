@@ -18,6 +18,8 @@ package com.datastax.astra.sdk.stargate;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
+import io.stargate.sdk.StargateClient;
+import io.stargate.sdk.rest.StargateRestApiClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -32,10 +34,10 @@ import java.util.stream.Collectors;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-public class CqlSessionAstraTest {
+public class AstraStargateInitializationTest {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(CqlSessionAstraTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraStargateInitializationTest.class);
     
     private static AstraClient client;
 
@@ -45,24 +47,31 @@ public class CqlSessionAstraTest {
 
     @BeforeAll
     public static void config() {
-        
+        LOGGER.info("-- FIRST CLIENT TO CREATE DB WITH DEVOPS ---");
         client = AstraClient.builder().build();
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
         
         // Connect the client to the new created DB
+        LOGGER.info("-- SECOND CLIENT CQL + APIS ---");
         client = AstraClient.builder()
                 .withToken(client.getToken().get())
                 .withCqlKeyspace(TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
+                .enableCql()
                 .build();
-        System.out.println(dbId);
     }
-    
+
+    @Test
+    @DisplayName("Invoke REST Api providing dbId,cloudRegion,appToken")
+    public void restApiTest() {
+        Assertions.assertTrue(client.apiStargateData().keyspaceNames().count() > 0);
+    }
+
+    /*
     @Test
     @DisplayName("Connect Cassandra with CqlSession using clientId/ClientSecret")
     public void should_enable_cqlSession_with_clientId_clientSecret() {
-        /* Given
         LOGGER.info( "- Connect Cassandra with CqlSession using clientId/ClientSecret");
         Assertions.assertNotNull(client.getConfig().getDatabaseId());
         Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
@@ -74,15 +83,16 @@ public class CqlSessionAstraTest {
                 .withDatabaseRegion(client.getConfig().getDatabaseRegion())
                 .withClientId(client.getConfig().getClientId())
                 .withClientSecret(client.getConfig().getClientSecret())
+                .enableCql()
                 .build()) {
             // Then
             Assertions.assertNotNull(astraClient
                     .cqlSession().execute("SELECT release_version FROM system.local")
                     .one()
                     .getString("release_version"));
-        }*/
+        }
         LOGGER.info("[OK]");
-    }
+    }*/
     
     @Test
     @DisplayName("Connect Cassandra with CqlSession using token/appToken")
@@ -121,6 +131,7 @@ public class CqlSessionAstraTest {
                 .withDatabaseId(client.getConfig().getDatabaseId())
                 .withDatabaseRegion(client.getConfig().getDatabaseRegion())
                 .withToken(client.getConfig().getToken())
+                .disableCrossRegionFailOver()
                 .build()) {
                 // Then
                 Assertions.assertTrue(astraClient

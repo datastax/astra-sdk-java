@@ -23,14 +23,16 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java-driver.version>4.15.0</java-driver.version>
-		<logback.version>1.4.1</logback.version>
+		<slf4j.version>1.7.36</slf4j.version>
+		<logback.version>1.2.11</logback.version>
 		<jackson.version>2.13.4</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.1.2</httpclient.version>
 		<pulsar.version>2.10.1</pulsar.version>
 		<stargate-grpc.version>1.0.63</stargate-grpc.version>
 		<grpc-netty.version>1.49.1</grpc-netty.version>
-		<slf4j.version>1.7.36</slf4j.version>
+
+		<stargate-sdk.version>2.0.1-SNAPSHOT</stargate-sdk.version>
 		<!-- Spring -->
 		<spring.version>5.3.23</spring.version>
 		<spring-boot.version>2.7.4</spring-boot.version>
@@ -123,16 +125,23 @@
 				<artifactId>java-driver-metrics-micrometer</artifactId>
 				<version>${java-driver.version}</version>
 			</dependency>
+
+			<!-- Stargate SDK as a dependency-->
+			<dependency>
+				<groupId>io.stargate</groupId>
+				<artifactId>stargate-sdk</artifactId>
+				<version>${stargate-sdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.stargate</groupId>
+				<artifactId>stargate-sdk-test</artifactId>
+				<version>${stargate-sdk.version}</version>
+			</dependency>
 			
 			<!-- Logging -->
 			<dependency>
         		<groupId>org.slf4j</groupId>
         		<artifactId>slf4j-api</artifactId>
-        		<version>${slf4j.version}</version>
-    		</dependency> 
-			<dependency>
-        		<groupId>org.slf4j</groupId>
-        		<artifactId>slf4j-nop</artifactId>
         		<version>${slf4j.version}</version>
     		</dependency> 
 			<dependency>

@@ -39,7 +39,7 @@ public class AstraRcTest {
     @DisplayName("Create .astraRC without clientId/clientSecret")
     public void should_create_astraRc_File() {
         // Given
-        Assertions.assertTrue(tmpAstraRC.delete());
+        tmpAstraRC.delete();
         Assertions.assertFalse(tmpAstraRC.exists());
         // When
         AstraRc arc = new AstraRc(tmpAstraRC.getAbsolutePath());

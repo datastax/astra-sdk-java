@@ -11,6 +11,7 @@
 		<version>0.3.6-SNAPSHOT</version>
 	</parent>
 
+
 	<dependencies>
 	
 		<!-- ASTRA STREAMING -->
@@ -29,11 +30,15 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Astra Expose APIs through Stargate -->
+		<!-- Stargate SDK as a dependency-->
 		<dependency>
 			<groupId>io.stargate</groupId>
 			<artifactId>stargate-sdk</artifactId>
-			<version>2.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.stargate</groupId>
+			<artifactId>stargate-sdk-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -53,12 +58,21 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.36</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
+			<version>1.2.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.11</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
