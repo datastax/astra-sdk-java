@@ -32,7 +32,7 @@
 		<stargate-grpc.version>1.0.63</stargate-grpc.version>
 		<grpc-netty.version>1.49.1</grpc-netty.version>
 
-		<stargate-sdk.version>2.0.1-SNAPSHOT</stargate-sdk.version>
+		<stargate-sdk.version>2.0.1</stargate-sdk.version>
 		<!-- Spring -->
 		<spring.version>5.3.23</spring.version>
 		<spring-boot.version>2.7.4</spring-boot.version>
@@ -128,12 +128,12 @@
 
 			<!-- Stargate SDK as a dependency-->
 			<dependency>
-				<groupId>io.stargate</groupId>
+				<groupId>com.datastax.stargate</groupId>
 				<artifactId>stargate-sdk</artifactId>
 				<version>${stargate-sdk.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>io.stargate</groupId>
+				<groupId>com.datastax.stargate</groupId>
 				<artifactId>stargate-sdk-test</artifactId>
 				<version>${stargate-sdk.version}</version>
 			</dependency>

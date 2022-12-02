@@ -32,11 +32,11 @@
 
 		<!-- Stargate SDK as a dependency-->
 		<dependency>
-			<groupId>io.stargate</groupId>
+			<groupId>com.datastax.stargate</groupId>
 			<artifactId>stargate-sdk</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.stargate</groupId>
+			<groupId>com.datastax.stargate</groupId>
 			<artifactId>stargate-sdk-test</artifactId>
 			<scope>test</scope>
 		</dependency>
