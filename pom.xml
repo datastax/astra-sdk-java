@@ -21,6 +21,8 @@
 		</license>
 	</licenses>
 	<properties>
+		<sonar.organization>clun-datastax</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java-driver.version>4.15.0</java-driver.version>
 		<slf4j.version>1.7.36</slf4j.version>
@@ -257,35 +259,6 @@
 	
 
 	<build>
-	
-	<pluginManagement>
-  <plugins>
-    <plugin>
-     <groupId>org.eclipse.m2e</groupId>
-     <artifactId>lifecycle-mapping</artifactId>
-     <version>1.0.0</version>
-     <configuration>
-       <lifecycleMappingMetadata>
-         <pluginExecutions>
-           <pluginExecution>
-             <pluginExecutionFilter>
-               <groupId>io.github.deweyjose</groupId>
-			   <artifactId>graphqlcodegen-maven-plugin</artifactId>
-               <versionRange>[1.16,)</versionRange>
-               <goals>
-                 <goal>generate</goal>
-               </goals>
-             </pluginExecutionFilter>
-             <action>
-               <ignore />
-             </action>
-           </pluginExecution>
-         </pluginExecutions>
-       </lifecycleMappingMetadata>
-     </configuration>
-    </plugin>
-  </plugins>
-</pluginManagement>
 
 		<plugins>
 			<plugin>
@@ -371,7 +344,6 @@
 				    <excludePackageNames>com.datastax.stargate.graphql</excludePackageNames>
 					<source>${maven.plugin.javadoc.source}</source>
 				</configuration>
-				
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -400,54 +372,6 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-			 <!-- Coveralls.io -->
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>${version.maven.plugin.coveralls}</version>
-                <configuration>
-      				<repoToken>7s9Lof8PakG3o8NftCupedDbnNegwN1dS</repoToken>
-			   </configuration>
-			   <dependencies>
-				<dependency>
-				    <groupId>javax.xml.bind</groupId>
-				    <artifactId>jaxb-api</artifactId>
-				    <version>2.3.1</version>
-				</dependency>  
-			   </dependencies>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${version.maven.plugin.jacoco}</version>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-prepare-agent-integration</id>
-                        <goals>
-                            <goal>prepare-agent-integration</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-report</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-report-integration</id>
-                        <goals>
-                            <goal>report-integration</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>           
 		</plugins>
 	</build>	
 	

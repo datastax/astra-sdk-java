@@ -35,7 +35,6 @@ public class StreamingClient {
     /** URL part.. */
     public static final String PATH_CLUSTERS   = "/clusters";
 
-
     /** Marshalling beans */
     private static final TypeReference<List<Tenant>> TYPE_LIST_TENANTS = 
             new TypeReference<List<Tenant>>(){};
