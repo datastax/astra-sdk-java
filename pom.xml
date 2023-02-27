@@ -25,14 +25,14 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java-driver.version>4.15.0</java-driver.version>
-		<slf4j.version>1.7.36</slf4j.version>
-		<logback.version>1.2.11</logback.version>
-		<jackson.version>2.13.4</jackson.version>
+		<slf4j.version>2.0.6</slf4j.version>
+		<logback.version>1.4.5</logback.version>
+		<jackson.version>2.14.2</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
-		<httpclient.version>5.1.2</httpclient.version>
-		<pulsar.version>2.10.1</pulsar.version>
+		<httpclient.version>5.2.1</httpclient.version>
+		<pulsar.version>2.11.0</pulsar.version>
 		<stargate-grpc.version>1.0.63</stargate-grpc.version>
-		<grpc-netty.version>1.49.1</grpc-netty.version>
+		<grpc-netty.version>1.52.1</grpc-netty.version>
 
 		<stargate-sdk.version>2.0.1</stargate-sdk.version>
 		<!-- Spring -->
@@ -41,8 +41,8 @@
 		<spring-data.version>3.4.3</spring-data.version>
 		<spring-security.version>5.7.3</spring-security.version>
 		<!-- Junit -->
-		<junit-platform.version>1.9.1</junit-platform.version>
-		<junit-jupiter.version>5.9.1</junit-jupiter.version>
+		<junit-platform.version>1.9.2</junit-platform.version>
+		<junit-jupiter.version>5.9.2</junit-jupiter.version>
 		<!-- Java -->
 		<maven.plugin.compiler.source>1.8</maven.plugin.compiler.source>
 		<maven.plugin.compiler.target>1.8</maven.plugin.compiler.target>
@@ -68,6 +68,7 @@
 	<modules>
 		<module>astra-sdk</module>
 		<module>astra-sdk-devops</module>
+		<module>astra-sdk-pulsar</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
 	</modules>

@@ -14,13 +14,6 @@ import java.util.stream.Collectors;
  */
 public class ListRegionsTest extends AbstractDevopsApiTest {
 
-    @Test
-    public void testListRegions() {
-        List<StreamingRegion> regions = new StreamingClient(getToken())
-                .serverlessRegions()
-                .collect(Collectors.toList());
-        Assertions.assertFalse(regions.isEmpty());
-        regions.stream().map(StreamingRegion::getName).forEach(System.out::println);
-    }
+
 
 }

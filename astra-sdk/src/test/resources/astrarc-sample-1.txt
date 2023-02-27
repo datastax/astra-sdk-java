@@ -1,4 +1,4 @@
-# this is a commend to Ignorer
+# this is a comment to ignore
 
 [default]
 ASTRA_DB_ID=DB_ID

@@ -1,7 +1,7 @@
-package com.dtsx.astra.sdk.db.domain.exception;
+package com.dtsx.astra.sdk.db.exception;
 
 /**
- * Specializeed exception
+ * Exception thrown when accessing a region from its name, and it is not found.
  */
 public class RegionNotFoundException extends RuntimeException {
 

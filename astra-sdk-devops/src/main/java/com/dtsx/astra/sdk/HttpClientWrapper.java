@@ -25,9 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Wrapping the HttpClient and provide helpers
- * 
- * @author Cedrick LUNVEN (@clunven)
+ * Helper to forge Http Requests to interact with Devops API.
  */
 public class HttpClientWrapper {
     
@@ -60,6 +58,12 @@ public class HttpClientWrapper {
 
     /** Headers param to insert the user agent identifying the client. */
     private static final String HEADER_REQUESTED_WITH    = "X-Requested-With";
+
+    /** Current organization identifier. */
+    private static final String HEADER_CURRENT_ORG = "X-DataStax-Current-Org";
+
+    /** Current pulsar cluster. */
+    private static final String HEADER_CURRENT_PULSAR_CLUSTER = "X-DataStax-Pulsar-Cluster";
 
     /** Singleton pattern. */
     private static HttpClientWrapper _instance = null;
@@ -123,6 +127,88 @@ public class HttpClientWrapper {
 
     /**
      * Helper to build the HTTP request.
+     *
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param pulsarCluster
+     *      pulsar cluster
+     * @param organizationId
+     *      organization identifier
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp GET_PULSAR(String url, String token, String pulsarCluster, String organizationId) {
+        HttpUriRequestBase request = buildRequest(Method.GET, url, token, null, CONTENT_TYPE_JSON);
+        updatePulsarHttpRequest(request, token, pulsarCluster, organizationId);
+        return executeHttp(request, false);
+    }
+
+    /**
+     * Helper to build the HTTP request.
+     *
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body
+     * @param pulsarCluster
+     *      pulsar cluster
+     * @param organizationId
+     *      organization identifier
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp POST_PULSAR(String url, String token, String body, String pulsarCluster, String organizationId) {
+        HttpUriRequestBase request = buildRequest(Method.POST, url, token, body, CONTENT_TYPE_JSON);
+        updatePulsarHttpRequest(request, token, pulsarCluster, organizationId);
+        return executeHttp(request, false);
+    }
+
+    /**
+     * Helper to build the HTTP request.
+     *
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body
+     * @param pulsarCluster
+     *      pulsar cluster
+     * @param organizationId
+     *      organization identifier
+     * @return
+     *      http request
+     */
+    public ApiResponseHttp DELETE_PULSAR(String url, String token, String body, String pulsarCluster, String organizationId) {
+        HttpUriRequestBase request = buildRequest(Method.DELETE, url, token, body, CONTENT_TYPE_JSON);
+        updatePulsarHttpRequest(request, token, pulsarCluster, organizationId);
+        return executeHttp(request, false);
+    }
+
+    /**
+     * Add item for a pulsar request.
+     *
+     * @param request
+     *      current request
+     * @param pulsarToken
+     *      pulsar token
+     * @param pulsarCluster
+     *      pulsar cluster
+     * @param organizationId
+     *      organization
+     */
+    private void updatePulsarHttpRequest(HttpUriRequestBase request, String pulsarToken, String pulsarCluster, String organizationId) {
+        request.addHeader(HEADER_AUTHORIZATION, pulsarToken);
+        request.addHeader(HEADER_CURRENT_ORG, organizationId);
+        request.addHeader(HEADER_CURRENT_PULSAR_CLUSTER, pulsarCluster);
+    }
+
+    /**
+     * Helper to build the HTTP request.
      * 
      * @param url
      *      target url
@@ -172,11 +258,9 @@ public class HttpClientWrapper {
      *      target url
      * @param token
      *      authentication token
-     * @return
-     *      http request
      */
-    public ApiResponseHttp DELETE(String url, String token) {
-        return executeHttp(Method.DELETE, url, token, null, CONTENT_TYPE_JSON, true);
+    public void DELETE(String url, String token) {
+        executeHttp(Method.DELETE, url, token, null, CONTENT_TYPE_JSON, true);
     }
     
     /**
@@ -187,12 +271,10 @@ public class HttpClientWrapper {
      * @param token
      *      authentication token
      * @param body
-     *      request body     
-     * @return
-     *      http request
+     *      request body
      */
-    public ApiResponseHttp PUT(String url, String token, String body) {
-        return executeHttp(Method.PUT, url, token, body, CONTENT_TYPE_JSON, false);
+    public void PUT(String url, String token, String body) {
+        executeHttp(Method.PUT, url, token, body, CONTENT_TYPE_JSON, false);
     }
 
     /**
@@ -241,9 +323,7 @@ public class HttpClientWrapper {
                     EntityUtils.consume(response.getEntity());
                 }
                 Map<String, String > headers = new HashMap<>();
-                Arrays.asList(response.getHeaders())
-                        .stream()
-                        .forEach(h -> headers.put(h.getName(), h.getValue()));
+                Arrays.stream(response.getHeaders()).forEach(h -> headers.put(h.getName(), h.getValue()));
                 res = new ApiResponseHttp(body, response.getCode(), headers);
             }
 

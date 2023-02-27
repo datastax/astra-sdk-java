@@ -167,7 +167,7 @@ public class AstraClient implements Closeable {
             // ---------------------------------------------------
             
             if (config.isEnabledCrossRegionFailOver()) {
-                Optional<Database> db = apiDevopsDatabases.database(config.getDatabaseId()).find();
+                Optional<Database> db = apiDevopsDatabases.id(config.getDatabaseId()).find();
                 if (!db.isPresent()) {
                     throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
                 }
@@ -268,7 +268,7 @@ public class AstraClient implements Closeable {
         }
         // Download secure bundles (if needed)
         LOGGER.info("+ Downloading bundles in: [" + AnsiUtils.cyan("{}") + "]", config.getSecureConnectBundleFolder());
-        apiDevopsDatabases.database(config.getDatabaseId())
+        apiDevopsDatabases.id(config.getDatabaseId())
                           .downloadAllSecureConnectBundles(config.getSecureConnectBundleFolder());
         
         // Setup the current region

@@ -1,13 +1,12 @@
 package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.streaming.domain.*;
+import com.dtsx.astra.sdk.streaming.exception.TenantNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
-import com.dtsx.astra.sdk.streaming.domain.Tenant;
-import com.dtsx.astra.sdk.streaming.domain.TenantLimit;
 
 import java.net.HttpURLConnection;
 import java.util.List;
@@ -31,7 +30,7 @@ public class TenantClient {
     /** Load Database responses. */
     private static final TypeReference<List<TenantLimit>> TYPE_LIST_LIMIT =  
             new TypeReference<List<TenantLimit>>(){};
-   
+
     /**
      * Default constructor.
      *
@@ -86,18 +85,28 @@ public class TenantClient {
         ct.setTenantName(tenantId);
         http.POST(StreamingClient.getApiDevopsEndpointTenants(), streamClient.bearerAuthToken, JsonUtils.marshall(ct));
     }
-    
+
     /**
      * Deleting a tenant and cluster.
      */
     public void delete() {
-        Optional< Tenant > opt = find();
-        if (!opt.isPresent()) {
-            throw new RuntimeException("Tenant '"+ tenantId + "' has not been found");
-        }
-        http.DELETE(getEndpointCluster(opt.get().getClusterName()), streamClient.bearerAuthToken);
+        http.DELETE(getEndpointCluster(get().getClusterName()), streamClient.bearerAuthToken);
     }
-    
+
+    /**
+     * Return tenant or return an error.
+     *
+     * @return
+     *      tenant reference
+     */
+    public Tenant get() {
+        return find().orElseThrow(() -> new TenantNotFoundException(tenantId));
+    }
+
+    // ---------------------------------
+    // ----       Limits            ----
+    // ---------------------------------
+
     /**
      * FIXME This endpoint does not work on ASTRA
      * @return
@@ -106,6 +115,34 @@ public class TenantClient {
     public Stream<TenantLimit> limits() {
         ApiResponseHttp res = http.GET(getEndpointTenant() + "/limits", streamClient.bearerAuthToken);
         return JsonUtils.unmarshallType(res.getBody(), TYPE_LIST_LIMIT).stream();
+    }
+
+    // ---------------------------------
+    // ----       CDC               ----
+    // ---------------------------------
+
+    /**
+     * Access CDC Client.
+     *
+     * @return
+     *      cdc component
+     */
+    public CdcClient cdc() {
+        return new CdcClient(get(), streamClient.bearerAuthToken);
+    }
+
+    // ---------------------------------
+    // ----       Stats             ----
+    // ---------------------------------
+
+    /**
+     * Access Stats Client.
+     *
+     * @return
+     *      cdc component
+     */
+    public StatsClient stats() {
+        return new StatsClient(get());
     }
 
     // ---------------------------------
@@ -119,7 +156,7 @@ public class TenantClient {
      *      database endpoint
      */
     public String getEndpointTenant() {
-        return getEndpointTenant(tenantId);
+        return StreamingClient.getApiDevopsEndpointTenants() + "/" + tenantId;
     }
     
     /**
@@ -134,18 +171,5 @@ public class TenantClient {
     public String getEndpointCluster(String clusterId) {
         return getEndpointTenant() + "/clusters/" + clusterId;
     }
-    
-    /**
-     * Endpoint to access dbs (static)
-     *
-     * @param tenant
-     *      tenant identifer
-     * @return
-     *      database endpoint
-     */
-    public static String getEndpointTenant(String tenant) {
-        return StreamingClient.getApiDevopsEndpointTenants() + "/" + tenant;
-    }
-    
 
 }

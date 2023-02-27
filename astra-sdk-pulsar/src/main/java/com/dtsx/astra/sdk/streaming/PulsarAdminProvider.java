@@ -1,12 +1,10 @@
 package com.dtsx.astra.sdk.streaming;
 
-import java.util.function.Supplier;
-
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.PulsarClientException;
 
-import com.dtsx.astra.sdk.streaming.domain.Tenant;
+import java.util.function.Supplier;
 
 /**
  * Delegate PulsarClient to a sub class.
@@ -17,14 +15,16 @@ public class PulsarAdminProvider implements Supplier<PulsarAdmin>{
     
     /* Use as singleton. */
     private PulsarAdmin pulsarAdmin;
-    
+
     /**
      * Default constructor.
-     * 
-     * @param tenant
-     *      parent tenant
+     *
+     * @param webServiceUrl
+     *      webServiceUrl Url
+     * @param pulsarToken
+     *      pulsar token
      */
-    public PulsarAdminProvider(Tenant tenant) {
+    public PulsarAdminProvider(String webServiceUrl, String pulsarToken) {
         try {
             pulsarAdmin = PulsarAdmin.builder()
                    .allowTlsInsecureConnection(false)
@@ -33,8 +33,8 @@ public class PulsarAdminProvider implements Supplier<PulsarAdmin>{
                    .tlsTrustStoreType("JKS")
                    .tlsTrustStorePath("")
                    .tlsTrustStorePassword("")
-                   .serviceHttpUrl(tenant.getWebServiceUrl())
-                   .authentication(AuthenticationFactory.token(tenant.getPulsarToken()))
+                   .serviceHttpUrl(webServiceUrl)
+                   .authentication(AuthenticationFactory.token(pulsarToken))
                    .build();
          } catch (PulsarClientException e) {
              throw new IllegalArgumentException("Cannot use Pulsar admin", e);

@@ -37,6 +37,7 @@ public class CreateTenant {
     public String getCloudProvider() {
         return cloudProvider;
     }
+
     /**
      * Setter accessor for attribute 'cloudProvider'.
      * @param cloudProvider
@@ -45,6 +46,7 @@ public class CreateTenant {
     public void setCloudProvider(String cloudProvider) {
         this.cloudProvider = cloudProvider;
     }
+
     /**
      * Getter accessor for attribute 'cloudRegion'.
      *
@@ -54,6 +56,7 @@ public class CreateTenant {
     public String getCloudRegion() {
         return cloudRegion;
     }
+
     /**
      * Setter accessor for attribute 'cloudRegion'.
      * @param cloudRegion
@@ -62,6 +65,7 @@ public class CreateTenant {
     public void setCloudRegion(String cloudRegion) {
         this.cloudRegion = cloudRegion;
     }
+
     /**
      * Getter accessor for attribute 'plan'.
      *
@@ -71,6 +75,7 @@ public class CreateTenant {
     public String getPlan() {
         return plan;
     }
+
     /**
      * Setter accessor for attribute 'plan'.
      * @param plan
@@ -79,6 +84,7 @@ public class CreateTenant {
     public void setPlan(String plan) {
         this.plan = plan;
     }
+
     /**
      * Getter accessor for attribute 'tenantName'.
      *
@@ -88,6 +94,7 @@ public class CreateTenant {
     public String getTenantName() {
         return tenantName;
     }
+
     /**
      * Setter accessor for attribute 'tenantName'.
      * @param tenantName
@@ -96,6 +103,7 @@ public class CreateTenant {
     public void setTenantName(String tenantName) {
         this.tenantName = tenantName;
     }
+
     /**
      * Getter accessor for attribute 'userEmail'.
      *
@@ -105,6 +113,7 @@ public class CreateTenant {
     public String getUserEmail() {
         return userEmail;
     }
+
     /**
      * Setter accessor for attribute 'userEmail'.
      * @param userEmail
@@ -113,7 +122,5 @@ public class CreateTenant {
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
     }
-    
-    
 
 }

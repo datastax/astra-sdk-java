@@ -21,30 +21,33 @@ package com.dtsx.astra.sdk.db.domain;
  */
 public class DatabaseCreationBuilder {
 
+    /** Default region. **/
+    public static final String DEFAULT_REGION  = "us-east1";
+
+    /** Default tier. **/
+    public static final String DEFAULT_TIER    = "serverless";
+
+    /** Default cloud. **/
+    public static final CloudProviderType DEFAULT_CLOUD = CloudProviderType.GCP;
+
+    /** CloudProvider where the database lives. */
+    protected CloudProviderType cloudProvider = DEFAULT_CLOUD;
+
+    /** Region. */
+    protected String region = DEFAULT_REGION;
+
+    /** Database type. */
+    protected String tier = DEFAULT_TIER;
+
     /** Name of the database--user friendly identifier. */
     protected String name;
-    
+
     /** Keyspace name in database */
     protected String keyspace;
-    
-    /** CloudProvider where the database lives. */
-    protected CloudProviderType cloudProvider;
-    
-    /** Default tier. */
-    protected String tier = "developer";
-    
+
     /** */
     protected int capacityUnits = 1;
-    
-    /** Region where to create theBD. */
-    protected String region;
-    
-    /** User name. */
-    protected String user;
-    
-    /** User password. */
-    protected String password;
-    
+
     /** Default constructor. */
     public DatabaseCreationBuilder() {}
     
@@ -65,7 +68,7 @@ public class DatabaseCreationBuilder {
      * Build from the keyspace.
      *
      * @param keyspace
-     *      targte db keyspace.
+     *      target database keyspace.
      * @return
      *      current instance
      */
@@ -112,33 +115,20 @@ public class DatabaseCreationBuilder {
         this.region = region;
         return this;
     }
-    
+
     /**
-     * Build from the username.
+     * Build from the capacity unit.
      *
-     * @param username
-     *      target db username.
+     * @param unit
+     *      target unit region.
      * @return
      *      current instance
      */
-    public DatabaseCreationBuilder username(String username) {
-        this.user = username;
+    public DatabaseCreationBuilder capacityUnit(int unit) {
+        this.capacityUnits = unit;
         return this;
     }
-    
-    /**
-     * Build from the password.
-     *
-     * @param password
-     *      target db password.
-     * @return
-     *      current instance
-     */
-    public DatabaseCreationBuilder password(String password) {
-        this.password = password;
-        return this;
-    }
-    
+
     /**
      * Build the immutable beans.
      *

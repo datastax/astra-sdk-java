@@ -2,8 +2,10 @@ package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.domain.*;
-import com.dtsx.astra.sdk.db.domain.exception.RegionNotFoundException;
+import com.dtsx.astra.sdk.db.exception.*;
 import com.dtsx.astra.sdk.db.telemetry.TelemetryClient;
+import com.dtsx.astra.sdk.streaming.StreamingClient;
+import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -14,19 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.HttpURLConnection;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
- * Working with the Database part of the devop API.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Devops API Client working with a Database.
  */
 public class DatabaseClient {
     
@@ -36,6 +32,10 @@ public class DatabaseClient {
     /** Returned type. */
     private static final TypeReference<List<Datacenter>> DATACENTER_LIST =
             new TypeReference<List<Datacenter>>(){};
+
+    /** Load Cdc responses. */
+    private static final TypeReference<List<CdcDefinition>> TYPE_LIST_CDC =
+            new TypeReference<List<CdcDefinition>>(){};
 
     /** unique db identifier. */
     private final String databaseId;
@@ -53,7 +53,7 @@ public class DatabaseClient {
      * @param databasesClient
      *          database client
      * @param databaseId
-     *          uniique database identifier
+     *          unique database identifier
      */
     public DatabaseClient(DatabasesClient databasesClient, String databaseId) {
        Assert.notNull(databasesClient,"databasesClient");
@@ -63,7 +63,7 @@ public class DatabaseClient {
     }
     
     // ---------------------------------
-    // ----       CRUD              ----
+    // ----       READ              ----
     // ---------------------------------
     
     /**
@@ -81,6 +81,16 @@ public class DatabaseClient {
        } else {
            return Optional.of(JsonUtils.unmarshallBean(res.getBody(), Database.class));
        }
+    }
+
+    /**
+     * Retrieve database or throw error.
+     *
+     * @return
+     *      current db or error
+     */
+    public Database get() {
+        return find().orElseThrow(() -> new DatabaseNotFoundException(databaseId));
     }
     
     /**
@@ -102,8 +112,7 @@ public class DatabaseClient {
      *      tells if database is ACTIVE
      */
     public boolean isActive() {
-        Optional<Database> db = find();
-        return db.isPresent() && (DatabaseStatusType.ACTIVE == db.get().getStatus());
+        return DatabaseStatusType.ACTIVE == get().getStatus();
     }
     
     /**
@@ -116,43 +125,77 @@ public class DatabaseClient {
      */
     public void createKeyspace(String keyspace) {
         Assert.hasLength(keyspace, "keyspace");
+        Database db = get();
+        if (db.getInfo().getKeyspaces().contains(keyspace)) {
+            throw new KeyspaceAlreadyExistException(keyspace, db.getInfo().getName());
+        }
         http.POST(getEndpointKeyspace(keyspace), databasesClient.bearerAuthToken);
     }
-    
-    /**
-     * Syntax sugar for doc API
-     * 
-     * @param namespace
-     *          target namespace
-     *         
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/addKeyspace          
-     */
-    public void createNamespace(String namespace) {
-        createKeyspace(namespace);
-    }
-    
+
+    // ---------------------------------
+    // ----    SECURE BUNDLE        ----
+    // ---------------------------------
+
     /**
      * Download SecureBundle for a specific data center
      * 
      * @param destination
-     *      file to save the securebundle
+     *      file to save the secure bundle
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
      */
-    public void downloadSecureConnectBundle(String destination) {
-        if (isActive() ) {
-            // Parameter validation
-            Assert.hasLength(destination, "destination");
-            // Invoke
-            ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL", databasesClient.bearerAuthToken);
-            // Check response coode
-            Assert.isTrue(HTTP_OK == res.getCode(), "Error in 'downloadSecureConnectBundle', with id=" +databaseId);
-            // Read file url to download
-            String url = (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
-            // Download binary in target folder
-            Utils.downloadFile(url, destination);
+    public void downloadDefaultSecureConnectBundle(String destination) {
+        // Parameters Validation
+        Assert.hasLength(destination, "destination");
+        if (!isActive()) throw new IllegalStateException("Database '" + databaseId + "' is not available.");
+        // Get list of urls
+        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL", databasesClient.bearerAuthToken);
+        // Mapping
+        String url = (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
+        // Download binary in target folder
+        Utils.downloadFile(url, destination);
+    }
+
+    /**
+     * Download SecureBundle for a specific data center
+     *
+     * @param destination
+     *      file to save the secure bundle
+     * @param region
+     *      download for a target region
+     *
+     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/generateSecureBundleURL
+     */
+    public void downloadSecureConnectBundle(String region, String destination) {
+        Assert.hasLength(region, "region");
+        Assert.hasLength(destination, "destination");
+        Database   db = get();
+        Datacenter dc = db.getInfo().getDatacenters()
+                .stream()
+                .filter(d -> region.equalsIgnoreCase(d.getRegion()))
+                .findFirst()
+                .orElseThrow(() -> new RegionNotFoundException(region, databaseId));
+        downloadSecureConnectBundle(db.getId(), dc, destination);
+    }
+
+    /**
+     * Download SCB for a database and a datacenter in target location.
+     * @param dbId
+     *      current database identifier
+     * @param dc
+     *      current region
+     * @param destination
+     *      target destination
+     */
+    private void downloadSecureConnectBundle(String dbId, Datacenter dc, String destination) {
+        Assert.hasLength(dbId, "database id");
+        Assert.hasLength(destination, "destination");
+        System.out.println(destination);
+        if (!new File(destination).exists()) {
+            Utils.downloadFile(dc.getSecureBundleUrl(), destination);
+            LOGGER.info("+ Downloading SCB to : {}", destination);
         } else {
-            LOGGER.warn("DB "+ databaseId + " is not active, no download");
+            LOGGER.info("+ SCB {} already available.", destination);
         }
     }
     
@@ -160,26 +203,29 @@ public class DatabaseClient {
      * Download all SecureBundle.
      * 
      * @param destination
-     *      file to save the securebundle
+     *      file to save the secured bundle
      */
     public void downloadAllSecureConnectBundles(String destination) {
-        Optional<Database> odb = find(); 
-        // Validation
         Assert.hasLength(destination, "destination");
         Assert.isTrue(new File(destination).exists(), "Destination folder");
-        Assert.isTrue(odb.isPresent(), "Database '" + databaseId + "' has not been found");
-        odb.get().getInfo().getDatacenters().stream().forEach(dc -> {
-            String fileName = destination + File.separator + buildScbFileName(odb.get().getId(), dc.getRegion());
-            if (!new File(fileName).exists()) {
-                Utils.downloadFile(dc.getSecureBundleUrl(), fileName);
-                LOGGER.info("+ Downloading file: {}", fileName);
-            } else {
-                LOGGER.info("+ {} available (no download)", buildScbFileName(odb.get().getId(), dc.getRegion()));
-            }
-        });
+        Database db = get();
+        db.getInfo()
+          .getDatacenters()
+          .forEach(dc -> downloadSecureConnectBundle(db.getId(), dc,
+                  destination + File.separator + buildScbFileName(db.getId(), dc.getRegion())));
     }
 
-    private String buildScbFileName(String dId, String dbRegion) {
+    /**
+     * Build filename for the secure connect bundle.
+     *
+     * @param dId
+     *      databaseId
+     * @param dbRegion
+     *      databaseRegion
+     * @return
+     *      file name for the secure bundled
+     */
+    public String buildScbFileName(String dId, String dbRegion) {
         return "scb_" + dId + "_" + dbRegion + ".zip";
     }
     
@@ -194,11 +240,11 @@ public class DatabaseClient {
         // Invoke Http endpoint
         ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park", databasesClient.bearerAuthToken);
         // Check response code
-        checkResponse(res, "park");
+        assertHttpCodeAccepted(res, "park");
     }
     
     /**
-     * Unparks a database.
+     * unpark a database.
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
      */
@@ -206,7 +252,7 @@ public class DatabaseClient {
         // Invoke Http endpoint
         ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark", databasesClient.bearerAuthToken);
         // Check response code
-        checkResponse(res, "unpark");
+        assertHttpCodeAccepted(res, "unpark");
     }
     
     /**
@@ -218,7 +264,7 @@ public class DatabaseClient {
         // Invoke Http endpoint
         ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate", databasesClient.bearerAuthToken);
         // Check response code
-        checkResponse(res, "terminate");
+        assertHttpCodeAccepted(res, "terminate");
     }
 
     /**
@@ -237,7 +283,7 @@ public class DatabaseClient {
         // Invoke Http endpoint
         ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", databasesClient.bearerAuthToken, body);
         // Check response code
-        checkResponse(res, "resize");
+        assertHttpCodeAccepted(res, "resize");
     }
     
     /**
@@ -255,14 +301,13 @@ public class DatabaseClient {
         Assert.hasLength(username, "username");
         Assert.hasLength(password, "password");
         // Build body
-        String body = new StringBuilder("{")
-                .append("\"username\": \"").append(username).append("\", ")
-                .append("\"password\": \"").append(password).append( "\"  }")
-                .toString();
+        String body = "{" +
+                "\"username\": \"" + username + "\", " +
+                "\"password\": \"" + password + "\"  }";
         // Invoke
         ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", databasesClient.bearerAuthToken, body);
         // Check response code
-        checkResponse(res, "resetPassword");
+        assertHttpCodeAccepted(res, "resetPassword");
     }
     
     // ---------------------------------
@@ -276,6 +321,7 @@ public class DatabaseClient {
      *      list of datacenters.
      */
     public Stream<Datacenter> regions() {
+        get();
         ApiResponseHttp res = http.GET(getEndpointRegions(), databasesClient.bearerAuthToken);
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Stream.of();
@@ -313,8 +359,12 @@ public class DatabaseClient {
         Assert.hasLength(tier, "tier");
         Assert.notNull(cloudProvider, "cloudProvider");
         Assert.hasLength(regionName, "regionName");
+        get();
+        if (findRegion(regionName).isPresent()) {
+            throw new RegionAlreadyExistException(databaseId, regionName);
+        }
         DatabaseRegionCreationRequest req = new DatabaseRegionCreationRequest(tier, cloudProvider.getCode(), regionName);
-        String body = JsonUtils.marshall(Arrays.asList(req));
+        String body = JsonUtils.marshall(Collections.singletonList(req));
         ApiResponseHttp res = http.POST(getEndpointRegions(), databasesClient.bearerAuthToken,body);
         if (res.getCode() != HttpURLConnection.HTTP_CREATED) {
             throw new IllegalStateException("Cannot Add Region: " + res.getBody());
@@ -338,7 +388,125 @@ public class DatabaseClient {
         ApiResponseHttp res = http.POST(getEndpointRegions() + "/"
                 + optDc.get().getId() + "/terminate", databasesClient.getToken());
         // Check response code
-        checkResponse(res, "deleteRegion");
+        assertHttpCodeAccepted(res, "deleteRegion");
+    }
+
+    // ---------------------------------
+    // --- Change Data Capture (cdc) ---
+    // ---------------------------------
+
+    /**
+     * Access Cdc component for a DB.
+     *
+     * @return
+     *      list of cdc
+     */
+    public Stream<CdcDefinition> cdcs() {
+        get();
+        ApiResponseHttp res = http.GET(getEndpointDatabaseCdc(), databasesClient.bearerAuthToken);
+        if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
+            return Stream.of();
+        } else {
+            return JsonUtils.unmarshallType(res.getBody(), TYPE_LIST_CDC).stream();
+        }
+    }
+
+    /**
+     * Find a cdc by its id.
+     *
+     * @param cdcId
+     *      identifier
+     * @return
+     *      cdc definition if exist
+     */
+    public Optional<CdcDefinition> findCdcById(String cdcId) {
+        Assert.hasLength(cdcId, "cdc identifier");
+        return cdcs().filter(cdc -> cdc.getConnectorName().equals(cdcId)).findFirst();
+    }
+
+    /**
+     * Find the cdc based on its components.
+     *
+     * @param keyspace
+     *      keyspace name
+     * @param table
+     *      table name
+     * @param tenant
+     *      tenant identifier
+     * @return
+     *      definition if present
+     */
+    public Optional<CdcDefinition> findCdcByDefinition(String keyspace, String table, String tenant) {
+        Assert.hasLength(keyspace, "keyspace");
+        Assert.hasLength(table, "table");
+        Assert.hasLength(tenant, "tenant");
+        return cdcs().filter(cdc ->
+                        cdc.getKeyspace().equals(keyspace)
+                        && cdc.getDatabaseTable().equals(table)
+                        && cdc.getTenant().equals(tenant)).findFirst();
+    }
+
+    /**
+     * Create cdcd from definition.
+     *
+     * @param keyspace
+     *      keyspace name
+     * @param table
+     *      table name
+     * @param tenant
+     *      tenant identifier
+     * @param topicPartition
+     *      topic partition
+     */
+    public void createCdc(String keyspace, String table, String tenant, int topicPartition) {
+        Database db = get();
+        Assert.hasLength(keyspace, "keyspace");
+        if (!db.getInfo().getKeyspaces().contains(keyspace)) {
+            throw new KeyspaceNotFoundException(databaseId, keyspace);
+        }
+        new StreamingClient(databasesClient.bearerAuthToken)
+                .tenant(tenant)
+                .cdc()
+                .create(db.getId(), keyspace, table, topicPartition);
+    }
+
+    /**
+     * Delete cdc from its identifier.
+     *
+     * @param cdcId
+     *      cdc identifier
+     */
+    public void deleteCdc(String cdcId) {
+        deleteCdc(findCdcById(cdcId).orElseThrow(
+                () -> new ChangeDataCaptureNotFoundException(cdcId, databaseId)));
+    }
+
+    /**
+     * Delete cdc from its identifier.
+     *
+     * @param keyspace
+     *      keyspace name
+     * @param table
+     *      table name
+     * @param tenant
+     *      tenant identifier
+     */
+    public void deleteCdc(String keyspace, String table, String tenant) {
+        deleteCdc(findCdcByDefinition(keyspace, table, tenant).orElseThrow(
+                () -> new ChangeDataCaptureNotFoundException(keyspace, table, tenant, databaseId)));
+    }
+
+    /**
+     * Delete Cdc from its definition.
+     *
+     * @param cdc
+     *      cdcd definition
+     */
+    private void deleteCdc(CdcDefinition cdc) {
+        new StreamingClient(databasesClient.bearerAuthToken)
+                .tenant(cdc.getTenant())
+                .cdc()
+                .delete(databaseId, cdc.getKeyspace(), cdc.getDatabaseTable());
     }
 
     // ---------------------------------
@@ -349,6 +517,7 @@ public class DatabaseClient {
      * Delegate Telemetry operation in a dedicated class
      *
       * @return
+     *      telemetry client
      */
     public TelemetryClient telemetry() {
         return new TelemetryClient(this, databaseId);
@@ -378,7 +547,7 @@ public class DatabaseClient {
      * TODO Update existing fields in access list for database
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpsertAccessListForDatabase
      */
-    public void updateccessLists() {
+    public void updateAccessLists() {
         throw new RuntimeException("This function is not yet implemented");
     }
     
@@ -522,12 +691,22 @@ public class DatabaseClient {
      * Endpoint to access dbs (static)
      *
      * @param dbId
-     *      database identifer
+     *      database identifier
      * @return
      *      database endpoint
      */
     public static String getEndpointDatabase(String dbId) {
         return DatabasesClient.getApiDevopsEndpointDatabases() + "/" + dbId;
+    }
+
+    /**
+     * Http Client for Cdc list.
+     *
+     * @return
+     *      url to invoke CDC
+     */
+    public String getEndpointDatabaseCdc() {
+        return StreamingClient.getApiDevopsEndpointStreaming() +  "/astra-cdc/databases/" + databaseId;
     }
     
     /**
@@ -546,7 +725,7 @@ public class DatabaseClient {
      * Endpoint to access keyspace. (static).
      * 
      * @param dbId
-     *      database identifer
+     *      database identifier
      * @param keyspace
      *      keyspace identifier
      * @return
@@ -557,19 +736,17 @@ public class DatabaseClient {
     }
     
     /**
-     * Mutualization of 202 code validation.
+     * Response validation
      * 
      * @param res
      *      current response
      * @param action
      *      action taken
      */
-    private void checkResponse(ApiResponseHttp res, String action) {
-        String errorMsg = new StringBuilder()
-                .append(" Cannot " + action)
-                .append(" db=" + databaseId )
-                .append(" code=" + res.getCode() )
-                .append(" msg=" + res.getBody()).toString();
+    private void assertHttpCodeAccepted(ApiResponseHttp res, String action) {
+        String errorMsg = " Cannot " + action
+                + " db=" + databaseId + " code=" + res.getCode()
+                + " msg=" + res.getBody();
         Assert.isTrue(HTTP_ACCEPTED == res.getCode(), errorMsg);
     }
 

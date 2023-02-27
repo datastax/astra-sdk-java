@@ -18,8 +18,6 @@ package com.datastax.astra.sdk.stargate;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
-import io.stargate.sdk.StargateClient;
-import io.stargate.sdk.rest.StargateRestApiClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -175,7 +173,7 @@ public class AstraStargateInitializationTest {
             // Then
             Assertions.assertNotNull(cli
                     .apiDevopsDatabases()
-                    .databases()
+                    .findAll()
                     .collect(Collectors.toList()));
          }
         LOGGER.info("[OK]");

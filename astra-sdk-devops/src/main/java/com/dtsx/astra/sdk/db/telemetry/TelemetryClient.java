@@ -101,9 +101,11 @@ public class TelemetryClient {
     }
 
     /**
-     * Retrieve Remote Telemetry configuration
-     *
+     * Retrieve Remote Telemetry configuration.
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
+     *
+     * @return
+     *      http response
      */
     public ApiResponseHttp findSetup() {
         return http.GET(getEndpointTelemetry(), dbClient.getToken());
@@ -111,8 +113,10 @@ public class TelemetryClient {
 
     /**
      * Retrieve Remote Telemetry configuration
-     *
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
+     *
+     * @return
+     *      telemetry request
      */
     public Optional<CloudWatchTelemetryRequest> findSetupCloudWatch() {
         ApiResponseHttp res = http.GET(getEndpointTelemetry(), dbClient.getToken());
@@ -128,8 +132,9 @@ public class TelemetryClient {
 
     /**
      * Retrieve Remote Telemetry configuration
-     *
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
+     * @return
+     *      telemetry request
      */
     public Optional<KafkaTelemetryRequest> findSetupKafka() {
         ApiResponseHttp res = http.GET(getEndpointTelemetry(), dbClient.getToken());
@@ -146,8 +151,9 @@ public class TelemetryClient {
 
     /**
      * Retrieve Remote Telemetry configuration
-     *
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
+     * @return
+     *      telemetry request
      */
     public Optional<PrometheusTelemetryRequest> findSetupPrometheus() {
         ApiResponseHttp res = http.GET(getEndpointTelemetry(), dbClient.getToken());

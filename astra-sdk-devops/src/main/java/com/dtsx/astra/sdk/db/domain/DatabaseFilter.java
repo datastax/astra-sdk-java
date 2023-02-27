@@ -21,9 +21,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Create a filter.
- * 
- * @author Cedrick LUNVEN (@clunven)
+ * Represent a criteria in a database search.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseFilter {
@@ -35,7 +33,7 @@ public class DatabaseFilter {
     private final int limit;
     
     /** param offset. */
-    private final String startingAfterDbId;
+    private String startingAfterDbId;
     
     /** should include non terminated.. */
     private final Include include;
@@ -48,14 +46,12 @@ public class DatabaseFilter {
      */
     public DatabaseFilter() {
         DatabaseFilter f = DatabaseFilter.builder().build();
-        if (f.getStartingAfterDbId().isPresent()) {
-            this.startingAfterDbId = f.getStartingAfterDbId().get();
-        } else {
-            this.startingAfterDbId = null;
-        }
-        this.limit             = f.getLimit();
-        this.include           = f.getInclude();
-        this.provider          = f.getProvider();
+        f.getStartingAfterDbId().ifPresent(dbId -> {
+            this.startingAfterDbId = dbId;
+        });
+        this.limit    = f.getLimit();
+        this.include  = f.getInclude();
+        this.provider = f.getProvider();
     }
    
     /**
@@ -88,8 +84,8 @@ public class DatabaseFilter {
                 .append("include=" + getInclude().name().toLowerCase())
                 .append("&provider=" + getProvider().name().toLowerCase())
                 .append("&limit=" + getLimit());
-        if (getStartingAfterDbId().isPresent()) {
-            sbURL.append("&starting_after=" + getStartingAfterDbId().get());
+        if (startingAfterDbId != null) {
+            sbURL.append("&starting_after=" + startingAfterDbId);
         }
         return sbURL.toString();
     }

@@ -29,7 +29,7 @@ public class ApiLocator {
      */
     public static String getApiDevopsEndpoint() {
         return ASTRA_ENDPOINT_DEVOPS;
-    } 
+    }
 
     /**
      * REST and DOCUMENT endpoint for a database and region.

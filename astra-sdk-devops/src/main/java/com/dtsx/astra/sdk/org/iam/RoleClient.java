@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.org.iam;
 
 import com.dtsx.astra.sdk.HttpClientWrapper;
 import com.dtsx.astra.sdk.org.OrganizationsClient;
+import com.dtsx.astra.sdk.org.iam.exception.RoleNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -13,9 +14,7 @@ import java.util.Optional;
 
 
 /**
- * Working with the Role part of the devops API.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Devops API Client working with Roles.
  */
 public class RoleClient {
    
@@ -56,6 +55,16 @@ public class RoleClient {
             return Optional.of(JsonUtils.unmarshallBean(res.getBody(), Role.class));
         }
     }
+
+    /**
+     * Access the role if exist or exception.
+     *
+     * @return
+     *      role
+     */
+    public Role get() {
+        return find().orElseThrow(() -> new RoleNotFoundException(roleId));
+    }
     
     /**
      * Check if a role is present
@@ -71,11 +80,10 @@ public class RoleClient {
      * Delete a role from its id.
      */
     public void delete() {
-        if (!exist()) {
-            throw new RuntimeException("Role '"+ roleId + "' has not been found");
-        }
+        // Ensure the role exist
+        get();
+        // Http Request
         http.DELETE(getEndpointRole(), orgClient.getToken());
-        
     }
     
     /**

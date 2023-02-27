@@ -15,7 +15,7 @@ public class Key implements Serializable {
     /** organization for the. */
     private String organizationId;
     
-    /* cloud provider. */
+    /** cloud provider. */
     private String cloudProvider;
     
     /** key identifier. */

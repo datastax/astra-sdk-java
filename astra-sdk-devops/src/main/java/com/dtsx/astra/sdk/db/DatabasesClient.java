@@ -15,17 +15,12 @@ import com.dtsx.astra.sdk.db.domain.DatabaseFilter.Include;
 
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Client for the Astra Devops API.
- * 
- * The JDK11 client http is used and as such jdk11+ is required
- * 
- * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
- * 
- * @author Cedrick LUNVEN (@clunven)
+ * Devops API Client working with Databases.
  */
 public class DatabasesClient {
     
@@ -49,8 +44,8 @@ public class DatabasesClient {
      *      authenticated token
      */
     public DatabasesClient(String bearerAuthToken) {
-       this.bearerAuthToken = bearerAuthToken;
-       Assert.hasLength(bearerAuthToken, "bearerAuthToken");
+        Assert.hasLength(bearerAuthToken, "bearerAuthToken");
+        this.bearerAuthToken = bearerAuthToken;
     } 
     
     // ---------------------------------
@@ -59,13 +54,13 @@ public class DatabasesClient {
     
     /**
      * Returns list of databases with default filter.
-     * (include=nonterminated, provider=ALL,limit=25)
+     * (include=non terminated, provider=ALL,limit=25)
      *
      * @return
      *      matching db
      */
-    public Stream<Database> databases() {
-        return searchDatabases(DatabaseFilter.builder()
+    public Stream<Database> findAll() {
+        return search(DatabaseFilter.builder()
                 .include(Include.ALL)
                 .provider(CloudProviderType.ALL)
                 .limit(1000)
@@ -78,8 +73,8 @@ public class DatabasesClient {
      * @return
      *      list of non terminated db
      */
-    public Stream<Database> databasesNonTerminated() {
-        return searchDatabases(DatabaseFilter.builder().build());
+    public Stream<Database> findAllNonTerminated() {
+        return search(DatabaseFilter.builder().build());
     }
     
     /**
@@ -90,9 +85,22 @@ public class DatabasesClient {
      * @return
      *          list of db matching the criteria
      */
-    public Stream<Database> databasesNonTerminatedByName(String name) {
+    public Stream<Database> findByName(String name) {
         Assert.hasLength(name, "Database name");
-        return databasesNonTerminated().filter(db->name.equals(db.getInfo().getName()));
+        return findAllNonTerminated().filter(db->name.equals(db.getInfo().getName()));
+    }
+
+    /**
+     * Find a database from its id.
+     *
+     * @param id
+     *          a database name
+     * @return
+     *          list of db matching the criteria
+     */
+    public Optional<Database> findById(String id) {
+        Assert.hasLength(id, "Database identifier");
+        return id(id).find();
     }
     
     /**
@@ -105,7 +113,7 @@ public class DatabasesClient {
      * @return
      *      list of db
      */
-    public Stream<Database> searchDatabases(DatabaseFilter filter) {
+    public Stream<Database> search(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
         ApiResponseHttp res = http.GET(getApiDevopsEndpointDatabases() + filter.urlParams(), bearerAuthToken);
         return JsonUtils.unmarshallType(res.getBody(), RESPONSE_DATABASES).stream();
@@ -121,10 +129,9 @@ public class DatabasesClient {
      * 
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase
      */
-    public String createDatabase(DatabaseCreationRequest dbCreationRequest) {
+    public String create(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");
         ApiResponseHttp res = http.POST(getApiDevopsEndpointDatabases(), bearerAuthToken, JsonUtils.marshall(dbCreationRequest));
-        
         if (HttpURLConnection.HTTP_CREATED != res.getCode()) {
             throw new IllegalStateException("Expected code 201 to create db but got " 
                         + res.getCode() + "body=" + res.getBody());
@@ -133,32 +140,32 @@ public class DatabasesClient {
     }
     
     // ---------------------------------
-    // ----    Sub Resources        ----
+    // ----   Access a Database     ----
     // ---------------------------------
     
     /**
      * Use the database part of the API.
      * 
      * @param dbId
-     *          unique identifieer id
+     *          unique identifier id
      * @return
      *          client specialized for this db
      */
-    public DatabaseClient database(String dbId) {
+    public DatabaseClient id(String dbId) {
         Assert.hasLength(dbId, "Database Id should not be null nor empty");
         return new DatabaseClient(this, dbId);
     }
     
     /**
-     * Find a database from its name and not its id.
+     *  Use the database part of the API from its name.
      * 
      * @param dbName
      *          name for a database
      * @return DatabaseClient
      */
-    public DatabaseClient databaseByName(String dbName) {
+    public DatabaseClient name(String dbName) {
         Assert.hasLength(dbName, "Database Id should not be null nor empty");
-        List<Database> dbs = databasesNonTerminatedByName(dbName).collect(Collectors.toList());
+        List<Database> dbs = findByName(dbName).collect(Collectors.toList());
         if (1 == dbs.size()) {
             return new DatabaseClient(this, dbs.get(0).getId());
         }

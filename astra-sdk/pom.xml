@@ -11,18 +11,7 @@
 		<version>0.4.1-SNAPSHOT</version>
 	</parent>
 
-
 	<dependencies>
-	
-		<!-- ASTRA STREAMING -->
-		<dependency>
-    		<groupId>org.apache.pulsar</groupId>
-    		<artifactId>pulsar-client-admin</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.pulsar</groupId>
-		    <artifactId>pulsar-client</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>com.datastax.astra</groupId>

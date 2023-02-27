@@ -23,35 +23,38 @@ package com.dtsx.astra.sdk.db.domain;
  *
  */
 public class DatabaseCreationRequest {
-    
+
+    /** Default region. **/
+    public static final String DEFAULT_REGION  = "us-east1";
+
+    /** Default tier. **/
+    public static final String DEFAULT_TIER    = "serverless";
+
+    /** Default cloud. **/
+    public static final CloudProviderType DEFAULT_CLOUD = CloudProviderType.GCP;
+
+    /** CloudProvider where the database lives. */
+    private CloudProviderType cloudProvider = DEFAULT_CLOUD;
+
+    /** Region. */
+    private String region = DEFAULT_REGION;
+
+    /** Database type. */
+    private String tier = DEFAULT_TIER;
+
     /** Name of the database--user friendly identifier. */
     private String name;
-    
+
     /** Keyspace name in database */
     private String keyspace;
-    
-    /** CloudProvider where the database lives. */
-    private CloudProviderType cloudProvider;
-    
-    /** Database type. */
-    private String tier = "developer";
-    
+
     /**
      * CapacityUnits is the amount of space available (horizontal scaling) 
      * for the database. For free tier the max CU's is 1, and 100 
      * for CXX/DXX the max is 12 on startup.
      */
     private int capacityUnits = 1;
-    
-    /** Region. */
-    private String region;
-    
-    /** Users. */
-    private String user;
-    
-    /** Password. */
-    private String password;
-    
+
     /**
      * default constructor.
      */
@@ -68,10 +71,8 @@ public class DatabaseCreationRequest {
         this.cloudProvider = builder.cloudProvider;
         this.keyspace      = builder.keyspace;
         this.name          = builder.name;
-        this.password      = builder.password;
         this.region        = builder.region;
         this.tier          = builder.tier;
-        this.user          = builder.user;
     }
     
     /**
@@ -144,32 +145,11 @@ public class DatabaseCreationRequest {
         return region;
     }
 
-    /**
-     * Getter accessor for attribute 'user'.
-     *
-     * @return
-     *       current value of 'user'
-     */
-    public String getUser() {
-        return user;
-    }
-  
-    /**
-     * Getter accessor for attribute 'password'.
-     *
-     * @return
-     *       current value of 'password'
-     */
-    public String getPassword() {
-        return password;
-    }
-
     /** {@inheritDoc} */
     @Override
     public String toString() {
         return "DatabaseCreationRequest [name=" + name + ", keyspace=" + keyspace + ", cloudProvider=" + cloudProvider + ", tier="
-                + tier + ", capacityUnits=" + capacityUnits + ", region=" + region + ", user=" + user + ", password=" + password
-                + "]";
+                + tier + ", capacityUnits=" + capacityUnits + ", region=" + region + "]";
     }
 
 }

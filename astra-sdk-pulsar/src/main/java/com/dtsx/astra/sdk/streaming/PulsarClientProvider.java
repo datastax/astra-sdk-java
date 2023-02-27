@@ -1,17 +1,13 @@
 package com.dtsx.astra.sdk.streaming;
 
-import java.util.function.Supplier;
-
 import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 
-import com.dtsx.astra.sdk.streaming.domain.Tenant;
+import java.util.function.Supplier;
 
 /**
  * Delegate PulsarClient to a sub class.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public class PulsarClientProvider implements Supplier<PulsarClient>{
     
@@ -21,14 +17,16 @@ public class PulsarClientProvider implements Supplier<PulsarClient>{
     /**
      * Default constructor.
      * 
-     * @param tenant
-     *      parent tenant
+     * @param brokerUrl
+     *      broker Url
+     * @param pulsarToken
+     *      pulsar token
      */
-    public PulsarClientProvider(Tenant tenant) {
+    public PulsarClientProvider(String brokerUrl, String pulsarToken) {
         try {
             pulsarClient = PulsarClient.builder()
-                    .serviceUrl(tenant.getBrokerServiceUrl())
-                    .authentication(AuthenticationFactory.token(tenant.getPulsarToken()))
+                    .serviceUrl(brokerUrl)
+                    .authentication(AuthenticationFactory.token(pulsarToken))
                     .build();
         } catch (PulsarClientException e) {
             throw new IllegalArgumentException("Cannot connect to pulsar", e); 

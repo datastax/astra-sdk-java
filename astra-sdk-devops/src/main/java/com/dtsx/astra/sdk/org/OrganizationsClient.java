@@ -8,6 +8,7 @@ import com.dtsx.astra.sdk.org.domain.*;
 import com.dtsx.astra.sdk.org.iam.RoleClient;
 import com.dtsx.astra.sdk.org.iam.TokenClient;
 import com.dtsx.astra.sdk.org.iam.UserClient;
+import com.dtsx.astra.sdk.org.iam.exception.RoleNotFoundException;
 import com.dtsx.astra.sdk.utils.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -16,12 +17,8 @@ import java.util.stream.Stream;
 
 /**
  * Client for the Astra Devops API.
- * 
- * The JDK11 client http is used and as such jdk11+ is required
- * 
+ *
  * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html
- * 
- * @author Cedrick LUNVEN (@clunven)
  */
 public class OrganizationsClient {
     
@@ -265,6 +262,18 @@ public class OrganizationsClient {
      */
     public Optional<Role> findRole(DefaultRoles role) {
         return findRoleByName(role.getName());
+    }
+
+    /**
+     * Get role from its id or return an exception not found.
+     *
+     * @param role
+     *      current role
+     * @return
+     *      current role
+     */
+    public Role readRole(DefaultRoles role) {
+        return findRole(role).orElseThrow(() -> new RoleNotFoundException(role.getName()));
     }
     
     /**

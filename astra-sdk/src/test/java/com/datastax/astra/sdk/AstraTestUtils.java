@@ -118,11 +118,11 @@ public class AstraTestUtils {
      *      the database id
      */
     public static String createDbAndKeyspaceIfNotExist(DatabasesClient devopsDbCli, String dbName, String keyspace) {
-        List<Database> dbs = devopsDbCli.databasesNonTerminatedByName(dbName).collect(Collectors.toList());
+        List<Database> dbs = devopsDbCli.findByName(dbName).collect(Collectors.toList());
         if (dbs.size() > 0) {
             LOGGER.info("A database with the expected name [" + AnsiUtils.cyan("{}") + "] already exists, checking keyspace.", dbName);
             Database db = dbs.get(0);
-            DatabaseClient dbc =devopsDbCli.database(db.getId());
+            DatabaseClient dbc =devopsDbCli.id(db.getId());
             if (!db.getInfo().getKeyspaces().contains(keyspace)) {
                 LOGGER.info("Creating keyspace {}", keyspace);
                 dbc.createKeyspace(keyspace);
@@ -134,7 +134,7 @@ public class AstraTestUtils {
         } else {
             // db does not exist, creating
             LOGGER.info("Creating db '{}'", dbName);
-            String serverlessDbId = devopsDbCli.createDatabase(DatabaseCreationRequest
+            String serverlessDbId = devopsDbCli.create(DatabaseCreationRequest
                     .builder()
                     .name(dbName)
                     .tier(TEST_TIER)
@@ -143,7 +143,7 @@ public class AstraTestUtils {
                     .keyspace(keyspace)
                     .build());
             LOGGER.info("db id = '{}'", serverlessDbId);
-            DatabaseClient dbc = devopsDbCli.database(serverlessDbId);
+            DatabaseClient dbc = devopsDbCli.id(serverlessDbId);
             waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 120);
             return serverlessDbId;
         }
@@ -159,7 +159,7 @@ public class AstraTestUtils {
      */
     public static void terminateDatabaseByName(DatabasesClient devopsDbCli, String dbName) {
         LOGGER.info("Terminating DB {}", dbName);
-        DatabaseClient dbc = devopsDbCli.databaseByName(dbName);
+        DatabaseClient dbc = devopsDbCli.name(dbName);
         if(dbc.exist()) {
             dbc.delete();
             waitForDbStatus(dbc, DatabaseStatusType.TERMINATED, 60);
