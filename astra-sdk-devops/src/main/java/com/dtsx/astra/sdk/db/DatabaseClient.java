@@ -190,7 +190,6 @@ public class DatabaseClient {
     private void downloadSecureConnectBundle(String dbId, Datacenter dc, String destination) {
         Assert.hasLength(dbId, "database id");
         Assert.hasLength(destination, "destination");
-        System.out.println(destination);
         if (!new File(destination).exists()) {
             Utils.downloadFile(dc.getSecureBundleUrl(), destination);
             LOGGER.info("+ Downloading SCB to : {}", destination);
