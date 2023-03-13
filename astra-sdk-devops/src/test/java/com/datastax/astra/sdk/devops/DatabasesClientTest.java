@@ -9,9 +9,6 @@ import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.utils.TestUtils;
 import org.junit.jupiter.api.*;
 
-import java.util.Optional;
-import java.util.UUID;
-
 /**
  * Tests Operations on Databases level.
  */

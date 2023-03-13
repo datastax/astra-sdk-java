@@ -342,7 +342,7 @@ public class HttpClientWrapper {
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Error in HTTP Request", e);
+            throw new RuntimeException("Error in HTTP Request: " + e.getMessage(), e);
         }
     }
 

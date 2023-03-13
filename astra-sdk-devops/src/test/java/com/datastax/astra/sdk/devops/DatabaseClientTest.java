@@ -124,7 +124,7 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
      @Order(9)
      @DisplayName("09. Should List regions")
      public void shouldListRegionsTest() {
-         List<Datacenter> regions = getSdkTestDbClient().regions().collect(Collectors.toList());
+         List<Datacenter> regions = getSdkTestDbClient().datacenter().findAll().collect(Collectors.toList());
          Assertions.assertEquals(1, regions.size());
          Assertions.assertEquals(SDK_TEST_DB_REGION, regions.get(0).getRegion());
      }
@@ -133,8 +133,8 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     @Order(10)
     @DisplayName("10. Should find region")
     public void shouldFindRegionsTest() {
-        Assertions.assertTrue(getSdkTestDbClient().findRegion(SDK_TEST_DB_REGION).isPresent());
-        Assertions.assertFalse(getSdkTestDbClient().findRegion("eu-west-1").isPresent());
+        Assertions.assertTrue(getSdkTestDbClient().datacenter().findByRegionName(SDK_TEST_DB_REGION).isPresent());
+        Assertions.assertFalse(getSdkTestDbClient().datacenter().findByRegionName("eu-west-1").isPresent());
     }
 
     @Test
@@ -142,7 +142,7 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     @DisplayName("11. Should not remove invalid region")
     public void shouldNotRemoveRegionsTest() {
         Assertions.assertThrows(RegionNotFoundException.class,
-                () -> getSdkTestDbClient().deleteRegion("eu-west-1"));
+                () -> getSdkTestDbClient().datacenter().delete("eu-west-1"));
     }
 
     @Test
@@ -150,7 +150,9 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     @DisplayName("12. Should not add existing region")
     public void shouldNotAddRegionsTest() {
         Assertions.assertThrows(RegionAlreadyExistException.class,
-                () -> getSdkTestDbClient().addRegion("serverless", CloudProviderType.GCP, SDK_TEST_DB_REGION));
+                () -> getSdkTestDbClient()
+                        .datacenter()
+                        .create("serverless", CloudProviderType.GCP, SDK_TEST_DB_REGION));
     }
 
     @Test
@@ -167,13 +169,13 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         }
         DatabaseClient dbClientAws = getDatabasesClient().name("aws_multiple_regions");
         TestUtils.waitForDbStatus(dbClientAws, DatabaseStatusType.ACTIVE, 300);
-        dbClientAws.addRegion("serverless", CloudProviderType.AWS, "eu-central-1");
+        dbClientAws.datacenter().create("serverless", CloudProviderType.AWS, "eu-central-1");
     }
 
     @Test
     @DisplayName("Should delete a region")
     public void shouldDeleteRegionTest() {
-        getDatabasesClient().name("region").deleteRegion("eu-central-1");
+        getDatabasesClient().name("region").datacenter().delete("eu-central-1");
     }
 
     @Test

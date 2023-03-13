@@ -1,16 +1,6 @@
 package com.datastax.astra.sdk.devops;
 
-import com.datastax.astra.sdk.streaming.StreamingClientTest;
-import com.dtsx.astra.sdk.db.DatabaseClient;
-import com.dtsx.astra.sdk.db.DatabasesClient;
-import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
-import com.dtsx.astra.sdk.streaming.StreamingClient;
-import com.dtsx.astra.sdk.streaming.TenantClient;
 import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
-import com.dtsx.astra.sdk.streaming.domain.CreateCdc;
-import com.dtsx.astra.sdk.streaming.domain.DeleteCdc;
-import org.junit.Assert;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +18,7 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
     @DisplayName("List CDC from a DB")
     public void shouldListDbCdc() {
         getSdkTestDbClient()
-                .cdcs()
+                .cdc().findAll()
                 .map(CdcDefinition::getConnectorName)
                 .forEach(System.out::println);
     }
@@ -47,20 +37,20 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
     @Order(3)
     public void shouldCreateCdcWithDB() {
         //getSdkTestDbClient().createCdc(SDK_TEST_KEYSPACE, "foo1", "clun-gcp-east1", 3);
-        getDatabasesClient().name("db2").createCdc("ks2", "users", "clun-gcp-east1", 3);
+        getDatabasesClient().name("db2").cdc().create("ks2", "users", "clun-gcp-east1", 3);
 
     }
 
     @Test
     @Order(3)
     public void shouldDeleteCdcWithDB() {
-        getSdkTestDbClient().deleteCdc("9c68f46-foo1");
+        getSdkTestDbClient().cdc().delete("9c68f46-foo1");
     }
 
     @Test
     @Order(3)
     public void shouldDeleteCdcWithDefinition() {
-        getSdkTestDbClient().deleteCdc("ks1", "foo1", "clun-gcp-east1");
+        getSdkTestDbClient().cdc().delete("ks1", "foo1", "clun-gcp-east1");
     }
 
     @Test
