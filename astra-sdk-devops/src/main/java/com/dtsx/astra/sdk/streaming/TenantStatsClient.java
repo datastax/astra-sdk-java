@@ -1,6 +1,8 @@
 package com.dtsx.astra.sdk.streaming;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.streaming.domain.Statistics;
 import com.dtsx.astra.sdk.streaming.domain.Tenant;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -13,26 +15,30 @@ import java.util.stream.Stream;
 /**
  * Access metrics on a tenant.
  */
-public class StatsClient {
+public class TenantStatsClient extends AbstractApiClient {
 
     /** Load Database responses. */
     private static final TypeReference<Map<String, Statistics>> TYPE_LIST_STATISTICS =
             new TypeReference<Map<String, Statistics>>(){};
 
-    /** Access tenant. */
+    /**
+     * Unique db identifier.
+     */
     private final Tenant tenant;
 
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
-
     /**
-     * Default constructor.
+     * Constructor.
      *
-     * @param tenant
-     *          tenant client
+     * @param token
+     *      token
+     * @param tenantId
+     *      tenantId
      */
-    public StatsClient(Tenant tenant) {
-        this.tenant = tenant;
+    public TenantStatsClient(String token, String tenantId) {
+        super(token);
+        Assert.hasLength(tenantId, "tenantId");
+        // Test Db exists
+        this.tenant = new AstraStreamingClient(token).get(tenantId);
     }
 
     /**
@@ -44,7 +50,7 @@ public class StatsClient {
     public Stream<Statistics> namespaces() {
         return JsonUtils
                 .unmarshallType(
-                        http.GET_PULSAR(getEndpointStatisticsNamespaces(),
+                        HttpClientWrapper.getInstance().GET_PULSAR(getEndpointStatisticsNamespaces(),
                         tenant.getPulsarToken(), tenant.getClusterName(),
                         tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS)
                 .values()
@@ -62,9 +68,13 @@ public class StatsClient {
     public Optional<Statistics> namespace(String namespace) {
         Map<String, Statistics> map = JsonUtils
                 .unmarshallType(
-                        http.GET_PULSAR(getEndpointStatisticsNamespaces() + "/" + namespace,
-                                tenant.getPulsarToken(), tenant.getClusterName(),
-                                tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS);
+                        HttpClientWrapper
+                                .getInstance()
+                                .GET_PULSAR(
+                                    getEndpointStatisticsNamespaces() + "/" + namespace,
+                                    tenant.getPulsarToken(), tenant.getClusterName(),
+                                    tenant.getOrganizationId().toString())
+                                .getBody(), TYPE_LIST_STATISTICS);
         return Optional.ofNullable(map.get(tenant.getTenantName() + "/" + namespace));
     }
 
@@ -77,7 +87,7 @@ public class StatsClient {
     public Stream<Statistics> topics() {
         return JsonUtils
                 .unmarshallType(
-                        http.GET_PULSAR(getEndpointStatisticsTopics(),
+                        HttpClientWrapper.getInstance().GET_PULSAR(getEndpointStatisticsTopics(),
                                 tenant.getPulsarToken(), tenant.getClusterName(),
                                 tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS)
                 .values()
@@ -95,7 +105,7 @@ public class StatsClient {
     public Stream<Statistics> topics(String namespace) {
         return JsonUtils
                 .unmarshallType(
-                        http.GET_PULSAR(getEndpointStatisticsTopics() + "/" + namespace,
+                        HttpClientWrapper.getInstance().GET_PULSAR(getEndpointStatisticsTopics() + "/" + namespace,
                                 tenant.getPulsarToken(), tenant.getClusterName(),
                                 tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS)
                 .values()

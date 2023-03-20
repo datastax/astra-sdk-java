@@ -1,7 +1,8 @@
 package com.dtsx.astra.sdk.utils;
 
+import com.dtsx.astra.sdk.AstraDevopsApiClient;
 import com.dtsx.astra.sdk.db.DatabaseClient;
-import com.dtsx.astra.sdk.db.DatabasesClient;
+import com.dtsx.astra.sdk.db.AstraDbClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
@@ -81,13 +82,13 @@ public class TestUtils {
      * @return
      *      the database id
      */
-    public static String createDbAndKeyspaceIfNotExist(DatabasesClient devopsDbCli, String dbName, String keyspace) {
+    public static String createDbAndKeyspaceIfNotExist(AstraDbClient devopsDbCli, String dbName, String keyspace) {
         List<Database> dbs = devopsDbCli.findByName(dbName).collect(Collectors.toList());
         if (dbs.size() > 0) {
             Database db = dbs.get(0);
-            DatabaseClient dbc =devopsDbCli.id(db.getId());
+            DatabaseClient dbc = new DatabaseClient(devopsDbCli.getToken(), db.getId());
             if (!db.getInfo().getKeyspaces().contains(keyspace)) {
-                dbc.createKeyspace(keyspace);
+                dbc.keyspaces().create(keyspace);
                 waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 60);
             }            return db.getId();
         } else {
@@ -99,7 +100,7 @@ public class TestUtils {
                     .cloudRegion(TEST_REGION)
                     .keyspace(keyspace)
                     .build());
-            DatabaseClient dbc = devopsDbCli.id(serverlessDbId);
+            DatabaseClient dbc = new DatabaseClient(devopsDbCli.getToken(), serverlessDbId);
             waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 120);
             return serverlessDbId;
         }
@@ -113,8 +114,8 @@ public class TestUtils {
      * @param dbName
      *      database name
      */
-    public static void terminateDatabaseByName(DatabasesClient devopsDbCli, String dbName) {
-        DatabaseClient dbc = devopsDbCli.name(dbName);
+    public static void terminateDatabaseByName(AstraDbClient devopsDbCli, String dbName) {
+        DatabaseClient dbc = new AstraDbClient(devopsDbCli.getToken()).databaseByName(dbName);
         if(dbc.exist()) {
             dbc.delete();
             waitForDbStatus(dbc, DatabaseStatusType.TERMINATED, 60);

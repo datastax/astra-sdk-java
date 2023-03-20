@@ -1,10 +1,10 @@
 package com.datastax.astra.sdk.devops;
 
+import com.dtsx.astra.sdk.AstraDevopsApiClient;
 import com.dtsx.astra.sdk.db.DatabaseClient;
-import com.dtsx.astra.sdk.db.DatabasesClient;
+import com.dtsx.astra.sdk.db.AstraDbClient;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
-import com.dtsx.astra.sdk.org.OrganizationsClient;
-import com.dtsx.astra.sdk.streaming.StreamingClient;
+import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.dtsx.astra.sdk.utils.Utils;
 import org.junit.Assert;
@@ -34,12 +34,12 @@ public abstract class AbstractDevopsApiTest {
     /**
      * Reference to Databases Client.
      */
-    private static DatabasesClient databasesClient;
+    private static AstraDbClient databasesClient;
 
     /**
      * Reference to organization client.
      */
-    private static OrganizationsClient organizationClient;
+    private static AstraDevopsApiClient apiDevopsClient;
 
     /**
      * Working db.
@@ -49,20 +49,19 @@ public abstract class AbstractDevopsApiTest {
     /**
      * Reference to Databases Client.
      */
-    private static StreamingClient streamingClient;
-
+    private static AstraStreamingClient streamingClient;
 
     /**
-     * Access Org client.
+     * Access DB client.
      *
      * @return
-     *      client fot organization
+     *      client fot databases
      */
-    protected OrganizationsClient getOrganizationClient() {
-        if (organizationClient == null) {
-            organizationClient = new OrganizationsClient(getToken());
+    protected AstraDevopsApiClient getApiDevopsClient() {
+        if (apiDevopsClient == null) {
+            apiDevopsClient = new AstraDevopsApiClient(getToken());
         }
-        return organizationClient;
+        return apiDevopsClient;
     }
 
     /**
@@ -71,9 +70,9 @@ public abstract class AbstractDevopsApiTest {
      * @return
      *      client fot databases
      */
-    protected DatabasesClient getDatabasesClient() {
+    protected AstraDbClient getDatabasesClient() {
         if (databasesClient == null) {
-            databasesClient = new DatabasesClient(getToken());
+            databasesClient = new AstraDbClient(getToken());
         }
         return databasesClient;
     }
@@ -84,9 +83,9 @@ public abstract class AbstractDevopsApiTest {
      * @return
      *      client fot streaming
      */
-    protected StreamingClient getStreamingClient() {
+    protected AstraStreamingClient getStreamingClient() {
         if (streamingClient == null) {
-            streamingClient = new StreamingClient(getToken());
+            streamingClient = new AstraStreamingClient(getToken());
         }
         return streamingClient;
     }
@@ -115,9 +114,9 @@ public abstract class AbstractDevopsApiTest {
      * @return
      *      database client
      */
-    protected DatabaseClient getSdkTestDbClient() {
+    protected DatabaseClient getSdkTestDatabaseClient() {
         if (dbClient == null) {
-            if (getDatabasesClient().findByName(SDK_TEST_DB_NAME).count() == 0) {
+            if (!getDatabasesClient().findByName(SDK_TEST_DB_NAME).findAny().isPresent()) {
                 getDatabasesClient().create(DatabaseCreationRequest
                         .builder()
                         .name(SDK_TEST_DB_NAME)
@@ -125,7 +124,7 @@ public abstract class AbstractDevopsApiTest {
                         .cloudRegion(SDK_TEST_DB_REGION)
                         .build());
             }
-            dbClient = getDatabasesClient().name(SDK_TEST_DB_NAME);
+            dbClient = getApiDevopsClient().db().databaseByName(SDK_TEST_DB_NAME);
             Assert.assertTrue(dbClient.exist());
         }
         return dbClient;

@@ -1,9 +1,8 @@
 package com.datastax.astra.sdk.devops;
 
+import com.dtsx.astra.sdk.AstraDevopsApiClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.DatabaseRegion;
-import com.dtsx.astra.sdk.org.OrganizationsClient;
-import com.dtsx.astra.sdk.org.iam.UserClient;
 import com.dtsx.astra.sdk.org.domain.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -23,11 +22,7 @@ public class OrgCoreTest extends AbstractDevopsApiTest {
     @Test
     @Order(1)
     public void shouldAccessOrganization() {
-        // Given
-        OrganizationsClient cli = getOrganizationClient();
-        // When
-        Organization org = cli.organization();
-        // Then
+        Organization org = getApiDevopsClient().getOrganization();
         Assertions.assertNotNull(org);
         Assertions.assertNotNull(org.getId());
         Assertions.assertNotNull(org.getName());
@@ -36,24 +31,24 @@ public class OrgCoreTest extends AbstractDevopsApiTest {
     @Test
     @Order(2)
     public void shouldListRegions() {
-        LOGGER.info("Connection with OrganizationsClient");
-        // Given
-        Assertions.assertNotNull(getToken());
-        // When
-        OrganizationsClient cli = getOrganizationClient();
-        // Then
-        Assertions.assertTrue(cli.regions().collect(Collectors.toList()).size() > 1);
-        LOGGER.info("Can connect to ASTRA with OrganizationsClient");
+        Assertions.assertTrue(getApiDevopsClient()
+                .db()
+                .regions()
+                .findAll()
+                .collect(Collectors.toList())
+                .size() > 1);
     }
 
     @Test
     @Order(3)
     public void shouldFindAwsRegionAvailable() {
         LOGGER.info("AWS Region available");
-        // Given
-        OrganizationsClient cli = getOrganizationClient();
         // When
-        Map <String, Map<CloudProviderType,List<DatabaseRegion>>> available = cli.regionsMap();
+        Map <String, Map<CloudProviderType,List<DatabaseRegion>>> available =
+                getApiDevopsClient()
+                .db()
+                .regions()
+                .findAllAsMap();
         // Then
         Assertions.assertTrue(available.containsKey("serverless"));
         Assertions.assertTrue(available.get("serverless").containsKey(CloudProviderType.AWS));
@@ -69,17 +64,17 @@ public class OrgCoreTest extends AbstractDevopsApiTest {
     public void shouldFailOnInvalidParams() {
         LOGGER.info("Parameter validation");
         Assertions.assertThrows(IllegalArgumentException.class, 
-                () -> new OrganizationsClient(""));
+                () -> new AstraDevopsApiClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, 
-                () -> new OrganizationsClient((String)null));
+                () -> new AstraDevopsApiClient((String)null));
     }
 
     @Test
     @Order(5)
     @DisplayName("Listing serverless region for an organization")
     public void shouldListServerlessRegionTest() {
-        OrganizationsClient iamClient = new OrganizationsClient(getToken());
-        Assertions.assertTrue(iamClient.regionsServerless().count() > 0);
+        AstraDevopsApiClient iamClient = new AstraDevopsApiClient(getToken());
+        Assertions.assertTrue(iamClient.db().regions().findAllServerless().count() > 0);
     }
 
 }

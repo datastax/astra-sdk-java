@@ -1,7 +1,7 @@
 package com.datastax.astra.sdk.devops;
 
 import com.dtsx.astra.sdk.db.DatabaseClient;
-import com.dtsx.astra.sdk.db.DatabasesClient;
+import com.dtsx.astra.sdk.db.AstraDbClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
@@ -15,19 +15,14 @@ import org.junit.jupiter.api.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DatabasesClientTest extends AbstractDevopsApiTest {
 
-    // Test Constants
-    static final String DB_SERVERLESS   = "sdk_serverless";
-    static final String DB_CLASSIC      = "sdk_classic";
-    static final String TEST_KS_NAME    = "java";
-
     // Client to be tested
-    private static DatabasesClient dbsClient;
+    private static AstraDbClient dbsClient;
 
     @Test
     @BeforeEach
     public void initClient() {
         if (dbsClient == null) {
-            dbsClient = new DatabasesClient(getToken());
+            dbsClient = new AstraDbClient(getToken());
         }
     }
 
@@ -35,56 +30,56 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     @Order(1)
     @DisplayName("01. Initialization with Invalid Parameters")
     public void failInitializationsWithInvalidParamsTest() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new DatabasesClient((String) null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new AstraDbClient(""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new AstraDbClient(null));
     }
 
     @Test
     @Order(2)
     @DisplayName("02. findAll() retrieve some data")
     public void findAllTest() {
-        Assertions.assertTrue(dbsClient.findAll().count() > 0);
+        Assertions.assertTrue(dbsClient.findAll().findAny().isPresent());
     }
 
     @Test
     @Order(3)
     @DisplayName("03. create sdk_serverless if needed")
     public void createServerlessDbTest() {
-        String dbId = null;
-        if (dbsClient.findByName(DB_SERVERLESS).count() == 0) {
+        String dbId;
+        if (!dbsClient.findByName(SDK_TEST_DB_NAME).findAny().isPresent()) {
             dbId = dbsClient.create(DatabaseCreationRequest
                     .builder()
-                    .name(DB_SERVERLESS)
-                    .keyspace(TEST_KS_NAME)
-                    .cloudRegion("us-east4")
+                    .name(SDK_TEST_DB_NAME)
+                    .keyspace(SDK_TEST_KEYSPACE)
+                    .cloudRegion(SDK_TEST_DB_REGION)
                     .build());
-            System.out.println("- Creating db '" + DB_SERVERLESS + "' (id=" + dbId + ")");
+            System.out.println("- Creating db '" + SDK_TEST_DB_NAME + "' (id=" + dbId + ")");
         } else {
-            dbId = dbsClient.name(DB_SERVERLESS).find().get().getId();
+            dbId = dbsClient.databaseByName(SDK_TEST_DB_NAME).find().get().getId();
         }
 
         // Then
-        Assertions.assertFalse( dbsClient.findByName(DB_SERVERLESS).count() == 0);
+        Assertions.assertNotEquals(0, dbsClient.findByName(SDK_TEST_DB_NAME).count());
         Assertions.assertTrue( dbsClient.findById(dbId).isPresent());
-        Assertions.assertNotNull(dbsClient.id(dbId).get());
+        Assertions.assertNotNull(dbsClient.database(dbId).get());
         // When
         System.out.println("- Db Exists, waiting for ACTIVE STATUS");
-        TestUtils.waitForDbStatus(dbsClient.id(dbId), DatabaseStatusType.ACTIVE, 300);
+        TestUtils.waitForDbStatus(dbsClient.database(dbId), DatabaseStatusType.ACTIVE, 300);
         // When
-        Assertions.assertEquals(DatabaseStatusType.ACTIVE, dbsClient.id(dbId).get().getStatus());
+        Assertions.assertEquals(DatabaseStatusType.ACTIVE, dbsClient.database(dbId).get().getStatus());
     }
 
     @Test
     @Order(4)
     @DisplayName("04. create sdk_classic if possible")
     public void createClassicDbTest() {
-        Assertions.assertTrue( dbsClient.findByName(DB_CLASSIC).count() == 0);
+        Assertions.assertEquals(0, dbsClient.findByName("classic20").count());
         // When Creating a DB
         try {
-            String dbId = dbsClient.create(DatabaseCreationRequest
+            dbsClient.create(DatabaseCreationRequest
                     .builder()
-                    .name(DB_CLASSIC)
-                    .keyspace(TEST_KS_NAME)
+                    .name("classic20")
+                    .keyspace("classic")
                     .cloudProvider(CloudProviderType.AWS)
                     .cloudRegion("us-east-2")
                     .tier("C20")
@@ -99,13 +94,13 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     @Order(5)
     @DisplayName("05. find by name")
     public void shouldFindDatabaseByNameTest() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.name(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.name(null));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.name("i-like-cheese"));
-        Assertions.assertTrue(dbsClient.findAllNonTerminated().anyMatch(db -> DB_SERVERLESS.equals(db.getInfo().getName())));
-        Assertions.assertTrue(dbsClient.findAll().anyMatch(db -> DB_SERVERLESS.equals(db.getInfo().getName())));
-        Assertions.assertTrue(dbsClient.findByName(DB_SERVERLESS).count() > 0);
-        Assertions.assertTrue(dbsClient.name(DB_SERVERLESS).exist());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.databaseByName(""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.databaseByName(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.databaseByName("i-like-cheese"));
+        Assertions.assertTrue(dbsClient.findAllNonTerminated().anyMatch(db -> SDK_TEST_DB_NAME.equals(db.getInfo().getName())));
+        Assertions.assertTrue(dbsClient.findAll().anyMatch(db -> SDK_TEST_DB_NAME.equals(db.getInfo().getName())));
+        Assertions.assertTrue(dbsClient.findByName(SDK_TEST_DB_NAME).count() > 0);
+        Assertions.assertTrue(dbsClient.databaseByName(SDK_TEST_DB_NAME).exist());
     }
 
     @Test
@@ -113,15 +108,15 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     @DisplayName("06. find by id")
     public void shouldFindDatabaseByIdTest() {
         // --> Getting a valid id
-        Assertions.assertTrue(dbsClient.name(DB_SERVERLESS).exist());
-        String dbId = dbsClient.name(DB_SERVERLESS).get().getId();
+        Assertions.assertTrue(dbsClient.databaseByName(SDK_TEST_DB_NAME).exist());
+        String dbId = dbsClient.databaseByName(SDK_TEST_DB_NAME).get().getId();
         // <---
-        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.id(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.id(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.database(""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dbsClient.database(null));
 
-        Assertions.assertFalse(dbsClient.id("invalid").exist());
+        Assertions.assertFalse(dbsClient.database("invalid").exist());
 
-        DatabaseClient dbClient = dbsClient.id(dbId);
+        DatabaseClient dbClient = dbsClient.database(dbId);
         Assertions.assertNotNull(dbClient);
         Assertions.assertTrue(dbClient.exist());
         Assertions.assertTrue(dbClient.find().isPresent());
@@ -131,9 +126,8 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
         Assertions.assertEquals(dbId, db.getId());
         Assertions.assertNotNull(db.getMetrics());
         Assertions.assertNotNull(db.getStorage());
-        Assertions.assertEquals(TEST_KS_NAME, db.getInfo().getKeyspace());
+        Assertions.assertEquals(SDK_TEST_KEYSPACE, db.getInfo().getKeyspace());
     }
-
 
     //@AfterAll
     //public static void cleanup() {

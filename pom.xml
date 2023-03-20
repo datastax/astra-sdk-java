@@ -4,7 +4,7 @@
 	<groupId>com.datastax.astra</groupId>
 	<artifactId>astra-sdk-parent</artifactId>
 	<version>0.4.1-SNAPSHOT</version>
-	<name>Stargate and Astra Java SDK</name>
+	<name>Astra Java SDK</name>
 	<packaging>pom</packaging>
 	<inceptionYear>2021</inceptionYear>
 	<description>Astra Sofware Development Kit. Tools and library to work with astra.datastax.com</description>

@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.streaming.domain;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Tenant Request Creation.
  */
 public class CreateTenant {
     
@@ -10,7 +10,8 @@ public class CreateTenant {
     private String plan          = "free";
     private String tenantName;
     private String userEmail;
-    
+    private String clusterName;
+
     /**
      * Default Constructor.
      */
@@ -123,4 +124,22 @@ public class CreateTenant {
         this.userEmail = userEmail;
     }
 
+    /**
+     * Gets clusterName
+     *
+     * @return value of clusterName
+     */
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    /**
+     * Set value for clusterName
+     *
+     * @param clusterName
+     *         new value for clusterName
+     */
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 }

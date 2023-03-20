@@ -1,7 +1,6 @@
-package com.dtsx.astra.sdk;
+package com.dtsx.astra.sdk.utils;
 
 import com.dtsx.astra.sdk.exception.AuthenticationException;
-import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import org.apache.hc.client5.http.auth.StandardAuthScheme;
 import org.apache.hc.client5.http.classic.methods.*;
 import org.apache.hc.client5.http.config.RequestConfig;

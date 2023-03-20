@@ -1,11 +1,10 @@
 package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.db.domain.Datacenter;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
-import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
 import com.dtsx.astra.sdk.db.telemetry.TelemetryClient;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
@@ -20,12 +19,10 @@ import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.net.HttpURLConnection.HTTP_ACCEPTED;
-
 /**
  * Devops API Client working with a Database.
  */
-public class DatabaseClient {
+public class DatabaseClient extends AbstractApiClient {
 
     /**
      * Logger for our Client.
@@ -33,33 +30,22 @@ public class DatabaseClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseClient.class);
 
     /**
-     * Wrapper handling header and error management as a singleton.
-     */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
-
-    /**
      * unique db identifier.
      */
     private final String databaseId;
 
     /**
-     * Reference to upper resource.
-     */
-    private final DatabasesClient databasesClient;
-
-    /**
      * Default constructor.
      *
-     * @param databasesClient
-     *         database client
+     * @param token
+     *         token client
      * @param databaseId
      *         unique database identifier
      */
-    public DatabaseClient(DatabasesClient databasesClient, String databaseId) {
-        Assert.notNull(databasesClient, "databasesClient");
+    public DatabaseClient(String token, String databaseId) {
+        super(token);
         Assert.hasLength(databaseId, "databaseId");
         this.databaseId = databaseId;
-        this.databasesClient = databasesClient;
     }
 
     // ---------------------------------
@@ -72,7 +58,7 @@ public class DatabaseClient {
      * @return the database if present,
      */
     public Optional<Database> find() {
-        ApiResponseHttp res = http.GET(getEndpointDatabase(), databasesClient.bearerAuthToken);
+        ApiResponseHttp res = GET(getEndpointDatabase());
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -107,21 +93,6 @@ public class DatabaseClient {
         return DatabaseStatusType.ACTIVE == get().getStatus();
     }
 
-    /**
-     * Create a new keyspace in a DB.
-     *
-     * @param keyspace
-     *         keyspace name to create
-     */
-    public void createKeyspace(String keyspace) {
-        Assert.hasLength(keyspace, "keyspace");
-        Database db = get();
-        if (db.getInfo().getKeyspaces().contains(keyspace)) {
-            throw new KeyspaceAlreadyExistException(keyspace, db.getInfo().getName());
-        }
-        http.POST(getEndpointKeyspace(keyspace), databasesClient.bearerAuthToken);
-    }
-
     // ---------------------------------
     // ----    SECURE BUNDLE        ----
     // ---------------------------------
@@ -138,7 +109,7 @@ public class DatabaseClient {
         if (!isActive())
             throw new IllegalStateException("Database '" + databaseId + "' is not available.");
         // Get list of urls
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/secureBundleURL", databasesClient.bearerAuthToken);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/secureBundleURL");
         // Mapping
         String url = (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
         // Download binary in target folder
@@ -220,9 +191,9 @@ public class DatabaseClient {
      */
     public void park() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/park", databasesClient.bearerAuthToken);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/park");
         // Check response code
-        assertHttpCodeAccepted(res, "park");
+        assertHttpCodeAccepted(res, "park", databaseId);
     }
 
     /**
@@ -232,9 +203,9 @@ public class DatabaseClient {
      */
     public void unpark() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/unpark", databasesClient.bearerAuthToken);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/unpark");
         // Check response code
-        assertHttpCodeAccepted(res, "unpark");
+        assertHttpCodeAccepted(res, "unpark", databaseId);
     }
 
     /**
@@ -244,9 +215,9 @@ public class DatabaseClient {
      */
     public void delete() {
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/terminate", databasesClient.bearerAuthToken);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/terminate");
         // Check response code
-        assertHttpCodeAccepted(res, "terminate");
+        assertHttpCodeAccepted(res, "terminate", databaseId);
     }
 
     /**
@@ -263,9 +234,9 @@ public class DatabaseClient {
         // Build request
         String body = "{ \"capacityUnits\":" + capacityUnits + "}";
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resize", databasesClient.bearerAuthToken, body);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/resize", body);
         // Check response code
-        assertHttpCodeAccepted(res, "resize");
+        assertHttpCodeAccepted(res, "resize", databaseId);
     }
 
     /**
@@ -285,9 +256,23 @@ public class DatabaseClient {
         // Build body
         String body = "{" + "\"username\": \"" + username + "\", " + "\"password\": \"" + password + "\"  }";
         // Invoke
-        ApiResponseHttp res = http.POST(getEndpointDatabase() + "/resetPassword", databasesClient.bearerAuthToken, body);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/resetPassword", body);
         // Check response code
-        assertHttpCodeAccepted(res, "resetPassword");
+        assertHttpCodeAccepted(res, "resetPassword", databaseId);
+    }
+
+    // ---------------------------------
+    // ----       Keyspaces         ----
+    // ---------------------------------
+
+    /**
+     * Work with keyspaces.
+
+     * @return
+     *      keyspaces client
+     */
+    public DbKeyspacesClient keyspaces() {
+        return new DbKeyspacesClient(token, databaseId);
     }
 
     // ---------------------------------
@@ -299,8 +284,21 @@ public class DatabaseClient {
      *
      * @return cdc client
      */
-    public DbDatacenterClient datacenter() {
-        return new DbDatacenterClient(this, databasesClient.bearerAuthToken);
+    public DbDatacentersClient datacenters() {
+        return new DbDatacentersClient(token, databaseId);
+    }
+
+    // ---------------------------------
+    // ----       Access List       ----
+    // ---------------------------------
+
+    /**
+     * Delegate access lists operation in a dedicated class
+     *
+     * @return access list client
+     */
+    public DbAccessListsClient accessLists() {
+        return new DbAccessListsClient(token, databaseId);
     }
 
     // ---------------------------------
@@ -312,8 +310,8 @@ public class DatabaseClient {
      *
      * @return cdc client
      */
-    public DbCdcClient cdc() {
-        return new DbCdcClient(databasesClient.bearerAuthToken, get());
+    public DbCdcsClient cdc() {
+        return new DbCdcsClient(token, databaseId);
     }
 
     // ---------------------------------
@@ -326,21 +324,9 @@ public class DatabaseClient {
      * @return telemetry client
      */
     public TelemetryClient telemetry() {
-        return new TelemetryClient(this, databaseId);
+        return new TelemetryClient(this);
     }
 
-    // ---------------------------------
-    // ----       Access List       ----
-    // ---------------------------------
-
-    /**
-     * Delegate access lists operation in a dedicated class
-     *
-     * @return accesslist client
-     */
-    public DbAccessListClient accessList() {
-        return new DbAccessListClient(databasesClient.bearerAuthToken, get());
-    }
 
     // ---------------------------------
     // ----       Private Links     ----
@@ -352,7 +338,7 @@ public class DatabaseClient {
      * @return privateLink client
      */
     public DbPrivateLinksClient privateLink() {
-        return new DbPrivateLinksClient(databasesClient.bearerAuthToken, get());
+        return new DbPrivateLinksClient(token, databaseId);
     }
 
     // ---------------------------------
@@ -376,62 +362,7 @@ public class DatabaseClient {
      * @return database endpoint
      */
     public static String getEndpointDatabase(String dbId) {
-        return DatabasesClient.getApiDevopsEndpointDatabases() + "/" + dbId;
-    }
-
-    /**
-     * Endpoint to access keyspace.
-     *
-     * @param keyspace
-     *         keyspace identifier
-     * @return endpoint
-     */
-    public String getEndpointKeyspace(String keyspace) {
-        return getEndpointKeyspace(databaseId, keyspace);
-    }
-
-    /**
-     * Endpoint to access keyspace. (static).
-     *
-     * @param dbId
-     *         database identifier
-     * @param keyspace
-     *         keyspace identifier
-     * @return endpoint
-     */
-    public static String getEndpointKeyspace(String dbId, String keyspace) {
-        return getEndpointDatabase(dbId) + "/keyspaces/" + keyspace;
-    }
-
-    /**
-     * Response validation
-     *
-     * @param res
-     *         current response
-     * @param action
-     *         action taken
-     */
-    public void assertHttpCodeAccepted(ApiResponseHttp res, String action) {
-        String errorMsg = " Cannot " + action + " db=" + databaseId + " code=" + res.getCode() + " msg=" + res.getBody();
-        Assert.isTrue(HTTP_ACCEPTED == res.getCode(), errorMsg);
-    }
-
-    /**
-     * Getter accessor for attribute 'databaseId'.
-     *
-     * @return current value of 'databaseId'
-     */
-    public String getDatabaseId() {
-        return databaseId;
-    }
-
-    /**
-     * Access current token.
-     *
-     * @return current token
-     */
-    public String getToken() {
-        return databasesClient.getToken();
+        return AstraDbClient.getApiDevopsEndpointDatabases() + "/" + dbId;
     }
 
 }

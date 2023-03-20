@@ -1,4 +1,4 @@
-package com.dtsx.astra.sdk.org.iam.exception;
+package com.dtsx.astra.sdk.org.exception;
 
 /**
  * Exception thrown when accessing a user that does not exist.

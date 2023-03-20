@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.db;
 
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
@@ -22,32 +22,36 @@ import java.util.stream.Stream;
 /**
  * Devops API Client working with Databases.
  */
-public class DatabasesClient {
-    
-    /** Pth in the */
-    public static final String PATH_DATABASES = "/databases";
-    
+public class AstraDbClient extends AbstractApiClient {
+
     /** Load Database responses. */
     private static final TypeReference<List<Database>> RESPONSE_DATABASES =  
             new TypeReference<List<Database>>(){};
 
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
-
-    /** hold a reference to the bearer token. */
-    protected final String bearerAuthToken;
-    
     /**
      * As immutable object use builder to initiate the object.
      * 
-     * @param bearerAuthToken
+     * @param token
      *      authenticated token
      */
-    public DatabasesClient(String bearerAuthToken) {
-        Assert.hasLength(bearerAuthToken, "bearerAuthToken");
-        this.bearerAuthToken = bearerAuthToken;
-    } 
-    
+    public AstraDbClient(String token) {
+        super(token);
+    }
+
+    // ---------------------------------
+    // ----        REGIONS          ----
+    // ---------------------------------
+
+    /**
+     * Access Astra Db region topology.
+     *
+     * @return
+     *      work with regions
+     */
+    public DbRegionsClient regions() {
+        return new DbRegionsClient(token);
+    }
+
     // ---------------------------------
     // ----        CRUD             ----
     // ---------------------------------
@@ -100,7 +104,7 @@ public class DatabasesClient {
      */
     public Optional<Database> findById(String id) {
         Assert.hasLength(id, "Database identifier");
-        return id(id).find();
+        return database(id).find();
     }
     
     /**
@@ -115,7 +119,7 @@ public class DatabasesClient {
      */
     public Stream<Database> search(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
-        ApiResponseHttp res = http.GET(getApiDevopsEndpointDatabases() + filter.urlParams(), bearerAuthToken);
+        ApiResponseHttp res = GET(getApiDevopsEndpointDatabases() + filter.urlParams());
         return JsonUtils.unmarshallType(res.getBody(), RESPONSE_DATABASES).stream();
     }
     
@@ -131,52 +135,47 @@ public class DatabasesClient {
      */
     public String create(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");
-        ApiResponseHttp res = http.POST(getApiDevopsEndpointDatabases(), bearerAuthToken, JsonUtils.marshall(dbCreationRequest));
+        ApiResponseHttp res = POST(getApiDevopsEndpointDatabases(), JsonUtils.marshall(dbCreationRequest));
         if (HttpURLConnection.HTTP_CREATED != res.getCode()) {
             throw new IllegalStateException("Expected code 201 to create db but got " 
                         + res.getCode() + "body=" + res.getBody());
         }
         return res.getHeaders().get("location");
     }
-    
+
     // ---------------------------------
-    // ----   Access a Database     ----
+    // ----       Utilities         ----
     // ---------------------------------
-    
+
     /**
      * Use the database part of the API.
-     * 
+     *
      * @param dbId
      *          unique identifier id
      * @return
      *          client specialized for this db
      */
-    public DatabaseClient id(String dbId) {
+    public DatabaseClient database(String dbId) {
         Assert.hasLength(dbId, "Database Id should not be null nor empty");
-        return new DatabaseClient(this, dbId);
+        return new DatabaseClient(token, dbId);
     }
-    
+
     /**
-     *  Use the database part of the API from its name.
-     * 
+     * Use the database part of the API from its name.
+     *
      * @param dbName
      *          name for a database
      * @return DatabaseClient
      */
-    public DatabaseClient name(String dbName) {
+    public DatabaseClient databaseByName(String dbName) {
         Assert.hasLength(dbName, "Database Id should not be null nor empty");
         List<Database> dbs = findByName(dbName).collect(Collectors.toList());
         if (1 == dbs.size()) {
-            return new DatabaseClient(this, dbs.get(0).getId());
+            return new DatabaseClient(token, dbs.get(0).getId());
         }
-        throw new IllegalArgumentException("Cannot retrieve database from its name "
-                + "(matching count=" + dbs.size() + ")");
+        throw new IllegalArgumentException("Cannot retrieve database from its name (matching count=" + dbs.size() + ")");
     }
-    
-    // ---------------------------------
-    // ----       Utilities         ----
-    // ---------------------------------
-    
+
     /**
      * Endpoint to access schema for namespace.
      *
@@ -184,17 +183,7 @@ public class DatabasesClient {
      *      endpoint
      */
     public static String getApiDevopsEndpointDatabases() {
-        return ApiLocator.getApiDevopsEndpoint() + PATH_DATABASES;
-    }
-    
-    /**
-     * Access to the current authentication token.
-     *
-     * @return
-     *      authentication token
-     */
-    public String getToken() {
-        return bearerAuthToken;
+        return ApiLocator.getApiDevopsEndpoint() + "/databases";
     }
 
 }

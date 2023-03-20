@@ -29,10 +29,9 @@ import io.stargate.sdk.http.ServiceHttp;
 import io.stargate.sdk.rest.StargateRestApiClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import io.stargate.sdk.utils.Utils;
-import com.dtsx.astra.sdk.db.DatabasesClient;
+import com.dtsx.astra.sdk.db.AstraDbClient;
 import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.org.OrganizationsClient;
-import com.dtsx.astra.sdk.streaming.StreamingClient;
+import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +57,13 @@ public class AstraClient implements Closeable {
     // -----------------------------------------------------
     
     /** Hold a reference for the Api Devops. */
-    private DatabasesClient apiDevopsDatabases;
+    private AstraDbClient apiDevopsDatabases;
     
     /** Hold a reference for the Api Devops. */
     private OrganizationsClient apiDevopsOrganizations;
     
     /** Hold a reference for the Api Devops. */
-    private StreamingClient apiDevopsStreaming;
+    private AstraStreamingClient apiDevopsStreaming;
 
     // -----------------------------------------------------
     // --------- Stargate APIs Settings --------------------
@@ -120,8 +119,8 @@ public class AstraClient implements Closeable {
         // ---------------------------------------------------
         if (Utils.hasLength(config.getToken())) {
             apiDevopsOrganizations  = new OrganizationsClient(config.getToken());
-            apiDevopsDatabases      = new DatabasesClient(config.getToken());  
-            apiDevopsStreaming      = new StreamingClient(config.getToken());
+            apiDevopsDatabases      = new AstraDbClient(config.getToken());
+            apiDevopsStreaming      = new AstraStreamingClient(config.getToken());
             LOGGER.info("+ API(s) Devops     [" + AnsiUtils.green("ENABLED")+ "]");
         } else {
             LOGGER.info("+ API(s) Devops     [" + AnsiUtils.red("DISABLED")+ "]");
@@ -167,7 +166,7 @@ public class AstraClient implements Closeable {
             // ---------------------------------------------------
             
             if (config.isEnabledCrossRegionFailOver()) {
-                Optional<Database> db = apiDevopsDatabases.id(config.getDatabaseId()).find();
+                Optional<Database> db = apiDevopsDatabases.dbClientById(config.getDatabaseId()).find();
                 if (!db.isPresent()) {
                     throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
                 }
@@ -268,7 +267,7 @@ public class AstraClient implements Closeable {
         }
         // Download secure bundles (if needed)
         LOGGER.info("+ Downloading bundles in: [" + AnsiUtils.cyan("{}") + "]", config.getSecureConnectBundleFolder());
-        apiDevopsDatabases.id(config.getDatabaseId())
+        apiDevopsDatabases.dbClientById(config.getDatabaseId())
                           .downloadAllSecureConnectBundles(config.getSecureConnectBundleFolder());
         
         // Setup the current region
@@ -349,7 +348,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public DatabasesClient apiDevopsDatabases() {
+    public AstraDbClient apiDevopsDatabases() {
         if (apiDevopsDatabases == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");
@@ -363,7 +362,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public StreamingClient apiDevopsStreaming() {
+    public AstraStreamingClient apiDevopsStreaming() {
         if (apiDevopsStreaming == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");

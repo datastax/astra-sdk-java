@@ -1,6 +1,6 @@
 package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseRegionCreationRequest;
@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 /**
  * Delegate operation on region/datacenters
  */
-public class DbDatacenterClient {
+public class DbDatacentersClient extends AbstractApiClient {
 
     /**
      * Returned type.
@@ -30,37 +30,23 @@ public class DbDatacenterClient {
             new TypeReference<List<Datacenter>>() {};
 
     /**
-     * Wrapper handling header and error management as a singleton.
-     */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
-
-    /**
      * unique db identifier.
-     */
-    private final String token;
-
-    /**
-     * Load database
      */
     private final Database db;
 
     /**
-     * Client
-     */
-    private final DatabaseClient dbClient;
-
-    /**
-     * Initialization of CDC.
+     * Constructor.
      *
      * @param token
-     *      current token
-     * @param dbClient
-     *      database client
+     *      token
+     * @param databaseId
+     *      databaseId
      */
-    public DbDatacenterClient(DatabaseClient dbClient, String token) {
-        this.token    = token;
-        this.dbClient = dbClient;
-        this.db       = dbClient.get();
+    public DbDatacentersClient(String token, String databaseId) {
+        super(token);
+        Assert.hasLength(databaseId, "databaseId");
+        // Test Db exists
+        this.db = new DatabaseClient(token, databaseId).get();
     }
 
     /**
@@ -69,7 +55,7 @@ public class DbDatacenterClient {
      * @return list of datacenters.
      */
     public Stream<Datacenter> findAll() {
-        ApiResponseHttp res = http.GET(getEndpointRegions(), token);
+        ApiResponseHttp res = GET(getEndpointRegions());
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Stream.of();
         } else {
@@ -121,7 +107,7 @@ public class DbDatacenterClient {
         }
         DatabaseRegionCreationRequest req = new DatabaseRegionCreationRequest(tier, cloudProvider.getCode(), regionName);
         String body = JsonUtils.marshall(Collections.singletonList(req));
-        ApiResponseHttp res = http.POST(getEndpointRegions(), token, body);
+        ApiResponseHttp res = POST(getEndpointRegions(), body);
         if (res.getCode() != HttpURLConnection.HTTP_CREATED) {
             throw new IllegalStateException("Cannot Add Region: " + res.getBody());
         }
@@ -141,9 +127,9 @@ public class DbDatacenterClient {
             throw new RegionNotFoundException(db.getId(), regionName);
         }
         // Invoke Http endpoint
-        ApiResponseHttp res = http.POST(getEndpointRegions() + "/" + optDc.get().getId() + "/terminate",  token);
+        ApiResponseHttp res = POST(getEndpointRegions() + "/" + optDc.get().getId() + "/terminate");
         // Check response code
-        dbClient.assertHttpCodeAccepted(res, "deleteRegion");
+        assertHttpCodeAccepted(res, "deleteRegion", db.getId());
     }
 
     /**
@@ -151,8 +137,8 @@ public class DbDatacenterClient {
      *
      * @return database endpoint
      */
-    public String getEndpointRegions() {
-        return dbClient.getEndpointDatabase() + "/datacenters";
+    private String getEndpointRegions() {
+        return DatabaseClient.getEndpointDatabase(db.getId()) + "/datacenters";
     }
 
 }

@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.domain.Database;
 
 import java.util.Optional;
@@ -8,7 +9,7 @@ import java.util.Optional;
 /**
  * Delegate private link operations.
  */
-public class DbPrivateLinksClient {
+public class DbPrivateLinksClient extends AbstractApiClient  {
 
     /**
      * Wrapper handling header and error management as a singleton.
@@ -18,24 +19,19 @@ public class DbPrivateLinksClient {
     /**
      * unique db identifier.
      */
-    private final String token;
-
-    /**
-     * Load database
-     */
     private final Database db;
 
     /**
-     * Initialization of CDC.
+     * Constructor.
      *
      * @param token
-     *      current token
-     * @param db
-     *      database
+     *      token
+     * @param databaseId
+     *      databaseId
      */
-    public DbPrivateLinksClient(String token, Database db) {
-        this.token = token;
-        this.db    = db;
+    public DbPrivateLinksClient(String token, String databaseId) {
+        super(token);
+        this.db = new DatabaseClient(token, databaseId).get();
     }
 
     /**
@@ -43,7 +39,7 @@ public class DbPrivateLinksClient {
      * <p>
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ListPrivateLinksForOrg
      */
-    public void findAllPrivateLinksByRegion() {
+    public void findAll() {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -55,7 +51,7 @@ public class DbPrivateLinksClient {
      *         <p>
      *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinksForDatacenter
      */
-    public void findAllPrivateLinksByRegion(String region) {
+    public void findAll(String region) {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -78,7 +74,7 @@ public class DbPrivateLinksClient {
      *         <p>
      *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AcceptEndpointToService
      */
-    public void createPrivateEndpoint(String region) {
+    public void create(String region) {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -93,7 +89,7 @@ public class DbPrivateLinksClient {
      *         endpoint id fo the region
      * @return the private endpoint of exist
      */
-    public Optional<Object> findPrivateEndpoint(String region, String endpointId) {
+    public Optional<Object> findById(String region, String endpointId) {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -109,7 +105,7 @@ public class DbPrivateLinksClient {
      *         <p>
      *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpdateEndpoint
      */
-    public void updatePrivateEndpoint(String region, String endpointId, Object endpoint) {
+    public void update(String region, String endpointId, Object endpoint) {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -123,7 +119,7 @@ public class DbPrivateLinksClient {
      *         <p>
      *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteEndpoint
      */
-    public void deletePrivateEndpoint(String region, String endpointId) {
+    public void delete(String region, String endpointId) {
         throw new RuntimeException("This function is not yet implemented");
     }
 

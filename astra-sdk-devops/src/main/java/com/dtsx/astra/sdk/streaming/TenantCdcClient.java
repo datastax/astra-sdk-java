@@ -1,7 +1,9 @@
 package com.dtsx.astra.sdk.streaming;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
-import com.dtsx.astra.sdk.db.DatabasesClient;
+import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.AstraDevopsApiClient;
+import com.dtsx.astra.sdk.db.AstraDbClient;
+import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
 import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
@@ -20,32 +22,26 @@ import java.util.stream.Stream;
 /**
  * Operations to work with Cdc in a tenant.
  */
-public class CdcClient {
-
-    /** Load Database responses. */
-    private static final TypeReference<List<CdcDefinition>> TYPE_LIST_CDC =
-            new TypeReference<List<CdcDefinition>>(){};
-
-    /** Access tenant. */
-    private final Tenant tenant;
-
-    /** Astra Bearer token. */
-    private final String token;
-
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
+public class TenantCdcClient extends AbstractApiClient {
 
     /**
-     * Default constructor.
-     *
-     * @param tenant
-     *          tenant client
-     * @param bearerToken
-     *          astra bearer token
+     * Unique db identifier.
      */
-    public CdcClient(Tenant tenant, String bearerToken) {
-        this.tenant = tenant;
-        this.token  = bearerToken;
+    private final Tenant tenant;
+
+    /**
+     * Constructor.
+     *
+     * @param token
+     *      token
+     * @param tenantId
+     *      tenantId
+     */
+    public TenantCdcClient(String token, String tenantId) {
+        super(token);
+        Assert.hasLength(tenantId, "tenantId");
+        // Test Db exists
+        this.tenant = new AstraStreamingClient(token).get(tenantId);
     }
 
     /**
@@ -64,7 +60,7 @@ public class CdcClient {
         Assert.hasLength(keyspace, "keyspace");
         Assert.hasLength(table, "table");
         Assert.isTrue(topicPartition > 0, "topic partition should be positive");
-        Database db = new DatabasesClient(token).id(databaseId).get();
+        Database db = new AstraDbClient(token).database(databaseId).get();
         if (!db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceNotFoundException(databaseId, keyspace);
         }
@@ -75,7 +71,7 @@ public class CdcClient {
         createCdc.setKeyspace(keyspace);
         createCdc.setTableName(table);
         createCdc.setTopicPartitions(topicPartition);
-        http.POST_PULSAR(getEndpointTenantCdc(),
+        HttpClientWrapper.getInstance().POST_PULSAR(getEndpointTenantCdc(),
                 tenant.getPulsarToken(),
                 JsonUtils.marshall(createCdc),
                 tenant.getClusterName(),
@@ -95,13 +91,13 @@ public class CdcClient {
     public void delete(String databaseId, String keyspace, String table) {
         Assert.hasLength(keyspace, "keyspace");
         Assert.hasLength(table, "table");
-        Database db = new DatabasesClient(token).id(databaseId).get();
+        Database db = new AstraDbClient(token).database(databaseId).get();
         DeleteCdc deleteCdc = new DeleteCdc();
         deleteCdc.setOrgId(db.getOrgId());
         deleteCdc.setDatabaseId(db.getId());
         deleteCdc.setKeyspace(keyspace);
         deleteCdc.setTableName(table);
-        http.DELETE_PULSAR(getEndpointTenantCdc(),
+        HttpClientWrapper.getInstance().DELETE_PULSAR(getEndpointTenantCdc(),
                 tenant.getPulsarToken(),
                 JsonUtils.marshall(deleteCdc),
                 tenant.getClusterName(),
@@ -115,11 +111,11 @@ public class CdcClient {
      *      list of cdc.
      */
     public Stream<CdcDefinition> list() {
-        ApiResponseHttp res = http.GET_PULSAR(getEndpointTenantCdc(),
+        ApiResponseHttp res =  HttpClientWrapper.getInstance().GET_PULSAR(getEndpointTenantCdc(),
                 tenant.getPulsarToken(),
                 tenant.getClusterName(),
                 tenant.getOrganizationId().toString());
-        return JsonUtils.unmarshallType(res.getBody(), TYPE_LIST_CDC).stream();
+        return JsonUtils.unmarshallType(res.getBody(),  new TypeReference<List<CdcDefinition>>(){}).stream();
     }
 
     /**
@@ -168,7 +164,5 @@ public class CdcClient {
                 + ".api.streaming.datastax.com/admin/v3/astra"
                 + "/tenants/" + tenant.getTenantName() + "/cdc";
     }
-
-
 
 }

@@ -17,8 +17,9 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
     @Order(1)
     @DisplayName("List CDC from a DB")
     public void shouldListDbCdc() {
-        getSdkTestDbClient()
-                .cdc().findAll()
+        getSdkTestDatabaseClient()
+                .cdc()
+                .findAll()
                 .map(CdcDefinition::getConnectorName)
                 .forEach(System.out::println);
     }
@@ -28,7 +29,8 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
     public void shouldListTenantCdc() {
        getStreamingClient()
                 .tenant("clun-gcp-east1")
-                .cdc().list()
+                .cdc()
+                .list()
                 .map(cdc -> cdc.getConnectorName() + " | " + cdc.getDatabaseName() + " | " + cdc.getKeyspace() +  " | " + cdc.getDatabaseTable())
                 .forEach(System.out::println);
     }
@@ -36,21 +38,23 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
     @Test
     @Order(3)
     public void shouldCreateCdcWithDB() {
-        //getSdkTestDbClient().createCdc(SDK_TEST_KEYSPACE, "foo1", "clun-gcp-east1", 3);
-        getDatabasesClient().name("db2").cdc().create("ks2", "users", "clun-gcp-east1", 3);
+        getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .cdc()
+                .create(SDK_TEST_KEYSPACE2, "users", "clun-gcp-east1", 3);
 
     }
 
     @Test
     @Order(3)
     public void shouldDeleteCdcWithDB() {
-        getSdkTestDbClient().cdc().delete("9c68f46-foo1");
+        getSdkTestDatabaseClient().cdc().delete("9c68f46-foo1");
     }
 
     @Test
     @Order(3)
     public void shouldDeleteCdcWithDefinition() {
-        getSdkTestDbClient().cdc().delete("ks1", "foo1", "clun-gcp-east1");
+        getSdkTestDatabaseClient().cdc().delete("ks1", "foo1", "clun-gcp-east1");
     }
 
     @Test
@@ -60,7 +64,7 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
         getStreamingClient()
                 .tenant("clun-gcp-east1")
                 .cdc()
-                .create(getSdkTestDbClient().get().getId(), SDK_TEST_KEYSPACE, "foo2", 3);
+                .create(getSdkTestDatabaseClient().get().getId(), SDK_TEST_KEYSPACE, "foo2", 3);
     }
 
     @Test
@@ -69,7 +73,7 @@ public class CdcClientTest extends AbstractDevopsApiTest  {
         getStreamingClient()
                 .tenant("clun-gcp-east1")
                 .cdc()
-                .delete(getSdkTestDbClient().get().getId(), SDK_TEST_KEYSPACE, "foo2");
+                .delete(getSdkTestDatabaseClient().get().getId(), SDK_TEST_KEYSPACE, "foo2");
     }
 
 }

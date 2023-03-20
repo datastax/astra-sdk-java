@@ -1,46 +1,42 @@
 package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.utils.Assert;
 
 /**
  * Operations on Access List.
  */
-public class DbAccessListClient {
+public class DbAccessListsClient extends AbstractApiClient {
 
-    /**
-     * Wrapper handling header and error management as a singleton.
-     */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
+    /** Get Available Regions. */
+    public static final String PATH_ACCESS_LISTS = "/access-lists";
 
     /**
      * unique db identifier.
      */
-    private final String token;
+    private final Database db;
 
     /**
-     * Load database
-     */
-    private Database db;
-
-    /**
-     * Initialization of CDC.
+     * Constructor.
      *
      * @param token
-     *      current token
-     * @param db
-     *      database
+     *      token
+     * @param databaseId
+     *      databaseId
      */
-    public DbAccessListClient(String token, Database db) {
-        this.token = token;
-        this.db    = db;
+    public DbAccessListsClient(String token, String databaseId) {
+        super(token);
+        Assert.hasLength(databaseId, "databaseId");
+        // Test Db exists
+        this.db = new DatabaseClient(token, databaseId).get();
     }
 
     /**
      * TODO Get access list for a database
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetAccessListForDatabase
      */
-    public void findAllAccessLists() {
+    public void findAll() {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -48,7 +44,7 @@ public class DbAccessListClient {
      * TODO Replace access list for your database.
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase
      */
-    public void replaceAccessLists() {
+    public void replace() {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -56,7 +52,7 @@ public class DbAccessListClient {
      * TODO Update existing fields in access list for database
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpsertAccessListForDatabase
      */
-    public void updateAccessLists() {
+    public void update() {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -65,7 +61,7 @@ public class DbAccessListClient {
      * <p>
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase
      */
-    public void createAccessList() {
+    public void create() {
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -74,7 +70,7 @@ public class DbAccessListClient {
      * <p>
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteAddressesOrAccessListForDatabase
      */
-    public void deleteAccessList() {
+    public void delete() {
         throw new RuntimeException("This function is not yet implemented");
     }
 

@@ -1,10 +1,10 @@
 package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.HttpClientWrapper;
+import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.ChangeDataCaptureNotFoundException;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
-import com.dtsx.astra.sdk.streaming.StreamingClient;
+import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 /**
  * Group Operation regarding Cdc for a DB
  */
-public class DbCdcClient {
+public class DbCdcsClient extends AbstractApiClient {
 
     /**
      * Load Cdc responses.
@@ -29,31 +29,23 @@ public class DbCdcClient {
     };
 
     /**
-     * Wrapper handling header and error management as a singleton.
-     */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
-
-    /**
      * unique db identifier.
      */
-    private final String token;
+    private final Database db;
 
     /**
-     * Load database
-     */
-    private Database db;
-
-    /**
-     * Initialization of CDC.
+     * Constructor.
      *
      * @param token
-     *      current token
-     * @param db
-     *      database
+     *      token
+     * @param databaseId
+     *      databaseId
      */
-    public DbCdcClient(String token, Database db) {
-        this.token = token;
-        this.db    = db;
+    public DbCdcsClient(String token, String databaseId) {
+        super(token);
+        Assert.hasLength(databaseId, "databaseId");
+        // Test Db exists
+        this.db = new DatabaseClient(token, databaseId).get();
     }
 
     /**
@@ -62,7 +54,7 @@ public class DbCdcClient {
      * @return list of cdc
      */
     public Stream<CdcDefinition> findAll() {
-        ApiResponseHttp res = http.GET(getEndpointDatabaseCdc(), token);
+        ApiResponseHttp res = GET(getEndpointDatabaseCdc());
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Stream.of();
         } else {
@@ -101,7 +93,7 @@ public class DbCdcClient {
     }
 
     /**
-     * Create cdcd from definition.
+     * Create cdc from definition.
      *
      * @param keyspace
      *         keyspace name
@@ -117,7 +109,7 @@ public class DbCdcClient {
         if (!db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceNotFoundException(db.getId(), keyspace);
         }
-        new StreamingClient(token).tenant(tenant).cdc().create(db.getId(), keyspace, table, topicPartition);
+        new AstraStreamingClient(token).tenant(tenant).cdc().create(db.getId(), keyspace, table, topicPartition);
     }
 
     /**
@@ -149,10 +141,10 @@ public class DbCdcClient {
      * Delete Cdc from its definition.
      *
      * @param cdc
-     *         cdcd definition
+     *         cdc definition
      */
     private void delete(CdcDefinition cdc) {
-        new StreamingClient(token)
+        new AstraStreamingClient(token)
                 .tenant(cdc.getTenant()).cdc()
                 .delete(db.getId(), cdc.getKeyspace(), cdc.getDatabaseTable());
     }
@@ -162,8 +154,8 @@ public class DbCdcClient {
      *
      * @return url to invoke CDC
      */
-    public String getEndpointDatabaseCdc() {
-        return StreamingClient.getApiDevopsEndpointStreaming() + "/astra-cdc/databases/" + db.getId();
+    private String getEndpointDatabaseCdc() {
+        return AstraStreamingClient.getApiDevopsEndpointStreaming() + "/astra-cdc/databases/" + db.getId();
     }
 
 }
