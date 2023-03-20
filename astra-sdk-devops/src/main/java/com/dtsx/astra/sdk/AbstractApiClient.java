@@ -101,8 +101,6 @@ public abstract class AbstractApiClient {
      *      url
      * @param body
      *      body
-     * @return
-     *      response
      */
     public void PUT(String url, String body) {
         getHttpClient().PUT(url, getToken(), body);
@@ -113,8 +111,6 @@ public abstract class AbstractApiClient {
      *
      * @param url
      *      url
-     * @return
-     *      response
      */
     public void DELETE(String url) {
         getHttpClient().DELETE(url, getToken());
@@ -129,7 +125,6 @@ public abstract class AbstractApiClient {
      *         action taken
      * @param entityId
      *         entity id
-
      */
     public void assertHttpCodeAccepted(ApiResponseHttp res, String action, String entityId) {
         String errorMsg = " Cannot " + action + " id=" + entityId + " code=" + res.getCode() + " msg=" + res.getBody();

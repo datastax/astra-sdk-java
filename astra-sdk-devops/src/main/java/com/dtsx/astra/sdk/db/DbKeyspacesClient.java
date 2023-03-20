@@ -45,6 +45,8 @@ public class DbKeyspacesClient extends AbstractApiClient  {
     /**
      * Endpoint to access keyspace. (static).
      *
+     * @param keyspaceName
+     *      name of keyspace
      * @return endpoint
      */
     public String getEndpointKeyspace(String keyspaceName) {

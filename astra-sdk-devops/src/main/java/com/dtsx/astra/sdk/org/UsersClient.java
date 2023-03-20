@@ -44,6 +44,8 @@ public class UsersClient extends AbstractApiClient {
     /**
      * Retrieve user information from its id.
      *
+     * @param userId
+     *      user identifier
      * @return
      *      user information
      */
@@ -72,6 +74,8 @@ public class UsersClient extends AbstractApiClient {
     /**
      * Check if a role is present
      *
+     * @param userId
+     *      user identifier
      * @return
      *      iif the user exists
      */
@@ -84,6 +88,8 @@ public class UsersClient extends AbstractApiClient {
      *
      * @param userEmail
      *      user emails
+     * @return
+     *      if the user exists
      */
     public boolean existByEmail(String userEmail) {
         return findByEmail(userEmail).isPresent();
@@ -91,6 +97,9 @@ public class UsersClient extends AbstractApiClient {
 
     /**
      * Delete a role from its id.
+     *
+     * @param userId
+     *      user identifier
      */
     public void delete(String userId) {
         if (!exist(userId)) {
@@ -148,6 +157,8 @@ public class UsersClient extends AbstractApiClient {
     /**
      * Replace roles of users.
      *
+     * @param userId
+     *      user identifier
      * @param roles
      *      replace existing roles of a user
      */
@@ -191,6 +202,8 @@ public class UsersClient extends AbstractApiClient {
     /**
      * Endpoint to access dbs.
      *
+     * @param userId
+     *      user identifier
      * @return
      *      database endpoint
      */

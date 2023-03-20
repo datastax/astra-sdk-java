@@ -58,6 +58,8 @@ public class RolesClient extends AbstractApiClient {
     /**
      * Retrieve role information from its id.
      *
+     * @param roleId
+     *      role identifier
      * @return
      *      role information
      */
@@ -73,6 +75,8 @@ public class RolesClient extends AbstractApiClient {
     /**
      * Access the role if exist or exception.
      *
+     * @param roleId
+     *      role identifier
      * @return
      *      role
      */
@@ -95,6 +99,8 @@ public class RolesClient extends AbstractApiClient {
     /**
      * Access the role if exist or exception.
      *
+     * @param role
+     *      current role
      * @return
      *      role
      */
@@ -118,6 +124,8 @@ public class RolesClient extends AbstractApiClient {
     /**
      * Access the role if exist or exception.
      *
+     * @param roleName
+     *      role name
      * @return
      *      role
      */
@@ -142,6 +150,8 @@ public class RolesClient extends AbstractApiClient {
     /**
      * Check if a role is present
      *
+     * @param roleId
+     *      role identifier
      * @return
      *      if current role with id exist
      */
@@ -151,6 +161,9 @@ public class RolesClient extends AbstractApiClient {
 
     /**
      * Delete a role from its id.
+     *
+     * @param roleId
+     *      role identifier
      */
     public void delete(String roleId) {
         // Ensure role exist
@@ -162,6 +175,8 @@ public class RolesClient extends AbstractApiClient {
     /**
      * Update an existing role.
      *
+     * @param roleId
+     *      role identifier
      * @param cr
      *      role definition
      */
