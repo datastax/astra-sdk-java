@@ -81,6 +81,8 @@ public class DbDatacentersClient extends AbstractApiClient {
      *
      * @param regionName
      *         region name
+     * @return
+     *      if region exist
      */
     public boolean exist(String regionName) {
         return findByRegionName(regionName).isPresent();

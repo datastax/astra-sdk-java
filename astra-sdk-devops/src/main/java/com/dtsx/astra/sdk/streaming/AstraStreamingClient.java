@@ -48,6 +48,8 @@ public class AstraStreamingClient extends AbstractApiClient {
     /**
      * Find a tenant from ids name.
      *
+     * @param tenantName
+     *      name of the tenant
      * @return
      *      tenant
      */
@@ -60,6 +62,8 @@ public class AstraStreamingClient extends AbstractApiClient {
     /**
      * Assess a tenant exist and retrieve information.
      *
+     * @param tenantName
+     *      name of the tenant
      * @return
      *      tenant reference
      */
@@ -80,6 +84,9 @@ public class AstraStreamingClient extends AbstractApiClient {
 
     /**
      * Deleting a tenant and cluster.
+     *
+     * @param tenantName
+     *      name of the tenant
      */
     public void delete(String tenantName) {
         Tenant tenant = get(tenantName);
@@ -89,6 +96,8 @@ public class AstraStreamingClient extends AbstractApiClient {
     /**
      * Check if a role is present
      *
+     * @param tenantName
+     *      name of the tenant
      * @return
      *      if the tenant exist
      */
@@ -181,6 +190,8 @@ public class AstraStreamingClient extends AbstractApiClient {
     /**
      * Endpoint to access dbs.
      *
+     * @param tenantId
+     *      identifier for tenant
      * @return
      *      database endpoint
      */
@@ -191,13 +202,15 @@ public class AstraStreamingClient extends AbstractApiClient {
     /**
      * Endpoint to access cluster.
      *
+     * @param tenantName
+     *      name of the tenant
      * @param clusterId
      *      identifier for the cluster.
      *
      * @return
      *      database endpoint
      */
-    public String getEndpointCluster(String tenantId, String clusterId) {
-        return getEndpointTenant(tenantId) + "/clusters/" + clusterId;
+    public String getEndpointCluster(String tenantName, String clusterId) {
+        return getEndpointTenant(tenantName) + "/clusters/" + clusterId;
     }
 }
