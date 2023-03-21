@@ -2,7 +2,6 @@ package com.dtsx.astra.sdk.org;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.AstraDevopsApiClient;
-import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.org.domain.InviteUserRequest;
 import com.dtsx.astra.sdk.org.domain.ResponseAllUsers;
 import com.dtsx.astra.sdk.org.domain.Role;

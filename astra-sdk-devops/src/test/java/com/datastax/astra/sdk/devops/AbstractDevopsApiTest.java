@@ -21,10 +21,10 @@ public abstract class AbstractDevopsApiTest {
     static final String SDK_TEST_DB_REGION = "us-east1";
 
     /** Test Constants. */
-    static final String SDK_TEST_KEYSPACE = "ks1";
+    static final String SDK_TEST_KEYSPACE = "java";
 
     /** Test Constants. */
-    static final String SDK_TEST_KEYSPACE2 = "ks2";
+    static final String SDK_TEST_KEYSPACE2 = "java2";
 
     /**
      * Hold reference to token

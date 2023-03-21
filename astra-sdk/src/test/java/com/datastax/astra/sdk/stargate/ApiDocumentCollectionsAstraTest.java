@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 /**
- * Execute some unit tests agains collections.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Execute some unit tests against collections.
  */
 public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollectionsTest {
 
@@ -24,7 +22,7 @@ public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollection
         
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                .withToken(client.getToken().get())
+                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
                 .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)

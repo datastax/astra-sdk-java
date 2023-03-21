@@ -346,6 +346,15 @@ public class DatabaseClient extends AbstractApiClient {
     // ---------------------------------
 
     /**
+     * Gets databaseId
+     *
+     * @return value of databaseId
+     */
+    public String getDatabaseId() {
+        return databaseId;
+    }
+
+    /**
      * Endpoint to access dbs.
      *
      * @return database endpoint

@@ -1,13 +1,11 @@
 package com.datastax.astra.sdk.stargate;
 
+import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
-import io.stargate.sdk.doc.StargateDocumentApiClient;
 import io.stargate.sdk.grpc.StargateGrpcApiClient;
+import io.stargate.sdk.grpc.domain.ResultSetGrpc;
 import io.stargate.sdk.test.doc.TestDocClientConstants;
 import org.junit.jupiter.api.Assertions;
-
-import com.datastax.astra.sdk.AstraClient;
-import io.stargate.sdk.grpc.domain.ResultSetGrpc;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +25,7 @@ public class ApiGrpcAstraTest {
 
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                .withToken(client.getToken().get())
+                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
                 .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)

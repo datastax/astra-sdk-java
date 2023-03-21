@@ -45,9 +45,8 @@ public class AstraRcTest {
         AstraRc arc = new AstraRc(tmpAstraRC.getAbsolutePath());
         arc.createSectionWithToken("default", "ABC");
         arc.save();
-        //Then
+        // Then
         Assertions.assertTrue(tmpAstraRC.exists());
-        System.out.println(arc.getSections());
     }
     
     

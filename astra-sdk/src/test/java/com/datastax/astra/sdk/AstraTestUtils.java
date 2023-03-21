@@ -1,5 +1,6 @@
 package com.datastax.astra.sdk;
 
+import com.datastax.astra.sdk.stargate.AstraStargateInitializationTest;
 import io.stargate.sdk.StargateClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import com.dtsx.astra.sdk.db.DatabaseClient;
@@ -15,17 +16,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Helper for tetst.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Helper for tests.
  */
 public class AstraTestUtils {
-    
+
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AstraTestUtils.class);
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraStargateInitializationTest.class);
+
     /** Test constant. */
-    public static final String TEST_DBNAME = "sdk_tests";
+    public static final String TEST_DBNAME = "sdk_java_test";
 
     /** Test constant. */
     public static final String  TEST_NAMESPACE = "java";
@@ -62,14 +61,15 @@ public class AstraTestUtils {
     }
     
     /**
-     * Allows to TODO
+     * Wait for the DB to respond.
+     *
      * @param dbc
+     *      database client
      * @param status
      */
     public static void waitForDbStatus(DatabaseClient dbc, DatabaseStatusType status, int timeoutSeconds) {
         long top = System.currentTimeMillis();
-        LOGGER.info("Waiting for DB {} to be in status {} with timeout '{}' seconds.", 
-                dbc.getDatabaseId(), status, timeoutSeconds);
+        System.out.println("Waiting for DB  " + dbc.getDatabaseId());
         while(status != dbc.find().get().getStatus() && ((System.currentTimeMillis()-top) < 1000*timeoutSeconds)) {
             System.out.print(AnsiUtils.green("\u25a0")); 
             waitForSeconds(5);
@@ -78,7 +78,6 @@ public class AstraTestUtils {
         if (dbc.find().get().getStatus() != status) {
             throw new IllegalStateException("Database is not in expected state after timeouts");
         }
-        LOGGER.info("Status {}", status);
     }
     
     /**
@@ -122,10 +121,10 @@ public class AstraTestUtils {
         if (dbs.size() > 0) {
             LOGGER.info("A database with the expected name [" + AnsiUtils.cyan("{}") + "] already exists, checking keyspace.", dbName);
             Database db = dbs.get(0);
-            DatabaseClient dbc =devopsDbCli.dbClientById(db.getId());
+            DatabaseClient dbc = devopsDbCli.database(db.getId());
             if (!db.getInfo().getKeyspaces().contains(keyspace)) {
                 LOGGER.info("Creating keyspace {}", keyspace);
-                dbc.createKeyspace(keyspace);
+                dbc.keyspaces().create(keyspace);
                 waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 60);
             } else {
                 LOGGER.info("A keyspace with the expected name [" + AnsiUtils.cyan("{}") + "] already exists.", keyspace);
@@ -143,7 +142,7 @@ public class AstraTestUtils {
                     .keyspace(keyspace)
                     .build());
             LOGGER.info("db id = '{}'", serverlessDbId);
-            DatabaseClient dbc = devopsDbCli.dbClientById(serverlessDbId);
+            DatabaseClient dbc = devopsDbCli.database(serverlessDbId);
             waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 120);
             return serverlessDbId;
         }
@@ -159,7 +158,7 @@ public class AstraTestUtils {
      */
     public static void terminateDatabaseByName(AstraDbClient devopsDbCli, String dbName) {
         LOGGER.info("Terminating DB {}", dbName);
-        DatabaseClient dbc = devopsDbCli.dbClientByName(dbName);
+        DatabaseClient dbc = devopsDbCli.databaseByName(dbName);
         if(dbc.exist()) {
             dbc.delete();
             waitForDbStatus(dbc, DatabaseStatusType.TERMINATED, 60);

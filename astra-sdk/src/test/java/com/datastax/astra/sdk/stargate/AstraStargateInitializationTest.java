@@ -18,7 +18,7 @@ package com.datastax.astra.sdk.stargate;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
-import org.junit.jupiter.api.Assertions;
+import com.datastax.oss.driver.api.core.cql.Row;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,10 +27,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
- * Multiple Connectivity mode for eacj parameters.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Multiple Connectivity mode for each parameter.
  */
 public class AstraStargateInitializationTest {
     
@@ -39,31 +40,26 @@ public class AstraStargateInitializationTest {
     
     private static AstraClient client;
 
-    /** Test constant. */
-    public static final String  TEST_NAMESPACE = "java";
-
-
     @BeforeAll
     public static void config() {
-        LOGGER.info("-- FIRST CLIENT TO CREATE DB WITH DEVOPS ---");
         client = AstraClient.builder().build();
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
         
         // Connect the client to the new created DB
-        LOGGER.info("-- SECOND CLIENT CQL + APIS ---");
         client = AstraClient.builder()
-                .withToken(client.getToken().get())
-                .withCqlKeyspace(TEST_NAMESPACE)
+                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
+                .withCqlKeyspace(AstraTestUtils.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .enableCql()
                 .build();
+        LOGGER.info("Connected to {} on namespace {}", dbId, AstraTestUtils.TEST_NAMESPACE);
     }
 
     @Test
     @DisplayName("Invoke REST Api providing dbId,cloudRegion,appToken")
     public void restApiTest() {
-        Assertions.assertTrue(client.apiStargateData().keyspaceNames().count() > 0);
+        assertTrue(client.apiStargateData().keyspaceNames().findAny().isPresent());
     }
 
     /*
@@ -97,9 +93,9 @@ public class AstraStargateInitializationTest {
     public void should_enable_cqlSession_with_token() {
         LOGGER.info( "- Connect Cassandra with CqlSession using token/appToken");
         // Given
-        Assertions.assertNotNull(client.getConfig().getDatabaseId());
-        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
-        Assertions.assertNotNull(client.getConfig().getToken());
+        assertNotNull(client.getConfig().getDatabaseId());
+        assertNotNull(client.getConfig().getDatabaseRegion());
+        assertNotNull(client.getConfig().getToken());
         // When (autocloseable)
         try(AstraClient astraClient = AstraClient.builder()
                 .withDatabaseId(client.getConfig().getDatabaseId())
@@ -108,10 +104,9 @@ public class AstraStargateInitializationTest {
                 .enableCql()
                 .build()) {
             // Then
-            Assertions.assertNotNull(astraClient
-                    .cqlSession().execute("SELECT release_version FROM system.local")
-                    .one()
-                    .getString("release_version"));
+            Row row = astraClient.cqlSession().execute("SELECT release_version FROM system.local").one();
+            assertNotNull(row);
+            assertNotNull(row.getString("release_version"));
         }
         LOGGER.info("[OK]");
     }
@@ -121,9 +116,9 @@ public class AstraStargateInitializationTest {
     public void should_enable_documentApi_withToken() {
         LOGGER.info( "- Invoke Document Api providing dbId,cloudRegion,appToken");
         // Given
-        Assertions.assertNotNull(client.getConfig().getDatabaseId());
-        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
-        Assertions.assertNotNull(client.getConfig().getToken());
+        assertNotNull(client.getConfig().getDatabaseId());
+        assertNotNull(client.getConfig().getDatabaseRegion());
+        assertNotNull(client.getConfig().getToken());
         // When
         try(AstraClient astraClient = AstraClient.builder()
                 .withDatabaseId(client.getConfig().getDatabaseId())
@@ -132,8 +127,8 @@ public class AstraStargateInitializationTest {
                 .disableCrossRegionFailOver()
                 .build()) {
                 // Then
-                Assertions.assertTrue(astraClient
-                        .apiStargateDocument().namespaceNames().count() > 0);
+                assertTrue(astraClient
+                        .apiStargateDocument().namespaceNames().findAny().isPresent());
          }
         LOGGER.info("[OK]");
     }
@@ -144,9 +139,9 @@ public class AstraStargateInitializationTest {
         LOGGER.info( "- Invoke REST Api providing dbId,cloudRegion,appToken");
         
         // Given
-        Assertions.assertNotNull(client.getConfig().getDatabaseId());
-        Assertions.assertNotNull(client.getConfig().getDatabaseRegion());
-        Assertions.assertNotNull(client.getConfig().getToken());
+        assertNotNull(client.getConfig().getDatabaseId());
+        assertNotNull(client.getConfig().getDatabaseRegion());
+        assertNotNull(client.getConfig().getToken());
         // When
         try(AstraClient astraClient = AstraClient.builder()
                 .withDatabaseId(client.getConfig().getDatabaseId())
@@ -154,8 +149,8 @@ public class AstraStargateInitializationTest {
                 .withToken(client.getConfig().getToken())
                 .build()) {
                 // Then
-            Assertions.assertTrue(astraClient
-                    .apiStargateData().keyspaceNames().count() > 0);
+            assertTrue(astraClient
+                    .apiStargateData().keyspaceNames().findAny().isPresent());
         }
         LOGGER.info("[OK]");
     }
@@ -166,12 +161,12 @@ public class AstraStargateInitializationTest {
         LOGGER.info( "- Contact Devops API");
         
         // Given
-        Assertions.assertTrue(client.getToken().isPresent());
+        assertTrue(client.getToken().isPresent());
         // When
         try(AstraClient cli = AstraClient.builder().withToken(client.getToken().get()).build()) {
           
             // Then
-            Assertions.assertNotNull(cli
+            assertNotNull(cli
                     .apiDevopsDatabases()
                     .findAll()
                     .collect(Collectors.toList()));

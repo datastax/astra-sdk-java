@@ -26,7 +26,7 @@ public class ApiDocumentRepositoryAstraTest extends AbstractRepositoryTest {
 
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                .withToken(client.getToken().get())
+                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
                 .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)

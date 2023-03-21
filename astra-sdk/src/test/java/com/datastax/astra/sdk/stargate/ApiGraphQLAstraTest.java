@@ -15,7 +15,7 @@ public class ApiGraphQLAstraTest extends AbstractGraphClientTest {
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
 
         client = AstraClient.builder()
-                .withToken(client.getToken().get())
+                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
                 .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)

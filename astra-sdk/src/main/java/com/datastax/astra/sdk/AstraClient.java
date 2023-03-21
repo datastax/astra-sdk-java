@@ -73,10 +73,10 @@ public class AstraClient implements Closeable {
     /** Access to all Stargate sub Api (rest, graphQL, doc, gRPC). */
     protected StargateClient stargateClient;
     
-    /** Keep some information realted to Astra Settings. */
+    /** Keep some information related to Astra Settings. */
     protected AstraClientConfig astraClientConfig;
    
-    /** Hold a reference on current region used for the Failover. */
+    /** Hold a reference on current region used for the Fail-over. */
     protected String currentDatabaseRegion;
     
     /**
@@ -110,7 +110,7 @@ public class AstraClient implements Closeable {
      * Initialization through builder.
      * 
      * @param config
-     *      configuration extrated from builder
+     *      configuration extracted from builder
      */
     public AstraClient(AstraClientConfig config) {
         this.astraClientConfig = config;
@@ -173,7 +173,7 @@ public class AstraClient implements Closeable {
                 }
     
                 /* Loop on regions. for each region a DC. */
-                db.get().getInfo().getDatacenters().stream().forEach(dc -> {
+                db.get().getInfo().getDatacenters().forEach(dc -> {
                     // Rest Api
                     config.getStargateConfig().addServiceRest(dc.getRegion(),
                             new ServiceHttp(dc.getRegion() + "-rest",
@@ -212,7 +212,7 @@ public class AstraClient implements Closeable {
                 
             } else {
 
-                LOGGER.info("+ Cross-region failback is disabled.");
+                LOGGER.info("+ Cross-region fallback is disabled.");
                 // Authentication for the DB
                 config.getStargateConfig().withApiTokenProviderDC(currentDatabaseRegion,
                         new SimpleTokenProvider(config.getToken()));
@@ -259,19 +259,23 @@ public class AstraClient implements Closeable {
     }
     
     /**
-     * Download the secure connect bundle files
+     * Download the secure connect bundle files.
+     *
      * @param config
+     *      configuration for client
      */
     private void downloadAndSetupSecureConnectBundle(AstraClientConfig config) {
         if (!new File(config.getSecureConnectBundleFolder()).exists()) {
-            new File(config.getSecureConnectBundleFolder()).mkdirs();
+            if (new File(config.getSecureConnectBundleFolder()).mkdirs()) {
+                LOGGER.info("+ Folder Created to hold SCB");
+            }
         }
         // Download secure bundles (if needed)
         LOGGER.info("+ Downloading bundles in: [" + AnsiUtils.cyan("{}") + "]", config.getSecureConnectBundleFolder());
         apiDevopsDatabases.database(config.getDatabaseId())
                           .downloadAllSecureConnectBundles(config.getSecureConnectBundleFolder());
         
-        // Setup the current region
+        // Set up the current region
         String scbFile = config.getSecureConnectBundleFolder() 
                 + File.separator 
                 + AstraClientConfig.buildScbFileName(config.getDatabaseId(), config.getDatabaseRegion());
@@ -380,7 +384,7 @@ public class AstraClient implements Closeable {
         if (stargateClient == null || !stargateClient.cqlSession().isPresent()) {
             throw new IllegalStateException("CQL Session is not available."
                     + " Make sure you enabled it with .enableCql() and provide all"
-                    + " expected paramters: keyspace, contact points or SCB, user+password ");
+                    + " expected parameters: keyspace, contact points or SCB, user+password ");
         }
         return stargateClient.cqlSession().get();
     }
@@ -396,7 +400,7 @@ public class AstraClient implements Closeable {
     }
     
     /**
-     * Getter to the configuratin, it should not be changed.
+     * Getter to the configuration, it should not be changed.
      * 
      * @return
      *      initial configuration
@@ -423,7 +427,7 @@ public class AstraClient implements Closeable {
      * 
      * @return AstraClientBuilder
      */
-    public static final AstraClientConfig builder() {
+    public static AstraClientConfig builder() {
         return new AstraClientConfig();
     }
 

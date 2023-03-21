@@ -5,12 +5,17 @@ import com.datastax.astra.sdk.AstraTestUtils;
 import io.stargate.sdk.doc.domain.Namespace;
 import io.stargate.sdk.test.doc.AbstractDocClientNamespacesTest;
 import io.stargate.sdk.test.doc.TestDocClientConstants;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Work with local stargate
@@ -25,8 +30,6 @@ import java.util.stream.Collectors;
  *   -e CLUSTER_VERSION=3.11 \
  *   -e DEVELOPER_MODE=true \
  *   stargateio/stargate-3_11:v1.0.35
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public class ApiDocumentNamespacesAstraTest extends AbstractDocClientNamespacesTest {
 
@@ -38,7 +41,7 @@ public class ApiDocumentNamespacesAstraTest extends AbstractDocClientNamespacesT
 
         // Connect the client to the new created DB
         client = AstraClient.builder()
-                .withToken(client.getToken().get())
+                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
                 .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
@@ -76,9 +79,11 @@ public class ApiDocumentNamespacesAstraTest extends AbstractDocClientNamespacesT
     @Override
     @DisplayName("04-Get all namespaces")
     public void d_should_list_namespaces() {
-        Assertions.assertTrue(((Set) stargateDocumentApiClient.namespaceNames().collect(Collectors.toSet())).contains("java"));
-        Map<String, Namespace> nsList = (Map) stargateDocumentApiClient.namespaces().collect(Collectors.toMap(Namespace::getName, Function.identity()));
-        Assertions.assertNotNull(nsList.get("java"));
+        assertTrue(stargateDocumentApiClient.namespaceNames().collect(Collectors.toSet()).contains("java"));
+        Map<String, Namespace> nsList = stargateDocumentApiClient
+                .namespaces()
+                .collect(Collectors.toMap(Namespace::getName, Function.identity()));
+        assertNotNull(nsList.get("java"));
     }
 
     @Test
