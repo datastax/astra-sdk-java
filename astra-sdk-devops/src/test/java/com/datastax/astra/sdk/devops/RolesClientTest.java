@@ -12,10 +12,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class OrgRolesTest  extends AbstractDevopsApiTest {
+public class RolesClientTest extends AbstractDevopsApiTest {
 
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrgCoreTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsClientTest.class);
 
     @Test
     @Order(1)

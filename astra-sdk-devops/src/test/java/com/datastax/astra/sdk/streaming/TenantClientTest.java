@@ -20,38 +20,35 @@ import java.util.UUID;
 public class TenantClientTest extends AbstractDevopsApiTest {
 
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamingClientTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AstraStreamingClientTest.class);
 
-    private String tmpTenant;
+    private static String tmpTenant = "sdk-java-junit-" + UUID.randomUUID().toString().substring(0,7);
 
     @Test
     @Order(1)
     public void shouldCreateTenant() throws InterruptedException {
+        // Given
         AstraStreamingClient sc  = new AstraStreamingClient(getToken());
-        LOGGER.info("- Create a tenant");
-        // Giving
-        tmpTenant = "sdk-java-junit-" + UUID.randomUUID().toString().substring(0,7);
-        // When
         Assert.assertFalse(sc.exist(tmpTenant));
-        LOGGER.info("Tenant " + tmpTenant + " does not exist");
-        sc.create( new CreateTenant(tmpTenant, "astra-cli@datastax.com"));
+        // When
+        sc.create(CreateTenant.builder()
+                .tenantName(tmpTenant)
+                .userEmail("astra-cli@datastax.com").build());
+        // Then
         Thread.sleep(1000);
         Assert.assertTrue(sc.exist(tmpTenant));
-        LOGGER.info("Tenant " + tmpTenant + " now exist");
     }
 
-
-
     @Test
-    @Order(10)
+    @Order(2)
     public void shouldDeleteTenant() throws InterruptedException {
-        //tmpTenant = "sdk_java_junit_32defeb";
         AstraStreamingClient sc  = new AstraStreamingClient(getToken());
-        LOGGER.info("Delete a tenant");
         // Giving
         Assert.assertTrue(sc.exist(tmpTenant));
-        LOGGER.info("Tenant " + tmpTenant + " exists");
         // When
         sc.delete(tmpTenant);
+        Thread.sleep(1000);
+        // Then
+        Assert.assertFalse(sc.exist(tmpTenant));
     }
 }

@@ -6,6 +6,7 @@ import com.dtsx.astra.sdk.org.domain.InviteUserRequest;
 import com.dtsx.astra.sdk.org.domain.ResponseAllUsers;
 import com.dtsx.astra.sdk.org.domain.Role;
 import com.dtsx.astra.sdk.org.domain.User;
+import com.dtsx.astra.sdk.org.exception.UserNotFoundException;
 import com.dtsx.astra.sdk.utils.*;
 
 import java.net.HttpURLConnection;
@@ -102,7 +103,7 @@ public class UsersClient extends AbstractApiClient {
      */
     public void delete(String userId) {
         if (!exist(userId)) {
-            throw new RuntimeException("User '"+ userId + "' has not been found");
+            throw new UserNotFoundException(userId);
         }
         DELETE(getEndpointUser(userId));
     }

@@ -4,124 +4,204 @@ package com.dtsx.astra.sdk.streaming.domain;
  * Tenant Request Creation.
  */
 public class CreateTenant {
-    
+
+    /** cloud provider. */
     private String cloudProvider = "aws";
-    private String cloudRegion   = "useast2";
-    private String plan          = "free";
+
+    /** cloud region. */
+    private String cloudRegion = "useast2";
+
+    /** pan. */
+    private String plan = "free";
+
+    /** tenant name. */
     private String tenantName;
+
+    /** user email. */
     private String userEmail;
+
+    /** cluster name for DEDICATED clusters. */
     private String clusterName;
 
     /**
-     * Default Constructor.
+     * Default constructor.
      */
-    public CreateTenant() {}
-    
+    private CreateTenant() {}
+
     /**
-     * Provide tenant Name and email.
-     * @param tenantName
-     *      tenant identifier
-     * @param email
-     *      email
-     */
-    public CreateTenant(String tenantName, String email) {
-        this.userEmail = email;
-        this.tenantName = tenantName;
-    }
-    
-    /**
-     * Getter accessor for attribute 'cloudProvider'.
-     *
+     * Work with builder.
      * @return
-     *       current value of 'cloudProvider'
+     *      builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder
+     */
+    public static class Builder {
+
+        /** cloud provider. */
+        private String cloudProvider = "aws";
+
+        /** cloud region. */
+        private String cloudRegion = "useast2";
+
+        /** pan. */
+        private String plan = "free";
+
+        /** tenant name. */
+        private String tenantName;
+
+        /** user email. */
+        private String userEmail;
+
+        /** cluster name for DEDICATED clusters. */
+        private String clusterName;
+
+        /** default/ */
+        public Builder() {}
+
+        /**
+         * Builder.
+         *
+         * @param tenantName
+         *     current param.
+         * @return
+         *      current reference.
+         */
+        public Builder tenantName(String tenantName) {
+            this.tenantName = tenantName;
+            return this;
+        }
+
+        /**
+         * Builder.
+         *
+         * @param email
+         *     current param.
+         * @return
+         *      current reference.
+         */
+        public Builder userEmail(String email) {
+            this.userEmail = email;
+            return this;
+        }
+
+        /**
+         * Builder.
+         *
+         * @param cloudProvider
+         *     current param.
+         * @return
+         *      current reference.
+         */
+        public Builder cloudProvider(String cloudProvider) {
+            this.cloudProvider = cloudProvider;
+            return this;
+        }
+
+        /**
+         * Builder.
+         *
+         * @param cloudRegion
+         *     current param.
+         * @return
+         *      current reference.
+         */
+        public Builder cloudRegion(String cloudRegion) {
+            this.cloudRegion = cloudRegion;
+            return this;
+        }
+
+        /**
+         * Builder.
+         *
+         * @param plan
+         *     current param.
+         * @return
+         *      current reference.
+         */
+        public Builder plan(String plan) {
+            this.plan = plan;
+            return this;
+        }
+
+        /**
+         * Builder.
+         *
+         * @param clusterName
+         *     current param.
+         * @return
+         *      current reference.
+         */
+        public Builder clusterName(String clusterName) {
+            this.clusterName = clusterName;
+            return this;
+        }
+
+        /**
+         * Builder.
+         *
+         * @return
+         *      target object
+         */
+        public CreateTenant build() {
+            CreateTenant tenant = new CreateTenant();
+            tenant.cloudProvider = this.cloudProvider;
+            tenant.cloudRegion = this.cloudRegion;
+            tenant.plan = this.plan;
+            tenant.tenantName = this.tenantName;
+            tenant.userEmail = this.userEmail;
+            tenant.clusterName = this.clusterName;
+            return tenant;
+        }
+    }
+
+    /**
+     * Gets cloudProvider
+     *
+     * @return value of cloudProvider
      */
     public String getCloudProvider() {
         return cloudProvider;
     }
 
     /**
-     * Setter accessor for attribute 'cloudProvider'.
-     * @param cloudProvider
-     * 		new value for 'cloudProvider '
-     */
-    public void setCloudProvider(String cloudProvider) {
-        this.cloudProvider = cloudProvider;
-    }
-
-    /**
-     * Getter accessor for attribute 'cloudRegion'.
+     * Gets cloudRegion
      *
-     * @return
-     *       current value of 'cloudRegion'
+     * @return value of cloudRegion
      */
     public String getCloudRegion() {
         return cloudRegion;
     }
 
     /**
-     * Setter accessor for attribute 'cloudRegion'.
-     * @param cloudRegion
-     * 		new value for 'cloudRegion '
-     */
-    public void setCloudRegion(String cloudRegion) {
-        this.cloudRegion = cloudRegion;
-    }
-
-    /**
-     * Getter accessor for attribute 'plan'.
+     * Gets plan
      *
-     * @return
-     *       current value of 'plan'
+     * @return value of plan
      */
     public String getPlan() {
         return plan;
     }
 
     /**
-     * Setter accessor for attribute 'plan'.
-     * @param plan
-     * 		new value for 'plan '
-     */
-    public void setPlan(String plan) {
-        this.plan = plan;
-    }
-
-    /**
-     * Getter accessor for attribute 'tenantName'.
+     * Gets tenantName
      *
-     * @return
-     *       current value of 'tenantName'
+     * @return value of tenantName
      */
     public String getTenantName() {
         return tenantName;
     }
 
     /**
-     * Setter accessor for attribute 'tenantName'.
-     * @param tenantName
-     * 		new value for 'tenantName '
-     */
-    public void setTenantName(String tenantName) {
-        this.tenantName = tenantName;
-    }
-
-    /**
-     * Getter accessor for attribute 'userEmail'.
+     * Gets userEmail
      *
-     * @return
-     *       current value of 'userEmail'
+     * @return value of userEmail
      */
     public String getUserEmail() {
         return userEmail;
-    }
-
-    /**
-     * Setter accessor for attribute 'userEmail'.
-     * @param userEmail
-     * 		new value for 'userEmail '
-     */
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
     }
 
     /**
@@ -131,15 +211,5 @@ public class CreateTenant {
      */
     public String getClusterName() {
         return clusterName;
-    }
-
-    /**
-     * Set value for clusterName
-     *
-     * @param clusterName
-     *         new value for clusterName
-     */
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
     }
 }

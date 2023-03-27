@@ -14,10 +14,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class OrgCoreTest extends AbstractDevopsApiTest {
+public class ApiDevopsClientTest extends AbstractDevopsApiTest {
     
     /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrgCoreTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiDevopsClientTest.class);
 
     @Test
     @Order(1)

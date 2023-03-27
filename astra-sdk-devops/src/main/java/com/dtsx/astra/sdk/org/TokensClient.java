@@ -1,9 +1,7 @@
 package com.dtsx.astra.sdk.org;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
-import com.dtsx.astra.sdk.org.domain.CreateTokenResponse;
-import com.dtsx.astra.sdk.org.domain.IamToken;
-import com.dtsx.astra.sdk.org.domain.ResponseAllIamTokens;
+import com.dtsx.astra.sdk.org.domain.*;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
@@ -17,6 +15,9 @@ import java.util.stream.Stream;
  */
 public class TokensClient extends AbstractApiClient {
 
+    /** useful with tokens interactions. */
+    private RolesClient rolesClient;
+
     /**
      * Constructor.
      *
@@ -25,6 +26,7 @@ public class TokensClient extends AbstractApiClient {
      */
     public TokensClient(String token) {
         super(token);
+        this.rolesClient = new RolesClient(token);
     }
 
     /**
@@ -89,12 +91,32 @@ public class TokensClient extends AbstractApiClient {
      */
     public CreateTokenResponse create(String role) {
         Assert.hasLength(role, "role");
+        // Role should exist
+        Optional<Role> optRole = rolesClient.findByName(role);
+        String roleId = role;
+        if (optRole.isPresent()) {
+            roleId = optRole.get().getId();
+        } else {
+            roleId = rolesClient.get(role).getId();
+        }
         // Building request
-        String body = "{ \"roles\": [ \"" + JsonUtils.escapeJson(role) + "\"]}";
+        String body = "{ \"roles\": [ \"" + JsonUtils.escapeJson(roleId) + "\"]}";
         // Invoke endpoint
         ApiResponseHttp res = POST(getEndpointTokens(), body);
         // Marshall response
         return JsonUtils.unmarshallBean(res.getBody(), CreateTokenResponse.class);
+    }
+
+    /**
+     * Create token
+     *
+     * @param role
+     *      create a token with dedicated role
+     * @return
+     *      created token
+     */
+    public CreateTokenResponse create(DefaultRoles role) {
+        return create(role.getName());
     }
 
     /**

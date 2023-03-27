@@ -1,18 +1,15 @@
 package com.datastax.astra.sdk.devops;
 
-import com.dtsx.astra.sdk.org.TokensClient;
 import com.dtsx.astra.sdk.org.UsersClient;
 import com.dtsx.astra.sdk.org.domain.DefaultRoles;
 import com.dtsx.astra.sdk.org.domain.User;
 import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class OrgUserTest  extends AbstractDevopsApiTest {
+public class UsersClientTest extends AbstractDevopsApiTest {
 
     /**
      * User idenii
