@@ -3,6 +3,7 @@ package com.datastax.astra.sdk.devops;
 import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.domain.*;
 import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
+import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
 import com.dtsx.astra.sdk.db.exception.RegionAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
 import com.dtsx.astra.sdk.utils.TestUtils;
@@ -27,7 +28,7 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> getSdkTestDatabaseClient().keyspaces().create(""));
         Assertions.assertThrows(IllegalArgumentException.class, () -> getSdkTestDatabaseClient().keyspaces().create(null));
         // Given
-        Assertions.assertFalse(getSdkTestDatabaseClient().find().get().getInfo().getKeyspaces().contains(SDK_TEST_KEYSPACE2));
+        Assertions.assertFalse(getSdkTestDatabaseClient().keyspaces().exist(SDK_TEST_KEYSPACE2));
         // When
         getSdkTestDatabaseClient().keyspaces().create(SDK_TEST_KEYSPACE2);
         Assertions.assertEquals(DatabaseStatusType.MAINTENANCE, getSdkTestDatabaseClient().find().get().getStatus());
@@ -36,8 +37,7 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         // When
         Assertions.assertEquals(DatabaseStatusType.ACTIVE, getSdkTestDatabaseClient().find().get().getStatus());
         // Then
-        Database db = getSdkTestDatabaseClient().get();
-        Assertions.assertTrue(db.getInfo().getKeyspaces().contains(SDK_TEST_KEYSPACE2));
+        Assertions.assertTrue(getSdkTestDatabaseClient().keyspaces().exist(SDK_TEST_KEYSPACE2));
         // Cannot create keyspace that already exist
         Assertions.assertThrows(KeyspaceAlreadyExistException.class,
                 () -> getSdkTestDatabaseClient().keyspaces().create(SDK_TEST_KEYSPACE2));
@@ -45,7 +45,23 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
 
     @Test
     @Order(2)
-    @DisplayName("02. Download Default Cloud SecureBundle")
+    @DisplayName("02. Delete a new Keyspace")
+    public void shouldDeleteKeyspacesTest() {
+        // Givem
+        Assertions.assertThrows(KeyspaceNotFoundException.class,
+                () -> getSdkTestDatabaseClient().keyspaces().delete("invalid"));
+        // Given
+        Assertions.assertTrue(getSdkTestDatabaseClient().keyspaces().exist(SDK_TEST_KEYSPACE2));
+        // When
+        getSdkTestDatabaseClient().keyspaces().delete(SDK_TEST_KEYSPACE2);
+        // Then
+        TestUtils.waitForDbStatus(getSdkTestDatabaseClient(), DatabaseStatusType.ACTIVE, 300);
+        Assertions.assertFalse(getSdkTestDatabaseClient().keyspaces().exist(SDK_TEST_KEYSPACE2));
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("03. Download Default Cloud SecureBundle")
     public void shouldDownloadDefaultScbTest() {
         // Given
         String randomFile = "/tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".zip";
@@ -58,8 +74,8 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(3)
-    @DisplayName("03. Download Region Cloud SecureBundle")
+    @Order(4)
+    @DisplayName("04. Download Region Cloud SecureBundle")
     public void shouldDownloadRegionScbTest() {
         // Given
         String randomFile = "/tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".zip";
@@ -73,8 +89,8 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(4)
-    @DisplayName("04. Download All Cloud Secured Bundle")
+    @Order(5)
+    @DisplayName("05. Download All Cloud Secured Bundle")
     public void shouldDownloadAllScbTest() {
         // When
         Assertions.assertThrows(IllegalArgumentException.class, () ->
@@ -91,38 +107,38 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(5)
-    @DisplayName("05. Should not PARK Serverless")
+    @Order(6)
+    @DisplayName("06. Should not PARK Serverless")
     public void shouldNotParkServerlessTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> getSdkTestDatabaseClient().park());
     }
 
     @Test
-    @Order(6)
-    @DisplayName("06. Should not UNPARK Serverless")
+    @Order(7)
+    @DisplayName("07. Should not UNPARK Serverless")
     public void shouldNotUnParkServerlessTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> getSdkTestDatabaseClient().unpark());
     }
 
     @Test
-    @Order(7)
-    @DisplayName("07. Should not RESIZE Serverless")
+    @Order(8)
+    @DisplayName("08. Should not RESIZE Serverless")
     public void shouldNotResizeServerlessTest() {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> getSdkTestDatabaseClient().resize(2));
     }
 
     @Test
-    @Order(8)
-    @DisplayName("08. Should not RESET PASSWORD Serverless")
+    @Order(9)
+    @DisplayName("09. Should not RESET PASSWORD Serverless")
     public void shouldNotResetPasswordTest() {
         Assertions.assertThrows(RuntimeException.class,
                 () -> getSdkTestDatabaseClient().resetPassword("token", "cedrick1"));
     }
 
      @Test
-     @Order(9)
-     @DisplayName("09. Should List regions")
+     @Order(10)
+     @DisplayName("10. Should List regions")
      public void shouldListRegionsTest() {
          List<Datacenter> regions = getSdkTestDatabaseClient().datacenters().findAll().collect(Collectors.toList());
          Assertions.assertEquals(1, regions.size());
@@ -130,24 +146,24 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
      }
 
     @Test
-    @Order(10)
-    @DisplayName("10. Should find region")
+    @Order(11)
+    @DisplayName("11. Should find region")
     public void shouldFindRegionsTest() {
         Assertions.assertTrue(getSdkTestDatabaseClient().datacenters().findByRegionName(SDK_TEST_DB_REGION).isPresent());
         Assertions.assertFalse(getSdkTestDatabaseClient().datacenters().findByRegionName("eu-west-1").isPresent());
     }
 
     @Test
-    @Order(11)
-    @DisplayName("11. Should not remove invalid region")
+    @Order(12)
+    @DisplayName("12. Should not remove invalid region")
     public void shouldNotRemoveRegionsTest() {
         Assertions.assertThrows(RegionNotFoundException.class,
                 () -> getSdkTestDatabaseClient().datacenters().delete("eu-west-1"));
     }
 
     @Test
-    @Order(12)
-    @DisplayName("12. Should not add existing region")
+    @Order(13)
+    @DisplayName("13. Should not add existing region")
     public void shouldNotAddRegionsTest() {
         Assertions.assertThrows(RegionAlreadyExistException.class,
                 () -> getSdkTestDatabaseClient()
@@ -157,7 +173,8 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
 
 
     @Test
-    @DisplayName("Should add a region")
+    @Order(14)
+    @DisplayName("14. Should add a region")
     public void shouldAddRegionTest() {
         // create an AWS DB
 //        if (getDatabasesClient().findByName("aws_multiple_regions").count() == 0) {
@@ -174,14 +191,15 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @DisplayName("Should delete a region")
+    @Order(15)
+    @DisplayName("14. Should delete a region")
     public void shouldDeleteRegionTest() {
 //        getDatabasesClient().databaseByName("aws_multiple_regions").datacenters().delete("eu-central-1");
     }
 
     @Test
-    @Order(13)
-    @DisplayName("13. Should terminate DB")
+    @Order(16)
+    @DisplayName("16. Should terminate DB")
     public void shouldTerminateDbTest() {
         Assert.assertTrue(getSdkTestDatabaseClient().exist());
         //getSdkTestDatabaseClient().delete();
