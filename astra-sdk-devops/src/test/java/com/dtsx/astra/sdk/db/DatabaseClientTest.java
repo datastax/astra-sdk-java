@@ -1,6 +1,6 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.db.DatabaseClient;
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.db.domain.*;
 import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
@@ -192,9 +192,62 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
 
     @Test
     @Order(15)
-    @DisplayName("14. Should delete a region")
+    @DisplayName("15. Should delete a region")
     public void shouldDeleteRegionTest() {
 //        getDatabasesClient().databaseByName("aws_multiple_regions").datacenters().delete("eu-central-1");
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("16. Add access list")
+    public void shouldAddAccessListsDb() {
+        AccessListAddressRequest a1 = new AccessListAddressRequest("255.255.255.255", "test2");
+        AccessListAddressRequest a2 = new AccessListAddressRequest("254.254.254.254", "test3");
+        getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .accessLists().addAddress(a1, a2);
+    }
+
+    @Test
+    @Order(17)
+    @DisplayName("17. Find accessLists for a db")
+    public void shouldFindAllAccessListsDb() {
+        Assertions.assertTrue(getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .accessLists().get()
+                .getAddresses().stream()
+                .anyMatch(al -> al.getDescription().equalsIgnoreCase("test2")));
+
+    }
+
+    @Test
+    @Order(17)
+    @DisplayName("18. Update")
+    public void shouldUpdateAccessListsDb() {
+        AccessListAddressRequest a3 = new AccessListAddressRequest("254.254.254.254/32", "updatedText");
+        getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .accessLists()
+                .update(a3);
+        Assertions.assertTrue(getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .accessLists().get()
+                .getAddresses().stream()
+                .anyMatch(al -> al.getDescription().equalsIgnoreCase("updatedText")));
+    }
+
+    @Test
+    @Order(18)
+    @DisplayName("18. Delete Access List")
+    public void shouldDeleteAllAccessListsDb() {
+        getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .accessLists().delete();
+        Assertions.assertFalse(getDatabasesClient()
+                .databaseByName(SDK_TEST_DB_NAME)
+                .accessLists().get()
+                .getAddresses().stream()
+                .anyMatch(al -> al.getDescription().equalsIgnoreCase("updatedText")));
     }
 
     @Test

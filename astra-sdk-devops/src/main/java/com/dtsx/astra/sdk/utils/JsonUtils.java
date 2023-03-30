@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -38,6 +39,7 @@ public class JsonUtils {
     
     /** Object to Json marshaller as a Jackson Mapper. */
     private static final ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
                 .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
                 .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
                 .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)

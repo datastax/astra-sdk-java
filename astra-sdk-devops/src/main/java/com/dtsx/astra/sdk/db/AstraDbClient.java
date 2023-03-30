@@ -2,15 +2,12 @@ package com.dtsx.astra.sdk.db;
 
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.db.domain.*;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.dtsx.astra.sdk.db.domain.CloudProviderType;
-import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
-import com.dtsx.astra.sdk.db.domain.DatabaseFilter;
 import com.dtsx.astra.sdk.db.domain.DatabaseFilter.Include;
 
 import java.net.HttpURLConnection;
@@ -27,6 +24,10 @@ public class AstraDbClient extends AbstractApiClient {
     /** Load Database responses. */
     private static final TypeReference<List<Database>> RESPONSE_DATABASES =  
             new TypeReference<List<Database>>(){};
+
+    /** Load Database responses. */
+    private static final TypeReference<List<AccessList>> RESPONSE_ACCESS_LIST =
+            new TypeReference<List<AccessList>>(){};
 
     /**
      * As immutable object use builder to initiate the object.
@@ -50,6 +51,20 @@ public class AstraDbClient extends AbstractApiClient {
      */
     public DbRegionsClient regions() {
         return new DbRegionsClient(token);
+    }
+
+
+    // ---------------------------------
+    // ----  GLOBAL ACCESS LIST     ----
+    // ---------------------------------
+
+    /**
+     * Find All Access List.
+     * @return
+     *      access list
+     */
+    public Stream<AccessList> findAllAccessLists() {
+        return JsonUtils.unmarshallType(GET(getEndpointAccessLists()).getBody(), RESPONSE_ACCESS_LIST).stream();
     }
 
     // ---------------------------------
@@ -119,7 +134,7 @@ public class AstraDbClient extends AbstractApiClient {
      */
     public Stream<Database> search(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
-        ApiResponseHttp res = GET(getApiDevopsEndpointDatabases() + filter.urlParams());
+        ApiResponseHttp res = GET(getEndpointDatabases() + filter.urlParams());
         return JsonUtils.unmarshallType(res.getBody(), RESPONSE_DATABASES).stream();
     }
     
@@ -135,7 +150,7 @@ public class AstraDbClient extends AbstractApiClient {
      */
     public String create(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");
-        ApiResponseHttp res = POST(getApiDevopsEndpointDatabases(), JsonUtils.marshall(dbCreationRequest));
+        ApiResponseHttp res = POST(getEndpointDatabases(), JsonUtils.marshall(dbCreationRequest));
         if (HttpURLConnection.HTTP_CREATED != res.getCode()) {
             throw new IllegalStateException("Expected code 201 to create db but got " 
                         + res.getCode() + "body=" + res.getBody());
@@ -182,8 +197,18 @@ public class AstraDbClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getApiDevopsEndpointDatabases() {
+    public static String getEndpointDatabases() {
         return ApiLocator.getApiDevopsEndpoint() + "/databases";
+    }
+
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public static String getEndpointAccessLists() {
+        return ApiLocator.getApiDevopsEndpoint() + "/access-lists";
     }
 
 }

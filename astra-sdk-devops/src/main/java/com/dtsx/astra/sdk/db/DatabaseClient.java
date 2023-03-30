@@ -371,7 +371,7 @@ public class DatabaseClient extends AbstractApiClient {
      * @return database endpoint
      */
     public static String getEndpointDatabase(String dbId) {
-        return AstraDbClient.getApiDevopsEndpointDatabases() + "/" + dbId;
+        return AstraDbClient.getEndpointDatabases() + "/" + dbId;
     }
 
 }

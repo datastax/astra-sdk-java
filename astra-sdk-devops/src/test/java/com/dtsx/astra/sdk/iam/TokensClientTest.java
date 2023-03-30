@@ -1,5 +1,6 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk.iam;
 
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.org.domain.CreateTokenResponse;
 import com.dtsx.astra.sdk.org.domain.DefaultRoles;
 import org.junit.jupiter.api.*;

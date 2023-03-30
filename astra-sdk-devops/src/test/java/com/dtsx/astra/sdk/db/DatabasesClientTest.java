@@ -1,14 +1,12 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.db.DatabaseClient;
-import com.dtsx.astra.sdk.db.AstraDbClient;
-import com.dtsx.astra.sdk.db.domain.CloudProviderType;
-import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
-import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
+import com.dtsx.astra.sdk.db.domain.*;
 import com.dtsx.astra.sdk.utils.TestUtils;
 import org.junit.jupiter.api.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 /**
@@ -123,4 +121,14 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
         Assertions.assertNotNull(db.getStorage());
         Assertions.assertEquals(SDK_TEST_KEYSPACE, db.getInfo().getKeyspace());
     }
+
+    @Test
+    @Order(7)
+    @DisplayName("Find accessLists")
+    public void shouldFindAllAccessLists() {
+        getDatabasesClient()
+                .findAllAccessLists()
+                .forEach(al -> Assertions.assertNotNull(al.getDatabaseId()));
+    }
+
 }

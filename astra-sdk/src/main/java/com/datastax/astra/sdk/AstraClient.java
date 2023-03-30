@@ -19,6 +19,7 @@ package com.datastax.astra.sdk;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.AstraDevopsApiClient;
+import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import io.stargate.sdk.StargateClient;
 import io.stargate.sdk.api.SimpleTokenProvider;
@@ -167,13 +168,10 @@ public class AstraClient implements Closeable {
             // ---------------------------------------------------
             
             if (config.isEnabledCrossRegionFailOver()) {
-                Optional<Database> db = apiDevopsDatabases.database(config.getDatabaseId()).find();
-                if (!db.isPresent()) {
-                    throw new IllegalArgumentException("Cannot retrieve db with id " + config.getDatabaseId());
-                }
-    
-                /* Loop on regions. for each region a DC. */
-                db.get().getInfo().getDatacenters().forEach(dc -> {
+                Database db = apiDevopsDatabases.database(config.getDatabaseId()).get();
+
+                // Loop on regions. for each region a DC.
+                db.getInfo().getDatacenters().forEach(dc -> {
                     // Rest Api
                     config.getStargateConfig().addServiceRest(dc.getRegion(),
                             new ServiceHttp(dc.getRegion() + "-rest",

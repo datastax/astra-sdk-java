@@ -1,6 +1,5 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk;
 
-import com.dtsx.astra.sdk.AstraDevopsApiClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.DatabaseRegion;
 import com.dtsx.astra.sdk.org.domain.*;

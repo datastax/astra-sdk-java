@@ -1,8 +1,6 @@
-package com.datastax.astra.sdk.streaming;
+package com.dtsx.astra.sdk.streaming;
 
-import com.datastax.astra.sdk.devops.AbstractDevopsApiTest;
-import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
-import com.dtsx.astra.sdk.streaming.TenantStatsClient;
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
 import com.dtsx.astra.sdk.streaming.domain.Statistics;
 import org.junit.jupiter.api.*;

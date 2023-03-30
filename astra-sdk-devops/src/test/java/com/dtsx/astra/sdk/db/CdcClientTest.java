@@ -1,6 +1,6 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk.db;
 
-import com.dtsx.astra.sdk.db.DatabaseClient;
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
@@ -22,7 +22,7 @@ import java.util.Optional;
 /**
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CdcClientTest extends AbstractDevopsApiTest  {
+public class CdcClientTest extends AbstractDevopsApiTest {
 
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(CdcClientTest.class);

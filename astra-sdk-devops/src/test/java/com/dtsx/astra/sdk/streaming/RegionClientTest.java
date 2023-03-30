@@ -1,13 +1,10 @@
-package com.datastax.astra.sdk.streaming;
+package com.dtsx.astra.sdk.streaming;
 
-import com.datastax.astra.sdk.devops.AbstractDevopsApiTest;
-import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
-import com.dtsx.astra.sdk.streaming.RegionsClient;
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.streaming.domain.StreamingRegion;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

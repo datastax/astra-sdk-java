@@ -277,6 +277,20 @@ public class HttpClientWrapper {
     }
 
     /**
+     * Helper to build the HTTP request.
+     *
+     * @param url
+     *      target url
+     * @param token
+     *      authentication token
+     * @param body
+     *      request body
+     */
+    public void PATCH(String url, String token, String body) {
+        executeHttp(Method.PATCH, url, token, body, CONTENT_TYPE_JSON, false);
+    }
+
+    /**
      * Main Method executing HTTP Request.
      * 
      * @param method

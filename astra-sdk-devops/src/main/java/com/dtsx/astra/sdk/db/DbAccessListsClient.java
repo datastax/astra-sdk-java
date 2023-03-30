@@ -1,16 +1,21 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.db.domain.AccessList;
+import com.dtsx.astra.sdk.db.domain.AccessListAddressRequest;
+import com.dtsx.astra.sdk.db.domain.AccessListRequest;
 import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.JsonUtils;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
+import java.util.Arrays;
 
 /**
  * Operations on Access List.
  */
 public class DbAccessListsClient extends AbstractApiClient {
-
-    /** Get Available Regions. */
-    public static final String PATH_ACCESS_LISTS = "/access-lists";
 
     /**
      * unique db identifier.
@@ -28,50 +33,88 @@ public class DbAccessListsClient extends AbstractApiClient {
     public DbAccessListsClient(String token, String databaseId) {
         super(token);
         Assert.hasLength(databaseId, "databaseId");
-        // Test Db exists
         this.db = new DatabaseClient(token, databaseId).get();
     }
 
     /**
-     * TODO Get access list for a database
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetAccessListForDatabase
+     * Retrieve the access list for a DB.
+     *
+     * @return
+     *      current access list
      */
-    public void findAll() {
-        throw new RuntimeException("This function is not yet implemented");
+    public AccessList get() {
+        try {
+            return JsonUtils.unmarshallBean(GET(getApiDevopsEndpointAccessListsDb()).getBody(), AccessList.class);
+        } catch(RuntimeException mex) {
+            AccessList ac = new AccessList();
+            ac.setDatabaseId(db.getId());
+            ac.setOrganizationId(db.getOrgId());
+            ac.setConfigurations(new AccessList.Configurations(false));
+            return ac;
+        }
     }
 
     /**
-     * TODO Replace access list for your database.
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase
+     * Create a new Address for the DB.
+     *
+     * @param newAddressed
+     *      address to be added
+     * @see <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase">Reference Documentation</a>
      */
-    public void replace() {
-        throw new RuntimeException("This function is not yet implemented");
+    public void addAddress(AccessListAddressRequest... newAddressed) {
+        Assert.notNull(newAddressed, "New addresses should not be null");
+        Assert.isTrue(newAddressed.length > 0, "New address should not be empty");
+        POST(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(newAddressed));
     }
 
     /**
-     * TODO Update existing fields in access list for database
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpsertAccessListForDatabase
-     */
-    public void update() {
-        throw new RuntimeException("This function is not yet implemented");
-    }
-
-    /**
-     * TODO Add addresses to access list for a database
-     * <p>
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase
-     */
-    public void create() {
-        throw new RuntimeException("This function is not yet implemented");
-    }
-
-    /**
-     * TODO Delete addresses or access list for database
-     * <p>
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteAddressesOrAccessListForDatabase
+     * Delete the addresses List.
+     *
+     * @see <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteAddressesOrAccessListForDatabase">Reference Documentation</a>
      */
     public void delete() {
-        throw new RuntimeException("This function is not yet implemented");
+        DELETE(getApiDevopsEndpointAccessListsDb());
+    }
+
+    /**
+     * Replace the addresses for a DB
+     *
+     * @param addresses
+     *      address to be added
+     *
+     * @see <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AddAddressesToAccessListForDatabase">Reference Documentation</a>
+     */
+    public void replaceAddresses(AccessListAddressRequest... addresses) {
+        Assert.notNull(addresses, "Addresses should not be null");
+        Assert.isTrue(addresses.length > 0, "Address should not be empty");
+        PUT(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(addresses));
+    }
+
+    /**
+     * Replace the addresses for a DB
+     *
+     * @param addresses
+     *      address to be updated
+     *
+     * @see <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpsertAccessListForDatabase">Reference Documentation</a>
+     */
+    public void update(AccessListAddressRequest... addresses) {
+        Assert.notNull(addresses, "Addresses should not be null");
+        Assert.isTrue(addresses.length > 0, "Address should not be empty");
+        AccessListRequest alr = new AccessListRequest();
+        alr.setAddresses(Arrays.asList(addresses));
+        alr.setConfigurations(new AccessListRequest.Configurations(true));
+        PATCH(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(alr));
+    }
+
+    /**
+     * Endpoint to access schema for namespace.
+     *
+     * @return
+     *      endpoint
+     */
+    public String getApiDevopsEndpointAccessListsDb() {
+        return ApiLocator.getApiDevopsEndpoint() + "/databases/" + db.getId() + "/access-list";
     }
 
 }

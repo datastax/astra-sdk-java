@@ -1,5 +1,7 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk.iam;
 
+import com.dtsx.astra.sdk.AbstractDevopsApiTest;
+import com.dtsx.astra.sdk.ApiDevopsClientTest;
 import com.dtsx.astra.sdk.org.RolesClient;
 import com.dtsx.astra.sdk.org.domain.*;
 import org.junit.jupiter.api.*;

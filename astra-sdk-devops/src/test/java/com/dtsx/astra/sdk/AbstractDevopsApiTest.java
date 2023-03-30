@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk.devops;
+package com.dtsx.astra.sdk;
 
 import com.dtsx.astra.sdk.AstraDevopsApiClient;
 import com.dtsx.astra.sdk.db.DatabaseClient;
@@ -15,16 +15,16 @@ import org.junit.Assert;
 public abstract class AbstractDevopsApiTest {
 
     /** Test Constants. */
-    static final String SDK_TEST_DB_NAME = "sdk_java_test";
+    public static final String SDK_TEST_DB_NAME = "sdk_java_test";
 
     /** Test Constants. */
-    static final String SDK_TEST_DB_REGION = "us-east1";
+    public static final String SDK_TEST_DB_REGION = "us-east1";
 
     /** Test Constants. */
-    static final String SDK_TEST_KEYSPACE = "sdk_java";
+    public static final String SDK_TEST_KEYSPACE = "sdk_java";
 
     /** Test Constants. */
-    static final String SDK_TEST_KEYSPACE2 = "sdk_java2";
+    public static final String SDK_TEST_KEYSPACE2 = "sdk_java2";
 
     /**
      * Hold reference to token

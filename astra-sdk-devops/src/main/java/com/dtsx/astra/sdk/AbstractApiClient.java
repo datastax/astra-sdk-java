@@ -111,6 +111,18 @@ public abstract class AbstractApiClient {
      *
      * @param url
      *      url
+     * @param body
+     *      body
+     */
+    public void PATCH(String url, String body) {
+        getHttpClient().PATCH(url, getToken(), body);
+    }
+
+    /**
+     * Syntax sugar http requests.
+     *
+     * @param url
+     *      url
      */
     public void DELETE(String url) {
         getHttpClient().DELETE(url, getToken());
