@@ -6,15 +6,12 @@ import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfig
 import com.datastax.oss.driver.internal.core.config.typesafe.DefaultProgrammaticDriverConfigLoaderBuilder;
 
 /**
- * Default configuration duilder.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Default configuration builder.
  */
 public class SdkDriverConfigLoaderBuilderSpring extends DefaultProgrammaticDriverConfigLoaderBuilder {
-    
-    
+
     /**
-     * Load configuration.
+     * Load configuration as map of keys
      *
      * @param keys
      *      spring keys.

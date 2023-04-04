@@ -15,13 +15,12 @@ import com.typesafe.config.Config;
 
 /**
  * Configuration Object.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public class DataStaxDriverSpringConfig {
 
     /** Prefix to watch for custom driver configuration. */
     private static final String DRIVER_CONFIG_PREFIX = "astra.cql.driver-config";
+
     /** Prefix to watch for custom driver configuration. */
     private static final String DRIVER_CONFIG_CORE   = "datastax-java-driver";
     

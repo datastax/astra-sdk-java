@@ -4,19 +4,11 @@ import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Setup Database Telemetry.
  */
 public class TelemetryClient {
-
-    /** Wrapper handling header and error management as a singleton. */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
-
-    /** Logger for our Client. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(TelemetryClient.class);
 
     /** Reference to upper resource. */
     private final DatabaseClient dbClient;
@@ -40,7 +32,7 @@ public class TelemetryClient {
      *      http response
      */
     public ApiResponseHttp find() {
-        return http.GET(getEndpointTelemetry(), dbClient.getToken());
+        return HttpClientWrapper.getInstance().GET(getEndpointTelemetry(), dbClient.getToken());
     }
 
     /**
@@ -49,8 +41,9 @@ public class TelemetryClient {
      * @return
      *      kafka telemetry client
      */
-    public TelemetryClientKafka kafka() {
-        return new TelemetryClientKafka(dbClient.getToken(), getEndpointTelemetry());
+    public SpecializedTelemetryClient<KafkaTelemetryRequest> kafka() {
+        return new SpecializedTelemetryClient<KafkaTelemetryRequest>(
+                dbClient.getToken(), getEndpointTelemetry(), "kafka");
     }
 
     /**
@@ -59,18 +52,42 @@ public class TelemetryClient {
      * @return
      *      cloudwatch telemetry client
      */
-    public TelemetryClientCloudWatch cloudWatch() {
-        return new TelemetryClientCloudWatch(dbClient.getToken(), getEndpointTelemetry());
+    public SpecializedTelemetryClient<CloudWatchTelemetryRequest> cloudWatch() {
+        return new SpecializedTelemetryClient<CloudWatchTelemetryRequest>(
+                dbClient.getToken(), getEndpointTelemetry(), "cloudwatch");
     }
 
     /**
      * Specialization.
      *
      * @return
-     *      cloudwatch telemetry client
+     *      prometheus_remote telemetry client
      */
-    public TelemetryClientPrometheus prometheus() {
-        return new TelemetryClientPrometheus(dbClient.getToken(), getEndpointTelemetry());
+    public SpecializedTelemetryClient<PrometheusTelemetryRequest> prometheus() {
+        return new SpecializedTelemetryClient<PrometheusTelemetryRequest>(
+                dbClient.getToken(), getEndpointTelemetry(), "prometheus_remote");
+    }
+
+    /**
+     * Specialization.
+     *
+     * @return
+     *      Datadog telemetry client
+     */
+    public SpecializedTelemetryClient<DatadogTelemetryRequest> datadog() {
+        return new SpecializedTelemetryClient<DatadogTelemetryRequest>(
+                dbClient.getToken(), getEndpointTelemetry(), "Datadog");
+    }
+
+    /**
+     * Specialization.
+     *
+     * @return
+     *      splunk telemetry client
+     */
+    public SpecializedTelemetryClient<SplunkTelemetryRequest> splunk() {
+        return new SpecializedTelemetryClient<SplunkTelemetryRequest>(
+                dbClient.getToken(), getEndpointTelemetry(), "splunk");
     }
 
     /**

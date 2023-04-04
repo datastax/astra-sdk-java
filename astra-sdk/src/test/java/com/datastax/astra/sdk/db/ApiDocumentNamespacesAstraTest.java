@@ -1,4 +1,4 @@
-package com.datastax.astra.sdk.stargate;
+package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;

@@ -70,6 +70,9 @@
 		<module>astra-sdk-pulsar</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
+        <module>sample-spring-boot-starter</module>
+		<module>sample-quickstart</module>
+		<module>astra-archetype-spring</module>
 	</modules>
 	
 	<dependencyManagement>

@@ -1,44 +1,44 @@
-package com.datastax.astra.sdk.stargate;
+package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
-import io.stargate.sdk.grpc.StargateGrpcApiClient;
-import io.stargate.sdk.grpc.domain.ResultSetGrpc;
+import io.stargate.sdk.test.doc.AbstractDocClientCollectionsTest;
 import io.stargate.sdk.test.doc.TestDocClientConstants;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test gRPC service against Astra.
+ * Execute some unit tests against collections.
  */
-public class ApiGrpcAstraTest {
-
-    /** Singleton grpc Client. */
-    private static StargateGrpcApiClient grpClient;
+public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollectionsTest {
 
     @BeforeAll
     public static void init() {
         // Default client to create DB if needed
         AstraClient client = AstraClient.builder().build();
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-
+        
         // Connect the client to the new created DB
         client = AstraClient.builder()
                 .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
                 .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
                 .withDatabaseId(dbId)
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-                .enableGrpc()
                 .build();
 
-        grpClient = client.getStargateClient().apiGrpc();
-    }
-
+        stargateDocumentApiClient = client.getStargateClient().apiDocument();
+        nsClient = stargateDocumentApiClient.namespace(TEST_NAMESPACE);
+     }
+     
     @Test
-    public void testAstra() {
-        ResultSetGrpc rs = grpClient.execute("SELECT data_center from system.local");
-        Assertions.assertNotNull(rs.one().getString("data_center"));
+    @Order(5)
+    @Override
+    @DisplayName("05-Assign a Json Schema")
+    public void e_should_set_schema() {
+        // Not working in ASTRA
+        // https://github.com/stargate/stargate/issues/1352
     }
 
 }

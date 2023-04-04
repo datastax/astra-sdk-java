@@ -1,19 +1,11 @@
 # Astra Software Development Kit
 
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datastax/astra-sdk-java/Java%20SDK%20Tests)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.datastax.astra/astra-sdk/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.datastax.astra/astra-sdk/)
 
-<img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/astra-sdk-logo.png?raw/true" height="70"  align="left"/>
-
 ## Overview
-####
 
 This SDK *(Software Development Kit)* makes it easy to call Stargate and/or Astra services using idiomatic Java APIs. 
-
-<center>
-<img src="https://github.com/datastax/astra-sdk-java/blob/main/docs/img/sdk-overview.png?raw/true" />
-</center>
 
 - **The Stargate SDK** works with both Stargate standalone installations and Stargate deployed in Astra. With standalone Stargate deployments you will initialize the framework with the class `StargateClient` and provide a list of nodes (IP). To start locally please follow [Stargate SDK quickstart](https://github.com/datastax/astra-sdk-java/wiki/Stargate-SDK-Quickstart) guide. The nodes will run in Docker.
 
@@ -26,6 +18,4 @@ This SDK *(Software Development Kit)* makes it easy to call Stargate and/or Astr
 1. [QuickStart for Stargate](https://github.com/datastax/astra-sdk-java/wiki/Stargate-SDK-Quickstart)
 2. [QuickStart for Astra](https://github.com/datastax/astra-sdk-java/wiki/Astra-SDK-Quickstart)
 3. [QuickStart for Astra Spring Boot Starter](https://github.com/datastax/astra-sdk-java/wiki/Spring-Boot-Starter-Quickstart)
-
-
 

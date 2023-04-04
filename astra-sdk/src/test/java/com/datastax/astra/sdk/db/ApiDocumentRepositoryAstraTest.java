@@ -1,15 +1,22 @@
-package com.datastax.astra.sdk.stargate;
+package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraTestUtils;
-import io.stargate.sdk.test.doc.AbstractDocClientDocumentsTest;
+import io.stargate.sdk.doc.CollectionClient;
+import io.stargate.sdk.doc.NamespaceClient;
+import io.stargate.sdk.doc.StargateDocumentApiClient;
+import io.stargate.sdk.doc.StargateDocumentRepository;
+import io.stargate.sdk.test.doc.AbstractRepositoryTest;
 import io.stargate.sdk.test.doc.TestDocClientConstants;
+import io.stargate.sdk.test.doc.domain.Person;
 import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Execute some unit tests against collections.
+ *
+ * @author Cedrick LUNVEN (@clunven)
  */
-public class ApiDocumentDocumentAstraTest extends AbstractDocClientDocumentsTest {
+public class ApiDocumentRepositoryAstraTest extends AbstractRepositoryTest {
 
     @BeforeAll
     public static void init() {
@@ -25,13 +32,16 @@ public class ApiDocumentDocumentAstraTest extends AbstractDocClientDocumentsTest
                 .withDatabaseRegion(AstraTestUtils.TEST_REGION)
                 .build();
 
-        stargateDocumentApiClient = client.getStargateClient().apiDocument();
-        nsClient = stargateDocumentApiClient.namespace(TEST_NAMESPACE);
+        StargateDocumentApiClient stargateDocumentApiClient = client.getStargateClient().apiDocument();
+        NamespaceClient nsClient = stargateDocumentApiClient.namespace(TEST_NAMESPACE);
 
-        personClient = nsClient.collection(TEST_COLLECTION_PERSON);
+        CollectionClient personClient = nsClient.collection(TEST_COLLECTION_PERSON);
         if (!personClient.exist()) {
             personClient.create();
         }
+        
+        // Initializing a repository for a bean
+        personRepository = new StargateDocumentRepository<>(personClient, Person.class);
     }
 
 }

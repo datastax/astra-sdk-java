@@ -10,6 +10,7 @@ import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -49,6 +50,7 @@ public class DbAccessListsClient extends AbstractApiClient {
             AccessList ac = new AccessList();
             ac.setDatabaseId(db.getId());
             ac.setOrganizationId(db.getOrgId());
+            ac.setAddresses(new ArrayList<>());
             ac.setConfigurations(new AccessList.Configurations(false));
             return ac;
         }

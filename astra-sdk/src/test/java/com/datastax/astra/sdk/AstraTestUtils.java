@@ -1,6 +1,6 @@
 package com.datastax.astra.sdk;
 
-import com.datastax.astra.sdk.stargate.AstraStargateInitializationTest;
+import com.datastax.astra.sdk.db.AstraStargateInitializationTest;
 import io.stargate.sdk.StargateClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import com.dtsx.astra.sdk.db.DatabaseClient;
