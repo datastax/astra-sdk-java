@@ -16,20 +16,68 @@ jobs:
       ASTRA_DB_CLIENT_SECRET: ${{ secrets.ASTRA_DB_CLIENT_SECRET }}
     runs-on: ubuntu-latest
     services:
-      stargate:
-        image: stargateio/stargate-3_11:v1.0.63
-        env:
-          CLUSTER_NAME: stargate
-          CLUSTER_VERSION: 3.11
-          DEVELOPER_MODE: true
-          DATACENTER_NAME: datacenter1
-          JAVA_OPTS: "-Xmx2G"
+      coordinator:
+        image: stargateio/coordinator-4_0:v2
+        networks:
+          - stargate
         ports:
-          - 8080:8080
-          - 8081:8081
-          - 8082:8082
-          - 8090:8090
-          - 9042:9042
+          - "9042:9042"
+          - "8081:8081"
+          - "8082:8082"
+          - "8084:8084"
+          - "8090:8090"
+        mem_limit: 2G
+        environment:
+          - JAVA_OPTS="-Xmx2G"
+          - CLUSTER_NAME=c4-stargate-cluster
+          - CLUSTER_VERSION=4.0
+          - RACK_NAME=rack1
+          - DATACENTER_NAME=datacenter1
+          - DEVELOPER_MODE=true
+      restapi:
+        image: stargateio/restapi:v2
+        depends_on:
+          - coordinator
+        networks:
+          - stargate
+        ports:
+          - "8082:8082"
+        mem_limit: 2G
+        environment:
+          - QUARKUS_GRPC_CLIENTS_BRIDGE_HOST=coordinator
+          - QUARKUS_GRPC_CLIENTS_BRIDGE_PORT=8091
+          - QUARKUS_HTTP_ACCESS_LOG_ENABLED=true
+          - QUARKUS_LOG_LEVEL=INFO
+      graphqlapi:
+        image: stargateio/graphqlapi:v2
+        depends_on:
+          - coordinator
+        networks:
+          - stargate
+        ports:
+          - "8080:8080"
+        mem_limit: 2G
+        environment:
+          - QUARKUS_GRPC_CLIENTS_BRIDGE_HOST=coordinator
+          - QUARKUS_GRPC_CLIENTS_BRIDGE_PORT=8091
+          - QUARKUS_HTTP_ACCESS_LOG_ENABLED=true
+          - QUARKUS_LOG_LEVEL=INFO
+      docsapi:
+        image: stargateio/docsapi:v2
+        depends_on:
+          - coordinator
+        networks:
+          - stargate
+        ports:
+          - "8180:8180"
+        mem_limit: 2G
+        environment:
+          - QUARKUS_GRPC_CLIENTS_BRIDGE_HOST=coordinator
+          - QUARKUS_GRPC_CLIENTS_BRIDGE_PORT=8091
+          - QUARKUS_HTTP_ACCESS_LOG_ENABLED=true
+          - QUARKUS_LOG_LEVEL=INFO
+    networks:
+      stargate:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -39,4 +87,3 @@ jobs:
           distribution: "adopt"
       - name: Test with Maven
         run: mvn test
-        
