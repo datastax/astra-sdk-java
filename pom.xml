@@ -31,7 +31,7 @@
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.2.1</httpclient.version>
 		<pulsar.version>2.11.0</pulsar.version>
-		<stargate-grpc.version>1.0.63</stargate-grpc.version>
+		<stargate-grpc.version>2.0.12</stargate-grpc.version>
 		<grpc-netty.version>1.52.1</grpc-netty.version>
 
 		<stargate-sdk.version>2.0.1</stargate-sdk.version>
