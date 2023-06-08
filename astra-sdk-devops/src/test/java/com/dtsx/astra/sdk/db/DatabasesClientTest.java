@@ -1,12 +1,18 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractDevopsApiTest;
-import com.dtsx.astra.sdk.db.domain.*;
+import com.dtsx.astra.sdk.db.domain.CloudProviderType;
+import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
+import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.utils.TestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 
 /**
@@ -47,7 +53,9 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
         // When
         TestUtils.waitForDbStatus(getDatabasesClient().database(dbId), DatabaseStatusType.ACTIVE, 500);
         // Then
-        Assertions.assertEquals(DatabaseStatusType.ACTIVE, getDatabasesClient().database(dbId).get().getStatus());
+        Database db = getDatabasesClient().database(dbId).get();
+        Assertions.assertEquals(DatabaseStatusType.ACTIVE, db.getStatus());
+        Assertions.assertEquals("cc", db.getInfo().getEngineType());
     }
 
     @Test
@@ -80,6 +88,35 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
 
     @Test
     @Order(5)
+    @DisplayName("Create a DB with vector preview enabled")
+    public void shouldCreateServerlessWithVector() {
+        String dbId;
+        Optional<Database> optDb = getDatabasesClient().findFirstByName(SDK_TEST_DB_VECTOR_NAME);
+        if (!optDb.isPresent()) {
+            dbId = getDatabasesClient().create(DatabaseCreationRequest
+                    .builder()
+                    .name(SDK_TEST_DB_VECTOR_NAME)
+                    .keyspace(SDK_TEST_KEYSPACE)
+                    .cloudRegion(SDK_TEST_DB_REGION)
+                    .withVector()
+                    .build());
+        } else {
+            dbId = optDb.get().getId();
+        }
+        // Then
+        Assertions.assertTrue(getDatabasesClient().findById(dbId).isPresent());
+        Assertions.assertNotNull(getDatabasesClient().database(dbId).get());
+        Assertions.assertTrue(getDatabasesClient().findByName(SDK_TEST_DB_VECTOR_NAME).count() > 0);
+        // When
+        TestUtils.waitForDbStatus(getDatabasesClient().database(dbId), DatabaseStatusType.ACTIVE, 500);
+        // Then
+        Database finalDb = getDatabasesClient().database(dbId).get();
+        Assertions.assertEquals(DatabaseStatusType.ACTIVE, finalDb.getStatus());
+        Assertions.assertEquals("cc", finalDb.getInfo().getEngineType());
+    }
+
+    @Test
+    @Order(6)
     @DisplayName("Find database by its name")
     public void shouldFindDatabaseByNameTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> getDatabasesClient().databaseByName(""));
@@ -97,7 +134,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("Find database by id")
     public void shouldFindDatabaseByIdTest() {
         // --> Getting a valid id
@@ -123,7 +160,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("Find accessLists")
     public void shouldFindAllAccessLists() {
         getDatabasesClient()

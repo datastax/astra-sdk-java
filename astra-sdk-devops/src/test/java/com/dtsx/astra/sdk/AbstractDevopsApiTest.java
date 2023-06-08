@@ -15,7 +15,10 @@ import org.junit.Assert;
 public abstract class AbstractDevopsApiTest {
 
     /** Test Constants. */
-    public static final String SDK_TEST_DB_NAME = "sdk_java_test";
+    public static final String SDK_TEST_DB_NAME = "sdk_java_test_serverless";
+
+    /** Test Constants. */
+    public static final String SDK_TEST_DB_VECTOR_NAME = "sdk_java_test_vector";
 
     /** Test Constants. */
     public static final String SDK_TEST_DB_REGION = "us-east1";

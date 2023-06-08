@@ -110,6 +110,17 @@ public class AstraDbClient extends AbstractApiClient {
     }
 
     /**
+     * Retrieve frist DB from its name.
+     * @param name
+     *      name
+     * @return
+     *      if the db exists or not
+     */
+    public Optional<Database> findFirstByName(String name) {
+        return findByName(name).findFirst();
+    }
+
+    /**
      * Find a database from its id.
      *
      * @param id

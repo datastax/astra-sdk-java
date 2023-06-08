@@ -48,6 +48,9 @@ public class DatabaseCreationRequest {
     /** Keyspace name in database */
     private String keyspace;
 
+    /** Enable Vector preview for the db. */
+    private String engineType = null;
+
     /**
      * CapacityUnits is the amount of space available (horizontal scaling) 
      * for the database. For free tier the max CU's is 1, and 100 
@@ -73,6 +76,9 @@ public class DatabaseCreationRequest {
         this.name          = builder.name;
         this.region        = builder.region;
         this.tier          = builder.tier;
+        if (builder.vector) {
+            this.engineType = "cc";
+        }
     }
     
     /**
@@ -143,6 +149,15 @@ public class DatabaseCreationRequest {
      */
     public String getRegion() {
         return region;
+    }
+
+    /**
+     * Gets engineType
+     *
+     * @return value of engineType
+     */
+    public String getEngineType() {
+        return engineType;
     }
 
     /** {@inheritDoc} */

@@ -55,6 +55,9 @@ public class DatabaseInfo {
     
     /** Region refers to the cloud region.. */
     private String region;
+
+    /** Set the Engine type in use (dse or cc). */
+    private String engineType;
     
     /** Additional keyspaces names in database. */
     private Set<String> additionalKeyspaces;
@@ -230,6 +233,23 @@ public class DatabaseInfo {
     public void setTier(String tier) {
         this.tier = tier;
     }
-    
 
+    /**
+     * Gets engineType
+     *
+     * @return value of engineType
+     */
+    public String getEngineType() {
+        return engineType;
+    }
+
+    /**
+     * Set value for engineType
+     *
+     * @param engineType
+     *         new value for engineType
+     */
+    public void setEngineType(String engineType) {
+        this.engineType = engineType;
+    }
 }
