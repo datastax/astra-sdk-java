@@ -45,6 +45,9 @@ public class DatabaseCreationBuilder {
     /** Keyspace name in database */
     protected String keyspace;
 
+    /** Option to enable the vector preview. */
+    protected boolean vector = false;
+
     /** */
     protected int capacityUnits = 1;
 
@@ -126,6 +129,17 @@ public class DatabaseCreationBuilder {
      */
     public DatabaseCreationBuilder capacityUnit(int unit) {
         this.capacityUnits = unit;
+        return this;
+    }
+
+    /**
+     * Enable Vector.
+     *
+     * @return
+     *      database creation request
+     */
+    public DatabaseCreationBuilder withVector() {
+        this.vector = true;
         return this;
     }
 

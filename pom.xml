@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.datastax.astra</groupId>
 	<artifactId>astra-sdk-parent</artifactId>
-	<version>0.6-SNAPSHOT</version>
+	<version>0.5.1-SNAPSHOT</version>
 	<name>Astra Java SDK</name>
 	<packaging>pom</packaging>
 	<inceptionYear>2021</inceptionYear>
@@ -24,44 +24,41 @@
 		<sonar.organization>clun-datastax</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java-driver.version>4.15.0</java-driver.version>
-		<slf4j.version>2.0.6</slf4j.version>
-		<logback.version>1.4.5</logback.version>
-		<jackson.version>2.14.2</jackson.version>
+
+		<java-driver.version>4.16.0</java-driver.version>
+		<slf4j.version>2.0.7</slf4j.version>
+		<logback.version>1.4.7</logback.version>
+		<jackson.version>2.15.2</jackson.version>
 		<json-schema.version>1.5.1</json-schema.version>
 		<httpclient.version>5.2.1</httpclient.version>
-		<pulsar.version>2.11.0</pulsar.version>
-		<stargate-grpc.version>2.0.12</stargate-grpc.version>
-		<grpc-netty.version>1.52.1</grpc-netty.version>
+		<pulsar.version>2.11.1</pulsar.version>
+		<stargate-grpc.version>2.0.15</stargate-grpc.version>
+		<grpc-netty.version>1.55.1</grpc-netty.version>
 
 		<stargate-sdk.version>2.0.1</stargate-sdk.version>
 		<!-- Spring -->
 		<spring.version>5.3.23</spring.version>
-		<spring-boot.version>2.7.11</spring-boot.version>
+		<spring-boot.version>2.7.12</spring-boot.version>
 		<spring-data.version>3.4.3</spring-data.version>
 		<!-- Junit -->
-		<junit-platform.version>1.9.2</junit-platform.version>
-		<junit-jupiter.version>5.9.2</junit-jupiter.version>
+		<junit-platform.version>1.9.3</junit-platform.version>
+		<junit-jupiter.version>5.9.3</junit-jupiter.version>
 		<!-- Java -->
 		<maven.plugin.compiler.source>1.8</maven.plugin.compiler.source>
 		<maven.plugin.compiler.target>1.8</maven.plugin.compiler.target>
 		<maven.plugin.javadoc.source>8</maven.plugin.javadoc.source>
 		<!-- Maven -->
-		<version.maven.plugin.failsafe>2.22.2</version.maven.plugin.failsafe>
+		<version.maven.plugin.compiler>3.11.0</version.maven.plugin.compiler>
+		<version.maven.plugin.dependency>3.6.0</version.maven.plugin.dependency>
+		<version.maven.plugin.gpg>3.1.0</version.maven.plugin.gpg>
+		<version.maven.plugin.javadoc>3.5.0</version.maven.plugin.javadoc>
+		<version.maven.plugin.jar>3.3.0</version.maven.plugin.jar>
+		<version.maven.plugin.nexus>1.6.13</version.maven.plugin.nexus>
+		<version.maven.plugin.release>3.0.1</version.maven.plugin.release>
+		<version.maven.plugin.resources>3.3.1</version.maven.plugin.resources>
+		<version.maven.plugin.source>3.3.0</version.maven.plugin.source>
 		<version.maven.plugin.surefire>2.22.2</version.maven.plugin.surefire>
-		<version.maven.plugin.gpg>3.0.1</version.maven.plugin.gpg>
-		<version.maven.plugin.resources>3.2.0</version.maven.plugin.resources>
-		<version.maven.plugin.release>2.5.2</version.maven.plugin.release>
-		<version.maven.plugin.javadoc>2.10.3</version.maven.plugin.javadoc>
-		<version.maven.plugin.source>2.2.1</version.maven.plugin.source>
-		<version.maven.plugin.nexus>1.6.8</version.maven.plugin.nexus>
-		<version.maven.plugin.compiler>3.8.1</version.maven.plugin.compiler>
-		<version.maven.plugin.jar>3.2.0</version.maven.plugin.jar>
-		<version.maven.plugin.dependency>2.8</version.maven.plugin.dependency>
-		<version.maven.plugin.xml-format>3.0.7</version.maven.plugin.xml-format>
-		<version.maven.plugin.fmt>2.2.0</version.maven.plugin.fmt>
-		<version.maven.plugin.coveralls>4.3.0</version.maven.plugin.coveralls>
-		<version.maven.plugin.jacoco>0.8.8</version.maven.plugin.jacoco>
+
 	</properties>
 
 	<modules>
@@ -70,10 +67,14 @@
 		<module>astra-sdk-pulsar</module>
 		<module>astra-spring-boot-autoconfigure</module>
 		<module>astra-spring-boot-starter</module>
-		<!-- not in release
-        <module>sample-spring-boot-starter</module>
-		<module>sample-quickstart</module>
-		<module>astra-archetype-spring</module>
+
+		<!-- Support for Spring Boot 3x -->
+		<module>astra-spring-boot-3x-autoconfigure</module>
+		<module>astra-spring-boot-3x-starter</module>
+
+		<module>astra-sdk-archetypes</module>
+		<!--
+		<module>astra-sdk-samples</module>
 		-->
 	</modules>
 	
