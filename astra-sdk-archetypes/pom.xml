@@ -1,13 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.datastax.astra</groupId>
-	<artifactId>astra-sdk-archetypes</artifactId>
-	<version>0.5.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>+ astra-sdk-archetypes</name>
-	
-	<modules>
-	</modules>
-
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.datastax.astra</groupId>
+  <artifactId>astra-sdk-archetypes</artifactId>
+  <packaging>pom</packaging>
+  <name>+ astra-sdk-archetypes</name>
+  	
+  <parent>
+    <groupId>com.datastax.astra</groupId>
+    <artifactId>astra-sdk-parent</artifactId>
+    <version>0.5.1-SNAPSHOT</version>
+  </parent>
+  	
+  <modules>
+    <module>spring-boot-2x-archetype</module>
+    <module>spring-boot-3x-archetype</module>
+  </modules>
+  
 </project>

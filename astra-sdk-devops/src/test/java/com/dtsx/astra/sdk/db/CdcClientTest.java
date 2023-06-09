@@ -12,8 +12,12 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +48,7 @@ public class CdcClientTest extends AbstractDevopsApiTest {
                     .build());
         }
         LOGGER.info("+ Using tenant {}", tmpTenant);
-        Assert.assertTrue(getStreamingClient().exist(tmpTenant));
+        Assertions.assertTrue(getStreamingClient().exist(tmpTenant));
 
         // Create Db
         DatabaseClient dc = getSdkTestDatabaseClient();

@@ -1,13 +1,12 @@
 package com.dtsx.astra.sdk;
 
-import com.dtsx.astra.sdk.AstraDevopsApiClient;
-import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.AstraDbClient;
+import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
 import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.dtsx.astra.sdk.utils.Utils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Superclass for test.
@@ -128,7 +127,7 @@ public abstract class AbstractDevopsApiTest {
                         .build());
             }
             dbClient = getApiDevopsClient().db().databaseByName(SDK_TEST_DB_NAME);
-            Assert.assertTrue(dbClient.exist());
+            Assertions.assertTrue(dbClient.exist());
         }
         return dbClient;
     }

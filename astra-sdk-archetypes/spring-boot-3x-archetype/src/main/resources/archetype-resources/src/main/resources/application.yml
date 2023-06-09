@@ -1,0 +1,38 @@
+spring:
+  data:
+    # Astra starter build the session used by Spring Data Cassandra
+    # As a consequence does not use SDC properties to initialize they are ignored.
+    # only the schema-action is applied after session creation.
+    cassandra:
+      schema-action: CREATE_IF_NOT_EXISTS
+
+logging:
+  level:
+    org.springframework.web: WARN
+    com.datastax.astra: INFO
+    root: WARN
+
+astra:
+  api:
+    # Astra Credentials it stars with AstraCS:..
+    application-token: ${ASTRA_DB_APPLICATION_TOKEN}
+    # Database UUID
+    database-id: ${ASTRA_DB_ID}
+    # Database Region (eg: us-east1) no need to specify a cloud name
+    database-region: ${ASTRA_DB_REGION}
+    # cross-region-failback: false
+  cql:
+    # Connecting with a regular CqlSession
+    enabled: true
+    # Download the Secure Connect Bundle, zip file containing the certificates to open the mTLS connection.
+    download-scb:
+      enabled: true
+      # customize local path to download the SCB
+      # path: /tmp
+
+    # Full fledged driver configuration
+    # see https://docs.datastax.com/en/developer/java-driver/latest/manual/core/configuration/
+    driver-config:
+      basic:
+        session-keyspace: ${ASTRA_DB_KEYSPACE}
+

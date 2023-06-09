@@ -2,7 +2,6 @@ package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.streaming.domain.Tenant;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -32,7 +31,7 @@ public class AstraStreamingClientTest extends AbstractDevopsApiTest  {
                 .map(Tenant::getTenantName)
                 .collect(Collectors.toSet());
         // Then
-        Assert.assertNotNull(tenants);
+        Assertions.assertNotNull(tenants);
     }
 
 }

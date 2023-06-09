@@ -2,7 +2,7 @@ package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -28,14 +28,14 @@ public class TenantClientTest extends AbstractDevopsApiTest {
     public void shouldCreateTenant() throws InterruptedException {
         // Given
         AstraStreamingClient sc  = new AstraStreamingClient(getToken());
-        Assert.assertFalse(sc.exist(tmpTenant));
+        Assertions.assertFalse(sc.exist(tmpTenant));
         // When
         sc.create(CreateTenant.builder()
                 .tenantName(tmpTenant)
                 .userEmail("astra-cli@datastax.com").build());
         // Then
         Thread.sleep(1000);
-        Assert.assertTrue(sc.exist(tmpTenant));
+        Assertions.assertTrue(sc.exist(tmpTenant));
     }
 
     @Test
@@ -43,11 +43,11 @@ public class TenantClientTest extends AbstractDevopsApiTest {
     public void shouldDeleteTenant() throws InterruptedException {
         AstraStreamingClient sc  = new AstraStreamingClient(getToken());
         // Giving
-        Assert.assertTrue(sc.exist(tmpTenant));
+        Assertions.assertTrue(sc.exist(tmpTenant));
         // When
         sc.delete(tmpTenant);
         Thread.sleep(1000);
         // Then
-        Assert.assertFalse(sc.exist(tmpTenant));
+        Assertions.assertFalse(sc.exist(tmpTenant));
     }
 }

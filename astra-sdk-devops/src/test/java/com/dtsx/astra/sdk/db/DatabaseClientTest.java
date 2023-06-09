@@ -1,14 +1,21 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractDevopsApiTest;
-import com.dtsx.astra.sdk.db.domain.*;
+import com.dtsx.astra.sdk.db.domain.AccessListAddressRequest;
+import com.dtsx.astra.sdk.db.domain.CloudProviderType;
+import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
+import com.dtsx.astra.sdk.db.domain.Datacenter;
 import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
 import com.dtsx.astra.sdk.db.exception.RegionAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
 import com.dtsx.astra.sdk.utils.TestUtils;
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.File;
 import java.util.List;
@@ -254,7 +261,7 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     @Order(16)
     @DisplayName("16. Should terminate DB")
     public void shouldTerminateDbTest() {
-        Assert.assertTrue(getSdkTestDatabaseClient().exist());
+        Assertions.assertTrue(getSdkTestDatabaseClient().exist());
         //getSdkTestDatabaseClient().delete();
         //TestUtils.waitForDbStatus(getSdkTestDatabaseClient(), DatabaseStatusType.TERMINATED, 300);
         //Assert.assertEquals(0, getDatabasesClient().findByName(SDK_TEST_DB_NAME).count());

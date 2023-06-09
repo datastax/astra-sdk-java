@@ -10,29 +10,20 @@ logging:
 
 spring:
   data:
-    # Spring Data to pick the Cql Session created by Astra Block
     cassandra:
       schema-action: CREATE_IF_NOT_EXISTS
 
-
 astra:
   api:
-    application-token: <change_me>
-    database-id: <change_me>
-    database-region: <change_me>
-    # cross-region-failback: false
-    # With Spring better use the CQL and Spring data cassandra
-    # grpc:
-    #  enabled: false
+    application-token: ${ASTRA_DB_APPLICATION_TOKEN}
+    database-id: ${ASTRA_DB_ID}
+    database-region: ${ASTRA_DB_REGION}
   cql:
     enabled: true
     download-scb:
       enabled: true
-      # Looking for zip files in folder (default is ~/.astra/scb)
-      # path: /tmp
     driver-config:
       basic:
-        session-keyspace: demo
-  # Integration with Actuator
+        session-keyspace: ${ASTRA_DB_KEYSPACE}
   metrics:
     enabled: true

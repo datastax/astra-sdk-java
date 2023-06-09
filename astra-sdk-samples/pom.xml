@@ -4,9 +4,14 @@
 	<groupId>com.datastax.astra</groupId>
 	<artifactId>astra-sdk-samples</artifactId>
 	<name>+ astra-sdk-samples</name>
-	<version>0.5.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
+
+	<parent>
+		<groupId>com.datastax.astra</groupId>
+		<artifactId>astra-sdk-parent</artifactId>
+		<version>0.5.1-SNAPSHOT</version>
+	</parent>
+
 	<modules>
 		<module>sample-quickstart</module>
 		<module>sample-spring-boot-2x</module>

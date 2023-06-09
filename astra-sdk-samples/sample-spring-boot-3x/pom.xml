@@ -5,7 +5,7 @@
 	<groupId>com.datastax.astra.sdk</groupId>
 	<artifactId>sample-spring-boot-3x</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>+ sample-spring-boot-3x</name>
+	<name>+ samples: spring-boot-3x</name>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
