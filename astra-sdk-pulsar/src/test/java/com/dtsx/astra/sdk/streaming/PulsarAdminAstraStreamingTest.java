@@ -1,55 +1,93 @@
 package com.dtsx.astra.sdk.streaming;
 
+import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
+import com.dtsx.astra.sdk.streaming.domain.Tenant;
+import com.dtsx.astra.sdk.utils.AstraRc;
+import com.dtsx.astra.sdk.utils.Utils;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.apache.pulsar.common.policies.data.PersistentTopicInternalStats;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PulsarAdminAstraStreamingTest {
 
-    String pulsarToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NzcyNDM1NzYsImlzcyI6ImRhdGFzdGF4Iiwic3Vi" +
-            "IjoiY2xpZW50O2Y5NDYwZjE0LTk4NzktNGViZS04M2YyLTQ4ZDNmM2RjZTEzYztZMngxYmkxblkzQXRaV0Z6ZERFPTtk" +
-            "MzlkZWMyYTk0IiwidG9rZW5pZCI6ImQzOWRlYzJhOTQifQ.RtQwhbak_gEF3AHy9HZDVsJEoo5TWUDDZTeB-Zyp4vyh4" +
-            "uPAWy_PEPrCdGBZtUuHr5mD9lTjk_v9gCTDzwJEK_QO51lta1ZfN-ZpwpZ3o_bOhXy1p-atmsQzW6-13ilUAONsZCC7W" +
-            "Ey_Ul0iq7zE64tGfCWNMzaj5xRBDb8SBiT9ikowKGM1Xr5RD5QWmTK_TY_r6uN79JIZcpWHjj_l_354KNl1--1HEEST3" +
-            "wyifJotETSEczvD9Y2RLrEqKe7i9tWetC5oQUTorqJgnEKd9-EvbwFh1cEgY2jo18thuyG31n8KdwRrduv02NCJv-zpT" +
-            "sVOyxujAKjzXytEixDjsA";
-    @Test
-    public void testPulsarAdmin() throws PulsarAdminException {
-        System.out.println("ok");
-        PulsarAdmin pa = new PulsarAdminProvider(
-                "https://pulsar-gcp-useast1.api.streaming.datastax.com",pulsarToken)
-                .get();
+    private static String tmpTenant = "sdk-java-junit-" + UUID.randomUUID().toString().substring(0,7);
 
-        // Get Infos
-        System.out.println(pa.tenants().getTenantInfo("clun-gcp-east1").toString());
+    static String token;
 
-        // List Namespaces
-        pa.namespaces().getNamespaces("clun-gcp-east1").forEach(System.out::println);
+    static AstraStreamingClient streamingClient;
 
-        // List Topics
-        pa.topics().getList("clun-gcp-east1/astracdc").forEach(System.out::println);
-
-        // Details on a topic
-        PersistentTopicInternalStats stats = pa.topics()
-           .getInternalStats("persistent://clun-gcp-east1/astracdc/log-578d5f2f-dd61-4ab9-a07e-8ffdaff60fd8-ks1.user-partition-1");
-        System.out.println(stats.totalSize);
-
-
-
-
-
-
-
+    @BeforeAll
+    public static void beforeAll() {
+        if (AstraRc.isDefaultConfigFileExists()) {
+            token = new AstraRc()
+                    .getSectionKey(AstraRc.ASTRARC_DEFAULT, AstraRc.ASTRA_DB_APPLICATION_TOKEN)
+                    .orElse(null);
+        }
+        token = Utils.readEnvVariable(AstraRc.ASTRA_DB_APPLICATION_TOKEN).orElse(token);
+        streamingClient  = new AstraStreamingClient(token);
+        System.out.println("Tenant: " + tmpTenant);
     }
 
+
     @Test
+    @Order(1)
+    @DisplayName("Create a Tenant for stats")
+    public void shouldCreateTenant() throws InterruptedException {
+        // When
+        streamingClient.create(CreateTenant.builder()
+                .tenantName(tmpTenant)
+                .userEmail("astra-cli@datastax.com").build());
+        Thread.sleep(1000);
+        // Then
+        assertTrue(streamingClient.exist(tmpTenant));
+    }
+
+
+    @Test
+    @Order(2)
+    @DisplayName("Test Pulsar Client")
     public void testPulsarClient() throws PulsarClientException {
-        PulsarClient cli =
-                new PulsarClientProvider("pulsar+ssl://pulsar-gcp-useast1.streaming.datastax.com:6651", pulsarToken).get();
-
-
+        Tenant tenant = streamingClient.find(tmpTenant).get();
+        PulsarClient cli = new PulsarClientProvider(tenant.getBrokerServiceUrl(), tenant.getPulsarToken()).get();
+        cli.shutdown();
     }
+
+    @Test
+    @Order(3)
+    @DisplayName("Test Pulsar ADmin")
+    public void testPulsarAdmin() throws PulsarAdminException {
+        Tenant tenant = streamingClient.find(tmpTenant).get();
+        PulsarAdmin pa = new PulsarAdminProvider(tenant.getWebServiceUrl(), tenant.getPulsarToken()).get();
+        System.out.println(pa.tenants().getTenantInfo(tmpTenant).toString());
+        pa.namespaces().getNamespaces(tmpTenant).forEach(System.out::println);
+    }
+
+
+    @Test
+    @Order(4)
+    @DisplayName("Delete a Tenant for stats")
+    public void shouldDeleteTenant() throws InterruptedException {
+        // When
+        streamingClient.delete(tmpTenant);
+        // Then
+        Thread.sleep(1000);
+        assertFalse(streamingClient.exist(tmpTenant));
+    }
+
+
+
 }

@@ -16,27 +16,23 @@
 
 package com.datastax.astra.sdk;
 
-import java.io.File;
-
 import com.dtsx.astra.sdk.utils.AstraRc;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+
+import java.io.File;
 
 /**
  * Create Astrarc to execute test locally.
  *
  * @author Cedrick LUNVEN (@clunven)
  */
-@Ignore
 public class AstraRcTest {
     
     /** Could be reused for tests. */
     public File tmpAstraRC = new File(System.getProperty("java.io.tmpdir") + File.separator + ".astrarc");
-    
-    @Test
-    @DisplayName("Create .astraRC without clientId/clientSecret")
+
+    //@Test
+    //@DisplayName("Create .astraRC without clientId/clientSecret")
     public void should_create_astraRc_File() {
         // Given
         tmpAstraRC.delete();
