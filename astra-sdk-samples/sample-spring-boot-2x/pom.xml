@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <astra.spring-boot-starter.version>0.5.1-SNAPSHOT</astra.spring-boot-starter.version>
+        <astra.spring-boot-starter.version>0.6</astra.spring-boot-starter.version>
     </properties>
 
     <dependencies>
