@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,18 +22,31 @@ public class TenantClient extends AbstractApiClient {
     private final String tenantId;
 
     /**
-     * Default constructor.
+     * As immutable object use builder to initiate the object.
      *
-     * @param token
-     *         token client
      * @param tenantId
-     *         unique tenantId identifier
+     *     unique tenant identifier
+     * @param token
+     *      authenticated token
      */
     public TenantClient(String token, String tenantId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public TenantClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
+        super(token, env);
         Assert.hasLength(tenantId, "tenantId");
         this.tenantId = tenantId;
     }
+
 
     // ---------------------------------
     // ----       Limits            ----
@@ -87,6 +101,6 @@ public class TenantClient extends AbstractApiClient {
      *      database endpoint
      */
     public String getEndpointTenant() {
-        return AstraStreamingClient.getEndpointTenant(tenantId);
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming/tenants/" + tenantId;
     }
 }

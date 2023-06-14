@@ -1,5 +1,6 @@
 package com.dtsx.astra.sdk;
 
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
@@ -14,15 +15,19 @@ public abstract class AbstractApiClient {
     /** hold a reference to the bearer token. */
     protected final String token;
 
+    /** hold a reference to target Astra Environment. */
+    protected final ApiLocator.AstraEnvironment environment;
+
     /**
      * Default constructor.
      *
      * @param token
      *     token value
      */
-    public AbstractApiClient(String token) {
+    public AbstractApiClient(String token, ApiLocator.AstraEnvironment env) {
         Assert.hasLength(token, "token");
         this.token = token;
+        this.environment = env;
     }
 
     /**

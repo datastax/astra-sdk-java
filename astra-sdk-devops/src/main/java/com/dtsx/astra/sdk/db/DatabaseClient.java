@@ -7,6 +7,7 @@ import com.dtsx.astra.sdk.db.domain.Datacenter;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
 import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
 import com.dtsx.astra.sdk.db.telemetry.TelemetryClient;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -35,15 +36,25 @@ public class DatabaseClient extends AbstractApiClient {
     private final String databaseId;
 
     /**
-     * Default constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *         token client
-     * @param databaseId
-     *         unique database identifier
+     *      authenticated token
      */
     public DatabaseClient(String token, String databaseId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DatabaseClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+        super(token, env);
         Assert.hasLength(databaseId, "databaseId");
         this.databaseId = databaseId;
     }
@@ -272,7 +283,7 @@ public class DatabaseClient extends AbstractApiClient {
      *      keyspaces client
      */
     public DbKeyspacesClient keyspaces() {
-        return new DbKeyspacesClient(token, databaseId);
+        return new DbKeyspacesClient(token, environment, databaseId);
     }
 
     // ---------------------------------
@@ -285,7 +296,7 @@ public class DatabaseClient extends AbstractApiClient {
      * @return cdc client
      */
     public DbDatacentersClient datacenters() {
-        return new DbDatacentersClient(token, databaseId);
+        return new DbDatacentersClient(token, environment, databaseId);
     }
 
     // ---------------------------------
@@ -298,7 +309,7 @@ public class DatabaseClient extends AbstractApiClient {
      * @return access list client
      */
     public DbAccessListsClient accessLists() {
-        return new DbAccessListsClient(token, databaseId);
+        return new DbAccessListsClient(token, environment, databaseId);
     }
 
     // ---------------------------------
@@ -311,7 +322,7 @@ public class DatabaseClient extends AbstractApiClient {
      * @return cdc client
      */
     public DbCdcsClient cdc() {
-        return new DbCdcsClient(token, databaseId);
+        return new DbCdcsClient(token, environment, databaseId);
     }
 
     // ---------------------------------
@@ -338,7 +349,7 @@ public class DatabaseClient extends AbstractApiClient {
      * @return privateLink client
      */
     public DbPrivateLinksClient privateLink() {
-        return new DbPrivateLinksClient(token, databaseId);
+        return new DbPrivateLinksClient(token, environment, databaseId);
     }
 
     // ---------------------------------
@@ -370,8 +381,8 @@ public class DatabaseClient extends AbstractApiClient {
      *         database identifier
      * @return database endpoint
      */
-    public static String getEndpointDatabase(String dbId) {
-        return AstraDbClient.getEndpointDatabases() + "/" + dbId;
+    public String getEndpointDatabase(String dbId) {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/databases/" + dbId;
     }
 
 }

@@ -18,13 +18,25 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class ClustersClient extends AbstractApiClient {
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token.
+     *      authenticated token
      */
     public ClustersClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public ClustersClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -75,8 +87,8 @@ public class ClustersClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getApiDevopsEndpointClusters() {
-        return ApiLocator.getApiDevopsEndpoint() + "/streaming" + "/clusters";
+    public String getApiDevopsEndpointClusters() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming" + "/clusters";
     }
 
 

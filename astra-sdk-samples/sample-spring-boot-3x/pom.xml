@@ -16,15 +16,23 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<astra.spring-boot-starter.version>0.5.1-SNAPSHOT</astra.spring-boot-starter.version>
+		<astra.spring-boot-starter.version>0.6</astra.spring-boot-starter.version>
+		<cassandra-driver.version>4.16.0</cassandra-driver.version>
 	</properties>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>com.datastax.astra</groupId>
 			<artifactId>astra-spring-boot-3x-starter</artifactId>
 			<version>${astra.spring-boot-starter.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.datastax.oss</groupId>
+			<artifactId>java-driver-core</artifactId>
+			<version>${cassandra-driver.version}</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

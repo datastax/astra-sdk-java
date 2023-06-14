@@ -1,6 +1,8 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.utils.ApiLocator;
+import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.domain.Database;
 
@@ -22,15 +24,26 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
     private final Database db;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      token
-     * @param databaseId
-     *      databaseId
+     *      authenticated token
      */
     public DbPrivateLinksClient(String token, String databaseId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DbPrivateLinksClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+        super(token, env);
+        Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, databaseId).get();
     }
 

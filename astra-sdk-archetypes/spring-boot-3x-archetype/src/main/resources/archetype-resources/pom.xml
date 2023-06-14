@@ -13,6 +13,11 @@
         <relativePath/>
     </parent>
 
+    <properties>
+        <astra-sdk.version>0.6</astra-sdk.version>
+        <cassandra-driver.version>4.16.0</cassandra-driver.version>
+    </properties>
+
     <dependencies>
 
         <!-- CRUD API for Cassandra -->
@@ -29,7 +34,13 @@
         <dependency>
             <groupId>com.datastax.astra</groupId>
             <artifactId>astra-spring-boot-3x-starter</artifactId>
-            <version>0.6</version>
+            <version>${astra-sdk.version}</version>
+        </dependency>
+        <!-- Override Spring or any third party Dependency -->
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-core</artifactId>
+            <version>${cassandra-driver.version}</version>
         </dependency>
 
         <!-- Test -->

@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.streaming.domain.Statistics;
@@ -27,18 +28,29 @@ public class TenantStatsClient extends AbstractApiClient {
     private final Tenant tenant;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
-     * @param token
-     *      token
      * @param tenantId
-     *      tenantId
+     *     unique tenant identifier
+     * @param token
+     *      authenticated token
      */
     public TenantStatsClient(String token, String tenantId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public TenantStatsClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
+        super(token, env);
         Assert.hasLength(tenantId, "tenantId");
-        // Test Db exists
-        this.tenant = new AstraStreamingClient(token).get(tenantId);
+        this.tenant = new AstraStreamingClient(token, env).get(tenantId);
     }
 
     /**
@@ -119,7 +131,7 @@ public class TenantStatsClient extends AbstractApiClient {
      *      database endpoint
      */
     public String getEndpointStreamingAdminV2() {
-        return "https://" + tenant.getClusterName() + ".api.streaming.datastax.com/admin/v2";
+        return ApiLocator.getApiStreamingV2Endpoint(environment, tenant.getClusterName());
     }
 
     /**

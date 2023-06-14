@@ -28,7 +28,19 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      authenticated token
      */
     public AstraStreamingClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public AstraStreamingClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -79,7 +91,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      */
     public void create(CreateTenant ct) {
         Assert.notNull(ct, "Create Tenant request");
-        POST(AstraStreamingClient.getApiDevopsEndpointTenants(), JsonUtils.marshall(ct));
+        POST(getApiDevopsEndpointTenants(), JsonUtils.marshall(ct));
     }
 
     /**
@@ -118,7 +130,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      client for a tenant
      */
     public TenantClient tenant(String tenantName) {
-        return new TenantClient(token, tenantName);
+        return new TenantClient(token, environment, tenantName);
     }
 
     // ---------------------------------
@@ -132,7 +144,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      streaming cluster client
      */
     public ClustersClient clusters() {
-        return new ClustersClient(token);
+        return new ClustersClient(token, environment);
     }
 
     // ---------------------------------
@@ -146,7 +158,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      streaming cluster client
      */
     public ProvidersClient providers() {
-        return new ProvidersClient(token);
+        return new ProvidersClient(token, environment);
     }
 
     // ---------------------------------
@@ -160,7 +172,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      streaming cluster client
      */
     public RegionsClient regions() {
-        return new RegionsClient(token);
+        return new RegionsClient(token, environment);
     }
     
     // ---------------------------------
@@ -173,8 +185,8 @@ public class AstraStreamingClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getApiDevopsEndpointStreaming() {
-        return ApiLocator.getApiDevopsEndpoint() + "/streaming";
+    public String getApiDevopsEndpointStreaming() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming";
     }
 
     /**
@@ -183,7 +195,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getApiDevopsEndpointTenants() {
+    public String getApiDevopsEndpointTenants() {
         return getApiDevopsEndpointStreaming() + "/tenants";
     }
 
@@ -195,7 +207,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      * @return
      *      database endpoint
      */
-    public static String getEndpointTenant(String tenantId) {
+    public String getEndpointTenant(String tenantId) {
         return getApiDevopsEndpointTenants() + "/" + tenantId;
     }
 

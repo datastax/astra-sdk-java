@@ -4,6 +4,7 @@ import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 
 import java.util.Set;
@@ -19,15 +20,26 @@ public class DbKeyspacesClient extends AbstractApiClient  {
     private final Database db;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      token
-     * @param databaseId
-     *      databaseId
+     *      authenticated token
      */
     public DbKeyspacesClient(String token, String databaseId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DbKeyspacesClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+        super(token, env);
+        Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, databaseId).get();
     }
 
@@ -35,6 +47,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
      * Find all keyspace in current DB.
      *
      * @return
+     *      all keyspace names
      */
     public Set<String> findAll() {
         return db.getInfo().getKeyspaces();
@@ -88,7 +101,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
      * @return endpoint
      */
     public String getEndpointKeyspace(String keyspaceName) {
-        return DatabaseClient.getEndpointDatabase(db.getId()) + "/keyspaces/" + keyspaceName;
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/databases/" + db.getId() + "/keyspaces/" + keyspaceName;
     }
 
 }

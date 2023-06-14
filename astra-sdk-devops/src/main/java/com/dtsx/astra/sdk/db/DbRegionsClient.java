@@ -1,5 +1,6 @@
 package com.dtsx.astra.sdk.db;
 
+import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.DatabaseRegion;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 /**
  * Group operation to list db regions
  */
-public class DbRegionsClient {
+public class DbRegionsClient extends AbstractApiClient {
 
     /** Get Available Regions. */
     public static final String PATH_REGIONS = "/availableRegions";
@@ -30,17 +31,26 @@ public class DbRegionsClient {
     public static final TypeReference<List<DatabaseRegion>> TYPE_LIST_REGION =
             new TypeReference<List<DatabaseRegion>>(){};
 
-    /** Authentication token */
-    private final String token;
-
     /**
-     * Get Access to the token
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token
+     *      authenticated token
      */
     public DbRegionsClient(String token) {
-        this.token = token;
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DbRegionsClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -53,7 +63,7 @@ public class DbRegionsClient {
         // Invoke endpoint
         ApiResponseHttp res = HttpClientWrapper
                 .getInstance()
-                .GET(ApiLocator.getApiDevopsEndpoint() + PATH_REGIONS, token);
+                .GET(ApiLocator.getApiDevopsEndpoint(environment) + PATH_REGIONS, token);
         // Marshall response
         return JsonUtils.unmarshallType(res.getBody(), TYPE_LIST_REGION).stream();
     }
@@ -67,7 +77,7 @@ public class DbRegionsClient {
     public Stream<DatabaseRegionServerless> findAllServerless() {
         // Invoke endpoint
         ApiResponseHttp res = HttpClientWrapper
-                .getInstance().GET(ApiLocator.getApiDevopsEndpoint() + PATH_REGIONS_SERVERLESS, token);
+                .getInstance().GET(ApiLocator.getApiDevopsEndpoint(environment) + PATH_REGIONS_SERVERLESS, token);
         // Marshall response
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<DatabaseRegionServerless>>(){}).stream();
     }
@@ -82,10 +92,10 @@ public class DbRegionsClient {
         Map<String, Map<CloudProviderType,List<DatabaseRegion>>> m = new HashMap<>();
         findAll().forEach(dar -> {
             if (!m.containsKey(dar.getTier())) {
-                m.put(dar.getTier(), new HashMap<CloudProviderType,List<DatabaseRegion>>());
+                m.put(dar.getTier(), new HashMap<>());
             }
             if (!m.get(dar.getTier()).containsKey(dar.getCloudProvider())) {
-                m.get(dar.getTier()).put(dar.getCloudProvider(), new ArrayList<DatabaseRegion>());
+                m.get(dar.getTier()).put(dar.getCloudProvider(), new ArrayList<>());
             }
             m.get(dar.getTier()).get(dar.getCloudProvider()).add(dar);
         });

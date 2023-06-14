@@ -3,6 +3,7 @@ package com.dtsx.astra.sdk.streaming;
 import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.streaming.domain.Tenant;
 import com.dtsx.astra.sdk.streaming.domain.TenantLimit;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -22,18 +23,29 @@ public class TenantLimitsClient extends AbstractApiClient {
     private final Tenant tenant;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
-     * @param token
-     *      token
      * @param tenantId
-     *      tenantId
+     *     unique tenant identifier
+     * @param token
+     *      authenticated token
      */
     public TenantLimitsClient(String token, String tenantId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public TenantLimitsClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
+        super(token, env);
         Assert.hasLength(tenantId, "tenantId");
-        // Test Db exists
-        this.tenant = new AstraStreamingClient(token).get(tenantId);
+        this.tenant = new AstraStreamingClient(token, env).get(tenantId);
     }
 
     /**
@@ -43,8 +55,18 @@ public class TenantLimitsClient extends AbstractApiClient {
      *      the list of limits
      */
     public Stream<TenantLimit> limits() {
-        ApiResponseHttp res = GET(AstraStreamingClient.getEndpointTenant(tenant.getTenantName()) + "/limits");
+        ApiResponseHttp res = GET(getEndpointTenantLimits());
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<TenantLimit>>(){}).stream();
+    }
+
+    /**
+     * Endpoint to access dbs.
+     *
+     * @return
+     *      database endpoint
+     */
+    public String getEndpointTenantLimits() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming/tenants/" + tenant.getTenantName() + "/limits";
     }
 
 }

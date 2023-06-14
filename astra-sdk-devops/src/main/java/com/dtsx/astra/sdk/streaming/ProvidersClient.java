@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 
 import java.util.List;
@@ -12,13 +13,25 @@ import java.util.Map;
 public class ProvidersClient extends AbstractApiClient {
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token.
+     *      authenticated token
      */
     public ProvidersClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public ProvidersClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -40,8 +53,8 @@ public class ProvidersClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getApiDevopsEndpointProviders() {
-        return AstraStreamingClient.getApiDevopsEndpointStreaming() +  "/providers";
+    public String getApiDevopsEndpointProviders() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming" +  "/providers";
     }
 
 }

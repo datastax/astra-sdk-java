@@ -7,6 +7,7 @@ import com.dtsx.astra.sdk.db.domain.DatabaseRegionCreationRequest;
 import com.dtsx.astra.sdk.db.domain.Datacenter;
 import com.dtsx.astra.sdk.db.exception.RegionAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -35,17 +36,26 @@ public class DbDatacentersClient extends AbstractApiClient {
     private final Database db;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      token
-     * @param databaseId
-     *      databaseId
+     *      authenticated token
      */
     public DbDatacentersClient(String token, String databaseId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DbDatacentersClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+        super(token, env);
         Assert.hasLength(databaseId, "databaseId");
-        // Test Db exists
         this.db = new DatabaseClient(token, databaseId).get();
     }
 
@@ -140,7 +150,7 @@ public class DbDatacentersClient extends AbstractApiClient {
      * @return database endpoint
      */
     private String getEndpointRegions() {
-        return DatabaseClient.getEndpointDatabase(db.getId()) + "/datacenters";
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/databases/" + db.getId() + "/datacenters";
     }
 
 }

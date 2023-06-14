@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.streaming.domain.StreamingRegion;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponse;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,13 +27,25 @@ public class RegionsClient extends AbstractApiClient {
     private static final String JSON_SERVERLESS_REGIONS = "availableServerlessRegions";
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token.
+     *      authenticated token
      */
     public RegionsClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public RegionsClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -60,8 +73,8 @@ public class RegionsClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getApiDevopsEndpointRegionsServerless() {
-        return AstraStreamingClient.getApiDevopsEndpointStreaming() + "/serverless-regions";
+    public String getApiDevopsEndpointRegionsServerless() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming" + "/serverless-regions";
     }
 
 

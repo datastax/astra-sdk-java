@@ -1,10 +1,6 @@
 spring:
-  data:
-    # Astra starter build the session used by Spring Data Cassandra
-    # As a consequence does not use SDC properties to initialize they are ignored.
-    # only the schema-action is applied after session creation.
-    cassandra:
-      schema-action: CREATE_IF_NOT_EXISTS
+  cassandra:
+    schema-action: CREATE_IF_NOT_EXISTS
 
 logging:
   level:

@@ -6,6 +6,7 @@ import com.dtsx.astra.sdk.db.exception.ChangeDataCaptureNotFoundException;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
 import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
@@ -34,18 +35,27 @@ public class DbCdcsClient extends AbstractApiClient {
     private final Database db;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      token
-     * @param databaseId
-     *      databaseId
+     *      authenticated token
      */
     public DbCdcsClient(String token, String databaseId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DbCdcsClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+        super(token, env);
         Assert.hasLength(databaseId, "databaseId");
-        // Test Db exists
-        this.db = new DatabaseClient(token, databaseId).get();
+        this.db = new DatabaseClient(token, environment, databaseId).get();
     }
 
     /**
@@ -109,7 +119,7 @@ public class DbCdcsClient extends AbstractApiClient {
         if (!db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceNotFoundException(db.getId(), keyspace);
         }
-        new AstraStreamingClient(token).tenant(tenant).cdc().create(db.getId(), keyspace, table, topicPartition);
+        new AstraStreamingClient(token, environment).tenant(tenant).cdc().create(db.getId(), keyspace, table, topicPartition);
     }
 
     /**
@@ -144,7 +154,7 @@ public class DbCdcsClient extends AbstractApiClient {
      *         cdc definition
      */
     private void delete(CdcDefinition cdc) {
-        new AstraStreamingClient(token)
+        new AstraStreamingClient(token, environment)
                 .tenant(cdc.getTenant()).cdc()
                 .delete(db.getId(), cdc.getKeyspace(), cdc.getDatabaseTable());
     }
@@ -155,7 +165,7 @@ public class DbCdcsClient extends AbstractApiClient {
      * @return url to invoke CDC
      */
     private String getEndpointDatabaseCdc() {
-        return AstraStreamingClient.getApiDevopsEndpointStreaming() + "/astra-cdc/databases/" + db.getId();
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming" + "/astra-cdc/databases/" + db.getId();
     }
 
 }

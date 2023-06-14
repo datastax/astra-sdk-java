@@ -18,13 +18,25 @@ import java.util.stream.Stream;
 public class KeysClient extends AbstractApiClient {
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token.
+     *      authenticated token
      */
     public KeysClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public KeysClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -35,7 +47,7 @@ public class KeysClient extends AbstractApiClient {
      */
     public Stream<Key> findAll() {
         // Invoke endpoint
-        ApiResponseHttp res = GET(ApiLocator.getApiDevopsEndpoint() + "/kms");
+        ApiResponseHttp res = GET(ApiLocator.getApiDevopsEndpoint(environment) + "/kms");
         // Mapping
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<Key>>(){}).stream();
     }

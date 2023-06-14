@@ -27,7 +27,19 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      bearerAuthToken token
      */
     public AstraDevopsApiClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD)
+    }
+
+    /**
+     * Initialize the Devops API with a token
+     *
+     * @param env
+     *     environment Astra
+     * @param token
+     *      bearerAuthToken token
+     */
+    public AstraDevopsApiClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     // ------------------------------------------------------
@@ -42,7 +54,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      */
     public String getOrganizationId() {
         // Invoke endpoint
-        ApiResponseHttp res = getHttpClient().GET(ApiLocator.getApiDevopsEndpoint() + "/currentOrg", token);
+        ApiResponseHttp res = getHttpClient().GET(ApiLocator.getApiDevopsEndpoint(environment) + "/currentOrg", token);
         // Parse response
         return (String) JsonUtils.unmarshallBean(res.getBody(),  Map.class).get("id");
     }
@@ -55,7 +67,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      */
     public Organization getOrganization() {
         // Invoke endpoint
-        ApiResponseHttp res = getHttpClient().GET(UsersClient.getEndpointUsers(), token);
+        ApiResponseHttp res = getHttpClient().GET(users().getEndpointUsers(), token);
         // Marshalling the users response to get org infos
         ResponseAllUsers body = JsonUtils.unmarshallBean(res.getBody(), ResponseAllUsers.class);
         // Build a proper result
@@ -73,7 +85,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      databases client
      */
     public AstraDbClient db() {
-        return new AstraDbClient(token);
+        return new AstraDbClient(token, environment);
     }
 
     // ------------------------------------------------------
@@ -87,7 +99,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      streaming client
      */
     public AstraStreamingClient streaming() {
-        return new AstraStreamingClient(token);
+        return new AstraStreamingClient(token, environment);
     }
 
 
@@ -102,7 +114,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      user client
      */
     public UsersClient users() {
-        return new UsersClient(token);
+        return new UsersClient(token, environment);
     }
 
     // ------------------------------------------------------
@@ -116,7 +128,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      role client
      */
     public RolesClient roles() {
-        return new RolesClient(token);
+        return new RolesClient(token, environment);
     }
 
     // ------------------------------------------------------
@@ -130,7 +142,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      keys client
      */
     public KeysClient keys() {
-        return new KeysClient(token);
+        return new KeysClient(token, environment);
     }
 
     // ------------------------------------------------------
@@ -144,9 +156,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      token client
      */
     public TokensClient tokens() {
-        return new TokensClient(token);
+        return new TokensClient(token, environment);
     }
-
-
 
 }

@@ -19,13 +19,23 @@ import java.util.stream.Stream;
 public class UsersClient extends AbstractApiClient {
 
     /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param token
+     *      authenticated token
+     */
+    public UsersClient(String token) {
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
      * Constructor.
      *
      * @param token
      *      current token.
      */
-    public UsersClient(String token) {
-        super(token);
+    public UsersClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -195,8 +205,8 @@ public class UsersClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getEndpointUsers() {
-        return ApiLocator.getApiDevopsEndpoint() + "/organizations/users";
+    public String getEndpointUsers() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/organizations/users";
     }
 
     /**
@@ -208,7 +218,7 @@ public class UsersClient extends AbstractApiClient {
      *      database endpoint
      */
     private String getEndpointUser(String userId) {
-        return UsersClient.getEndpointUsers() + "/" + userId;
+        return getEndpointUsers() + "/" + userId;
     }
 
 }

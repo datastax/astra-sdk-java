@@ -9,9 +9,8 @@ logging:
     root: WARN
 
 spring:
-  data:
-    cassandra:
-      schema-action: CREATE_IF_NOT_EXISTS
+  cassandra:
+    schema-action: CREATE_IF_NOT_EXISTS
 
 astra:
   api:

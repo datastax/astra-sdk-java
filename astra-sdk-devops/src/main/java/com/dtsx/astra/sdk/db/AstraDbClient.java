@@ -31,13 +31,26 @@ public class AstraDbClient extends AbstractApiClient {
 
     /**
      * As immutable object use builder to initiate the object.
-     * 
+     *
      * @param token
      *      authenticated token
      */
     public AstraDbClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
     }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public AstraDbClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
+    }
+
 
     // ---------------------------------
     // ----        REGIONS          ----
@@ -183,7 +196,7 @@ public class AstraDbClient extends AbstractApiClient {
      */
     public DatabaseClient database(String dbId) {
         Assert.hasLength(dbId, "Database Id should not be null nor empty");
-        return new DatabaseClient(token, dbId);
+        return new DatabaseClient(token, environment, dbId);
     }
 
     /**
@@ -197,7 +210,7 @@ public class AstraDbClient extends AbstractApiClient {
         Assert.hasLength(dbName, "Database Id should not be null nor empty");
         List<Database> dbs = findByName(dbName).collect(Collectors.toList());
         if (1 == dbs.size()) {
-            return new DatabaseClient(token, dbs.get(0).getId());
+            return new DatabaseClient(token, environment, dbs.get(0).getId());
         }
         throw new IllegalArgumentException("Cannot retrieve database from its name (matching count=" + dbs.size() + ")");
     }
@@ -208,8 +221,8 @@ public class AstraDbClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getEndpointDatabases() {
-        return ApiLocator.getApiDevopsEndpoint() + "/databases";
+    public String getEndpointDatabases() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/databases";
     }
 
     /**
@@ -218,8 +231,8 @@ public class AstraDbClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getEndpointAccessLists() {
-        return ApiLocator.getApiDevopsEndpoint() + "/access-lists";
+    public String getEndpointAccessLists() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/access-lists";
     }
 
 }

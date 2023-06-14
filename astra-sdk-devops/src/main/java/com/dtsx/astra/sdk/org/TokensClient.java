@@ -16,17 +16,29 @@ import java.util.stream.Stream;
 public class TokensClient extends AbstractApiClient {
 
     /** useful with tokens interactions. */
-    private RolesClient rolesClient;
+    private final RolesClient rolesClient;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token.
+     *      authenticated token
      */
     public TokensClient(String token) {
-        super(token);
-        this.rolesClient = new RolesClient(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public TokensClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
+        rolesClient = new RolesClient(token, env);
     }
 
     /**
@@ -93,7 +105,7 @@ public class TokensClient extends AbstractApiClient {
         Assert.hasLength(role, "role");
         // Role should exist
         Optional<Role> optRole = rolesClient.findByName(role);
-        String roleId = role;
+        String roleId;
         if (optRole.isPresent()) {
             roleId = optRole.get().getId();
         } else {
@@ -125,8 +137,8 @@ public class TokensClient extends AbstractApiClient {
      * @return
      *      endpoint
      */
-    public static String getEndpointTokens() {
-        return ApiLocator.getApiDevopsEndpoint() + "/clientIdSecrets";
+    public String getEndpointTokens() {
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/clientIdSecrets";
     }
 
     /**
@@ -137,7 +149,7 @@ public class TokensClient extends AbstractApiClient {
      * @return
      *      token endpoint
      */
-    public static String getEndpointToken(String tokenId) {
+    public String getEndpointToken(String tokenId) {
         return getEndpointTokens() + "/" + tokenId;
     }
 }

@@ -8,7 +8,6 @@ import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.JsonUtils;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,15 +23,25 @@ public class DbAccessListsClient extends AbstractApiClient {
     private final Database db;
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      token
-     * @param databaseId
-     *      databaseId
+     *      authenticated token
      */
     public DbAccessListsClient(String token, String databaseId) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public DbAccessListsClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+        super(token, env);
         Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, databaseId).get();
     }
@@ -116,7 +125,7 @@ public class DbAccessListsClient extends AbstractApiClient {
      *      endpoint
      */
     public String getApiDevopsEndpointAccessListsDb() {
-        return ApiLocator.getApiDevopsEndpoint() + "/databases/" + db.getId() + "/access-list";
+        return ApiLocator.getApiDevopsEndpoint(environment) + "/databases/" + db.getId() + "/access-list";
     }
 
 }

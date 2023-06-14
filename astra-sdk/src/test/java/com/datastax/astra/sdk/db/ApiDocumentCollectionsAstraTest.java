@@ -19,7 +19,6 @@ public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollection
         // Default client to create DB if needed
         AstraClient client = AstraClient.builder().build();
         String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-        
         // Connect the client to the new created DB
         client = AstraClient.builder()
                 .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))

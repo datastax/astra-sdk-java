@@ -33,13 +33,25 @@ public class RolesClient extends AbstractApiClient {
             new TypeReference<List<Role>>(){};
 
     /**
-     * Constructor.
+     * As immutable object use builder to initiate the object.
      *
      * @param token
-     *      current token.
+     *      authenticated token
      */
     public RolesClient(String token) {
-        super(token);
+        this(token, ApiLocator.AstraEnvironment.PROD);
+    }
+
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     */
+    public RolesClient(String token, ApiLocator.AstraEnvironment env) {
+        super(token, env);
     }
 
     /**
@@ -191,7 +203,7 @@ public class RolesClient extends AbstractApiClient {
      *      endpoint
      */
     private String getApiEndpointRoles() {
-        return ApiLocator.getApiDevopsEndpoint() + PATH_ORGANIZATIONS + PATH_ROLES;
+        return ApiLocator.getApiDevopsEndpoint(environment) + PATH_ORGANIZATIONS + PATH_ROLES;
     }
 
     /**
