@@ -76,6 +76,7 @@ public class HttpClientWrapper {
             .setExpectContinueEnabled(true)
             .setConnectionRequestTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_REQUEST))
             .setConnectTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_CONNECT))
+            .setResponseTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_REQUEST))
             .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
             .build();
 

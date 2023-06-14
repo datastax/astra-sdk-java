@@ -27,7 +27,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      bearerAuthToken token
      */
     public AstraDevopsApiClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD)
+        this(token, ApiLocator.AstraEnvironment.PROD);
     }
 
     /**

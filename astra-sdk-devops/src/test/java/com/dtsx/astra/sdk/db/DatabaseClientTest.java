@@ -228,14 +228,16 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(17)
+    @Order(18)
     @DisplayName("18. Update")
-    public void shouldUpdateAccessListsDb() {
+    public void shouldUpdateAccessListsDb() throws InterruptedException {
         AccessListAddressRequest a3 = new AccessListAddressRequest("254.254.254.254/32", "updatedText");
         getDatabasesClient()
                 .databaseByName(SDK_TEST_DB_NAME)
                 .accessLists()
                 .update(a3);
+        // Async Operation
+        Thread.sleep(500);
         Assertions.assertTrue(getDatabasesClient()
                 .databaseByName(SDK_TEST_DB_NAME)
                 .accessLists().get()
@@ -244,8 +246,8 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(18)
-    @DisplayName("18. Delete Access List")
+    @Order(19)
+    @DisplayName("19. Delete Access List")
     public void shouldDeleteAllAccessListsDb() {
         getDatabasesClient()
                 .databaseByName(SDK_TEST_DB_NAME)
@@ -258,8 +260,8 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     }
 
     @Test
-    @Order(16)
-    @DisplayName("16. Should terminate DB")
+    @Order(20)
+    @DisplayName("20. Should terminate DB")
     public void shouldTerminateDbTest() {
         Assertions.assertTrue(getSdkTestDatabaseClient().exist());
         //getSdkTestDatabaseClient().delete();
