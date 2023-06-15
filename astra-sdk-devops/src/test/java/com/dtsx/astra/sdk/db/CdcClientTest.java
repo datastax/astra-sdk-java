@@ -35,11 +35,16 @@ public class CdcClientTest extends AbstractDevopsApiTest {
     private static String tmpTenant = "sdk-java-junit-1";// + UUID.randomUUID().toString().substring(0,7);
 
     @Test
+    public void testExistence() {
+        getStreamingClient().exist(tmpTenant);
+    }
+
+    @Test
     @Order(1)
     public void shouldCreateDbAndTenant() throws Exception {
         LOGGER.info("CDC Test Initialization:");
         // Create Tenant
-        if (!getStreamingClient().exist(tmpTenant)) {
+        if (!getStreamingClient().find(tmpTenant).isPresent()) {
             getStreamingClient().create(CreateTenant.builder()
                     .tenantName(tmpTenant)
                     .userEmail("astra-cli@datastax.com")
@@ -48,7 +53,7 @@ public class CdcClientTest extends AbstractDevopsApiTest {
                     .build());
         }
         LOGGER.info("+ Using tenant {}", tmpTenant);
-        Assertions.assertTrue(getStreamingClient().exist(tmpTenant));
+        Assertions.assertTrue(getStreamingClient().find(tmpTenant).isPresent());
 
         // Create Db
         DatabaseClient dc = getSdkTestDatabaseClient();

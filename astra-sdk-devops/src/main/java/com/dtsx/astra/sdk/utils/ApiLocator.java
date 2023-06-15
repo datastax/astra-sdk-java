@@ -20,7 +20,7 @@ public class ApiLocator {
                 ".api.dev.streaming.datastax.com"),
         TEST("https://api.test.cloud.datastax.com/v2",
                 ".apps.astra-test.datastax.com",
-                ".api.test.streaming.datastax.com");
+                ".api.staging.streaming.datastax.com");
 
         private String endpoint;
 

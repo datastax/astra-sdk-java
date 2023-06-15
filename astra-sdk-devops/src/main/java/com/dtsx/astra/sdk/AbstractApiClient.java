@@ -70,6 +70,7 @@ public abstract class AbstractApiClient {
      *      response
      */
     public ApiResponseHttp HEAD(String url) {
+        System.out.println(url);
         return getHttpClient().HEAD(url, getToken());
     }
 
