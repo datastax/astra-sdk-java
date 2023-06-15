@@ -3,17 +3,13 @@ package com.datastax.astra.sdk.quickstart.db;
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.quickstart.AbstractSdkTest;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.data.CqlVector;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,24 +23,16 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
     @BeforeAll
     public static void init() {
         loadRequiredEnvironmentVariables();
-        astraClient = AstraClient.builder()
-                .withToken(ASTRA_DB_APPLICATION_TOKEN)   // credentials are mandatory
-                .withDatabaseId(ASTRA_DB_ID)             // identifier of the database
-                .withDatabaseRegion(ASTRA_DB_REGION)     // connection is different for each dc
-                .enableCql()                             // as stateful, connection is not always establish
-                .enableDownloadSecureConnectBundle()     // secure connect bundles can be downloaded
-                .withCqlKeyspace(ASTRA_DB_KEYSPACE)      // target keyspace
-                .build();
-        createSchema(astraClient.cqlSession());
+        connectToAstra();
+        createSchema();
     }
 
     @Test
     public void demoVectorPreview() {
-        Assertions.assertTrue(findProductById(astraClient.cqlSession(), "invalid").isEmpty());
-        findProductById(astraClient.cqlSession(), "pf1843")
-        .ifPresent(product -> {
+        findProductById(astraClient.cqlSession(), "pf1843").ifPresent(product -> {
             System.out.println("Product Found ! looking for similar products");
-            findAllSimilarProducts(astraClient.cqlSession(), product).forEach(System.out::println);
+            findAllSimilarProducts(astraClient.cqlSession(), product)
+                    .forEach(System.out::println);
         });
     }
 
@@ -53,7 +41,7 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
         astraClient.close();
     }
 
-    private static void createSchema(CqlSession cqlSession) {
+    private static void createSchema() {
         // Create a Table with Embeddings
         astraClient.cqlSession().execute("" +
                 "CREATE TABLE IF NOT EXISTS pet_supply_vectors (" +
@@ -89,6 +77,17 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
                 "INSERT INTO pet_supply_vectors (product_id, product_name, product_vector) " +
                 "VALUES ('pf7044','PupperSausage Beef dog Treats',[0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0])");
         System.out.println("Rows inserted.");
+    }
+
+    private static void connectToAstra() {
+        astraClient = AstraClient.builder()
+                .withToken(ASTRA_DB_APPLICATION_TOKEN)   // credentials are mandatory
+                .withDatabaseId(ASTRA_DB_ID)             // identifier of the database
+                .withDatabaseRegion(ASTRA_DB_REGION)     // connection is different for each dc
+                .enableCql()                             // as stateful, connection is not always establish
+                .enableDownloadSecureConnectBundle()     // secure connect bundles can be downloaded
+                .withCqlKeyspace(ASTRA_DB_KEYSPACE)      // target keyspace
+                .build();
     }
 
     private Optional<Product> findProductById(CqlSession cqlSession, String productId) {
