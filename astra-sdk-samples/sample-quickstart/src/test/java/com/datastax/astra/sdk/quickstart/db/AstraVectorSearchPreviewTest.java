@@ -29,10 +29,9 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
 
     @Test
     public void demoVectorPreview() {
-        findProductById(astraClient.cqlSession(), "pf1843").ifPresent(product -> {
+        findProductById("pf1843").ifPresent(product -> {
             System.out.println("Product Found ! looking for similar products");
-            findAllSimilarProducts(astraClient.cqlSession(), product)
-                    .forEach(System.out::println);
+            findAllSimilarProducts(product).forEach(System.out::println);
         });
     }
 
@@ -90,15 +89,15 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
                 .build();
     }
 
-    private Optional<Product> findProductById(CqlSession cqlSession, String productId) {
-        Row row = cqlSession.execute(SimpleStatement
+    private Optional<Product> findProductById(String productId) {
+        Row row = astraClient.cqlSession().execute(SimpleStatement
                         .builder("SELECT * FROM pet_supply_vectors WHERE product_id = ?")
                         .addPositionalValue(productId).build()).one();
         return (row != null) ? Optional.of(row).map(this::mapRowAsProduct) : Optional.empty();
     }
 
-    private List<Product> findAllSimilarProducts(CqlSession cqlSession, Product orginal) {
-        return cqlSession.execute(SimpleStatement
+    private List<Product> findAllSimilarProducts(Product orginal) {
+        return astraClient.cqlSession().execute(SimpleStatement
                         .builder("SELECT * FROM pet_supply_vectors ORDER BY product_vector ANN OF ? LIMIT 2;")
                         .addPositionalValue(orginal.vector)
                         .build())
