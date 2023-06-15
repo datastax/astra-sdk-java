@@ -168,7 +168,9 @@ public class CdcClientTest extends AbstractDevopsApiTest {
 
     @Test
     @Order(8)
-    public void shouldCreateCdcWithTenant() {
+    public void shouldCreateCdcWithTenant() throws InterruptedException {
+        // Wait for previous call to pass
+        Thread.sleep(500);
         LOGGER.info("Create CDC from tenant");
         getStreamingClient()
                 .tenant(tmpTenant)
