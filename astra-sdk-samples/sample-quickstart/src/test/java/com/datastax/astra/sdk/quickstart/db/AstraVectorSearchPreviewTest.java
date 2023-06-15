@@ -2,11 +2,9 @@ package com.datastax.astra.sdk.quickstart.db;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.quickstart.AbstractSdkTest;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

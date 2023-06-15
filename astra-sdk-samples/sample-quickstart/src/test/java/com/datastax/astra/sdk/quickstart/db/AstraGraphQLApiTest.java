@@ -1,30 +1,32 @@
-package com.datastax.astra.sdk.db;
+package com.datastax.astra.sdk.quickstart.db;
 
 import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.quickstart.AbstractSdkTest;
+import io.stargate.sdk.core.Ordering;
+import io.stargate.sdk.rest.StargateRestApiClient;
+import io.stargate.sdk.rest.domain.CreateTable;
+import io.stargate.sdk.rest.domain.SearchTableQuery;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class AstraGraphQLApiTest {
-    // Authentication
-    static String ASTRA_DB_TOKEN = "AstraCS:uZclXTYecCAqPPjiNmkezapR:" +
-            "e87d6edb702acd87516e4ef78e0c0e515c32ab2c3529f5a3242688034149a0e4";
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-    // You need a running database
-    static String DB_ID = "dde308f5-a8b0-474d-afd6-81e5689e3e25";
-    static String DB_REGION = "eu-central-1";
-    static String DB_KEYSPACE = "ks_mtg";
-    // <---
+public class AstraGraphQLApiTest extends AbstractSdkTest {
 
-    /**
-     * Sample Code to work with Document API.
-     *
-     * @param args
-     *         no arguments
-     */
-    public static void main(String[] args) {
+    @BeforeAll
+    public static void init() {
+        loadRequiredEnvironmentVariables();
+    }
+
+    @Test
+    public void shouldConnectWithGraphQL() {
 
         try (AstraClient astraClient = AstraClient.builder()
-                .withToken(ASTRA_DB_TOKEN)        // credentials are mandatory
-                .withDatabaseId(DB_ID)            // identifier of the database
-                .withDatabaseRegion(DB_REGION)    // endpoint contains region
+                .withToken(ASTRA_DB_APPLICATION_TOKEN)  // credentials are mandatory
+                .withDatabaseId(ASTRA_DB_ID)            // identifier of the database
+                .withDatabaseRegion(ASTRA_DB_REGION)    // endpoint contains region
                 .build()) {
 
             // List Keyspaces
@@ -35,7 +37,7 @@ public class AstraGraphQLApiTest {
 
             // List Tables
             String getTables = "query GetTables {\n"
-                    + "  keyspace(name: \"" + DB_KEYSPACE + "\") {\n"
+                    + "  keyspace(name: \"" + ASTRA_DB_KEYSPACE + "\") {\n"
                     + "      name\n"
                     + "      tables {\n"
                     + "          name\n"
@@ -60,3 +62,4 @@ public class AstraGraphQLApiTest {
         }
     }
 }
+
