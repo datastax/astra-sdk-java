@@ -21,6 +21,9 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
 
     private static AstraClient astraClient;
 
+    /** Pojo to map the result of the query. */
+    private record Product(String productId, String productName, Object vector) {}
+
     @BeforeAll
     public static void init() {
         loadRequiredEnvironmentVariables();
@@ -35,76 +38,20 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
         createSchema(astraClient.cqlSession());
     }
 
+    @Test
+    public void demoVectorPreview() {
+        Assertions.assertTrue(findProductById(astraClient.cqlSession(), "invalid").isEmpty());
+        findProductById(astraClient.cqlSession(), "pf1843")
+        .ifPresent(product -> {
+            System.out.println("Product Found ! looking for similar products");
+            findAllSimilarProducts(astraClient.cqlSession(), product).forEach(System.out::println);
+        });
+    }
+
     @AfterAll
     public static void cleanUp() {
         astraClient.close();
     }
-
-    private Optional<Product> findProductById(CqlSession cqlSession, String productId) {
-        Row row = cqlSession.execute(SimpleStatement
-                        .builder("SELECT * FROM pet_supply_vectors WHERE product_id = ?")
-                        .addPositionalValue(productId).build()).one();
-        return (row != null) ? Optional.of(row).map(this::mapRowAsProduct) : Optional.empty();
-    }
-
-    private Product mapRowAsProduct(Row row) {
-        return new Product(row.getString("product_id"),
-                row.getString("product_name"),
-                row.getCqlVector("product_vector"));
-    }
-
-    private List<Product> findAllSimilarProducts(CqlSession cqlSession, Product orginal) {
-        PreparedStatement qvPrepared = cqlSession.prepare("" +
-                "SELECT * FROM pet_supply_vectors " +
-                "ORDER BY product_vector " +
-                "ANN OF ? LIMIT 2;");
-        cqlSession.execute(qvPrepared.bind(orginal.vector))
-                .all()
-                .stream()
-                .filter(row -> !row.getString("product_id").equals(orginal.productId))
-                .map(this::mapRowAsProduct)
-                .toList();
-    }
-
-    @Test
-    public void demoVectorPreview() {
-        Assertions.assertTrue(findProductById(astraClient.cqlSession(), "invalid").isEmpty());
-        findProductById(astraClient.cqlSession(), "pf1843").ifPresent(
-                originalProduct -> {
-                    System.out.println("Original Product: " + originalProduct);
-                    System.out.println("Original Product: " + originalProduct.vector.getClass());
-               /*
-                PreparedStatement qvPrepared = cqlSession.prepare("" +
-                        "SELECT * FROM pet_supply_vectors " +
-                        "ORDER BY product_vector " +
-                        "ANN OF ? LIMIT 2;");
-
-        BoundStatement qvBound = qvPrepared.bind(originalProduct.vector);
-        ResultSet rsV = cqlSession.execute(qvBound);
-        List<Row> ann = rsV.all();
-        List<Promotion> promoProds = new ArrayList<>();
-
-        if (ann.size() > 1) {
-            // only add new product to promoProds list
-            for (Row promo : ann) {
-                String promoProdId = promo.getString("product_id");
-
-                if (!promoProdId.equals(originalProduct.productId)) {
-                    Promotion annPromoProd = new Promotion(promoProdId,
-                            promo.getString("product_name"),
-                            promo.getCqlVector("product_vector"));
-                    promoProds.add(annPromoProd);
-                    //once we find it, no need to check the others - break!
-                    break;
-                }
-            }
-            promoProds.get(0);
-        }*/
-         }
-        );
-    }
-
-    private record Product(String productId, String productName, CqlVector<?> vector) {}
 
     private static void createSchema(CqlSession cqlSession) {
         // Create a Table with Embeddings
@@ -143,4 +90,32 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
                 "VALUES ('pf7044','PupperSausage Beef dog Treats',[0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0])");
         System.out.println("Rows inserted.");
     }
+
+    private Optional<Product> findProductById(CqlSession cqlSession, String productId) {
+        Row row = cqlSession.execute(SimpleStatement
+                        .builder("SELECT * FROM pet_supply_vectors WHERE product_id = ?")
+                        .addPositionalValue(productId).build()).one();
+        return (row != null) ? Optional.of(row).map(this::mapRowAsProduct) : Optional.empty();
+    }
+
+    private List<Product> findAllSimilarProducts(CqlSession cqlSession, Product orginal) {
+        return cqlSession.execute(SimpleStatement
+                        .builder("SELECT * FROM pet_supply_vectors ORDER BY product_vector ANN OF ? LIMIT 2;")
+                        .addPositionalValue(orginal.vector)
+                        .build())
+                .all()
+                .stream()
+                .filter(row -> !row.getString("product_id").equals(orginal.productId))
+                .map(this::mapRowAsProduct)
+                .toList();
+    }
+
+    private Product mapRowAsProduct(Row row) {
+        return new Product(
+                row.getString("product_id"),
+                row.getString("product_name"),
+                row.getObject("product_vector"));
+    }
+
+
 }
