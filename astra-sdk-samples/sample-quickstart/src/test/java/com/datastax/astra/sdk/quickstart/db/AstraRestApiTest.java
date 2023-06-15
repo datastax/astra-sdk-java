@@ -1,38 +1,32 @@
-package com.datastax.astra.sdk.db;
+package com.datastax.astra.sdk.quickstart.db;
 
 import com.datastax.astra.sdk.AstraClient;
+import com.datastax.astra.sdk.quickstart.AbstractSdkTest;
 import io.stargate.sdk.core.Ordering;
 import io.stargate.sdk.rest.StargateRestApiClient;
-import io.stargate.sdk.rest.TableClient;
 import io.stargate.sdk.rest.domain.CreateTable;
 import io.stargate.sdk.rest.domain.SearchTableQuery;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class AstraRestApiTest {
+public class AstraRestApiTest extends AbstractSdkTest {
 
-    // Authentication
-    static String ASTRA_DB_TOKEN = "<change me>";
+    @BeforeAll
+    public static void init() {
+        loadRequiredEnvironmentVariables();
+    }
 
-    // Target db (will be created if not exist)
-    static String DB_ID       = "<change me>";
-    static String DB_REGION   = "<change me>";
-    static String DB_KEYSPACE = "<change me>";
-
-    /**
-     * Sample Code to work with Document API.
-     *
-     * @param args
-     *         no arguments
-     */
-    public static void main(String[] args) {
+    @Test
+    public void shouldConnectWithRest() {
 
         try (AstraClient astraClient = AstraClient.builder()
-                .withToken(ASTRA_DB_TOKEN)        // credentials are mandatory
-                .withDatabaseId(DB_ID)            // identifier of the database
-                .withDatabaseRegion(DB_REGION)    // endpoint contains region
+                .withToken(ASTRA_DB_APPLICATION_TOKEN)  // credentials are mandatory
+                .withDatabaseId(ASTRA_DB_ID)            // identifier of the database
+                .withDatabaseRegion(ASTRA_DB_REGION)    // endpoint contains region
                 .build()) {
 
             StargateRestApiClient restApiClient = astraClient.apiStargateData();
@@ -41,7 +35,7 @@ public class AstraRestApiTest {
             System.out.println("+ Keyspaces (rest) : "+ restApiClient.keyspaceNames().collect(Collectors.toList()));
 
             // Create a table (if not exists)
-            restApiClient.keyspace(DB_KEYSPACE).table("movies").create(
+            restApiClient.keyspace(ASTRA_DB_KEYSPACE).table("movies").create(
                     CreateTable.builder().ifNotExist(true)
                             .addPartitionKey("genre", "text")
                             .addClusteringKey("year", "int", Ordering.DESC)
@@ -49,19 +43,19 @@ public class AstraRestApiTest {
                             .addColumn("producer", "text")
                             .build());
 
-            // Insert data
+            // Create (Insert data)
             Map<String, Object> newRow = new HashMap<>();
             newRow.put("genre", "Sci-Fi");
             newRow.put("year", 1990);
             newRow.put("title", "Avatar");
             newRow.put("producer", "James Cameron");
-            restApiClient.keyspace(DB_KEYSPACE)
+            restApiClient.keyspace(ASTRA_DB_KEYSPACE)
                     .table("movies")
                     .upsert(newRow);
 
-            // Search
+            // Read (Search)
             restApiClient
-                    .keyspace(DB_KEYSPACE)
+                    .keyspace(ASTRA_DB_KEYSPACE)
                     .table("movies")
                     .search(SearchTableQuery.builder()
                             .where("genre").isEqualsTo("Sci-Fi")
@@ -70,10 +64,12 @@ public class AstraRestApiTest {
                     .getResults()
                     .forEach(row -> System.out.println(row.get("title") + " (" + row.get("year") + ")"));
 
-            restApiClient.keyspace(DB_KEYSPACE)
+            // Delete
+            restApiClient.keyspace(ASTRA_DB_KEYSPACE)
                     .table("movies")
                     .key("Sci-Fi", 1990, "Avatar")
                     .delete();
         }
     }
 }
+

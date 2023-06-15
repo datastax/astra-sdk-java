@@ -1,4 +1,4 @@
-package com.dtsx.astra.sdk.db.telemetry;
+package com.dtsx.astra.sdk.db.domain.telemetry;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

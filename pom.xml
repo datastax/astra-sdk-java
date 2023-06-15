@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.datastax.astra</groupId>
 	<artifactId>astra-sdk-parent</artifactId>
-	<version>0.6.1-SHAPSHOT</version>
+	<version>0.6.1-SNAPSHOT</version>
 	<name>Astra Java SDK</name>
 	<packaging>pom</packaging>
 	<inceptionYear>2021</inceptionYear>
@@ -64,9 +64,7 @@
 		<module>astra-spring-boot-starter</module>
 		<module>astra-spring-boot-3x-autoconfigure</module>
 		<module>astra-spring-boot-3x-starter</module>
-		<!-- Does not release Samples
 		<module>astra-sdk-samples</module>
-		-->
 	</modules>
 	
 	<dependencyManagement>

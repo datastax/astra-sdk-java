@@ -6,7 +6,6 @@ import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.db.domain.Datacenter;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
 import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
-import com.dtsx.astra.sdk.db.telemetry.TelemetryClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
@@ -334,8 +333,8 @@ public class DatabaseClient extends AbstractApiClient {
      *
      * @return telemetry client
      */
-    public TelemetryClient telemetry() {
-        return new TelemetryClient(this);
+    public DbTelemetryClient telemetry() {
+        return new DbTelemetryClient(token, environment, databaseId);
     }
 
 

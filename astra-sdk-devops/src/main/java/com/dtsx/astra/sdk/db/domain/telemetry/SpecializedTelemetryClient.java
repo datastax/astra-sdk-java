@@ -1,4 +1,4 @@
-package com.dtsx.astra.sdk.db.telemetry;
+package com.dtsx.astra.sdk.db.domain.telemetry;
 
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;

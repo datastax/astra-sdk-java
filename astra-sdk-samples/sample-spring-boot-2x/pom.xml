@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sample-spring-boot-2x</artifactId>
     <name>+ samples: spring-boot-2x</name>
-    <version>0.6.1-SHAPSHOT</version>
+    <version>0.6.1-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

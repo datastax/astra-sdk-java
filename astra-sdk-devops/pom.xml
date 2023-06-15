@@ -7,7 +7,7 @@
     <parent>
         <artifactId>astra-sdk-parent</artifactId>
         <groupId>com.datastax.astra</groupId>
-        <version>0.6.1-SHAPSHOT</version>
+        <version>0.6.1-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -19,7 +19,7 @@
             <groupId>com.fasterxml.jackson</groupId>
             <artifactId>jackson-bom</artifactId>
             <version>${jackson.version}</version>
-            <scope>import</scope>
+            <scope>provided</scope>
             <type>pom</type>
         </dependency>
         <dependency>
