@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.datastax.astra.sdk</groupId>
 	<artifactId>sample-spring-boot-3x</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.6.1-SHAPSHOT</version>
 	<name>+ samples: spring-boot-3x</name>
 
 	<parent>
