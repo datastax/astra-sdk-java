@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.datastax.astra</groupId>
     <artifactId>astra-sdk-parent</artifactId>
-    <version>0.6.2-SNAPSHOT</version>
+    <version>0.6.2</version>
     <name>Astra Java SDK</name>
     <packaging>pom</packaging>
     <inceptionYear>2021</inceptionYear>
@@ -505,7 +504,7 @@
 
         <url>https://github.com/datastax/astra-sdk-java</url>
 
-        <tag>HEAD</tag>
+        <tag>0.6.2</tag>
 
     </scm>
 
