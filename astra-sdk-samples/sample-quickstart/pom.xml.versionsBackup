@@ -12,7 +12,7 @@
         <dependency>
             <groupId>com.datastax.astra</groupId>
             <artifactId>astra-sdk</artifactId>
-            <version>0.6.1</version>
+            <version>0.6.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

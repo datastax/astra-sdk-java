@@ -64,7 +64,9 @@
 		<module>astra-spring-boot-starter</module>
 		<module>astra-spring-boot-3x-autoconfigure</module>
 		<module>astra-spring-boot-3x-starter</module>
+		<!--
 		<module>astra-sdk-samples</module>
+		-->
 	</modules>
 	
 	<dependencyManagement>
