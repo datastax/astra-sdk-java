@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<astra.spring-boot-starter.version>0.6</astra.spring-boot-starter.version>
+		<astra.spring-boot-starter.version>0.6.2</astra.spring-boot-starter.version>
 		<cassandra-driver.version>4.16.0</cassandra-driver.version>
 	</properties>
 
