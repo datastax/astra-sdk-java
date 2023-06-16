@@ -33,6 +33,8 @@ public class UsersClient extends AbstractApiClient {
      *
      * @param token
      *      current token.
+     * @param env
+     *     target environment.
      */
     public UsersClient(String token, ApiLocator.AstraEnvironment env) {
         super(token, env);

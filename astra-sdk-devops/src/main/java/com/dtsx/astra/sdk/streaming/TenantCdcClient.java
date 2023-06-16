@@ -34,6 +34,8 @@ public class TenantCdcClient extends AbstractApiClient {
      *
      * @param token
      *      authenticated token
+     * @param tenantId
+     *      unique tenant identifier
      */
     public TenantCdcClient(String token, String tenantId) {
         this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
@@ -47,7 +49,7 @@ public class TenantCdcClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      * @param tenantId
-     *      tenantId
+     *      unique tenant identifier
      */
     public TenantCdcClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
         super(token, env);

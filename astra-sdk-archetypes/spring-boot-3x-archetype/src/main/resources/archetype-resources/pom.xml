@@ -14,7 +14,7 @@
     </parent>
 
     <properties>
-        <astra-sdk.version>0.6</astra-sdk.version>
+        <astra-sdk-starter.version>${archetypeVersion}</astra-sdk-starter.version>
         <cassandra-driver.version>4.16.0</cassandra-driver.version>
     </properties>
 
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.datastax.astra</groupId>
             <artifactId>astra-spring-boot-3x-starter</artifactId>
-            <version>${astra-sdk.version}</version>
+            <version>${astra-sdk-starter.version}</version>
         </dependency>
         <!-- Override Spring or any third party Dependency -->
         <dependency>

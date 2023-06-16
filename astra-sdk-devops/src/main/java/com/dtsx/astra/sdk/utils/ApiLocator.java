@@ -12,12 +12,17 @@ public class ApiLocator {
      */
     public static enum AstraEnvironment {
 
+        /** Production environment (default). */
         PROD("https://api.astra.datastax.com/v2",
                 ".apps.astra.datastax.com",
                 ".api.streaming.datastax.com"),
+
+        /** Development Environment. */
         DEV("https://api.dev.cloud.datastax.com/v2",
                 ".apps.astra-dev.datastax.com",
                 ".api.dev.streaming.datastax.com"),
+
+        /** Test Environment. */
         TEST("https://api.test.cloud.datastax.com/v2",
                 ".apps.astra-test.datastax.com",
                 ".api.staging.streaming.datastax.com");
@@ -344,6 +349,15 @@ public class ApiLocator {
         return "https://" + cluster + env.getStreamingV3Suffix() + "/admin/v3/astra/tenants/" + tenant;
     }
 
+    /**
+     * Create streaming endpoint
+     * @param env
+     *      astra environment
+     * @param cluster
+     *      current pulsar cluster
+     * @return
+     *      url for streaming API
+     */
     public static final String getApiStreamingV2Endpoint(AstraEnvironment env, String cluster) {
         return "https://" + cluster + env.getStreamingV3Suffix() + "/admin/v2";
     }

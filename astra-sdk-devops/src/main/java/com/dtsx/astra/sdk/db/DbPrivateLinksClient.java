@@ -28,6 +28,8 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
      *
      * @param token
      *      authenticated token
+     * @param databaseId
+     *      database identifier
      */
     public DbPrivateLinksClient(String token, String databaseId) {
         this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
@@ -40,6 +42,8 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
      *      define target environment to be used
      * @param token
      *      authenticated token
+     * @param databaseId
+     *      database identifier
      */
     public DbPrivateLinksClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
         super(token, env);

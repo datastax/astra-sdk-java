@@ -29,6 +29,31 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
+        <version>1.5.2</version>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>replace</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <file>astra-sdk-archetypes/spring-boot-3x-archetype/target/classes/archetype-resources/pom.xml</file>
+          <replacements>
+            <replacement>
+              <token>\$\{archetypeVersion\}</token>
+              <value>${version}</value>
+            </replacement>
+          </replacements>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   

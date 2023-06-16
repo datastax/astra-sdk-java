@@ -27,6 +27,8 @@ public class DbAccessListsClient extends AbstractApiClient {
      *
      * @param token
      *      authenticated token
+     * @param databaseId
+     *      database identifier
      */
     public DbAccessListsClient(String token, String databaseId) {
         this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
@@ -39,6 +41,8 @@ public class DbAccessListsClient extends AbstractApiClient {
      *      define target environment to be used
      * @param token
      *      authenticated token
+     * @param databaseId
+     *      database identifier
      */
     public DbAccessListsClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
         super(token, env);

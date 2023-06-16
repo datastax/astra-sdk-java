@@ -41,6 +41,8 @@ public class TenantLimitsClient extends AbstractApiClient {
      *      define target environment to be used
      * @param token
      *      authenticated token
+     * @param tenantId
+     *      unique tenant identifier
      */
     public TenantLimitsClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
         super(token, env);

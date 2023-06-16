@@ -24,6 +24,8 @@ public class DbKeyspacesClient extends AbstractApiClient  {
      *
      * @param token
      *      authenticated token
+     * @param databaseId
+     *      database identifier
      */
     public DbKeyspacesClient(String token, String databaseId) {
         this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
@@ -36,6 +38,8 @@ public class DbKeyspacesClient extends AbstractApiClient  {
      *      define target environment to be used
      * @param token
      *      authenticated token
+     * @param databaseId
+     *      database identifier
      */
     public DbKeyspacesClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
         super(token, env);

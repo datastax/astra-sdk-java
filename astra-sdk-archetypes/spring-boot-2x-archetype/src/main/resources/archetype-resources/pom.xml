@@ -12,6 +12,10 @@
         <version>2.7.12</version>
     </parent>
 
+    <properties>
+        <astra-sdk-starter.version>${archetypeVersion}</astra-sdk-starter.version>
+    </properties>
+
     <dependencies>
 
         <!-- CRUD API for Cassandra -->
@@ -28,7 +32,7 @@
         <dependency>
             <groupId>com.datastax.astra</groupId>
             <artifactId>astra-spring-boot-starter</artifactId>
-            <version>0.6</version>
+            <version>${astra-sdk-starter.version}</version>
         </dependency>
 
         <!-- Test -->

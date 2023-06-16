@@ -40,6 +40,8 @@ public class SpecializedTelemetryClient<T> {
      *          token client
      * @param telemetryEndpoint
      *          endpoint
+     * @param key
+     *      key for target system
      */
     public SpecializedTelemetryClient(String token, String telemetryEndpoint, String key) {
         Assert.notNull(token,"databasesClient");

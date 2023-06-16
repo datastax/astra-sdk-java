@@ -8,16 +8,21 @@
     <groupId>${groupId}</groupId>
     <version>${version}</version>
 
+    <properties>
+        <astra-sdk-starter.version>${archetypeVersion}</astra-sdk-starter.version>
+        <junit.version>5.9.3</junit.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.datastax.astra</groupId>
             <artifactId>astra-sdk</artifactId>
-            <version>0.6.1</version>
+            <version>${astra-sdk-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.9.3</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

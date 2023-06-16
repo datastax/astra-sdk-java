@@ -1,35 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.datastax.astra</groupId>
-  <artifactId>astra-sdk-quickstart</artifactId>
-  <packaging>maven-archetype</packaging>
-  <name>+ archetype::astra-sdk-quickstart</name>
-
-  <parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <groupId>com.datastax.astra</groupId>
-    <artifactId>astra-sdk-archetypes</artifactId>
-    <version>0.6.2-SNAPSHOT</version>
-  </parent>
+    <artifactId>astra-sdk-quickstart</artifactId>
+    <packaging>maven-archetype</packaging>
+    <name>+ archetype::astra-sdk-quickstart</name>
 
-  <build>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.archetype</groupId>
-        <artifactId>archetype-packaging</artifactId>
-        <version>3.2.1</version>
-      </extension>
-    </extensions>
+    <parent>
+        <groupId>com.datastax.astra</groupId>
+        <artifactId>astra-sdk-archetypes</artifactId>
+        <version>0.6.2-SNAPSHOT</version>
+    </parent>
 
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-archetype-plugin</artifactId>
-          <version>3.2.1</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>3.2.1</version>
+            </extension>
+        </extensions>
 
-  
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-archetype-plugin</artifactId>
+                    <version>3.2.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <file>astra-sdk-archetypes/astra-sdk-quickstart/target/classes/archetype-resources/pom.xml</file>
+                    <replacements>
+                        <replacement>
+                            <token>\$\{archetypeVersion\}</token>
+                            <value>${version}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
+
 </project>

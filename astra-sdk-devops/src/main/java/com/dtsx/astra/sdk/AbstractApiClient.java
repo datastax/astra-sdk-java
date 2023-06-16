@@ -21,6 +21,8 @@ public abstract class AbstractApiClient {
     /**
      * Default constructor.
      *
+     * @param env
+     *      astra environment
      * @param token
      *     token value
      */
