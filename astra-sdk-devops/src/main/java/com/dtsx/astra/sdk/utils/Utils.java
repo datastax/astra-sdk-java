@@ -17,8 +17,10 @@
 package com.dtsx.astra.sdk.utils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,7 +59,32 @@ public class Utils {
         if (null == lStr) return false;
         return Arrays.stream(lStr).allMatch(Utils::hasLength);
     }
-    
+
+    /**
+     * Download File Content.
+     *
+     * @param fileUrl
+     *      current file URL
+     * @return
+     *      the file content
+     */
+    public static byte[] downloadFile(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            try (InputStream in = new BufferedInputStream(url.openStream());
+                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                return out.toByteArray();
+            }
+        } catch(IOException ioe) {
+            throw new IllegalArgumentException("Cannot download file",ioe);
+        }
+    }
+
     /**
      * downloadFile
      * 

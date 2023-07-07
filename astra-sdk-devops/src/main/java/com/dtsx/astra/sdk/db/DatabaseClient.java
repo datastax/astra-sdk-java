@@ -112,6 +112,15 @@ public class DatabaseClient extends AbstractApiClient {
     // ---------------------------------
 
     /**
+     * Download SecureBundle for a specific data center.
+     * @return
+     *      binary content.
+     */
+    public byte[] downloadDefaultSecureConnectBundle() {
+        return Utils.downloadFile(getDefaultSecureConnectBundleUrl());
+    }
+
+    /**
      * Download SecureBundle for a specific data center
      *
      * @param destination
@@ -120,14 +129,39 @@ public class DatabaseClient extends AbstractApiClient {
     public void downloadDefaultSecureConnectBundle(String destination) {
         // Parameters Validation
         Assert.hasLength(destination, "destination");
+        // Download binary in target folder
+        Utils.downloadFile(getDefaultSecureConnectBundleUrl(), destination);
+    }
+
+    /**
+     * This utility method retrieve the binary content for the bundle.
+     *
+     * @return
+     *      secure connect bundle binary content.
+     */
+    private String getDefaultSecureConnectBundleUrl() {
         if (!isActive())
             throw new IllegalStateException("Database '" + databaseId + "' is not available.");
         // Get list of urls
         ApiResponseHttp res = POST(getEndpointDatabase() + "/secureBundleURL");
         // Mapping
-        String url = (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
-        // Download binary in target folder
-        Utils.downloadFile(url, destination);
+        return (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
+    }
+
+    /**
+     * Download SecureBundle for a specific data center.
+     * @return
+     *      binary content.
+     */
+    public byte[] downloadSecureConnectBundle(String region) {
+        Assert.hasLength(region, "region");
+        Database db = get();
+        return downloadSecureConnectBundle(db.getInfo()
+                .getDatacenters()
+                .stream()
+                .filter(d -> region.equalsIgnoreCase(d.getRegion()))
+                .findFirst()
+                .orElseThrow(() -> new RegionNotFoundException(region, databaseId)));
     }
 
     /**
@@ -148,6 +182,16 @@ public class DatabaseClient extends AbstractApiClient {
                 .filter(d -> region.equalsIgnoreCase(d.getRegion()))
                 .findFirst()
                 .orElseThrow(() -> new RegionNotFoundException(region, databaseId)), destination);
+    }
+
+    /**
+     * Download SCB for a database and a datacenter in target location.
+     *
+     * @param dc
+     *         current region
+     */
+    private byte[] downloadSecureConnectBundle(Datacenter dc) {
+        return Utils.downloadFile(dc.getSecureBundleUrl());
     }
 
     /**

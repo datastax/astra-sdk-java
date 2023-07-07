@@ -78,6 +78,10 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         // Then
         Assertions.assertTrue(new File(randomFile).exists());
         getSdkTestDatabaseClient().downloadSecureConnectBundle(SDK_TEST_DB_REGION, randomFile);
+        // When
+        byte[] data = getSdkTestDatabaseClient().downloadDefaultSecureConnectBundle();
+        // Then
+        Assertions.assertTrue(data != null && data.length > 1000);
     }
 
     @Test
@@ -93,7 +97,12 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         // When
         getSdkTestDatabaseClient().downloadSecureConnectBundle(SDK_TEST_DB_REGION, randomFile);
         Assertions.assertTrue(new File(randomFile).exists());
+        // When
+        byte[] data = getSdkTestDatabaseClient().downloadSecureConnectBundle(SDK_TEST_DB_REGION);
+        // Then
+        Assertions.assertTrue(data != null && data.length > 1000);
     }
+
 
     @Test
     @Order(5)

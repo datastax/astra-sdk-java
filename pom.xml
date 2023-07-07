@@ -28,7 +28,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java-driver.version>4.16.0</java-driver.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <logback.version>1.4.7</logback.version>
+        <logback.version>1.4.8</logback.version>
         <jackson.version>2.15.2</jackson.version>
         <json-schema.version>1.5.1</json-schema.version>
         <httpclient.version>5.2.1</httpclient.version>
@@ -37,7 +37,7 @@
         <!-- Stargate -->
         <stargate-sdk.version>2.0.1</stargate-sdk.version>
         <stargate-grpc.version>2.0.15</stargate-grpc.version>
-        <grpc-netty.version>1.55.1</grpc-netty.version>
+        <grpc-netty.version>1.56.1</grpc-netty.version>
 
         <!-- Junit -->
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
@@ -130,14 +130,12 @@
                 <version>${java-driver.version}</version>
             </dependency>
 
-            <!-- Stargate SDK as a dependency-->
-
+            <!-- Stargate SDK-->
             <dependency>
                 <groupId>com.datastax.stargate</groupId>
                 <artifactId>stargate-sdk</artifactId>
                 <version>${stargate-sdk.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.datastax.stargate</groupId>
                 <artifactId>stargate-sdk-test</artifactId>
@@ -150,13 +148,11 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
@@ -164,129 +160,69 @@
             </dependency>
 
             <!-- Working with gRPC -->
-
             <dependency>
-
                 <groupId>io.stargate.grpc</groupId>
-
                 <artifactId>grpc-proto</artifactId>
-
                 <version>${stargate-grpc.version}</version>
-
             </dependency>
-
             <dependency>
-
                 <groupId>io.grpc</groupId>
-
                 <artifactId>grpc-netty-shaded</artifactId>
-
                 <version>${grpc-netty.version}</version>
-
             </dependency>
-
 
             <!-- Astra Streaming -->
-
             <dependency>
-
                 <groupId>org.apache.pulsar</groupId>
-
                 <artifactId>pulsar-client-admin</artifactId>
-
                 <version>${pulsar.version}</version>
-
             </dependency>
-
             <dependency>
-
                 <groupId>org.apache.pulsar</groupId>
-
                 <artifactId>pulsar-client</artifactId>
-
                 <version>${pulsar.version}</version>
-
             </dependency>
-
 
             <!-- JUNIT -->
-
             <dependency>
-
                 <groupId>org.junit.jupiter</groupId>
-
                 <artifactId>junit-jupiter-api</artifactId>
-
                 <version>${junit-jupiter.version}</version>
-
             </dependency>
-
             <dependency>
-
                 <groupId>org.junit.jupiter</groupId>
-
                 <artifactId>junit-jupiter-engine</artifactId>
-
                 <version>${junit-jupiter.version}</version>
-
                 <scope>test</scope>
-
             </dependency>
-
         </dependencies>
-
     </dependencyManagement>
 
     <build>
-
         <plugins>
-
             <plugin>
-
                 <groupId>org.sonatype.plugins</groupId>
-
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-
                 <version>${version.maven.plugin.nexus}</version>
-
                 <extensions>true</extensions>
-
                 <configuration>
-
                     <serverId>ossrh</serverId>
-
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-
                     <autoReleaseAfterClose>false</autoReleaseAfterClose>
-
                     <skipLocalStaging>true</skipLocalStaging>
-
                 </configuration>
-
             </plugin>
-
             <plugin>
-
                 <groupId>org.apache.maven.plugins</groupId>
-
                 <artifactId>maven-gpg-plugin</artifactId>
-
                 <version>${version.maven.plugin.gpg}</version>
-
             </plugin>
-
             <plugin>
-
                 <groupId>org.apache.maven.plugins</groupId>
-
                 <artifactId>maven-source-plugin</artifactId>
-
                 <version>${version.maven.plugin.source}</version>
-
                 <executions>
-
                     <execution>
-
                         <id>attach-sources</id>
 
                         <goals>
@@ -346,67 +282,36 @@
             </plugin>
 
             <plugin>
-
                 <groupId>org.apache.maven.plugins</groupId>
-
                 <artifactId>maven-surefire-plugin</artifactId>
-
                 <version>${version.maven.plugin.surefire}</version>
-
                 <configuration>
-
                     <skipTests>true</skipTests>
-
                 </configuration>
-
                 <dependencies>
-
                     <dependency>
-
                         <groupId>org.junit.jupiter</groupId>
-
                         <artifactId>junit-jupiter-engine</artifactId>
-
                         <version>${junit-jupiter.version}</version>
-
                     </dependency>
-
                 </dependencies>
-
             </plugin>
-
             <plugin>
-
                 <groupId>org.apache.maven.plugins</groupId>
-
                 <artifactId>maven-javadoc-plugin</artifactId>
-
                 <version>${version.maven.plugin.javadoc}</version>
-
                 <executions>
-
                     <execution>
-
                         <id>attach-javadocs</id>
-
                         <goals>
-
                             <goal>jar</goal>
-
                         </goals>
-
                     </execution>
-
                 </executions>
-
                 <configuration>
-
                     <excludePackageNames>com.datastax.stargate.graphql</excludePackageNames>
-
                     <source>${maven.plugin.javadoc.source}</source>
-
                 </configuration>
-
             </plugin>
 
             <plugin>
