@@ -26,7 +26,7 @@
         <sonar.organization>clun-datastax</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java-driver.version>4.16.0</java-driver.version>
+        <java-driver.version>4.17.0</java-driver.version>
         <slf4j.version>2.0.7</slf4j.version>
         <logback.version>1.4.8</logback.version>
         <jackson.version>2.15.2</jackson.version>
@@ -35,8 +35,8 @@
         <pulsar.version>2.11.1</pulsar.version>
 
         <!-- Stargate -->
-        <stargate-sdk.version>2.0.1</stargate-sdk.version>
-        <stargate-grpc.version>2.0.15</stargate-grpc.version>
+        <stargate-sdk.version>2.0.2</stargate-sdk.version>
+        <stargate-grpc.version>2.0.17</stargate-grpc.version>
         <grpc-netty.version>1.56.1</grpc-netty.version>
 
         <!-- Junit -->
