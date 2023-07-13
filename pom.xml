@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.datastax.astra</groupId>
     <artifactId>astra-sdk-parent</artifactId>
-    <version>0.6.4-SNAPSHOT</version>
+    <version>0.6.4</version>
     <name>Astra Java SDK</name>
     <packaging>pom</packaging>
     <inceptionYear>2021</inceptionYear>
@@ -409,7 +409,7 @@
 
         <url>https://github.com/datastax/astra-sdk-java</url>
 
-        <tag>HEAD</tag>
+        <tag>0.6.4</tag>
 
     </scm>
 
