@@ -48,15 +48,17 @@ public class DatabaseCreationRequest {
     /** Keyspace name in database */
     private String keyspace;
 
-    /** Enable Vector preview for the db. */
-    private String engineType = null;
-
     /**
      * CapacityUnits is the amount of space available (horizontal scaling) 
      * for the database. For free tier the max CU's is 1, and 100 
      * for CXX/DXX the max is 12 on startup.
      */
     private int capacityUnits = 1;
+
+    /**
+     * Default is null, if vector will be added
+     */
+    private DatabaseCreationType dbType;
 
     /**
      * default constructor.
@@ -77,7 +79,7 @@ public class DatabaseCreationRequest {
         this.region        = builder.region;
         this.tier          = builder.tier;
         if (builder.vector) {
-            this.engineType = "cc";
+            this.dbType = DatabaseCreationType.vector;
         }
     }
     
@@ -152,12 +154,13 @@ public class DatabaseCreationRequest {
     }
 
     /**
-     * Gets engineType
+     * Getter accessor for attribute 'dbType'.
      *
-     * @return value of engineType
+     * @return
+     *       current value of 'dbType'
      */
-    public String getEngineType() {
-        return engineType;
+    public DatabaseCreationType getDbType() {
+        return dbType;
     }
 
     /** {@inheritDoc} */
