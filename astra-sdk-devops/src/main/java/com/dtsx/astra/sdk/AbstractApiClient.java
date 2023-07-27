@@ -42,6 +42,15 @@ public abstract class AbstractApiClient {
     }
 
     /**
+     * Gets environment
+     *
+     * @return value of environment
+     */
+    public ApiLocator.AstraEnvironment getEnvironment() {
+        return environment;
+    }
+
+    /**
      * Access Http Client.
      *
      * @return
