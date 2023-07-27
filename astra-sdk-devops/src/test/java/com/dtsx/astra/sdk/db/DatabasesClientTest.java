@@ -57,6 +57,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
         Assertions.assertEquals(DatabaseStatusType.ACTIVE, db.getStatus());
     }
 
+
     @Test
     @Order(3)
     @DisplayName("findAll() retrieve some data")
@@ -112,7 +113,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
         Database finalDb = getDatabasesClient().database(dbId).get();
         Assertions.assertEquals(DatabaseStatusType.ACTIVE, finalDb.getStatus());
         // Engine Type is not populated in details, only in findAll()
-        //Assertions.assertEquals("cc", finalDb.getInfo().getEngineType());
+        Assertions.assertEquals("vector", finalDb.getInfo().getDbType());
     }
 
     @Test

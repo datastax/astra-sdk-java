@@ -148,9 +148,8 @@ public class AstraDbClient extends AbstractApiClient {
     
     /**
      * Find Databases matching the provided filter.
-     * 
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listDatabases
-     * 
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/listDatabases">Reference Documentation</a>
+     *
      * @param filter
      *      filter to search for db
      * @return
@@ -164,13 +163,13 @@ public class AstraDbClient extends AbstractApiClient {
     
     /**
      * Create a database base on some parameters.
-     * 
+     *
      * @param dbCreationRequest
      *      creation request with tier and capacity unit
      * @return
      *      the new instance id.
-     * 
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase
+     *
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/createDatabase">Reference Documentation</a>
      */
     public String create(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");

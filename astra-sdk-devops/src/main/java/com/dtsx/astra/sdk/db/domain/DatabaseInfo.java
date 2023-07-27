@@ -33,6 +33,8 @@ public class DatabaseInfo {
     
     /** Default keyspaces. */
     private String keyspace;
+
+    private String dbType;
     
     /** Keyspace name in database. */
     private Set<String> keyspaces;
@@ -251,5 +253,24 @@ public class DatabaseInfo {
      */
     public void setEngineType(String engineType) {
         this.engineType = engineType;
+    }
+
+    /**
+     * Gets dbType
+     *
+     * @return value of dbType
+     */
+    public String getDbType() {
+        return dbType;
+    }
+
+    /**
+     * Set value for dbType
+     *
+     * @param dbType
+     *         new value for dbType
+     */
+    public void setDbType(String dbType) {
+        this.dbType = dbType;
     }
 }
