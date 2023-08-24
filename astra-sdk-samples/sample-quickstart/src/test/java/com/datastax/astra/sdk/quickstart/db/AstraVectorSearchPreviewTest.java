@@ -96,7 +96,8 @@ public class AstraVectorSearchPreviewTest extends AbstractSdkTest {
 
     private List<Product> findAllSimilarProducts(Product orginal) {
         return astraClient.cqlSession().execute(SimpleStatement
-                        .builder("SELECT * FROM pet_supply_vectors ORDER BY product_vector ANN OF ? LIMIT 2;")
+                        .builder("SELECT * FROM pet_supply_vectors " +
+                                "ORDER BY product_vector ANN OF ? LIMIT 2;")
                         .addPositionalValue(orginal.vector)
                         .build())
                 .all()

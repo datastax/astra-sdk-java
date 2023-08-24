@@ -33,6 +33,7 @@
         <json-schema.version>1.5.1</json-schema.version>
         <httpclient.version>5.2.1</httpclient.version>
         <pulsar.version>2.11.1</pulsar.version>
+        <lombok.version>1.18.28</lombok.version>
 
         <!-- Stargate -->
         <stargate-sdk.version>2.0.2</stargate-sdk.version>
@@ -69,6 +70,7 @@
         <module>astra-spring-boot-starter</module>
         <module>astra-spring-boot-3x-autoconfigure</module>
         <module>astra-spring-boot-3x-starter</module>
+        <module>astra-sdk-vector</module>
         <!--
             <module>astra-sdk-samples</module>
             -->
@@ -181,6 +183,12 @@
                 <groupId>org.apache.pulsar</groupId>
                 <artifactId>pulsar-client</artifactId>
                 <version>${pulsar.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
 
             <!-- JUNIT -->

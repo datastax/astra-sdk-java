@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>astra-sdk-vector</artifactId>
+    <name> + astra-sdk-vector</name>
+
+    <parent>
+        <groupId>com.datastax.astra</groupId>
+        <artifactId>astra-sdk-parent</artifactId>
+        <version>0.6.8-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <openai-java.version>0.15.0</openai-java.version>
+        <langchain-java.version>0.1.11</langchain-java.version>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.hamawhitegg</groupId>
+            <artifactId>langchain-core</artifactId>
+            <version>${langchain-java.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.theokanning.openai-gpt3-java</groupId>
+            <artifactId>service</artifactId>
+            <version>${openai-java.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.datastax.astra</groupId>
+            <artifactId>astra-sdk</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.datastax.astra</groupId>
+                    <artifactId>astra-sdk-pulsar</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-query-builder</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>3.33.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
