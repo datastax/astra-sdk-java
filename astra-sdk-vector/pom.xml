@@ -14,7 +14,7 @@
 
     <properties>
         <openai-java.version>0.15.0</openai-java.version>
-        <langchain-java.version>0.1.11</langchain-java.version>
+        <langchain4j.version>0.22.0</langchain4j.version>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -27,9 +27,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.hamawhitegg</groupId>
-            <artifactId>langchain-core</artifactId>
-            <version>${langchain-java.version}</version>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
         </dependency>
 
         <dependency>
