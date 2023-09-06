@@ -6,6 +6,9 @@ import lombok.Data;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Wrap query parameters as a Bean.
+ */
 @Data @Builder
 public class SimilaritySearchQuery {
 
@@ -33,6 +36,5 @@ public class SimilaritySearchQuery {
      * If provided search on metadata
      */
     private Map<String, String> metaData;
-
 
 }

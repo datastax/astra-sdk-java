@@ -5,5 +5,6 @@ package com.dtsx.astra.sdk.db.domain;
  */
 public enum DatabaseCreationType {
 
+    /** Provided if the db is vector. */
     vector
 }

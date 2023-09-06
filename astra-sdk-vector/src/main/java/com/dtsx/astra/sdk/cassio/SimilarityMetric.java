@@ -1,5 +1,11 @@
 package com.dtsx.astra.sdk.cassio;
 
+import lombok.Getter;
+
+/**
+ * Option for the similarity metric.
+ */
+@Getter
 public enum SimilarityMetric {
 
     DOT_PRODUCT("DOT_PRODUCT","similarity_dot_product"),
@@ -11,12 +17,12 @@ public enum SimilarityMetric {
     /**
      * Option.
      */
-    private String option;
+    private final String option;
 
     /**
      * Function.
      */
-    private String function;
+    private final String function;
 
     /**
      * Constructor.
@@ -29,24 +35,6 @@ public enum SimilarityMetric {
     SimilarityMetric(String option, String function) {
         this.option = option;
         this.function = function;
-    }
-
-    /**
-     * Gets option
-     *
-     * @return value of option
-     */
-    public String getOption() {
-        return option;
-    }
-
-    /**
-     * Gets function
-     *
-     * @return value of function
-     */
-    public String getFunction() {
-        return function;
     }
 
 

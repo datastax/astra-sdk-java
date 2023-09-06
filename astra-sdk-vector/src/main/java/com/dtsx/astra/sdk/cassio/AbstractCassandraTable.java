@@ -18,14 +18,38 @@ public abstract class AbstractCassandraTable<RECORD> {
     public static final String SAI_INDEX_CLASSNAME = "org.apache.cassandra.index.sai.StorageAttachedIndex";
 
     /**
-     * Table Structure.
+     * Table column names.
      */
     public static final String PARTITION_ID     = "partition_id";
+
+    /**
+     * Table column names.
+     */
     public static final String ROW_ID           = "row_id";
+
+    /**
+     * Table column names.
+     */
     public static final String ATTRIBUTES_BLOB  = "attributes_blob";
+
+    /**
+     * Table column names.
+     */
     public static final String BODY_BLOB        = "body_blob";
+
+    /**
+     * Table column names.
+     */
     public static final String METADATA_S       = "metadata_s";
+
+    /**
+     * Table column names.
+     */
     public static final String VECTOR           = "vector";
+
+    /**
+     * Table column names.
+     */
     public static final String COLUMN_SIMILARITY = "similarity";
 
     /**

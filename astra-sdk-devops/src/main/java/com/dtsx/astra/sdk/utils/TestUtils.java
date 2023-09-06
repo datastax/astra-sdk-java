@@ -181,6 +181,8 @@ public class TestUtils {
      *      keyspace name
      * @return
      *      database client
+     * @throws InterruptedException
+     *      wait for db availability interrupted
      */
     public static String setupDatabase(String dbName, String keyspace)
     throws InterruptedException {

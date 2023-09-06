@@ -188,13 +188,19 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
                 .build());
     }
 
+    /**
+     * Represents a row of the Table
+     */
     @Data @AllArgsConstructor @NoArgsConstructor
     public static class Record {
 
+        /** Partition id. */
         private String partitionId;
 
+        /** Row identifier. */
         private UUID rowId;
 
+        /** Text body. */
         private String body;
     }
 

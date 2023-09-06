@@ -150,6 +150,9 @@ public class DatabaseClient extends AbstractApiClient {
 
     /**
      * Download SecureBundle for a specific data center.
+     *
+     * @param region
+     *      region to download the SCB
      * @return
      *      binary content.
      */
