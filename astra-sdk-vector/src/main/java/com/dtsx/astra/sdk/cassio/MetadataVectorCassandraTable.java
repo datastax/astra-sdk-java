@@ -8,6 +8,7 @@ import com.datastax.oss.driver.api.core.uuid.Uuids;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,7 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
         super(session, keyspaceName, tableName);
         this.vectorDimension = vectorDimension;
         this.similarityMetric = metric;
+        createSchema();
     }
 
     /**
@@ -208,7 +210,7 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
          * Default Constructor
          */
         public Record() {
-            this.rowId = Uuids.timeBased().toString();
+            this(Uuids.timeBased().toString(), null);
         }
 
         /**
@@ -217,12 +219,22 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
          * @param vector current vector.
          */
         public Record(List<Float> vector) {
-            this();
+            this(Uuids.timeBased().toString(), vector);
+        }
+
+        /**
+         * Create a record with a vector.
+         * @param rowId  identifier for the row
+         * @param vector current vector.
+         */
+        public Record(String rowId, List<Float> vector) {
+            this.rowId  = rowId;
             this.vector = vector;
         }
 
         /**
-         * Dynamic insert
+         * Build insert statement dynamically.
+         *
          * @param keyspaceName
          *      keyspace name
          * @param tableName

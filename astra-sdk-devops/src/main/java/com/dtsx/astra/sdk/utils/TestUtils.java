@@ -7,8 +7,17 @@ import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
 import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -121,5 +130,86 @@ public class TestUtils {
             waitForDbStatus(dbc, DatabaseStatusType.TERMINATED, 60);
         }
     }
+
+    /**
+     * Read Token for tests.
+     *
+     * @return
+     *      token for test or error
+     */
+    public static String readToken() {
+        String token = null;
+        if (AstraRc.isDefaultConfigFileExists()) {
+            token = new AstraRc()
+                    .getSectionKey(AstraRc.ASTRARC_DEFAULT, AstraRc.ASTRA_DB_APPLICATION_TOKEN)
+                    .orElse(null);
+        }
+        return Utils.readEnvVariable(AstraRc.ASTRA_DB_APPLICATION_TOKEN).orElse(token);
+    }
+
+    /**
+     * Database name.
+     *
+     * @param db
+     *      database name
+     */
+    private static void resumeDb(Database db) {
+        try(CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet request = new HttpGet(ApiLocator
+                    .getApiRestEndpoint(db.getId(), db.getInfo().getRegion()) +
+                    "/v2/schemas/keyspace");
+            request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            request.setHeader("X-Cassandra-Token", readToken());
+            request.setHeader("Content-Type", "application/json");
+            httpClient.execute(request).close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot resume DB", e);
+        }
+    }
+
+    /**
+     * Logger for the class.
+     */
+    static Logger logger = LoggerFactory.getLogger(TestUtils.class);
+
+    /**
+     * Create DB if not exist
+     *
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      keyspace name
+     * @return
+     *      database client
+     */
+    public static String setupDatabase(String dbName, String keyspace)
+    throws InterruptedException {
+        AstraDbClient astraDb = new AstraDbClient(readToken());
+        Optional<Database> optDb = astraDb.findByName(dbName).findAny();
+        String dbId = null;
+        if (!optDb.isPresent()) {
+            logger.info("Creating database '{}' as it does not exist, this operation takes about 90s, please wait... ", dbName);
+            dbId = astraDb.create(DatabaseCreationRequest
+                    .builder().name(dbName)
+                    .keyspace(keyspace)
+                    .cloudRegion(TEST_REGION)
+                    .withVector()
+                    .build());
+        } else {
+            dbId = optDb.get().getId();
+            DatabaseClient dbClient = astraDb.database(dbId);
+            if (optDb.get().getStatus().equals(DatabaseStatusType.HIBERNATED)) {
+                logger.info("Resume DB {} as HIBERNATED ", dbName);
+                resumeDb(optDb.get());
+                waitForDbStatus(dbClient, DatabaseStatusType.ACTIVE, 500);
+            }
+            if (!dbClient.keyspaces().findAll().contains(keyspace)) {
+                dbClient.keyspaces().create(keyspace);
+            }
+        }
+        TestUtils.waitForDbStatus(astraDb.database(dbId), DatabaseStatusType.ACTIVE, 500);
+        return dbId;
+    }
+
 
 }

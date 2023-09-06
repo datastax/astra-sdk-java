@@ -23,7 +23,14 @@
 		<dependency>
 			<groupId>com.datastax.stargate</groupId>
 			<artifactId>stargate-sdk</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>com.datastax.stargate</groupId>
 			<artifactId>stargate-sdk-test</artifactId>

@@ -34,7 +34,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     @DisplayName("Create DB and test existence")
     public void shouldCreateServerlessDb() {
         String dbId;
-        Optional<Database> optDb = getDatabasesClient().databaseByName(SDK_TEST_DB_NAME).find();
+        Optional<Database> optDb = getDatabasesClient().findByName(SDK_TEST_DB_NAME).findFirst();
         if (!optDb.isPresent()) {
             dbId = getDatabasesClient().create(DatabaseCreationRequest
                     .builder()
@@ -139,7 +139,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     @DisplayName("Find database by id")
     public void shouldFindDatabaseByIdTest() {
         // --> Getting a valid id
-        Assertions.assertTrue(getDatabasesClient().databaseByName(SDK_TEST_DB_NAME).exist());
+        Assertions.assertTrue(getDatabasesClient().findByName(SDK_TEST_DB_NAME).findFirst().isPresent());
         String dbId = getDatabasesClient().databaseByName(SDK_TEST_DB_NAME).get().getId();
         // <---
         Assertions.assertThrows(IllegalArgumentException.class, () -> getDatabasesClient().database(""));

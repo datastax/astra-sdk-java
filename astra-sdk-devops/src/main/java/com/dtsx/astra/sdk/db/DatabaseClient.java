@@ -208,7 +208,7 @@ public class DatabaseClient extends AbstractApiClient {
             Utils.downloadFile(dc.getSecureBundleUrl(), destination);
             LOGGER.info("+ Downloading SCB to : {}", destination);
         } else {
-            LOGGER.info("+ SCB {} already available.", destination);
+            LOGGER.debug("+ SCB already available ({}) ", destination);
         }
     }
 
