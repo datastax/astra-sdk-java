@@ -166,7 +166,7 @@ public class MetadataVectorTableTest {
     @Order(7)
     @DisplayName("07. Chat Completion request")
     public void shouldGenerateQuotes() {
-        List<String> generatedQuotes = generateQuotes(v_table, "politics and virtue", 2, "nietzsche");
+        List<String> generatedQuotes = generateQuotes(v_table, "politics and virtue", 4, "nietzsche");
         logQuotes(generatedQuotes);
     }
 
