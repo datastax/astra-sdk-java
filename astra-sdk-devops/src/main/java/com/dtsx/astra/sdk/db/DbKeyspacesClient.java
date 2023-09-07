@@ -44,7 +44,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
     public DbKeyspacesClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
-        this.db = new DatabaseClient(token, databaseId).get();
+        this.db = new DatabaseClient(token, env, databaseId).get();
     }
 
     /**
