@@ -5,6 +5,8 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
+import com.dtsx.astra.sdk.utils.ApiLocator;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import io.stargate.sdk.audit.ServiceCallObserver;
 import io.stargate.sdk.StargateClientBuilder;
 import io.stargate.sdk.utils.AnsiUtils;
@@ -71,6 +73,9 @@ public class AstraClientConfig implements Serializable {
     
     /** Client secret. */
     private String clientSecret;
+
+    /** Default is production. */
+    private AstraEnvironment env = AstraEnvironment.PROD;
    
     /**
      * Provide token.
@@ -111,7 +116,29 @@ public class AstraClientConfig implements Serializable {
         this.clientSecret = clientSecret;
         return this;
     }
-    
+
+    /**
+     * Override default environment to use TEST.
+     *
+     * @param env
+     *      current environment
+     * @return
+     *      current reference
+     */
+    public AstraClientConfig env(AstraEnvironment env) {
+        this.env = env;
+        return this;
+    }
+
+    /**
+     * Gets getEnvironmnt
+     *
+     * @return value of env
+     */
+    public AstraEnvironment getEnvironmnt() {
+        return env;
+    }
+
     /**
      * Getter accessor for attribute 'token'.
      *

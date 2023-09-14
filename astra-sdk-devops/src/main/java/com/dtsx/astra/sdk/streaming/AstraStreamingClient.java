@@ -4,6 +4,7 @@ import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.streaming.exception.TenantNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
@@ -28,7 +29,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      authenticated token
      */
     public AstraStreamingClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -39,7 +40,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public AstraStreamingClient(String token, ApiLocator.AstraEnvironment env) {
+    public AstraStreamingClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

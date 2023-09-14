@@ -7,6 +7,7 @@ import com.dtsx.astra.sdk.db.domain.AccessListRequest;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class DbAccessListsClient extends AbstractApiClient {
      *      database identifier
      */
     public DbAccessListsClient(String token, String databaseId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+        this(token, AstraEnvironment.PROD, databaseId);
     }
 
     /**
@@ -44,7 +45,7 @@ public class DbAccessListsClient extends AbstractApiClient {
      * @param databaseId
      *      database identifier
      */
-    public DbAccessListsClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+    public DbAccessListsClient(String token, AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, databaseId).get();

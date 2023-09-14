@@ -1,22 +1,28 @@
 package com.dtsx.astra.sdk;
 
-import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
+import lombok.Getter;
 
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
 
 /**
  * Super Class for the different Http Clients of the api
  */
+@Getter
 public abstract class AbstractApiClient {
 
-    /** hold a reference to the bearer token. */
+    /**
+     * Token Value
+     */
     protected final String token;
 
-    /** hold a reference to target Astra Environment. */
-    protected final ApiLocator.AstraEnvironment environment;
+    /**
+     * Hold a reference to target Astra Environment.
+     */
+    protected final AstraEnvironment environment;
 
     /**
      * Default constructor.
@@ -26,28 +32,10 @@ public abstract class AbstractApiClient {
      * @param token
      *     token value
      */
-    public AbstractApiClient(String token, ApiLocator.AstraEnvironment env) {
+    public AbstractApiClient(String token, AstraEnvironment env) {
         Assert.hasLength(token, "token");
         this.token = token;
         this.environment = env;
-    }
-
-    /**
-     * Gets token
-     *
-     * @return value of token
-     */
-    public String getToken() {
-        return token;
-    }
-
-    /**
-     * Gets environment
-     *
-     * @return value of environment
-     */
-    public ApiLocator.AstraEnvironment getEnvironment() {
-        return environment;
     }
 
     /**

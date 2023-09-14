@@ -4,6 +4,7 @@ import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.streaming.domain.StreamingRegion;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponse;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -33,7 +34,7 @@ public class RegionsClient extends AbstractApiClient {
      *      authenticated token
      */
     public RegionsClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -44,7 +45,7 @@ public class RegionsClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public RegionsClient(String token, ApiLocator.AstraEnvironment env) {
+    public RegionsClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

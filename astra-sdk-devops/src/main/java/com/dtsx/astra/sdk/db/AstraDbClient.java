@@ -6,6 +6,7 @@ import com.dtsx.astra.sdk.db.domain.*;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.dtsx.astra.sdk.db.domain.DatabaseFilter.Include;
@@ -36,7 +37,7 @@ public class AstraDbClient extends AbstractApiClient {
      *      authenticated token
      */
     public AstraDbClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -47,7 +48,7 @@ public class AstraDbClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public AstraDbClient(String token, ApiLocator.AstraEnvironment env) {
+    public AstraDbClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

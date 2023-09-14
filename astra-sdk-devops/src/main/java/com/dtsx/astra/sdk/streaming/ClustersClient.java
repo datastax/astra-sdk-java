@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.streaming.domain.Cluster;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -24,7 +25,7 @@ public class ClustersClient extends AbstractApiClient {
      *      authenticated token
      */
     public ClustersClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -35,7 +36,7 @@ public class ClustersClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public ClustersClient(String token, ApiLocator.AstraEnvironment env) {
+    public ClustersClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

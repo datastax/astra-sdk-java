@@ -6,6 +6,7 @@ import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
      *      database identifier
      */
     public DbKeyspacesClient(String token, String databaseId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+        this(token, AstraEnvironment.PROD, databaseId);
     }
 
     /**
@@ -41,7 +42,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
      * @param databaseId
      *      database identifier
      */
-    public DbKeyspacesClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+    public DbKeyspacesClient(String token, AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, env, databaseId).get();

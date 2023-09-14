@@ -10,6 +10,7 @@ import com.dtsx.astra.sdk.db.exception.RegionNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -44,7 +45,7 @@ public class DbDatacentersClient extends AbstractApiClient {
      *      database identifier
      */
     public DbDatacentersClient(String token, String databaseId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+        this(token, AstraEnvironment.PROD, databaseId);
     }
 
     /**
@@ -57,7 +58,7 @@ public class DbDatacentersClient extends AbstractApiClient {
      * @param databaseId
      *      database identifier
      */
-    public DbDatacentersClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+    public DbDatacentersClient(String token, AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, databaseId).get();

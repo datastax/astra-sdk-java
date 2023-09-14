@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class ProvidersClient extends AbstractApiClient {
      *      authenticated token
      */
     public ProvidersClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -30,7 +31,7 @@ public class ProvidersClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public ProvidersClient(String token, ApiLocator.AstraEnvironment env) {
+    public ProvidersClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

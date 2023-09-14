@@ -6,6 +6,7 @@ import com.dtsx.astra.sdk.org.domain.KeyDefinition;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -24,7 +25,7 @@ public class KeysClient extends AbstractApiClient {
      *      authenticated token
      */
     public KeysClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -35,7 +36,7 @@ public class KeysClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public KeysClient(String token, ApiLocator.AstraEnvironment env) {
+    public KeysClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

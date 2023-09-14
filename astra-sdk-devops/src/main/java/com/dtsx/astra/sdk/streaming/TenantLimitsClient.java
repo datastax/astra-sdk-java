@@ -6,6 +6,7 @@ import com.dtsx.astra.sdk.streaming.domain.TenantLimit;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -31,7 +32,7 @@ public class TenantLimitsClient extends AbstractApiClient {
      *      authenticated token
      */
     public TenantLimitsClient(String token, String tenantId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
+        this(token, AstraEnvironment.PROD, tenantId);
     }
 
     /**
@@ -44,7 +45,7 @@ public class TenantLimitsClient extends AbstractApiClient {
      * @param tenantId
      *      unique tenant identifier
      */
-    public TenantLimitsClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
+    public TenantLimitsClient(String token, AstraEnvironment env, String tenantId) {
         super(token, env);
         Assert.hasLength(tenantId, "tenantId");
         this.tenant = new AstraStreamingClient(token, env).get(tenantId);

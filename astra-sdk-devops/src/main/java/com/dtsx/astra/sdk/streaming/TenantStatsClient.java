@@ -3,6 +3,7 @@ package com.dtsx.astra.sdk.streaming;
 import com.dtsx.astra.sdk.AbstractApiClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.streaming.domain.Statistics;
 import com.dtsx.astra.sdk.streaming.domain.Tenant;
@@ -36,7 +37,7 @@ public class TenantStatsClient extends AbstractApiClient {
      *      authenticated token
      */
     public TenantStatsClient(String token, String tenantId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
+        this(token, AstraEnvironment.PROD, tenantId);
     }
 
     /**
@@ -49,7 +50,7 @@ public class TenantStatsClient extends AbstractApiClient {
      * @param tenantId
      *      unique tenant identifier
      */
-    public TenantStatsClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
+    public TenantStatsClient(String token, AstraEnvironment env, String tenantId) {
         super(token, env);
         Assert.hasLength(tenantId, "tenantId");
         this.tenant = new AstraStreamingClient(token, env).get(tenantId);

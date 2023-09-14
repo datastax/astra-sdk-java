@@ -25,7 +25,7 @@ public class UsersClient extends AbstractApiClient {
      *      authenticated token
      */
     public UsersClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -36,7 +36,7 @@ public class UsersClient extends AbstractApiClient {
      * @param env
      *     target environment.
      */
-    public UsersClient(String token, ApiLocator.AstraEnvironment env) {
+    public UsersClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

@@ -19,6 +19,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.datastax.astra</groupId>
+			<artifactId>astra-sdk-pulsar</artifactId>
+			<scope>test</scope>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- Stargate SDK as a dependency-->
 		<dependency>
 			<groupId>com.datastax.stargate</groupId>

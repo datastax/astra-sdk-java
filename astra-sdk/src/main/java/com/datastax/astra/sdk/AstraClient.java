@@ -19,7 +19,9 @@ package com.datastax.astra.sdk;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.AstraDevopsApiClient;
-import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
+import com.dtsx.astra.sdk.db.AstraDbClient;
+import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import io.stargate.sdk.StargateClient;
 import io.stargate.sdk.api.SimpleTokenProvider;
@@ -31,9 +33,6 @@ import io.stargate.sdk.http.ServiceHttp;
 import io.stargate.sdk.rest.StargateRestApiClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import io.stargate.sdk.utils.Utils;
-import com.dtsx.astra.sdk.db.AstraDbClient;
-import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,10 +119,10 @@ public class AstraClient implements Closeable {
         //  Devops APIS
         // ---------------------------------------------------
         if (Utils.hasLength(config.getToken())) {
-            apiDevops           = new AstraDevopsApiClient(config.getToken());
+            apiDevops           = new AstraDevopsApiClient(config.getToken(), config.getEnvironmnt());
             apiDevopsDatabases  = apiDevops.db();
             apiDevopsStreaming  = apiDevops.streaming();
-            LOGGER.info("+ API(s) Devops     [" + AnsiUtils.green("ENABLED")+ "]");
+            LOGGER.info("+ API(s) Devops     [" + AnsiUtils.green("ENABLED")+ "] on [" + config.getEnvironmnt() + "]");
         } else {
             LOGGER.info("+ API(s) Devops     [" + AnsiUtils.red("DISABLED")+ "]");
         }
@@ -175,24 +174,24 @@ public class AstraClient implements Closeable {
                     // Rest Api
                     config.getStargateConfig().addServiceRest(dc.getRegion(),
                             new ServiceHttp(dc.getRegion() + "-rest",
-                            ApiLocator.getApiRestEndpoint(config.getDatabaseId(), dc.getRegion()),
-                            ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion())));
+                            ApiLocator.getApiRestEndpoint(config.getEnvironmnt(), config.getDatabaseId(), dc.getRegion()),
+                            ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion())));
                     // Document API
                     config.getStargateConfig().addDocumentService(dc.getRegion(),
                             new ServiceHttp(dc.getRegion() + "-doc",
-                                    ApiLocator.getApiDocumentEndpoint(config.getDatabaseId(), dc.getRegion()),
-                                    ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion())));
+                                    ApiLocator.getApiDocumentEndpoint(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion()),
+                                    ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion())));
                     // GraphQL
                     config.getStargateConfig().addGraphQLService(dc.getRegion(),
                             new ServiceHttp(dc.getRegion() + "-gql",
-                                    ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), dc.getRegion()),
-                                    ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion())));
+                                    ApiLocator.getApiGraphQLEndPoint(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion()),
+                                    ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion())));
 
                     if (config.getStargateConfig().isEnabledGrpc()) {
                         // Grpc
                         config.getStargateConfig().addGrpcService(dc.getRegion(), new ServiceGrpc(dc.getRegion() + "-grpc",
-                                ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), dc.getRegion()) + ":" + AstraClientConfig.GRPC_PORT,
-                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), dc.getRegion()), true));
+                                ApiLocator.getApiGrpcEndPoint(config.getEnvironmnt(), config.getDatabaseId(), dc.getRegion()) + ":" + AstraClientConfig.GRPC_PORT,
+                                ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(), config.getDatabaseId(), dc.getRegion()), true));
                     }
 
                     if (config.getStargateConfig().isEnabledCql()) {

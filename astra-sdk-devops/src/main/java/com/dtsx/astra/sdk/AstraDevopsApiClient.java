@@ -9,6 +9,7 @@ import com.dtsx.astra.sdk.org.domain.*;
 import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 
 import java.util.Map;
@@ -27,7 +28,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      *      bearerAuthToken token
      */
     public AstraDevopsApiClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -38,7 +39,7 @@ public class AstraDevopsApiClient extends AbstractApiClient {
      * @param token
      *      bearerAuthToken token
      */
-    public AstraDevopsApiClient(String token, ApiLocator.AstraEnvironment env) {
+    public AstraDevopsApiClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

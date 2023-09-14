@@ -9,6 +9,7 @@ import com.dtsx.astra.sdk.org.exception.RoleNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -39,7 +40,7 @@ public class RolesClient extends AbstractApiClient {
      *      authenticated token
      */
     public RolesClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -50,7 +51,7 @@ public class RolesClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public RolesClient(String token, ApiLocator.AstraEnvironment env) {
+    public RolesClient(String token, AstraEnvironment env) {
         super(token, env);
     }
 

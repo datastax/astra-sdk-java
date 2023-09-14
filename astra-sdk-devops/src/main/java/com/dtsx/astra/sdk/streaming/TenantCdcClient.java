@@ -11,6 +11,7 @@ import com.dtsx.astra.sdk.streaming.domain.Tenant;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -38,7 +39,7 @@ public class TenantCdcClient extends AbstractApiClient {
      *      unique tenant identifier
      */
     public TenantCdcClient(String token, String tenantId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, tenantId);
+        this(token, AstraEnvironment.PROD, tenantId);
     }
 
     /**
@@ -51,7 +52,7 @@ public class TenantCdcClient extends AbstractApiClient {
      * @param tenantId
      *      unique tenant identifier
      */
-    public TenantCdcClient(String token, ApiLocator.AstraEnvironment env, String tenantId) {
+    public TenantCdcClient(String token, AstraEnvironment env, String tenantId) {
         super(token, env);
         Assert.hasLength(tenantId, "tenantId");
         // Test Db exists

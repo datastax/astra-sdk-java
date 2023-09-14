@@ -1,10 +1,15 @@
 package com.dtsx.astra.sdk.org;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
-import com.dtsx.astra.sdk.org.domain.*;
+import com.dtsx.astra.sdk.org.domain.CreateTokenResponse;
+import com.dtsx.astra.sdk.org.domain.DefaultRoles;
+import com.dtsx.astra.sdk.org.domain.IamToken;
+import com.dtsx.astra.sdk.org.domain.ResponseAllIamTokens;
+import com.dtsx.astra.sdk.org.domain.Role;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.JsonUtils;
 
 import java.util.Optional;
@@ -25,7 +30,7 @@ public class TokensClient extends AbstractApiClient {
      *      authenticated token
      */
     public TokensClient(String token) {
-        this(token, ApiLocator.AstraEnvironment.PROD);
+        this(token, AstraEnvironment.PROD);
     }
 
     /**
@@ -36,7 +41,7 @@ public class TokensClient extends AbstractApiClient {
      * @param token
      *      authenticated token
      */
-    public TokensClient(String token, ApiLocator.AstraEnvironment env) {
+    public TokensClient(String token, AstraEnvironment env) {
         super(token, env);
         rolesClient = new RolesClient(token, env);
     }

@@ -11,6 +11,7 @@ import com.dtsx.astra.sdk.db.domain.telemetry.SplunkTelemetryRequest;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 
 /**
@@ -32,7 +33,7 @@ public class DbTelemetryClient extends AbstractApiClient {
      *      database identifier
      */
     public DbTelemetryClient(String token, String databaseId) {
-        this(token, ApiLocator.AstraEnvironment.PROD, databaseId);
+        this(token, AstraEnvironment.PROD, databaseId);
     }
 
     /**
@@ -45,7 +46,7 @@ public class DbTelemetryClient extends AbstractApiClient {
      * @param databaseId
      *      database identifier
      */
-    public DbTelemetryClient(String token, ApiLocator.AstraEnvironment env, String databaseId) {
+    public DbTelemetryClient(String token, AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
         this.db = new DatabaseClient(token, databaseId).get();
