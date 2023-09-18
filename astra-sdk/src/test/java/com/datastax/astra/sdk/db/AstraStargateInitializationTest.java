@@ -17,8 +17,9 @@
 package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.astra.sdk.AstraSdkTest;
 import com.datastax.oss.driver.api.core.cql.Row;
+import io.stargate.sdk.test.doc.TestDocClientConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,13 +28,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.stream.Collectors;
 
+import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
+import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Multiple Connectivity mode for each parameter.
  */
-public class AstraStargateInitializationTest {
+public class AstraStargateInitializationTest implements AstraSdkTest {
     
     /** Logger for our Client. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AstraStargateInitializationTest.class);
@@ -42,18 +45,11 @@ public class AstraStargateInitializationTest {
 
     @BeforeAll
     public static void config() {
-        client = AstraClient.builder().build();
-        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-        
-        // Connect the client to the new created DB
         client = AstraClient.builder()
-                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
-                .withCqlKeyspace(AstraTestUtils.TEST_NAMESPACE)
-                .withDatabaseId(dbId)
-                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-                .enableCql()
+                .withDatabaseRegion(TEST_REGION)
+                .withDatabaseId(setupDatabase(TEST_DATABASE_NAME, TestDocClientConstants.TEST_NAMESPACE))
                 .build();
-        LOGGER.info("Connected to {} on namespace {}", dbId, AstraTestUtils.TEST_NAMESPACE);
+        LOGGER.info("Connected");
     }
 
     @Test

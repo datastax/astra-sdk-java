@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.dtsx.astra.sdk.utils.TestUtils.readToken;
+import static com.dtsx.astra.sdk.utils.TestUtils.getAstraToken;
 import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
 
 /**
@@ -70,7 +70,7 @@ public class MetadataVectorTableTest {
 
         // Open Cassandra Connection
         cqlSession = AstraClient.builder()
-                .withToken(readToken())
+                .withToken(getAstraToken())
                 .withCqlKeyspace(ASTRA_DB_KEYSPACE)
                 .withDatabaseId(databaseId).withDatabaseRegion(TestUtils.TEST_REGION)
                 .enableCql()

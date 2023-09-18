@@ -1,10 +1,9 @@
 package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.astra.sdk.AstraSdkTest;
 import io.stargate.sdk.doc.domain.Namespace;
 import io.stargate.sdk.test.doc.AbstractDocClientNamespacesTest;
-import io.stargate.sdk.test.doc.TestDocClientConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
@@ -14,6 +13,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
+import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -31,23 +32,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   -e DEVELOPER_MODE=true \
  *   stargateio/stargate-3_11:v1.0.35
  */
-public class ApiDocumentNamespacesAstraTest extends AbstractDocClientNamespacesTest {
+public class ApiDocumentNamespacesAstraTest extends AbstractDocClientNamespacesTest implements AstraSdkTest {
 
     @BeforeAll
     public static void init() {
-        // Default client to create DB if needed
-        AstraClient client = AstraClient.builder().build();
-        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-
-        // Connect the client to the new created DB
-        client = AstraClient.builder()
-                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
-                .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
-                .withDatabaseId(dbId)
-                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-                .build();
-
-        stargateDocumentApiClient = client.getStargateClient().apiDocument();
+        stargateDocumentApiClient = AstraClient.builder()
+                .withDatabaseRegion(TEST_REGION)
+                .withDatabaseId(setupDatabase(TEST_DATABASE_NAME, TEST_NAMESPACE))
+                .build().getStargateClient()
+                .apiDocument();
     }
 
     @Test

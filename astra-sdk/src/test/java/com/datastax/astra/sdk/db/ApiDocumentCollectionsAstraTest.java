@@ -1,34 +1,29 @@
 package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.astra.sdk.AstraSdkTest;
 import io.stargate.sdk.test.doc.AbstractDocClientCollectionsTest;
-import io.stargate.sdk.test.doc.TestDocClientConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
+import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
+
 /**
  * Execute some unit tests against collections.
  */
-public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollectionsTest {
+public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollectionsTest implements AstraSdkTest {
 
     @BeforeAll
     public static void init() {
-        // Default client to create DB if needed
-        AstraClient client = AstraClient.builder().build();
-        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-        // Connect the client to the new created DB
-        client = AstraClient.builder()
-                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
-                .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
-                .withDatabaseId(dbId)
-                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-                .build();
-
-        stargateDocumentApiClient = client.getStargateClient().apiDocument();
-        nsClient = stargateDocumentApiClient.namespace(TEST_NAMESPACE);
+        stargateDocumentApiClient = AstraClient.builder()
+                .withDatabaseRegion(TEST_REGION)
+                .withDatabaseId(setupDatabase(TEST_DATABASE_NAME, TEST_NAMESPACE))
+                .build().getStargateClient().apiDocument();
+        nsClient = stargateDocumentApiClient
+                .namespace(TEST_NAMESPACE);
      }
      
     @Test

@@ -1,27 +1,21 @@
 package com.datastax.astra.sdk.db;
 
 import com.datastax.astra.sdk.AstraClient;
-import com.datastax.astra.sdk.AstraTestUtils;
+import com.datastax.astra.sdk.AstraSdkTest;
 import io.stargate.sdk.test.doc.TestDocClientConstants;
 import io.stargate.sdk.test.gql.AbstractGraphClientTest;
 import org.junit.jupiter.api.BeforeAll;
 
-public class ApiGraphQLAstraTest extends AbstractGraphClientTest {
+import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
+import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
+
+public class ApiGraphQLAstraTest extends AbstractGraphClientTest implements AstraSdkTest {
 
     @BeforeAll
     public static void init() {
-        // Default client to create DB if needed
-        AstraClient client = AstraClient.builder().build();
-        String dbId = AstraTestUtils.createTestDbIfNotExist(client);
-
-        client = AstraClient.builder()
-                .withToken(client.getToken().orElseThrow(() -> new IllegalStateException("token not found")))
-                .withCqlKeyspace(TestDocClientConstants.TEST_NAMESPACE)
-                .withDatabaseId(dbId)
-                .withDatabaseRegion(AstraTestUtils.TEST_REGION)
-                .build();
-
-        stargateGraphQLApiClient = client.getStargateClient().apiGraphQL();
-
+        stargateGraphQLApiClient = AstraClient.builder()
+                .withDatabaseRegion(TEST_REGION)
+                .withDatabaseId(setupDatabase(TEST_DATABASE_NAME, TestDocClientConstants.TEST_NAMESPACE))
+                .build().getStargateClient().apiGraphQL();
     }
 }

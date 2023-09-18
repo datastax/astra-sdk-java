@@ -1,24 +1,21 @@
 package com.dtsx.astra.sdk.utils;
 
-import com.dtsx.astra.sdk.AstraDevopsApiClient;
-import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.AstraDbClient;
+import com.dtsx.astra.sdk.db.DatabaseClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.db.domain.DatabaseCreationBuilder;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
 import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Helper for tetst.
@@ -28,24 +25,163 @@ import java.util.stream.Collectors;
 public class TestUtils {
 
     /** Test constant. */
-    public static final String TEST_DBNAME = "sdk_tests";
-
-    /** Test constant. */
-    public static final String  TEST_NAMESPACE = "java";
-
-    /** Test constant. */
     public static final String TEST_REGION = "us-east1";
+
+    /** Test constant. */
+    public static final String TEST_TIER = "serverless";
 
     /** Test constant. */
     public static final CloudProviderType TEST_PROVIDER = CloudProviderType.GCP;
 
-    /** Test constant. */
-    public static final String TEST_TIER = "serverless";
+    /**
+     * Logger for the class.
+     */
+    static Logger logger = LoggerFactory.getLogger(TestUtils.class);
+
 
     /**
      * Hide default constructor
      */
     private TestUtils() {}
+
+    /**
+     * Read Token for tests.
+     *
+     * @return
+     *      token for test or error
+     */
+    public static String getAstraToken() {
+        String token = null;
+        if (AstraRc.isDefaultConfigFileExists()) {
+            token = new AstraRc()
+                    .getSectionKey(AstraRc.ASTRARC_DEFAULT, AstraRc.ASTRA_DB_APPLICATION_TOKEN)
+                    .orElse(null);
+        }
+        return Optional.ofNullable(Utils
+                        .readEnvVariable(AstraRc.ASTRA_DB_APPLICATION_TOKEN).
+                        orElse(token))
+                .orElseThrow(() -> new IllegalStateException(
+                        "ASTRA_DB_APPLICATION_TOKEN is not defined as env variable or present in file ~/.astrarc"));
+    }
+
+    /**
+     * Initialize databases for tests.
+     *
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      expected keyspace
+     * @return
+     *      the database id
+     */
+    public static String setupVectorDatabase(String dbName, String keyspace) {
+        return setupDatabase(getAstraToken(), AstraEnvironment.PROD, dbName, keyspace, true);
+    }
+
+    /**
+     * Initialize databases for tests.
+     *
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      expected keyspace
+     * @return
+     *      the database id
+     */
+    public static String setupVectorDatabase(AstraEnvironment env, String dbName, String keyspace) {
+        return setupDatabase(getAstraToken(), env, dbName, keyspace, true);
+    }
+
+    /**
+     * Initialize databases for tests.
+     *
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      expected keyspace
+     * @return
+     *      the database id
+     */
+    public static String setupDatabase(AstraEnvironment env, String dbName, String keyspace) {
+        return setupDatabase(getAstraToken(), env, dbName, keyspace, false);
+    }
+
+    /**
+     * Initialize databases for tests.
+     *
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      expected keyspace
+     * @return
+     *      the database id
+     */
+    public static String setupDatabase(String dbName, String keyspace) {
+        return setupDatabase(getAstraToken(), AstraEnvironment.PROD, dbName, keyspace, false);
+    }
+
+    /**
+     * Initialize databases for tests.
+     *
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      expected keyspace
+     * @return
+     *      the database id
+     */
+    public static String setupDatabase(AstraEnvironment env, String dbName, String keyspace, boolean vector) {
+        return setupDatabase(getAstraToken(), env, dbName, keyspace, vector);
+    }
+
+    /**
+     * Initialize databases for tests.
+     *
+     * @param token
+     *     token for the organization
+     * @param dbName
+     *      database name
+     * @param keyspace
+     *      expected keyspace
+     * @return
+     *      the database id
+     */
+    public static String setupDatabase(String token, AstraEnvironment env, String dbName, String keyspace, boolean vector) {
+        AstraDbClient devopsDbCli = new AstraDbClient(getAstraToken(), env);
+        Optional<Database> optDb  = devopsDbCli.findByName(dbName).findAny();
+        if (optDb.isPresent()) {
+            // Db is present, should we resume it ?
+            Database db = optDb.get();
+            DatabaseClient dbClient = devopsDbCli.database(db.getId());
+            if (db.getStatus().equals(DatabaseStatusType.HIBERNATED)) {
+                logger.info("Resume DB {} as HIBERNATED ", dbName);
+                resumeDb(optDb.get());
+                waitForDbStatus(dbClient, DatabaseStatusType.ACTIVE, 500);
+            }
+            // Db is active, should I add a keyspace ?
+            if (!dbClient.keyspaces().findAll().contains(keyspace)) {
+                dbClient.keyspaces().create(keyspace);
+                waitForDbStatus(dbClient, DatabaseStatusType.ACTIVE, 100);
+            }
+            return db.getId();
+        } else {
+            // Db is not present...creation
+            DatabaseCreationBuilder builder = DatabaseCreationRequest
+                    .builder()
+                    .name(dbName)
+                    .tier(TEST_TIER)
+                    .cloudProvider(TEST_PROVIDER)
+                    .cloudRegion(TEST_REGION)
+                    .keyspace(keyspace);
+            if (vector) {
+                builder = builder.withVector();
+            }
+            String serverlessDbId = devopsDbCli.create(builder.build());
+            DatabaseClient dbc = new DatabaseClient(devopsDbCli.getToken(), serverlessDbId);
+            waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 180);
+            return serverlessDbId;
+        }
+    }
 
     /**
      * Wait for db to have proper status.
@@ -78,42 +214,6 @@ public class TestUtils {
     public static void waitForSeconds(int seconds) {
         try {Thread.sleep(seconds * 1000);} catch (InterruptedException e) {}
     }
-
-    /**
-     * Initialize databases for tests.
-     * 
-     * @param devopsDbCli
-     *      devops database API.
-     * @param dbName
-     *      database name
-     * @param keyspace
-     *      expected keyspace
-     * @return
-     *      the database id
-     */
-    public static String createDbAndKeyspaceIfNotExist(AstraDbClient devopsDbCli, String dbName, String keyspace) {
-        List<Database> dbs = devopsDbCli.findByName(dbName).collect(Collectors.toList());
-        if (dbs.size() > 0) {
-            Database db = dbs.get(0);
-            DatabaseClient dbc = new DatabaseClient(devopsDbCli.getToken(), db.getId());
-            if (!db.getInfo().getKeyspaces().contains(keyspace)) {
-                dbc.keyspaces().create(keyspace);
-                waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 60);
-            }            return db.getId();
-        } else {
-            String serverlessDbId = devopsDbCli.create(DatabaseCreationRequest
-                    .builder()
-                    .name(dbName)
-                    .tier(TEST_TIER)
-                    .cloudProvider(TEST_PROVIDER)
-                    .cloudRegion(TEST_REGION)
-                    .keyspace(keyspace)
-                    .build());
-            DatabaseClient dbc = new DatabaseClient(devopsDbCli.getToken(), serverlessDbId);
-            waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 120);
-            return serverlessDbId;
-        }
-    }
    
     /**
      * Terminate database if needed.
@@ -132,22 +232,6 @@ public class TestUtils {
     }
 
     /**
-     * Read Token for tests.
-     *
-     * @return
-     *      token for test or error
-     */
-    public static String readToken() {
-        String token = null;
-        if (AstraRc.isDefaultConfigFileExists()) {
-            token = new AstraRc()
-                    .getSectionKey(AstraRc.ASTRARC_DEFAULT, AstraRc.ASTRA_DB_APPLICATION_TOKEN)
-                    .orElse(null);
-        }
-        return Utils.readEnvVariable(AstraRc.ASTRA_DB_APPLICATION_TOKEN).orElse(token);
-    }
-
-    /**
      * Database name.
      *
      * @param db
@@ -159,59 +243,12 @@ public class TestUtils {
                     .getApiRestEndpoint(db.getId(), db.getInfo().getRegion()) +
                     "/v2/schemas/keyspace");
             request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-            request.setHeader("X-Cassandra-Token", readToken());
+            request.setHeader("X-Cassandra-Token", getAstraToken());
             request.setHeader("Content-Type", "application/json");
             httpClient.execute(request).close();
         } catch (IOException e) {
             throw new IllegalStateException("Cannot resume DB", e);
         }
     }
-
-    /**
-     * Logger for the class.
-     */
-    static Logger logger = LoggerFactory.getLogger(TestUtils.class);
-
-    /**
-     * Create DB if not exist
-     *
-     * @param dbName
-     *      database name
-     * @param keyspace
-     *      keyspace name
-     * @return
-     *      database client
-     * @throws InterruptedException
-     *      wait for db availability interrupted
-     */
-    public static String setupDatabase(String dbName, String keyspace)
-    throws InterruptedException {
-        AstraDbClient astraDb = new AstraDbClient(readToken());
-        Optional<Database> optDb = astraDb.findByName(dbName).findAny();
-        String dbId = null;
-        if (!optDb.isPresent()) {
-            logger.info("Creating database '{}' as it does not exist, this operation takes about 90s, please wait... ", dbName);
-            dbId = astraDb.create(DatabaseCreationRequest
-                    .builder().name(dbName)
-                    .keyspace(keyspace)
-                    .cloudRegion(TEST_REGION)
-                    .withVector()
-                    .build());
-        } else {
-            dbId = optDb.get().getId();
-            DatabaseClient dbClient = astraDb.database(dbId);
-            if (optDb.get().getStatus().equals(DatabaseStatusType.HIBERNATED)) {
-                logger.info("Resume DB {} as HIBERNATED ", dbName);
-                resumeDb(optDb.get());
-                waitForDbStatus(dbClient, DatabaseStatusType.ACTIVE, 500);
-            }
-            if (!dbClient.keyspaces().findAll().contains(keyspace)) {
-                dbClient.keyspaces().create(keyspace);
-            }
-        }
-        TestUtils.waitForDbStatus(astraDb.database(dbId), DatabaseStatusType.ACTIVE, 500);
-        return dbId;
-    }
-
 
 }
