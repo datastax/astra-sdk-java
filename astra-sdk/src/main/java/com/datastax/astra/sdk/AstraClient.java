@@ -30,6 +30,7 @@ import io.stargate.sdk.gql.StargateGraphQLApiClient;
 import io.stargate.sdk.grpc.ServiceGrpc;
 import io.stargate.sdk.grpc.StargateGrpcApiClient;
 import io.stargate.sdk.http.ServiceHttp;
+import io.stargate.sdk.json.JsonApiClient;
 import io.stargate.sdk.rest.StargateRestApiClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import io.stargate.sdk.utils.Utils;
@@ -122,9 +123,9 @@ public class AstraClient implements Closeable {
             apiDevops           = new AstraDevopsApiClient(config.getToken(), config.getEnvironmnt());
             apiDevopsDatabases  = apiDevops.db();
             apiDevopsStreaming  = apiDevops.streaming();
-            LOGGER.info("+ API(s) Devops     [" + AnsiUtils.green("ENABLED")+ "] on [" + config.getEnvironmnt() + "]");
+            LOGGER.info("+ API Devops    [" + AnsiUtils.green("ENABLED")+ "] on [" + config.getEnvironmnt() + "]");
         } else {
-            LOGGER.info("+ API(s) Devops     [" + AnsiUtils.red("DISABLED")+ "]");
+            LOGGER.info("+ API Devops    [" + AnsiUtils.red("DISABLED")+ "]");
         }
        
         // ---------------------------------------------------
@@ -186,6 +187,11 @@ public class AstraClient implements Closeable {
                             new ServiceHttp(dc.getRegion() + "-gql",
                                     ApiLocator.getApiGraphQLEndPoint(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion()),
                                     ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion())));
+                    // Json
+                    config.getStargateConfig().addServiceJson(dc.getRegion(),
+                            new ServiceHttp(dc.getRegion() + "-json",
+                                    ApiLocator.getApiJsonEndpoint(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion()),
+                                    ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(),config.getDatabaseId(), dc.getRegion())));
 
                     if (config.getStargateConfig().isEnabledGrpc()) {
                         // Grpc
@@ -217,6 +223,11 @@ public class AstraClient implements Closeable {
                 config.getStargateConfig().addServiceRest(currentDatabaseRegion,
                         new ServiceHttp(currentDatabaseRegion+ "-rest",
                                 ApiLocator.getApiRestEndpoint(config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
+                // Json Api
+                config.getStargateConfig().addServiceJson(currentDatabaseRegion,
+                        new ServiceHttp(currentDatabaseRegion+ "-rest",
+                                ApiLocator.getApiJsonEndpoint(config.getDatabaseId(), currentDatabaseRegion),
                                 ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
                 // Document API
                 config.getStargateConfig().addDocumentService(currentDatabaseRegion,
@@ -316,6 +327,19 @@ public class AstraClient implements Closeable {
                     + "you need to provide dbId/dbRegion/token at initialization.");
         }
         return stargateClient.apiGraphQL();
+    }
+
+    /**
+     * Stargate JSON API.
+     *
+     * @return ApiDevopsClient
+     */
+    public JsonApiClient apiStargateJson() {
+        if (stargateClient == null) {
+            throw new IllegalStateException("Json Api is not available "
+                    + "you need to provide dbId/dbRegion/token at initialization.");
+        }
+        return stargateClient.apiJson();
     }
     
     /**

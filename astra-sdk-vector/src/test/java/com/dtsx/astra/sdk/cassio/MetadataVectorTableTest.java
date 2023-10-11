@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.cassio;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.dtsx.astra.sdk.AbstractAstraVectorTest;
 import com.dtsx.astra.sdk.utils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
@@ -39,14 +40,14 @@ import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
  */
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MetadataVectorTableTest {
+public class MetadataVectorTableTest extends AbstractAstraVectorTest {
 
-    /**
-     * Settings from OpenAI Usage
-     */
     public static final String LLM_MODEL_CHAT_COMPLETION = "gpt-3.5-turbo";
     public static final String LLM_MODEL_EMBEDDINGS     = "text-embedding-ada-002";
     public static final int    LLM_MODEL_DIMENSION      = 1536;
+    /**
+     * Settings from OpenAI Usage
+     */
     private static OpenAiService openAIClient;
 
     /**
@@ -301,7 +302,7 @@ public class MetadataVectorTableTest {
         // Build the query
         SimilaritySearchQuery.SimilaritySearchQueryBuilder queryBuilder =
                 SimilaritySearchQuery.builder()
-                .distance(SimilarityMetric.DOT_PRODUCT)
+                .distance(SimilarityMetric.COS)
                 .recordCount(recordCount)
                 .embeddings(computeOpenAIEmbeddings(query));
 
@@ -328,25 +329,7 @@ public class MetadataVectorTableTest {
                      .collect(Collectors.toList());
     }
 
-    @SuppressWarnings("unchecked")
-    private LinkedHashMap<String, List<?>> loadQuotes(String filePath) throws IOException {
-        File inputFile = new File(MetadataVectorTableTest.class.getClassLoader().getResource(filePath).getFile());
-        LinkedHashMap<String, Object> sampleQuotes = new ObjectMapper().readValue(inputFile, LinkedHashMap.class);
-        System.out.println("Quotes by Author:");
-        ((LinkedHashMap<?,?>) sampleQuotes.get("quotes")).forEach((k,v) ->
-                System.out.println("   " + k + " (" + ((ArrayList<?>)v).size() + ") "));
-        log.info("Sample Quotes");
-        ((LinkedHashMap<?, ?>) sampleQuotes.get("quotes"))
-                .entrySet().stream().limit(2)
-                .forEach(e -> {
-                    System.out.println("   " + e.getKey() + " : ");
-                    Map<String, Object> entry = (Map<String,Object>) ((ArrayList<?>)e.getValue()).get(0);
-                    System.out.println("      " + ((String) entry.get("body")).substring(0, 50) + "... (tags: " + entry.get("tags") + ")");
-                    entry = (Map<String,Object>) ((ArrayList<?>)e.getValue()).get(1);
-                    System.out.println("      " + ((String) entry.get("body")).substring(0, 50) + "... (tags: " + entry.get("tags") + ")");
-                });
-        return  ((LinkedHashMap<String, List<?>>) sampleQuotes.get("quotes"));
-    }
+
 
     @SuppressWarnings("unchecked")
     private static MetadataVectorCassandraTable.Record mapQuote(AtomicInteger quote_idx, String author, Object q) {

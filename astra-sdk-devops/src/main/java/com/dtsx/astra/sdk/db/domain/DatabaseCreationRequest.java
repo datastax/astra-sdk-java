@@ -67,7 +67,7 @@ public class DatabaseCreationRequest {
 
     /**
      * Constructor with the builder.
-     *
+     *o
      * @param builder
      *      current builder
      */

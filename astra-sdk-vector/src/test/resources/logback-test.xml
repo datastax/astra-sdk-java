@@ -6,9 +6,20 @@
         </encoder>
     </appender>
 
-    <logger name="com.dtsx.astra.sdk" level="INFO" additivity="false">
+    <!--
+   <logger name="com.datastax.astra.sdk" level="INFO" additivity="false">
+       <appender-ref ref="STDOUT" />
+   </logger>
+    -->
+
+   <logger name="com.dtsx.astra.sdk" level="INFO" additivity="false">
+       <appender-ref ref="STDOUT" />
+   </logger>
+
+    <logger name="io.stargate.sdk.json" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
+
     
     <logger name="org.springframework" level="ERROR" additivity="false">
         <appender-ref ref="STDOUT" />

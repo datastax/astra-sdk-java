@@ -25,14 +25,5 @@ public class ApiDocumentCollectionsAstraTest extends AbstractDocClientCollection
         nsClient = stargateDocumentApiClient
                 .namespace(TEST_NAMESPACE);
      }
-     
-    @Test
-    @Order(5)
-    @Override
-    @DisplayName("05-Assign a Json Schema")
-    public void e_should_set_schema() {
-        // Not working in ASTRA
-        // https://github.com/stargate/stargate/issues/1352
-    }
 
 }

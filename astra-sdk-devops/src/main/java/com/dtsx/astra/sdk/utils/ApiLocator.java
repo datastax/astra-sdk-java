@@ -7,8 +7,6 @@ package com.dtsx.astra.sdk.utils;
  */
 public class ApiLocator {
 
-
-
     /** Building Astra base URL. */
     public static final String HTTPS = "https://";
 
@@ -17,15 +15,17 @@ public class ApiLocator {
      */
     private ApiLocator() {}
 
+    // -- Devops --
+
     /**
      * Get the Devops endpoint.
      *
      * @return
      *      the devops URL.
      */
-    //public static String getApiDevopsEndpoint() {
-    //    return getApiDevopsEndpoint(AstraEnvironment.PROD);
-    //}
+    public static String getApiDevopsEndpoint() {
+        return getApiDevopsEndpoint(AstraEnvironment.PROD);
+    }
 
     /**
      * Get the Devops endpoint.
@@ -49,7 +49,7 @@ public class ApiLocator {
      * @return
      *      the url to invoke
      */
-    public static final String getApiRestEndpoint(String dbId, String dbRegion) {
+    public static String getApiRestEndpoint(String dbId, String dbRegion) {
         return getApiRestEndpoint(AstraEnvironment.PROD, dbId, dbRegion);
     }
 
@@ -65,7 +65,7 @@ public class ApiLocator {
      * @return
      *      the url to invoke
      */
-    public static final String getApiRestEndpoint(AstraEnvironment env, String dbId, String dbRegion) {
+    public static String getApiRestEndpoint(AstraEnvironment env, String dbId, String dbRegion) {
         Assert.hasLength(dbId, "dbId");
         Assert.hasLength(dbRegion, "dbRegion");
         return new StringBuilder(HTTPS)
@@ -73,6 +73,38 @@ public class ApiLocator {
                 .append(env.getAppsSuffix())
                 .append("/api/rest")
                 .toString();
+    }
+
+    /**
+     * REST and DOCUMENT endpoint for a database and region.
+     *
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      region identifier
+     * @return
+     *      the url to invoke
+     */
+    public static String getApiJsonEndpoint(String dbId, String dbRegion) {
+        return getApiJsonEndpoint(AstraEnvironment.PROD, dbId, dbRegion);
+    }
+
+    /**
+     * END Point for the Json API
+     *
+     * @param env
+     *      target environment
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      region identifier
+     * @return
+     *      the url to invoke
+     */
+    public static String getApiJsonEndpoint(AstraEnvironment env, String dbId, String dbRegion) {
+        Assert.hasLength(dbId, "dbId");
+        Assert.hasLength(dbRegion, "dbRegion");
+        return HTTPS + dbId + "-" + dbRegion + env.getAppsSuffix() + "/api/json";
     }
 
     /**
