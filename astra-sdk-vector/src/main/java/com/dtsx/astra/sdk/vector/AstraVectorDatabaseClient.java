@@ -153,7 +153,7 @@ public class AstraVectorDatabaseClient {
      * @return
      *      storeName client
      */
-    public VectorStore<ObjectMap> vectorStore(@NonNull  String storeName) {
+    public JsonVectorStore vectorStore(@NonNull  String storeName) {
         return nsClient.vectorStore(storeName);
     }
 

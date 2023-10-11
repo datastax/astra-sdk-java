@@ -10,54 +10,92 @@ import io.stargate.sdk.json.vector.VectorStore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.UUID;
 
 public class AstraVectorQuickStart {
 
-    public void quickStartTest() {
-        String databaseName = "vector_client_test";
-        String astraToken = System.getenv("ASTRA_DB_APPLICATION_TOKEN");
+    @Test
+    public void theCountLoop() {
+        String databaseName    = "vector_client_test";
+        String vectorStoreName = "collection_count";
+        String astraToken      = System.getenv("ASTRA_DB_APPLICATION_TOKEN");
 
         AstraVectorClient vectorClient = new AstraVectorClient(astraToken);
+        AstraVectorDatabaseClient vectorDb = vectorClient.database(databaseName);
+        //vectorDb.createVectorStore(vectorStoreName, 14);
+        JsonVectorStore vectorStore = vectorDb.vectorStore(vectorStoreName);
+
+        for(int i=vectorStore.count();i<1000;i++) {
+            vectorStore.insert(new JsonDocument()
+                    .vector(new float[]{(float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(),(float) Math.random(), (float) Math.random(),(float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random()})
+                    .put("product_name", "HealthyFresh - Beef raw dog food")
+                    .put("product_price", 12.99));
+
+            if (i%20 ==0) {
+                System.out.println("Inserted " + i + " documents and count " + vectorStore.count());
+            }
+        }
+
+
+    }
+
+
+    @Test
+    public void quickStartTest() {
+        String databaseName    = "vector_client_test";
+        String vectorStoreName = "demo_store";
+        String astraToken      = System.getenv("ASTRA_DB_APPLICATION_TOKEN");
+
+        // 1a. Initialization with a client
+        AstraVectorClient vectorClient = new AstraVectorClient(astraToken);
+
+        // 1b. Create DB (Skip if you already have a database running)
         if (!vectorClient.isDatabaseExists(databaseName)) {
             vectorClient.createDatabase(databaseName);
         }
 
-        // Without ODM Accessing the Vector DB with JSON-ISH
+        // 2. Create a  store (delete if exist)
         AstraVectorDatabaseClient vectorDb = vectorClient.database(databaseName);
-        JsonVectorStore jsonVectorStore =
-                vectorDb.createVectorStore("demo_product", 14);
+        vectorDb.deleteStore(vectorStoreName);
+        vectorDb.createVectorStore(vectorStoreName, 14);
 
-        // ======== INSERTIONS =========
-
-        jsonVectorStore.insert(new JsonDocument("doc1")
+        // 3. Insert data in the store
+        JsonVectorStore vectorStore = vectorDb.vectorStore(vectorStoreName);
+           // 3a. Insert One (attributes as key/value)
+           vectorStore.insert(new JsonDocument()
+                .id("doc1") // generated if not set
+                .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
                 .put("product_name", "HealthyFresh - Beef raw dog food")
-                .put("product_price", 12.99)
-                .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
-
-        jsonVectorStore.insert(new JsonDocument("doc2")
+                .put("product_price", 12.99));
+           // 3b. Insert One (attributes as JSON)
+           vectorStore.insert(new JsonDocument()
+                 .id("doc2")
+                 .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                 .data("{"
+                   +"   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
+                   + "  \"product_price\": 9.99"
+                   + "}")
+                 );
+           // 3c. Insert One (attributes as a MAP)
+           vectorStore.insert(new JsonDocument()
+                .id("doc3")
+                .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
                 .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food"))
-                .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
-
-        jsonVectorStore.insert(new JsonDocument("doc3")
-                .data("{"
-                        +"   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
-                        + "   \"product_price\": 9.99, "
-                        + "}")
-                .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
-
-        //jsonVectorStore.insert("{"
-        //           + "   \"_id\":\"doc4\","
-        //           + "   \"$vector\":[1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f],"
-        //           + "   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
-        //           + "   \"product_price\": 9.99, "
-        //           + "}");
+           );
+           // 3d. Insert as a single Big JSON
+           vectorStore.insert("{"
+                   + "   \"_id\":\"doc4\","
+                   + "   \"$vector\":[1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"
+                   + "   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
+                   + "   \"product_price\": 9.99"
+                   + "}");
 
         // With ODM
-        VectorStore<Product> productVectorStore =
-                vectorDb.createVectorStore("demo_product", 14, Product.class);
+        VectorStore<Product> productVectorStore = vectorDb.vectorStore(vectorStoreName, Product.class);
 
         // 3 fields: id, payload, vector
         productVectorStore.insert("doc5",
@@ -70,6 +108,7 @@ public class AstraVectorQuickStart {
                 new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f});
         productVectorStore.insert(doc6);
 
+        Assertions.assertEquals(6, productVectorStore.count());
     }
 
 
