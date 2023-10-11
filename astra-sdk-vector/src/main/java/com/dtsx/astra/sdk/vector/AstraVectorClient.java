@@ -207,6 +207,12 @@ public class AstraVectorClient {
         return findAllDatabases().filter(db->name.equals(db.getInfo().getName()));
     }
 
+    public boolean isDatabaseExists(String name) {
+        return findByName(name).findFirst().isPresent();
+    }
+
+
+
     /**
      * Find a database from its id.
      *

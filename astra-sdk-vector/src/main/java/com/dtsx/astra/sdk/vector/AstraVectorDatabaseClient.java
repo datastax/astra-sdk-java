@@ -11,6 +11,7 @@ import io.stargate.sdk.json.JsonApiClient;
 import io.stargate.sdk.json.JsonCollectionClient;
 import io.stargate.sdk.json.JsonNamespaceClient;
 import io.stargate.sdk.json.domain.CollectionDefinition;
+import io.stargate.sdk.json.vector.JsonVectorStore;
 import io.stargate.sdk.json.vector.SimilarityMetric;
 import io.stargate.sdk.json.vector.VectorStore;
 import lombok.NonNull;
@@ -104,7 +105,7 @@ public class AstraVectorDatabaseClient {
      * param dimension
      *      dimension
      */
-    public VectorStore<ObjectMap> createVectorStore(String name, int dimension) {
+    public JsonVectorStore createVectorStore(String name, int dimension) {
         nsClient.createCollection(name, dimension);
         return nsClient.vectorStore(name);
     }
