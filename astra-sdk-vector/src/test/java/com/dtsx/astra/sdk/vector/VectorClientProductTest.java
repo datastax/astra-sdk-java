@@ -112,31 +112,32 @@ class VectorClientProductTest {
                 .database(DBNAME_VECTOR_CLIENT)
                 .vectorStore(VECTOR_STORE_NAME, Product.class);
 
-        for(Result<Product> result : vectorStore
-                .similaritySearch(new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},2)
-                .getResults()) {
-            System.out.println(result.getId() + ") similarity=" + result.getSimilarity() + ", vector=" + Arrays.toString(result.getVector()));
+        float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
+        for(Result<Product> result : vectorStore.similaritySearch(embeddings,2)) {
+            System.out.println(result.getId()
+                    + ") similarity=" + result.getSimilarity()
+                    + ", vector=" + Arrays.toString(result.getVector()));
         }
     }
-
 
     @Test
     @Order(3)
     @DisplayName("03. Search with Meta Data")
     public void shouldSimilaritySearchWithMetaData() {
-
         vectorStore = new AstraVectorClient()
                 .database(DBNAME_VECTOR_CLIENT)
                 .vectorStore(VECTOR_STORE_NAME, Product.class);
 
+        float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
+        Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
+
         for(Result<Product> result : vectorStore
-                .similaritySearch(
-                        new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},
-                        new Filter().where("product_price").isEqualsTo(9.99),
-                        2)
-                .getResults()) {
-            System.out.println(result.getId() + ") similarity=" + result.getSimilarity() + ", vector=" + Arrays.toString(result.getVector()));
+                .similaritySearch(embeddings, metadataFilter, 2)) {
+            System.out.println(result.getId()
+                    + ") similarity=" + result.getSimilarity()
+                    + ", vector=" + Arrays.toString(result.getVector()));
         }
+
     }
 
 }

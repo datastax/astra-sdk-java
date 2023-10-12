@@ -2,13 +2,14 @@ package com.dtsx.astra.sdk.cassio;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Abstract class for table management at Cassandra level.
+ *
+ * @param <RECORD>
+ *     object in use with Cassandra
  */
 public abstract class AbstractCassandraTable<RECORD> {
 
@@ -121,19 +122,14 @@ public abstract class AbstractCassandraTable<RECORD> {
      * Delete the table.
      */
     public void delete() {
-        cqlSession.execute(SchemaBuilder
-                .dropTable(keyspaceName, tableName)
-                .ifExists()
-                .build());
+        cqlSession.execute("DROP TABLE IF EXISTS " + keyspaceName + "." + tableName);
     }
 
     /**
      * Empty a table
      */
     public void clear() {
-        cqlSession.execute(QueryBuilder
-                .truncate(keyspaceName, tableName)
-                .build());
+        cqlSession.execute("TRUNCATE " + keyspaceName + "." + tableName);
     }
 
 }

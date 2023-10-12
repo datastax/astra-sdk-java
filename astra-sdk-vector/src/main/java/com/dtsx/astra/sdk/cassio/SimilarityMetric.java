@@ -8,10 +8,13 @@ import lombok.Getter;
 @Getter
 public enum SimilarityMetric {
 
+    /** dot product. */
     DOT_PRODUCT("DOT_PRODUCT","similarity_dot_product"),
 
+    /** cosine. */
     COS("COSINE","similarity_cosine"),
 
+    /** euclidean. */
     DOT("EUCLIDEAN","similarity_euclidean");
 
     /**

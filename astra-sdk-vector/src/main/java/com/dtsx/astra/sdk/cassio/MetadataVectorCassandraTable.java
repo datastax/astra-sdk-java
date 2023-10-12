@@ -5,10 +5,6 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
-import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
-import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -83,21 +79,17 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
         // Create Vector Index
         Map<String, Object> optionMap = new HashMap<>();
         optionMap.put("similarity_function", similarityMetric.getOption());
-        cqlSession.execute(SchemaBuilder.createIndex("idx_vector_" + tableName)
-                .ifNotExists()
-                .custom(SAI_INDEX_CLASSNAME)
-                .onTable(tableName)
-                .andColumn(VECTOR)
-                .withSASIOptions(optionMap)
-                .build());
+        cqlSession.execute(
+                "CREATE CUSTOM INDEX IF NOT EXISTS idx_vector_" + tableName
+                        + " ON " + tableName + " (" + VECTOR + ") "
+                        + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex' "
+                        + "WITH OPTIONS = " + optionMap.toString());
         log.info("+ Index '{}' has been created (if needed).", "idx_vector_" + tableName);
         // Create Metadata Index
-        cqlSession.execute(SchemaBuilder.createIndex("eidx_metadata_s_" + tableName)
-                .ifNotExists()
-                .custom(SAI_INDEX_CLASSNAME)
-                .onTable(tableName)
-                .andColumnEntries(METADATA_S)
-                .build());
+        cqlSession.execute(
+                "CREATE CUSTOM INDEX IF NOT EXISTS eidx_metadata_s_" + tableName
+                        + " ON " + tableName + " ENTRIES(" + METADATA_S + ") "
+                        + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex' ");
         log.info("+ Index '{}' has been created (if needed).", "eidx_metadata_s_" + tableName);
     }
 
@@ -248,20 +240,9 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
         public SimpleStatement insertStatement(String keyspaceName, String tableName) {
             if (rowId == null) throw new IllegalStateException("Row Id cannot be null");
             if (vector == null) throw new IllegalStateException("Vector cannot be null");
-            RegularInsert insert = QueryBuilder
-                    .insertInto(keyspaceName, tableName)
-                    .value(ROW_ID, QueryBuilder.literal(rowId))
-                    .value(VECTOR, QueryBuilder.literal(CqlVector.newInstance(vector)));
-            if (attributes != null) {
-                insert = insert.value(ATTRIBUTES_BLOB, QueryBuilder.literal(attributes));
-            }
-            if (body != null) {
-                insert = insert.value(BODY_BLOB, QueryBuilder.literal(body));
-            }
-            if (metadata != null && !metadata.isEmpty()) {
-                insert = insert.value(METADATA_S, QueryBuilder.literal(metadata));
-            }
-            return insert.build();
+            return SimpleStatement.newInstance("INSERT INTO " + keyspaceName + "." + tableName + " ("
+                    + ROW_ID + "," + VECTOR + "," + ATTRIBUTES_BLOB + "," + BODY_BLOB + "," + METADATA_S + ") VALUES (?,?,?,?,?)",
+                    rowId, CqlVector.newInstance(vector), attributes, body, metadata);
         }
     }
 }

@@ -151,6 +151,8 @@ public class AstraVectorClient {
      *
      * @param name
      *      database name
+     * @param cloud
+     *      cloud provider
      * @param cloudRegion
      *      cloud region
      * @return
@@ -207,11 +209,17 @@ public class AstraVectorClient {
         return findAllDatabases().filter(db->name.equals(db.getInfo().getName()));
     }
 
+    /**
+     * Check if a database exists.
+     *
+     * @param name
+     *          a database name
+     * @return
+     *          list of db matching the criteria
+     */
     public boolean isDatabaseExists(String name) {
         return findByName(name).findFirst().isPresent();
     }
-
-
 
     /**
      * Find a database from its id.
@@ -285,6 +293,13 @@ public class AstraVectorClient {
         }
     }
 
+    /**
+     * Retrieve the status of a database.
+     * @param dbc
+     *      database client
+     * @return
+     *      database status
+     */
     private DatabaseStatusType getStatus(DatabaseClient dbc) {
         return dbc.find().orElseThrow(() -> new DatabaseNotFoundException(dbc.getDatabaseId())).getStatus();
     }

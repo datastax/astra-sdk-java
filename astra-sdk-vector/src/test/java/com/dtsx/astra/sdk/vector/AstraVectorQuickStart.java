@@ -1,8 +1,6 @@
 package com.dtsx.astra.sdk.vector;
 
-import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.core.domain.ObjectMap;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.odm.Document;
 import io.stargate.sdk.json.vector.JsonVectorStore;
@@ -14,34 +12,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.UUID;
 
 public class AstraVectorQuickStart {
 
-    @Test
-    public void theCountLoop() {
-        String databaseName    = "vector_client_test";
-        String vectorStoreName = "collection_count";
-        String astraToken      = System.getenv("ASTRA_DB_APPLICATION_TOKEN");
 
-        AstraVectorClient vectorClient = new AstraVectorClient(astraToken);
-        AstraVectorDatabaseClient vectorDb = vectorClient.database(databaseName);
-        //vectorDb.createVectorStore(vectorStoreName, 14);
-        JsonVectorStore vectorStore = vectorDb.vectorStore(vectorStoreName);
-
-        for(int i=vectorStore.count();i<1000;i++) {
-            vectorStore.insert(new JsonDocument()
-                    .vector(new float[]{(float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(),(float) Math.random(), (float) Math.random(),(float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random()})
-                    .put("product_name", "HealthyFresh - Beef raw dog food")
-                    .put("product_price", 12.99));
-
-            if (i%20 ==0) {
-                System.out.println("Inserted " + i + " documents and count " + vectorStore.count());
-            }
-        }
-
-
-    }
 
 
     @Test

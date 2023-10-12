@@ -6,10 +6,6 @@ import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
-import com.datastax.oss.driver.api.core.type.DataTypes;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -49,36 +45,34 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
     public ClusteredCassandraTable(@NonNull CqlSession session, @NonNull String  keyspaceName, @NonNull  String tableName) {
         super(session, keyspaceName, tableName);
         createSchema();
-        findPartitionStatement = session.prepare(QueryBuilder.selectFrom(tableName).all()
-                .whereColumn(PARTITION_ID).isEqualTo(QueryBuilder.bindMarker())
-                .build());
-        deletePartitionStatement = session.prepare(QueryBuilder.deleteFrom(tableName)
-                .whereColumn(PARTITION_ID).isEqualTo(QueryBuilder.bindMarker())
-                .build());
-        findRowStatement = session.prepare(QueryBuilder.selectFrom(tableName).all()
-                .whereColumn(PARTITION_ID).isEqualTo(QueryBuilder.bindMarker())
-                .whereColumn(ROW_ID).isEqualTo(QueryBuilder.bindMarker())
-                .build());
-        deleteRowStatement = session.prepare(QueryBuilder.deleteFrom(tableName)
-                .whereColumn(PARTITION_ID).isEqualTo(QueryBuilder.bindMarker())
-                .whereColumn(ROW_ID).isEqualTo(QueryBuilder.bindMarker())
-                .build());
-        insertRowStatement = session.prepare(QueryBuilder.insertInto(tableName)
-                .value(PARTITION_ID, QueryBuilder.bindMarker())
-                .value(ROW_ID, QueryBuilder.bindMarker())
-                .value(BODY_BLOB, QueryBuilder.bindMarker())
-                .build());
+        findPartitionStatement = session.prepare(
+                "select * from " + keyspaceName + "." + tableName
+                        + " where " + PARTITION_ID + " = ? ");
+        deletePartitionStatement = session.prepare(
+                "delete from " + keyspaceName + "." + tableName
+                        + " where " + PARTITION_ID + " = ? ");
+        findRowStatement = session.prepare(
+                "select * from " + keyspaceName + "." + tableName
+                        + " where " + PARTITION_ID + " = ? "
+                        + " and " + ROW_ID + " = ? ");
+        deleteRowStatement = session.prepare(
+                "delete from " + keyspaceName + "." + tableName
+                        + " where " + PARTITION_ID + " = ? "
+                        + " and " + ROW_ID + " = ? ");
+        insertRowStatement = session.prepare(
+                "insert into " + keyspaceName + "." + tableName
+                        + " (" + PARTITION_ID + ", " + ROW_ID + ", " + BODY_BLOB + ") "
+                        + " values (?, ?, ?)");
     }
 
     @Override
     public void createSchema() {
-        cqlSession.execute(SchemaBuilder.createTable(tableName)
-                .ifNotExists()
-                .withPartitionKey(PARTITION_ID, DataTypes.TEXT)
-                .withClusteringColumn(ROW_ID, DataTypes.TIMEUUID)
-                .withColumn(BODY_BLOB, DataTypes.TEXT)
-                .withClusteringOrder(ROW_ID, ClusteringOrder.DESC)
-                .build());
+        cqlSession.execute("CREATE TABLE IF NOT EXISTS " + keyspaceName + "." + tableName + " ("
+                        + PARTITION_ID + " text, "
+                        + ROW_ID + " timeuuid, "
+                        + BODY_BLOB + " text, "
+                        + "PRIMARY KEY ((" + PARTITION_ID + "), " + ROW_ID + ")) "
+                        + "WITH CLUSTERING ORDER BY (" + ROW_ID + " DESC");
         log.info("+ Table '{}' has been created (if needed).", tableName);
     }
 
@@ -181,17 +175,13 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
      *      body
      */
     public void insert(@NonNull String partitionId, @NonNull UUID rowId, @NonNull String bodyBlob) {
-        cqlSession.execute(QueryBuilder.insertInto(keyspaceName, tableName)
-                .value(PARTITION_ID, QueryBuilder.literal(partitionId))
-                .value(ROW_ID, QueryBuilder.literal(rowId))
-                .value(BODY_BLOB, QueryBuilder.literal(bodyBlob))
-                .build());
+        cqlSession.execute(insertRowStatement.bind(partitionId,rowId, bodyBlob));
     }
 
     /**
      * Represents a row of the Table
      */
-    @Data @AllArgsConstructor @NoArgsConstructor
+    @Data @AllArgsConstructor
     public static class Record {
 
         /** Partition id. */
@@ -202,6 +192,12 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
 
         /** Text body. */
         private String body;
+
+        /**
+         * Default constructor
+         */
+        public Record() {
+        }
     }
 
 

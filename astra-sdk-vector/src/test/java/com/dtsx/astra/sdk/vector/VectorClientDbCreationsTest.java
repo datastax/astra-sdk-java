@@ -6,14 +6,6 @@ import com.dtsx.astra.sdk.db.domain.DatabaseInfo;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.dtsx.astra.sdk.vector.domain.LLMEmbedding;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.vector.VectorStore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -23,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**

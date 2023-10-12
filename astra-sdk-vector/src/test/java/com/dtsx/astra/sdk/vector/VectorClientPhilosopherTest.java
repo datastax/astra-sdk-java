@@ -101,7 +101,7 @@ public class VectorClientPhilosopherTest {
                 .vectorStore(VECTOR_STORE_NAME, Quote.class);
 
         float[] embeddings = vectorize("We struggle all our life for nothing");
-        vectorStore.similaritySearch(embeddings, 3).getResults()
+        vectorStore.similaritySearch(embeddings, 3)
                 .stream()
                 .map(Document::getData)
                 .map(Quote::getQuote)

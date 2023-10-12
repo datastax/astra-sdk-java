@@ -34,6 +34,16 @@ public class AstraVectorDatabaseClient {
      */
     private final JsonNamespaceClient nsClient;
 
+    /**
+     * Full constructor.
+     *
+     * @param token
+     *      token
+     * @param databaseId
+     *      datbase identifier
+     * @param env
+     *      environment
+     */
     public AstraVectorDatabaseClient(@NonNull String token, @NonNull UUID databaseId, @NonNull AstraEnvironment env) {
         this.env   = env;
 
@@ -88,7 +98,7 @@ public class AstraVectorDatabaseClient {
      *
      * @param name
      *      store name
-     * param dimension
+     * @param dimension
      *      vector dimension
      * @param metric
      *      metric for the similarity
@@ -102,8 +112,10 @@ public class AstraVectorDatabaseClient {
      *
      * @param name
      *      store name
-     * param dimension
+     * @param dimension
      *      dimension
+     * @return
+     *      json vector store
      */
     public JsonVectorStore createVectorStore(String name, int dimension) {
         nsClient.createCollection(name, dimension);
@@ -115,8 +127,14 @@ public class AstraVectorDatabaseClient {
      *
      * @param name
      *      store name
-     * param dimension
+     * @param dimension
      *      dimension
+     * @param bean
+     *      class of pojo
+     * @return
+     *      vector store instance
+     * @param <T>
+     *       object type
      */
     public <T> VectorStore<T> createVectorStore(String name, int dimension, Class<T> bean) {
         nsClient.createCollection(name, dimension);
@@ -162,8 +180,12 @@ public class AstraVectorDatabaseClient {
      *
      * @param storeName
      *      store identifier
+     * @param clazz
+     *      type of object used
      * @return
      *      storeName client
+     * @param <T>
+     *      type of the bean in use
      */
     public <T> VectorStore<T> vectorStore(@NonNull  String storeName, Class<T> clazz) {
         return nsClient.vectorStore(storeName, clazz);
