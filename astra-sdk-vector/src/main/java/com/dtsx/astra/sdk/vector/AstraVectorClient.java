@@ -52,7 +52,7 @@ public class AstraVectorClient {
     /**
      * Technical Keyspace name.
      */
-    public static final String SYSTEM_VECTOR_KEYSPACE = "vector";
+    public static final String DEFAULT_KEYSPACE = "default_keyspace";
 
     /**
      * First Level of the API will
@@ -147,6 +147,22 @@ public class AstraVectorClient {
     }
 
     /**
+     * Create Db in free Tier.
+     *
+     * @param name
+     *    database name
+     * @return
+     *      if the db has been deleted
+     */
+    public boolean deleteDatabase(@NonNull String name) {
+        Optional<Database> opDb = findByName(name).findFirst();
+        opDb.ifPresent(db -> {
+            devopsDbClient.database(db.getId()).delete();
+        });
+        return opDb.isPresent();
+    }
+
+    /**
      * Create a database with the full definition.
      *
      * @param name
@@ -188,7 +204,7 @@ public class AstraVectorClient {
                 .name(name)
                 .cloudProvider(cloud)
                 .cloudRegion(cloudRegion)
-                .keyspace(SYSTEM_VECTOR_KEYSPACE)
+                .keyspace(DEFAULT_KEYSPACE)
                 .withVector().build()));
         log.info("Database {} is starting (id={}): it will take about a minute please wait...", name, newDbId);
         waitForDatabase(devopsDbClient.database(newDbId.toString()));
@@ -242,7 +258,7 @@ public class AstraVectorClient {
      * @return
      *      database client
      */
-    public AstraVectorDatabaseClient database(@NonNull String databaseName) {
+    public VectorDatabase database(@NonNull String databaseName) {
         List<Database> dbs = findByName(databaseName).collect(Collectors.toList());
         if (dbs.isEmpty()) {
             throw new DatabaseNotFoundException(databaseName);
@@ -265,8 +281,8 @@ public class AstraVectorClient {
      * @return
      *      database client
      */
-    public AstraVectorDatabaseClient database(UUID databaseId) {
-        return new AstraVectorDatabaseClient(token, databaseId, env);
+    public VectorDatabase database(UUID databaseId) {
+        return new VectorDatabase(token, databaseId, env);
     }
 
     /**

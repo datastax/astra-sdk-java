@@ -1,8 +1,12 @@
 package com.dtsx.astra.sdk.vector;
 
+import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.db.domain.DatabaseInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.stargate.sdk.core.domain.ObjectMap;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.odm.Document;
+import io.stargate.sdk.json.domain.odm.Result;
 import io.stargate.sdk.json.vector.JsonVectorStore;
 import io.stargate.sdk.json.vector.VectorStore;
 import lombok.AllArgsConstructor;
@@ -11,12 +15,10 @@ import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 public class AstraVectorQuickStart {
-
-
-
 
     @Test
     public void quickStartTest() {
@@ -27,13 +29,18 @@ public class AstraVectorQuickStart {
         // 1a. Initialization with a client
         AstraVectorClient vectorClient = new AstraVectorClient(astraToken);
 
+        vectorClient
+                .findAllDatabases()
+                .map(Database::getInfo)
+                .map(DatabaseInfo::getName)
+                .forEach(System.out::println);
         // 1b. Create DB (Skip if you already have a database running)
         if (!vectorClient.isDatabaseExists(databaseName)) {
             vectorClient.createDatabase(databaseName);
         }
 
         // 2. Create a  store (delete if exist)
-        AstraVectorDatabaseClient vectorDb = vectorClient.database(databaseName);
+        VectorDatabase vectorDb = vectorClient.database(databaseName);
         vectorDb.deleteStore(vectorStoreName);
         vectorDb.createVectorStore(vectorStoreName, 14);
 
@@ -83,6 +90,10 @@ public class AstraVectorQuickStart {
         productVectorStore.insert(doc6);
 
         Assertions.assertEquals(6, productVectorStore.count());
+
+        List<JsonDocument> results = vectorStore
+                .similaritySearchJson(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}, 2);
+
     }
 
 

@@ -80,6 +80,8 @@ public class VectorClientDbCreationsTest extends AbstractAstraVectorTest {
                 AstraVectorClient.FREE_TIER_CLOUD,
                 AstraVectorClient.FREE_TIER_CLOUD_REGION);
         log.info("{} is created and active", yaDatabaseId);
+
+        vectorClient.devopsDbClient.database("").delete();
     }
 
     @Test
@@ -91,14 +93,14 @@ public class VectorClientDbCreationsTest extends AbstractAstraVectorTest {
         AstraVectorClient vectorClient = new AstraVectorClient();
 
         // Assign vectorDb client (but could user fluent everywhere)
-        AstraVectorDatabaseClient vectorDb = vectorClient.database(DBNAME_VECTOR_CLIENT);
+        VectorDatabase vectorDb = vectorClient.database(DBNAME_VECTOR_CLIENT);
 
         // Create a Store with $vector
         vectorDb.createVectorStore(DEMO_COLLECTION_VECTOR, 14);
         log.info("{} is created", DEMO_COLLECTION_VECTOR);
 
         // [NOT FOR GA] -Create a Store with $vectorize
-        vectorDb.createVectorStore(STORE_WITH_VECTORIZE_TMP, LLMEmbedding.OPENAI_TEXT_EMBEDDING_ADA_002);
+        vectorDb.createVectorStore(STORE_WITH_VECTORIZE_TMP, LLMEmbedding.ADA_002);
         log.info("{} is created", STORE_WITH_VECTORIZE_TMP);
 
         log.info("List of Stores");
@@ -111,7 +113,7 @@ public class VectorClientDbCreationsTest extends AbstractAstraVectorTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldDeleteStore() {
         // Assign vectorDb client (but could user fluent everywhere)
-        AstraVectorDatabaseClient vectorDb = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
+        VectorDatabase vectorDb = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
         // Given
         Assertions.assertTrue(vectorDb.isStoreExist(STORE_WITH_VECTORIZE_TMP));
         // When Delete a store

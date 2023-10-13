@@ -6,7 +6,6 @@ import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.vector.domain.LLMEmbedding;
-import io.stargate.sdk.core.domain.ObjectMap;
 import io.stargate.sdk.json.JsonApiClient;
 import io.stargate.sdk.json.JsonCollectionClient;
 import io.stargate.sdk.json.JsonNamespaceClient;
@@ -22,13 +21,14 @@ import java.util.stream.Stream;
 /**
  * Client to work with a database.
  */
-public class AstraVectorDatabaseClient {
+public class VectorDatabase {
 
     /**
      * Hold a reference to target Astra Environment.
      */
     protected final AstraEnvironment env;
 
+    private final JsonApiClient jsonClient;
     /**
      * Namespace client
      */
@@ -44,20 +44,21 @@ public class AstraVectorDatabaseClient {
      * @param env
      *      environment
      */
-    public AstraVectorDatabaseClient(@NonNull String token, @NonNull UUID databaseId, @NonNull AstraEnvironment env) {
+    public VectorDatabase(@NonNull String token, @NonNull UUID databaseId, @NonNull AstraEnvironment env) {
         this.env   = env;
 
         Database db = new AstraDbClient(token, env)
                 .findById(databaseId.toString())
                 .orElseThrow(() -> new DatabaseNotFoundException(databaseId.toString()));
 
-        JsonApiClient jsonClient = AstraClient.builder()
+        this.jsonClient = AstraClient.builder()
                 .withDatabaseRegion(db.getInfo().getRegion())
                 .withDatabaseId(databaseId.toString())
                 .disableCrossRegionFailOver()
                 .build()
                 .apiStargateJson();
 
+        // will inherit 'default_keyspace' from the database
         this.nsClient = jsonClient.namespace(db.getInfo().getKeyspace());
     }
 
@@ -154,7 +155,7 @@ public class AstraVectorDatabaseClient {
                 .name(name)
                 .vectorDimension(aiModel.getDimension())
                 .similarityMetric(SimilarityMetric.cosine)
-                .llmProvider(aiModel.getLlmprovider().name())
+                .llmProvider(aiModel.getLlmprovider())
                 .llmModel(aiModel.getName())
                 .build());
     }
@@ -189,6 +190,16 @@ public class AstraVectorDatabaseClient {
      */
     public <T> VectorStore<T> vectorStore(@NonNull  String storeName, Class<T> clazz) {
         return nsClient.vectorStore(storeName, clazz);
+    }
+
+    /**
+     * Access json api client
+     *
+     * @return
+     *      json client
+     */
+    public JsonApiClient getJsonApiClient() {
+        return jsonClient;
     }
 
     /**

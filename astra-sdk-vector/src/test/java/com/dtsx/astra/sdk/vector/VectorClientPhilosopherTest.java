@@ -3,9 +3,7 @@ package com.dtsx.astra.sdk.vector;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
-import io.stargate.sdk.json.JsonApiClient;
 import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.vector.SimilarityMetric;
 import io.stargate.sdk.json.vector.VectorStore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -75,7 +73,7 @@ public class VectorClientPhilosopherTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldIngestCsv() {
         // Init the Store
-        AstraVectorDatabaseClient dbClient = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
+        VectorDatabase dbClient = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
         dbClient.deleteStore(VECTOR_STORE_NAME);
         vectorStore = dbClient.createVectorStore(VECTOR_STORE_NAME, 1536, Quote.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);

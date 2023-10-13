@@ -7,24 +7,18 @@ import lombok.Getter;
 public enum LLMEmbedding {
 
     /** openai. */
-    OPENAI_TEXT_DAVINCI_003(LLmProvider.openAI,"text-davinci-003", 1536),
-
-    /** openai. */
-    OPENAI_TEXT_EMBEDDING_ADA_002(LLmProvider.openAI,"text-embedding-ada-002", 1536),
+    ADA_002("openai","text-embedding-ada-002", 1536),
 
     /** google. */
-    PALM2(LLmProvider.google,"text-bison", 768),
+    GECKO("google", "textembedding-gecko", 768),
 
-    /** google. */
-    CODEY(LLmProvider.google,"chat-bison", 768),
-
-    /** google. */
-    VERTEX_AI(LLmProvider.google, "textembedding-gecko", 768);
+    /** hf. */
+    MINILM_L6_V2("hugging-face", "all-MiniLM-L6-v2", 384);
 
     /**
      * llm provider
      */
-    final LLmProvider llmprovider;
+    final String llmprovider;
 
     /**
      * model name
@@ -45,7 +39,7 @@ public enum LLMEmbedding {
      * @param dimension
      *      model dimension
      */
-    LLMEmbedding(LLmProvider provider, String name, int dimension) {
+    LLMEmbedding(String provider, String name, int dimension) {
         this.llmprovider = provider;
         this.name = name;
         this.dimension = dimension;

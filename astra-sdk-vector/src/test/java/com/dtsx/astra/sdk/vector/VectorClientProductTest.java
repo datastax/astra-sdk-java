@@ -2,7 +2,6 @@ package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.json.domain.Filter;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.odm.Document;
@@ -12,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
@@ -65,7 +63,7 @@ class VectorClientProductTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldInsertStaticDocument() {
         // Recreating the store
-        AstraVectorDatabaseClient dbClient = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
+        VectorDatabase dbClient = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
         dbClient.deleteStore(VECTOR_STORE_NAME);
         vectorStore = dbClient.createVectorStore(VECTOR_STORE_NAME, 14, Product.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
