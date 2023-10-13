@@ -4,7 +4,6 @@ import com.dtsx.astra.sdk.vector.AstraVectorClient;
 import com.dtsx.astra.sdk.vector.VectorDatabase;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.domain.odm.Result;
 import io.stargate.sdk.json.vector.VectorStore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
 
-public class DemoVectorNativeTest {
+public class VectorNativeTest {
 
     @Data
     @NoArgsConstructor
@@ -33,13 +32,13 @@ public class DemoVectorNativeTest {
         AstraVectorClient vectorClient = new AstraVectorClient();
 
         // Create Database
-        UUID db = vectorClient.createDatabase("vector_client_test");
+        UUID uuid = vectorClient.createDatabase("vector_client_test");
 
         // Select Database
-        VectorDatabase vectorDb = vectorClient.database("vector_client_test");
+        VectorDatabase vectorDb = vectorClient.vectorDatabase("vector_client_test");
 
         // Create Vector Store
-        vectorDb.deleteStore("demo_vector_store");
+        vectorDb.deleteVectorStore("demo_vector_store");
         vectorDb.createVectorStore("demo_vector_store", 14);
 
         // Select Vector Store

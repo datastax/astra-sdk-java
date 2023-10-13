@@ -93,7 +93,7 @@ public class VectorClientDbCreationsTest extends AbstractAstraVectorTest {
         AstraVectorClient vectorClient = new AstraVectorClient();
 
         // Assign vectorDb client (but could user fluent everywhere)
-        VectorDatabase vectorDb = vectorClient.database(DBNAME_VECTOR_CLIENT);
+        VectorDatabase vectorDb = vectorClient.vectorDatabase(DBNAME_VECTOR_CLIENT);
 
         // Create a Store with $vector
         vectorDb.createVectorStore(DEMO_COLLECTION_VECTOR, 14);
@@ -104,7 +104,7 @@ public class VectorClientDbCreationsTest extends AbstractAstraVectorTest {
         log.info("{} is created", STORE_WITH_VECTORIZE_TMP);
 
         log.info("List of Stores");
-        vectorDb.findAllStores().forEach(log::info);
+        vectorDb.findAllVectorStores().forEach(log::info);
     }
 
     @Test
@@ -113,14 +113,14 @@ public class VectorClientDbCreationsTest extends AbstractAstraVectorTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldDeleteStore() {
         // Assign vectorDb client (but could user fluent everywhere)
-        VectorDatabase vectorDb = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
+        VectorDatabase vectorDb = new AstraVectorClient().vectorDatabase(DBNAME_VECTOR_CLIENT);
         // Given
-        Assertions.assertTrue(vectorDb.isStoreExist(STORE_WITH_VECTORIZE_TMP));
+        Assertions.assertTrue(vectorDb.isVectorStoreExist(STORE_WITH_VECTORIZE_TMP));
         // When Delete a store
-        vectorDb.deleteStore(STORE_WITH_VECTORIZE_TMP);
+        vectorDb.deleteVectorStore(STORE_WITH_VECTORIZE_TMP);
         log.info("{} is deleted", STORE_WITH_VECTORIZE_TMP);
         // Then
-        Assertions.assertFalse(vectorDb.isStoreExist(STORE_WITH_VECTORIZE_TMP));
+        Assertions.assertFalse(vectorDb.isVectorStoreExist(STORE_WITH_VECTORIZE_TMP));
     }
 
 }

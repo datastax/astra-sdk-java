@@ -63,11 +63,11 @@ class VectorClientProductTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldInsertStaticDocument() {
         // Recreating the store
-        VectorDatabase dbClient = new AstraVectorClient().database(DBNAME_VECTOR_CLIENT);
-        dbClient.deleteStore(VECTOR_STORE_NAME);
+        VectorDatabase dbClient = new AstraVectorClient().vectorDatabase(DBNAME_VECTOR_CLIENT);
+        dbClient.deleteVectorStore(VECTOR_STORE_NAME);
         vectorStore = dbClient.createVectorStore(VECTOR_STORE_NAME, 14, Product.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
-        assertTrue(dbClient.isStoreExist(VECTOR_STORE_NAME));
+        assertTrue(dbClient.isVectorStoreExist(VECTOR_STORE_NAME));
 
         // Easy insert one
         vectorStore.insert("pf7044",
@@ -83,7 +83,7 @@ class VectorClientProductTest {
                         new float[]{0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f, 0f})
         ));
         // Insert Many with Json
-        vectorStore.insertAllJsonDocuments(List.of(
+        vectorStore.insertAllJson(List.of(
                 new JsonDocument("pf1844")
                         .put("product_name", "HealthyFresh - Beef raw dog food")
                         .put("product_price", 12.99)
@@ -107,7 +107,7 @@ class VectorClientProductTest {
     public void shouldSimilaritySearch() {
 
         vectorStore = new AstraVectorClient()
-                .database(DBNAME_VECTOR_CLIENT)
+                .vectorDatabase(DBNAME_VECTOR_CLIENT)
                 .vectorStore(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
@@ -123,7 +123,7 @@ class VectorClientProductTest {
     @DisplayName("03. Search with Meta Data")
     public void shouldSimilaritySearchWithMetaData() {
         vectorStore = new AstraVectorClient()
-                .database(DBNAME_VECTOR_CLIENT)
+                .vectorDatabase(DBNAME_VECTOR_CLIENT)
                 .vectorStore(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};

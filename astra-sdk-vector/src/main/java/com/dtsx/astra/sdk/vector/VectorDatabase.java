@@ -68,7 +68,7 @@ public class VectorDatabase {
      * @return
      *      name of all vector store.
      */
-    public Stream<String> findAllStores() {
+    public Stream<String> findAllVectorStores() {
         return nsClient.findCollections();
     }
 
@@ -80,7 +80,7 @@ public class VectorDatabase {
      * @return
      *      of the store already exist
      */
-    public boolean isStoreExist(@NonNull  String store) {
+    public boolean isVectorStoreExist(@NonNull  String store) {
         return nsClient.existCollection(store);
     }
 
@@ -90,22 +90,8 @@ public class VectorDatabase {
      * @param name
      *      store name
      */
-    public void deleteStore(String name) {
+    public void deleteVectorStore(String name) {
         nsClient.deleteCollection(name);
-    }
-
-    /**
-     * Create the minimal store.
-     *
-     * @param name
-     *      store name
-     * @param dimension
-     *      vector dimension
-     * @param metric
-     *      metric for the similarity
-     */
-    public void createVectorStore(String name, int dimension, SimilarityMetric metric) {
-        nsClient.createCollection(name, dimension, metric);
     }
 
     /**
@@ -129,6 +115,21 @@ public class VectorDatabase {
      * @param name
      *      store name
      * @param dimension
+     *      vector dimension
+     * @param metric
+     *      metric for the similarity
+     */
+    public JsonVectorStore createVectorStore(String name, int dimension, SimilarityMetric metric) {
+        nsClient.createCollection(name, dimension, metric);
+        return nsClient.vectorStore(name);
+    }
+
+    /**
+     * Create the minimal store.
+     *
+     * @param name
+     *      store name
+     * @param dimension
      *      dimension
      * @param bean
      *      class of pojo
@@ -143,6 +144,27 @@ public class VectorDatabase {
     }
 
     /**
+     * Create the minimal store.
+     *
+     * @param name
+     *      store name
+     * @param dimension
+     *      dimension
+     * @param metric
+     *      similarity metric
+     * @param bean
+     *      class of pojo
+     * @return
+     *      vector store instance
+     * @param <T>
+     *       object type
+     */
+    public <T> VectorStore<T> createVectorStore(String name, int dimension, SimilarityMetric metric, Class<T> bean) {
+        nsClient.createCollection(name, dimension, metric);
+        return nsClient.vectorStore(name, bean);
+    }
+
+    /**
      * Create with the vectorize.
      *
      * @param name
@@ -150,7 +172,7 @@ public class VectorDatabase {
      * @param aiModel
      *      ai model to use
      */
-    public void createVectorStore(@NonNull String name, @NonNull LLMEmbedding aiModel) {
+    public JsonVectorStore createVectorStore(@NonNull String name, @NonNull LLMEmbedding aiModel) {
         nsClient.createCollection(CollectionDefinition.builder()
                 .name(name)
                 .vectorDimension(aiModel.getDimension())
@@ -158,6 +180,7 @@ public class VectorDatabase {
                 .llmProvider(aiModel.getLlmprovider())
                 .llmModel(aiModel.getName())
                 .build());
+        return nsClient.vectorStore(name);
     }
 
     // --------------------

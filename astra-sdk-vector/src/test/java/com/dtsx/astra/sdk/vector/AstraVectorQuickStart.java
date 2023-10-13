@@ -3,10 +3,11 @@ package com.dtsx.astra.sdk.vector;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.core.domain.ObjectMap;
+import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.json.domain.JsonDocument;
+import io.stargate.sdk.json.domain.JsonResult;
+import io.stargate.sdk.json.domain.SelectQuery;
 import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.domain.odm.Result;
 import io.stargate.sdk.json.vector.JsonVectorStore;
 import io.stargate.sdk.json.vector.VectorStore;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class AstraVectorQuickStart {
 
@@ -40,8 +42,8 @@ public class AstraVectorQuickStart {
         }
 
         // 2. Create a  store (delete if exist)
-        VectorDatabase vectorDb = vectorClient.database(databaseName);
-        vectorDb.deleteStore(vectorStoreName);
+        VectorDatabase vectorDb = vectorClient.vectorDatabase(databaseName);
+        vectorDb.deleteVectorStore(vectorStoreName);
         vectorDb.createVectorStore(vectorStoreName, 14);
 
         // 3. Insert data in the store
@@ -75,6 +77,8 @@ public class AstraVectorQuickStart {
                    + "   \"product_price\": 9.99"
                    + "}");
 
+        vectorStore.findByVectorJson(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f});
+
         // With ODM
         VectorStore<Product> productVectorStore = vectorDb.vectorStore(vectorStoreName, Product.class);
 
@@ -91,9 +95,8 @@ public class AstraVectorQuickStart {
 
         Assertions.assertEquals(6, productVectorStore.count());
 
-        List<JsonDocument> results = vectorStore
+        List<JsonResult> results = vectorStore
                 .similaritySearchJson(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}, 2);
-
     }
 
 

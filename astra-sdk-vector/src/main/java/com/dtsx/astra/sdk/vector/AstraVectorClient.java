@@ -11,6 +11,7 @@ import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
+import io.stargate.sdk.json.JsonApiClient;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -258,7 +259,7 @@ public class AstraVectorClient {
      * @return
      *      database client
      */
-    public VectorDatabase database(@NonNull String databaseName) {
+    public VectorDatabase vectorDatabase(@NonNull String databaseName) {
         List<Database> dbs = findByName(databaseName).collect(Collectors.toList());
         if (dbs.isEmpty()) {
             throw new DatabaseNotFoundException(databaseName);
@@ -266,7 +267,31 @@ public class AstraVectorClient {
         if (dbs.size() > 1) {
             throw new IllegalStateException("More than one database exists with the same name, use id.");
         }
-        return database(UUID.fromString(dbs.get(0).getId()));
+        return vectorDatabase(UUID.fromString(dbs.get(0).getId()));
+    }
+
+    /**
+     * Access database functions.
+     *
+     * @param databaseName
+     *      database name
+     * @return
+     *      database client
+     */
+    public JsonApiClient database(@NonNull String databaseName) {
+        return vectorDatabase(databaseName).getJsonApiClient();
+    }
+
+    /**
+     * Access database functions.
+     *
+     * @param databaseId
+     *      database identifier
+     * @return
+     *      database client
+     */
+    public JsonApiClient database(@NonNull UUID databaseId) {
+        return vectorDatabase(databaseId).getJsonApiClient();
     }
 
     // --------------------
@@ -281,7 +306,7 @@ public class AstraVectorClient {
      * @return
      *      database client
      */
-    public VectorDatabase database(UUID databaseId) {
+    public VectorDatabase vectorDatabase(UUID databaseId) {
         return new VectorDatabase(token, databaseId, env);
     }
 
