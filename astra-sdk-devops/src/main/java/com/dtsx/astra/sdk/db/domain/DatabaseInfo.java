@@ -65,6 +65,11 @@ public class DatabaseInfo {
     private Set<String> additionalKeyspaces;
 
     /**
+     * Default constructor.
+     */
+    public DatabaseInfo() {}
+
+    /**
      * Getter accessor for attribute 'name'.
      *
      * @return

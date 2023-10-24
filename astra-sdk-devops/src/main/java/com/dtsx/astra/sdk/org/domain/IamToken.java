@@ -4,8 +4,6 @@ import java.util.List;
 
 /**
  * Token used to work with Astra.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public class IamToken {
     

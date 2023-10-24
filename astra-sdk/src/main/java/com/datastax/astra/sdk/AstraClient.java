@@ -18,8 +18,8 @@ package com.datastax.astra.sdk;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dtsx.astra.sdk.AstraDevopsApiClient;
-import com.dtsx.astra.sdk.db.AstraDbClient;
+import com.dtsx.astra.sdk.AstraOpsClient;
+import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
@@ -59,10 +59,10 @@ public class AstraClient implements Closeable {
     // -----------------------------------------------------
 
     /** Hold a reference for the Api Devops. */
-    private AstraDevopsApiClient apiDevops;
+    private AstraOpsClient apiDevops;
 
     /** Hold a reference for the Api Devops. */
-    private AstraDbClient apiDevopsDatabases;
+    private AstraDBOpsClient apiDevopsDatabases;
 
     /** Hold a reference for the Api Devops. */
     private AstraStreamingClient apiDevopsStreaming;
@@ -115,12 +115,12 @@ public class AstraClient implements Closeable {
      */
     public AstraClient(AstraClientConfig config) {
         this.astraClientConfig = config;
-        
+
         // ---------------------------------------------------
         //  Devops APIS
         // ---------------------------------------------------
         if (Utils.hasLength(config.getToken())) {
-            apiDevops           = new AstraDevopsApiClient(config.getToken(), config.getEnvironmnt());
+            apiDevops           = new AstraOpsClient(config.getToken(), config.getEnvironmnt());
             apiDevopsDatabases  = apiDevops.db();
             apiDevopsStreaming  = apiDevops.streaming();
             LOGGER.info("+ API Devops    [" + AnsiUtils.green("ENABLED")+ "] on [" + config.getEnvironmnt() + "]");
@@ -222,28 +222,28 @@ public class AstraClient implements Closeable {
                 // Rest Api
                 config.getStargateConfig().addServiceRest(currentDatabaseRegion,
                         new ServiceHttp(currentDatabaseRegion+ "-rest",
-                                ApiLocator.getApiRestEndpoint(config.getDatabaseId(), currentDatabaseRegion),
-                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
+                                ApiLocator.getApiRestEndpoint(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion)));
                 // Json Api
                 config.getStargateConfig().addServiceJson(currentDatabaseRegion,
                         new ServiceHttp(currentDatabaseRegion+ "-rest",
-                                ApiLocator.getApiJsonEndpoint(config.getDatabaseId(), currentDatabaseRegion),
-                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
+                                ApiLocator.getApiJsonEndpoint(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion)));
                 // Document API
                 config.getStargateConfig().addDocumentService(currentDatabaseRegion,
                         new ServiceHttp(currentDatabaseRegion + "-doc",
-                                ApiLocator.getApiDocumentEndpoint(config.getDatabaseId(), currentDatabaseRegion),
-                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion)));
+                                ApiLocator.getApiDocumentEndpoint(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion)));
                 // GraphQL
                 config.getStargateConfig().addGraphQLService(currentDatabaseRegion,
                         new ServiceHttp(currentDatabaseRegion + "-gql",
-                                ApiLocator.getApiGraphQLEndPoint(config.getDatabaseId(), currentDatabaseRegion),
-                                ApiLocator.getEndpointHealthCheck(config.getDatabaseId(),currentDatabaseRegion)));
+                                ApiLocator.getApiGraphQLEndPoint(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion),
+                                ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(), config.getDatabaseId(),currentDatabaseRegion)));
                 // Grpc
                 if (config.getStargateConfig().isEnabledGrpc()) {
                     config.getStargateConfig().addGrpcService(currentDatabaseRegion, new ServiceGrpc(currentDatabaseRegion + "-grpc",
-                            ApiLocator.getApiGrpcEndPoint(config.getDatabaseId(), currentDatabaseRegion) + ":" + AstraClientConfig.GRPC_PORT,
-                            ApiLocator.getEndpointHealthCheck(config.getDatabaseId(), currentDatabaseRegion), true));
+                            ApiLocator.getApiGrpcEndPoint(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion) + ":" + AstraClientConfig.GRPC_PORT,
+                            ApiLocator.getEndpointHealthCheck(config.getEnvironmnt(), config.getDatabaseId(), currentDatabaseRegion), true));
                 }
 
                 // CQL
@@ -361,7 +361,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public AstraDevopsApiClient apiDevops() {
+    public AstraOpsClient apiDevops() {
         if (apiDevops == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide a astra Token (AstraCS:...) at initialization.");
@@ -374,7 +374,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public AstraDbClient apiDevopsDatabases() {
+    public AstraDBOpsClient apiDevopsDatabases() {
         if (apiDevopsDatabases == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");

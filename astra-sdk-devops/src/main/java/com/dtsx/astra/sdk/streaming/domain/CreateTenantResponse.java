@@ -11,11 +11,15 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
 public class CreateTenantResponse extends Tenant {
     
     private String namespace;
 
     private String topic;
-    
+
+    /**
+     * Default constructor.
+     */
+    public CreateTenantResponse() {}
+
 }

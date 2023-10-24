@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.utils;
 
-import com.dtsx.astra.sdk.db.AstraDbClient;
-import com.dtsx.astra.sdk.db.DatabaseClient;
+import com.dtsx.astra.sdk.db.AstraDBOpsClient;
+import com.dtsx.astra.sdk.db.DbOpsClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationBuilder;
@@ -18,9 +18,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Helper for tetst.
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Helper for test.
  */
 public class TestUtils {
 
@@ -37,7 +35,6 @@ public class TestUtils {
      * Logger for the class.
      */
     static Logger logger = LoggerFactory.getLogger(TestUtils.class);
-
 
     /**
      * Hide default constructor
@@ -81,6 +78,8 @@ public class TestUtils {
     /**
      * Initialize databases for tests.
      *
+     * @param env
+     *      astra environment
      * @param dbName
      *      database name
      * @param keyspace
@@ -95,6 +94,8 @@ public class TestUtils {
     /**
      * Initialize databases for tests.
      *
+     * @param env
+     *      astra environment
      * @param dbName
      *      database name
      * @param keyspace
@@ -123,10 +124,14 @@ public class TestUtils {
     /**
      * Initialize databases for tests.
      *
+     * @param env
+     *      astra environment
      * @param dbName
      *      database name
      * @param keyspace
      *      expected keyspace
+     * @param vector
+     *      include vector
      * @return
      *      the database id
      */
@@ -137,22 +142,26 @@ public class TestUtils {
     /**
      * Initialize databases for tests.
      *
+     * @param env
+     *      astra environment
      * @param token
      *     token for the organization
      * @param dbName
      *      database name
      * @param keyspace
      *      expected keyspace
+     * @param vector
+     *      include vector
      * @return
      *      the database id
      */
     public static String setupDatabase(String token, AstraEnvironment env, String dbName, String keyspace, boolean vector) {
-        AstraDbClient devopsDbCli = new AstraDbClient(getAstraToken(), env);
+        AstraDBOpsClient devopsDbCli = new AstraDBOpsClient(getAstraToken(), env);
         Optional<Database> optDb  = devopsDbCli.findByName(dbName).findAny();
         if (optDb.isPresent()) {
             // Db is present, should we resume it ?
             Database db = optDb.get();
-            DatabaseClient dbClient = devopsDbCli.database(db.getId());
+            DbOpsClient dbClient = devopsDbCli.database(db.getId());
             if (db.getStatus().equals(DatabaseStatusType.HIBERNATED)) {
                 logger.info("Resume DB {} as HIBERNATED ", dbName);
                 resumeDb(optDb.get());
@@ -177,7 +186,7 @@ public class TestUtils {
                 builder = builder.withVector();
             }
             String serverlessDbId = devopsDbCli.create(builder.build());
-            DatabaseClient dbc = new DatabaseClient(devopsDbCli.getToken(), serverlessDbId);
+            DbOpsClient dbc = new DbOpsClient(devopsDbCli.getToken(), serverlessDbId);
             waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 180);
             return serverlessDbId;
         }
@@ -193,7 +202,7 @@ public class TestUtils {
      * @param timeoutSeconds
      *      timeout
      */
-    public static void waitForDbStatus(DatabaseClient dbc, DatabaseStatusType status, int timeoutSeconds) {
+    public static void waitForDbStatus(DbOpsClient dbc, DatabaseStatusType status, int timeoutSeconds) {
         long top = System.currentTimeMillis();
         while(status != dbc.find().get().getStatus() && ((System.currentTimeMillis()-top) < 1000*timeoutSeconds)) {
             System.out.print("\u25a0");
@@ -223,8 +232,8 @@ public class TestUtils {
      * @param dbName
      *      database name
      */
-    public static void terminateDatabaseByName(AstraDbClient devopsDbCli, String dbName) {
-        DatabaseClient dbc = new AstraDbClient(devopsDbCli.getToken()).databaseByName(dbName);
+    public static void terminateDatabaseByName(AstraDBOpsClient devopsDbCli, String dbName) {
+        DbOpsClient dbc = new AstraDBOpsClient(devopsDbCli.getToken()).databaseByName(dbName);
         if(dbc.exist()) {
             dbc.delete();
             waitForDbStatus(dbc, DatabaseStatusType.TERMINATED, 60);

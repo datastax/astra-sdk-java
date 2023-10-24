@@ -22,6 +22,11 @@ public class KeyDefinition implements Serializable {
     private KeyRegionDefinition gcp;
 
     /**
+     * Default constructor.
+     */
+    public KeyDefinition() {}
+
+    /**
      * Getter accessor for attribute 'orgId'.
      *
      * @return

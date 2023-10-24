@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -345,9 +346,10 @@ public class HttpClientWrapper {
                 return res;
             }
             if (res.getCode() >= 300) {
-              LOGGER.error("Error for request, url={}, method={}, code={}, body={}",
+              LOGGER.error("Error for request, url={}, method={}, body={}",
                       req.getUri().toString(), req.getMethod(),
-                      res.getCode(), res.getBody());
+                      EntityUtils.toString(req.getEntity()));
+              LOGGER.error("Response  code={}, body={}", res.getCode(), res.getBody());
               processErrors(res, mandatory);
               LOGGER.error("An HTTP Error occurred. The HTTP CODE Return is {}", res.getCode());
             }

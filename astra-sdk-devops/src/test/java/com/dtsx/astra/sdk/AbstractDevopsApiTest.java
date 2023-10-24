@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk;
 
-import com.dtsx.astra.sdk.db.AstraDbClient;
-import com.dtsx.astra.sdk.db.DatabaseClient;
+import com.dtsx.astra.sdk.db.DbOpsClient;
+import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
 import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
 import com.dtsx.astra.sdk.utils.AstraRc;
@@ -36,17 +36,17 @@ public abstract class AbstractDevopsApiTest {
     /**
      * Reference to Databases Client.
      */
-    private static AstraDbClient databasesClient;
+    private static AstraDBOpsClient databasesClient;
 
     /**
      * Reference to organization client.
      */
-    private static AstraDevopsApiClient apiDevopsClient;
+    private static AstraOpsClient apiDevopsClient;
 
     /**
      * Working db.
      */
-    private static DatabaseClient dbClient;
+    private static DbOpsClient dbClient;
 
     /**
      * Reference to Databases Client.
@@ -59,9 +59,9 @@ public abstract class AbstractDevopsApiTest {
      * @return
      *      client fot databases
      */
-    protected AstraDevopsApiClient getApiDevopsClient() {
+    protected AstraOpsClient getApiDevopsClient() {
         if (apiDevopsClient == null) {
-            apiDevopsClient = new AstraDevopsApiClient(getToken());
+            apiDevopsClient = new AstraOpsClient(getToken());
         }
         return apiDevopsClient;
     }
@@ -72,9 +72,9 @@ public abstract class AbstractDevopsApiTest {
      * @return
      *      client fot databases
      */
-    protected AstraDbClient getDatabasesClient() {
+    protected AstraDBOpsClient getDatabasesClient() {
         if (databasesClient == null) {
-            databasesClient = new AstraDbClient(getToken());
+            databasesClient = new AstraDBOpsClient(getToken());
         }
         return databasesClient;
     }
@@ -116,7 +116,7 @@ public abstract class AbstractDevopsApiTest {
      * @return
      *      database client
      */
-    protected DatabaseClient getSdkTestDatabaseClient() {
+    protected DbOpsClient getSdkTestDatabaseClient() {
         if (dbClient == null) {
             if (!getDatabasesClient().findByName(SDK_TEST_DB_NAME).findAny().isPresent()) {
                 getDatabasesClient().create(DatabaseCreationRequest

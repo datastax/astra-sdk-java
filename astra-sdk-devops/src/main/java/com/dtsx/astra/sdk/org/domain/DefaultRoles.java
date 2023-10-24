@@ -2,8 +2,6 @@ package com.dtsx.astra.sdk.org.domain;
 
 /**
  * Astra does provide some Ad Hoc roles with keys and labels.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public enum DefaultRoles {
     

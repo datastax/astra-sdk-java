@@ -9,11 +9,25 @@ import java.util.List;
  */
 public class TenantLimit {
 
+    /**
+     * Maximum number of namespace.
+     */
     private int namespace_limit;
     
+    /**
+     * Maximum number of topic per namespace.
+     */
     private int topic_per_namespace_limit;
-    
+
+    /**
+     * Usage.
+     */
     private TenantLimitUsage usage;
+
+    /**
+     * Default constructor.
+     */
+    public TenantLimit() {}
     
     /**
      * Custom ussage.
@@ -22,9 +36,16 @@ public class TenantLimit {
      */
     public static class TenantLimitUsage {
         
+        /** Namespace. */
         private String namespace;
-        
+
+        /** Topics. */
         private List<String> topics;
+
+        /**
+         * Default constructor.
+         */
+        public TenantLimitUsage() {}
         
         /**
          * Getter accessor for attribute 'namespace'.
@@ -77,6 +98,7 @@ public class TenantLimit {
 
     /**
      * Setter accessor for attribute 'namespace_limit'.
+     *
      * @param namespace_limit
      * 		new value for 'namespace_limit '
      */

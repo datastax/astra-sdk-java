@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class DatabaseFilter {
     
     /** default limit */
-    public static final int DEFAULT_LIMIT = 25;
+    public static final int DEFAULT_LIMIT = 100;
     
     /** limit. */
     private final int limit;
@@ -35,7 +35,7 @@ public class DatabaseFilter {
     /** param offset. */
     private String startingAfterDbId;
     
-    /** should include non terminated.. */
+    /** should include non terminated. */
     private final Include include;
     
     /** the providers to include. */

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Request to invite an user.
  */
 @JsonIgnoreProperties
 public class InviteUserRequest implements Serializable {

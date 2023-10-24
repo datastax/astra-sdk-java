@@ -25,8 +25,8 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
     @Order(1)
     @DisplayName("Initialization with Invalid Parameters")
     public void failInitializationsWithInvalidParamsTest() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new AstraDbClient(""));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new AstraDbClient(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new AstraDBOpsClient(""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new AstraDBOpsClient(null));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class DatabasesClientTest extends AbstractDevopsApiTest {
 
         Assertions.assertFalse(getDatabasesClient().database("invalid").exist());
 
-        DatabaseClient dbClient = getDatabasesClient().database(dbId);
+        DbOpsClient dbClient = getDatabasesClient().database(dbId);
         Assertions.assertNotNull(dbClient);
         Assertions.assertTrue(dbClient.exist());
         Assertions.assertTrue(dbClient.find().isPresent());

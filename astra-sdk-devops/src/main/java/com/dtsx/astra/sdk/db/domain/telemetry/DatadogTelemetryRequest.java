@@ -19,6 +19,11 @@ public class DatadogTelemetryRequest {
     private String site;
 
     /**
+     * Default constructor.
+     */
+    public DatadogTelemetryRequest() {}
+
+    /**
      * Gets apiKey
      *
      * @return value of apiKey

@@ -19,6 +19,11 @@ public class KeyRegionDefinition implements Serializable {
     private String region;
 
     /**
+     * Default constructor.
+     */
+    public KeyRegionDefinition() {}
+
+    /**
      * Getter accessor for attribute 'keyID'.
      *
      * @return

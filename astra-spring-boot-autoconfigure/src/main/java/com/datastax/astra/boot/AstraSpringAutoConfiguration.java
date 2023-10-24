@@ -77,7 +77,12 @@ public class AstraSpringAutoConfiguration {
      */
     @Autowired 
     private ConfigurableEnvironment env;
-    
+
+    /**
+     * Default constructor
+     */
+    public AstraSpringAutoConfiguration() {}
+
     /**
      * Acessing astra client.
      *

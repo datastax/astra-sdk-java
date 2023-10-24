@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Pojo for all users
  */
 @JsonIgnoreProperties
 public class ResponseAllUsers implements Serializable {
@@ -26,6 +26,11 @@ public class ResponseAllUsers implements Serializable {
     /** list of users. */
     @JsonProperty("Users")
     private List<User> users;
+
+    /**
+     * Default constructor.
+     */
+    public ResponseAllUsers() {}
 
     /**
      * Getter accessor for attribute 'orgId'.

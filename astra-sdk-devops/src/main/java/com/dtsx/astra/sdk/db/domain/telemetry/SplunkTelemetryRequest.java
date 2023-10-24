@@ -34,6 +34,11 @@ public class SplunkTelemetryRequest {
     private String sourceType;
 
     /**
+     * Default constructor
+     */
+    public SplunkTelemetryRequest() {}
+
+    /**
      * Gets endpoint
      *
      * @return value of endpoint

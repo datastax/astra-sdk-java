@@ -67,16 +67,16 @@ public class ApiDevopsClientTest extends AbstractDevopsApiTest {
     public void shouldFailOnInvalidParams() {
         LOGGER.info("Parameter validation");
         Assertions.assertThrows(IllegalArgumentException.class, 
-                () -> new AstraDevopsApiClient(""));
+                () -> new AstraOpsClient(""));
         Assertions.assertThrows(IllegalArgumentException.class, 
-                () -> new AstraDevopsApiClient((String)null));
+                () -> new AstraOpsClient((String)null));
     }
 
     @Test
     @Order(5)
     @DisplayName("Listing serverless region for an organization")
     public void shouldListServerlessRegionTest() {
-        AstraDevopsApiClient iamClient = new AstraDevopsApiClient(getToken());
+        AstraOpsClient iamClient = new AstraOpsClient(getToken());
         Assertions.assertTrue(iamClient.db().regions().findAllServerless().count() > 0);
     }
 

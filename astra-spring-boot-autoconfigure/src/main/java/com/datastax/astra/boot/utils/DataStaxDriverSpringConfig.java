@@ -43,6 +43,12 @@ public class DataStaxDriverSpringConfig {
      * <p>for TypeSafe to process "datastax-java-driver.basic.contact-points" as a list.
      */
     private static final Pattern TYPESAFE_LIST_PATTERN = Pattern.compile("(.+)\\[(\\d+)]");
+
+    /**
+     * Default constructor
+     */
+    public DataStaxDriverSpringConfig() {
+    }
     
      /**
      * {@link Map} that holds all driver configuration properties that have been set through a Spring

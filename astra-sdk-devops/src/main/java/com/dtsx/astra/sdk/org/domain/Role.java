@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represent a role.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 @JsonIgnoreProperties
 public class Role implements Serializable {
@@ -29,15 +27,36 @@ public class Role implements Serializable {
     /** policy. */
     @JsonProperty("Policy")
     private RolePolicy policy;
-    
+
     /**
-     * @author Cedrick LUNVEN (@clunven)
+     * Default constructor.
+     */
+    public Role() {}
+
+    /**
+     * Policy class
      */
     public static final class Policy {
+
+        /** description. */
         String description;
+        /**
+         * resources.
+         */
         List<String> resources = new ArrayList<>();
+        /**
+         * actions.
+         */
         List<String> actions = new ArrayList<>();
+        /**
+         * Effect.
+         */
         String effect;
+
+        /**
+         * Default constructor.
+         */
+        public Policy() {}
     }
     
     /**

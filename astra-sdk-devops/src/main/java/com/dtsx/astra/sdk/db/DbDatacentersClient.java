@@ -61,7 +61,7 @@ public class DbDatacentersClient extends AbstractApiClient {
     public DbDatacentersClient(String token, AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
-        this.db = new DatabaseClient(token, databaseId).get();
+        this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
     /**

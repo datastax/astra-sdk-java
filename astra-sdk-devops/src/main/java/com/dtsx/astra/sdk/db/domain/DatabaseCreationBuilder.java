@@ -17,7 +17,7 @@
 package com.dtsx.astra.sdk.db.domain;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Builder for database creation.
  */
 public class DatabaseCreationBuilder {
 
@@ -48,7 +48,7 @@ public class DatabaseCreationBuilder {
     /** Option to enable the vector preview. */
     protected boolean vector = false;
 
-    /** */
+    /** capacity unit. */
     protected int capacityUnits = 1;
 
     /** Default constructor. */

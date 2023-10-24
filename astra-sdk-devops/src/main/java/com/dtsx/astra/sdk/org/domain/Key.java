@@ -25,6 +25,11 @@ public class Key implements Serializable {
     private String region;
 
     /**
+     * Default constructor.
+     */
+    public Key() {}
+
+    /**
      * Getter accessor for attribute 'organizationId'.
      *
      * @return

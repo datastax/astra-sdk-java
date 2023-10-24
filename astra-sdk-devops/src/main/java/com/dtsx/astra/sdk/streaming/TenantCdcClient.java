@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
-import com.dtsx.astra.sdk.db.AstraDbClient;
+import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.KeyspaceNotFoundException;
 import com.dtsx.astra.sdk.streaming.domain.CdcDefinition;
@@ -75,7 +75,7 @@ public class TenantCdcClient extends AbstractApiClient {
         Assert.hasLength(keyspace, "keyspace");
         Assert.hasLength(table, "table");
         Assert.isTrue(topicPartition > 0, "topic partition should be positive");
-        Database db = new AstraDbClient(token, environment).database(databaseId).get();
+        Database db = new AstraDBOpsClient(token, environment).database(databaseId).get();
         if (!db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceNotFoundException(databaseId, keyspace);
         }
@@ -106,7 +106,7 @@ public class TenantCdcClient extends AbstractApiClient {
     public void delete(String databaseId, String keyspace, String table) {
         Assert.hasLength(keyspace, "keyspace");
         Assert.hasLength(table, "table");
-        Database db = new AstraDbClient(token, environment).database(databaseId).get();
+        Database db = new AstraDBOpsClient(token, environment).database(databaseId).get();
         DeleteCdc deleteCdc = new DeleteCdc();
         deleteCdc.setOrgId(db.getOrgId());
         deleteCdc.setDatabaseId(db.getId());

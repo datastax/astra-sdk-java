@@ -21,7 +21,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Hold database information.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Database {
@@ -47,6 +47,11 @@ public class Database {
     private String cqlshUrl;
     private String graphqlUrl;
     private String dataEndpointUrl;
+
+    /**
+     * Default constructor.
+     */
+    public Database() {}
 
     /**
      * Getter accessor for attribute 'id'.

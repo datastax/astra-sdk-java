@@ -9,10 +9,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Hold elements for tenant.
  */
+@Data
 @JsonIgnoreProperties
-@Data @NoArgsConstructor
 public class Tenant {
 
     @JsonProperty("astraOrgGUID")
@@ -37,4 +37,9 @@ public class Tenant {
     private String status;
     private String jvmVersion;
     private String pulsarVersion;
+
+    /**
+     * Default constructor.
+     */
+    public Tenant() {}
 }

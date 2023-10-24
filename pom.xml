@@ -38,7 +38,7 @@
         <lombok.version>1.18.30</lombok.version>
 
         <!-- Stargate -->
-        <stargate-sdk.version>2.1.1-SNAPSHOT</stargate-sdk.version>
+        <stargate-sdk.version>2.1.2</stargate-sdk.version>
         <stargate-grpc.version>2.0.17</stargate-grpc.version>
         <grpc-netty.version>1.56.1</grpc-netty.version>
 
@@ -67,7 +67,7 @@
         <module>astra-sdk</module>
         <module>astra-sdk-devops</module>
         <module>astra-sdk-pulsar</module>
-        <module>astra-sdk-vector</module>
+        <module>astra-db-client</module>
         <module>astra-sdk-archetypes</module>
         <module>astra-spring-boot-autoconfigure</module>
         <module>astra-spring-boot-starter</module>

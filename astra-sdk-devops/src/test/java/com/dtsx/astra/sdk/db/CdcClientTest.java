@@ -56,7 +56,7 @@ public class CdcClientTest extends AbstractDevopsApiTest {
         Assertions.assertTrue(getStreamingClient().find(tmpTenant).isPresent());
 
         // Create Db
-        DatabaseClient dc = getSdkTestDatabaseClient();
+        DbOpsClient dc = getSdkTestDatabaseClient();
         Database db = dc.get();
         LOGGER.info("+ Using db id={}, region={}", db.getId(), db.getInfo().getRegion());
         TestUtils.waitForDbStatus(dc, DatabaseStatusType.ACTIVE, 500);

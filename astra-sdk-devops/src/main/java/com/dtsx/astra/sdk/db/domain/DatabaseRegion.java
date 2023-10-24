@@ -19,7 +19,7 @@ package com.dtsx.astra.sdk.db.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Hold Dtabase Region
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseRegion {
@@ -51,7 +51,7 @@ public class DatabaseRegion {
     private int defaultStoragePerCapacityUnitGb=10;
 
     /**
-     * 
+     * Default constructor
      */
     public DatabaseRegion() {
     }

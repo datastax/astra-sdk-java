@@ -3,11 +3,19 @@ package com.dtsx.astra.sdk.org.domain;
 import java.util.List;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Represents response of Iam token list.
  */
 public class ResponseAllIamTokens {
-    
+
+    /**
+     * client lists.
+     */
     private List<IamToken> clients;
+
+    /**
+     * Default constructor.
+     */
+    public ResponseAllIamTokens() {}
 
     /**
      * Getter accessor for attribute 'clients'.

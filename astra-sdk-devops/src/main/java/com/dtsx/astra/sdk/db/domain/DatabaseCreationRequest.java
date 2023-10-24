@@ -53,7 +53,7 @@ public class DatabaseCreationRequest {
      * for the database. For free tier the max CU's is 1, and 100 
      * for CXX/DXX the max is 12 on startup.
      */
-    private int capacityUnits = 1;
+    private Integer capacityUnits = 1;
 
     /**
      * Default is null, if vector will be added

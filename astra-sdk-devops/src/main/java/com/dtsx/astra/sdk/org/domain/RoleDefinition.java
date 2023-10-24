@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 
 /**
  * Matching expected object to create a role.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public class RoleDefinition {
     

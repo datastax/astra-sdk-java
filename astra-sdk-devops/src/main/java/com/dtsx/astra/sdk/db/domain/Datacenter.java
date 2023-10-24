@@ -74,6 +74,11 @@ public class Datacenter implements Serializable {
     private String secureBundleMigrationProxyInternalUrl;
 
     /**
+     * Default constructor.
+     */
+    public Datacenter() {}
+
+    /**
      * Getter accessor for attribute 'id'.
      *
      * @return

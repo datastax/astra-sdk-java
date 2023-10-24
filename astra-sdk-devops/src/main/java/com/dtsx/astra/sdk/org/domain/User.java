@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Represent a User
  */
 @JsonIgnoreProperties
 public class User implements Serializable {
@@ -30,6 +30,11 @@ public class User implements Serializable {
     /** user roles. */
     @JsonProperty("Roles")
     private List<Role> roles;
+
+    /**
+     * Default constructor.
+     */
+    public User() {}
 
     /**
      * Getter accessor for attribute 'userId'.

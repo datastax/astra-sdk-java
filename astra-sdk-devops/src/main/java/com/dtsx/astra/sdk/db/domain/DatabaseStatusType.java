@@ -23,42 +23,42 @@ package com.dtsx.astra.sdk.db.domain;
  * @author Cedrick LUNVEN (@clunven)
  */
 public enum DatabaseStatusType {
-    /** */
+    /** status. */
     ACTIVE,
-    /** */
+    /** status. */
     ERROR,
-    /** */
+    /** status. */
     DECOMMISSIONING,
-    /** */
+    /** status. */
     DEGRADED,
-    /** */
+    /** status. */
     HIBERNATED,
-    /** */
+    /** status. */
     HIBERNATING,
-    /** */
+    /** status. */
     INITIALIZING,
-    /** */
+    /** status. */
     MAINTENANCE,
-    /** */
+    /** status. */
     PARKED,
-    /** */
+    /** status. */
     PARKING,
-    /** */
+    /** status. */
     PENDING,
-    /** */
+    /** status. */
     PREPARED,
-    /** */
+    /** status. */
     PREPARING,
-    /** */
+    /** status. */
     RESIZING,
-    /** */
+    /** status. */
     RESUMING,
-    /** */
+    /** status. */
     TERMINATED,
-    /** */
+    /** status. */
     TERMINATING,
-    /** */
+    /** status. */
     UNKNOWN,
-    /** */
+    /** status. */
     UNPARKING;
 }

@@ -6,8 +6,6 @@ import java.util.List;
 
 /**
  * Dto to interact with API.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 public class RolePolicy implements Serializable {
     
@@ -25,6 +23,11 @@ public class RolePolicy implements Serializable {
     
     /** policy actions. */
     private List<String> actions = new ArrayList<>();
+
+    /**
+     * Default constructor.
+     */
+    public RolePolicy() {}
 
     /**
      * Getter accessor for attribute 'description'.

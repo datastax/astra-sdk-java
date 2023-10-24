@@ -20,8 +20,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Wrap Database Metrics.
- * 
- * @author Cedrick LUNVEN (@clunven)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseMetrics {
@@ -33,6 +31,11 @@ public class DatabaseMetrics {
     private int liveDataSizeBytes;
     
     private int errorsTotalCount;
+
+    /**
+     * Default constructor.
+     */
+    public DatabaseMetrics() {}
 
     /**
      * Getter accessor for attribute 'writeRequestsTotalCount'.

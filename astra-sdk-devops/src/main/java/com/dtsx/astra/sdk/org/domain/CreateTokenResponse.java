@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Wrapper for token creation.
- *
- * @author Cedrick LUNVEN (@clunven)
  */
 @JsonIgnoreProperties
 public class CreateTokenResponse implements Serializable {
@@ -33,6 +31,11 @@ public class CreateTokenResponse implements Serializable {
 
     /** list of roles. */
     private List<String> roles;
+
+    /**
+     * Default constructor.
+     */
+    public CreateTokenResponse() {}
 
     /**
      * Getter accessor for attribute 'clientId'.

@@ -1,7 +1,6 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
-import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
@@ -49,7 +48,7 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
     public DbPrivateLinksClient(String token, AstraEnvironment env, String databaseId) {
         super(token, env);
         Assert.hasLength(databaseId, "databaseId");
-        this.db = new DatabaseClient(token, databaseId).get();
+        this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
     /**

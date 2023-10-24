@@ -35,6 +35,11 @@ public class DatabaseStorage {
     private int usedStorage;
 
     /**
+     * Default constructor.
+     */
+    public DatabaseStorage() {}
+
+    /**
      * Getter accessor for attribute 'nodeCount'.
      *
      * @return

@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.org;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
-import com.dtsx.astra.sdk.AstraDevopsApiClient;
+import com.dtsx.astra.sdk.AstraOpsClient;
 import com.dtsx.astra.sdk.org.domain.InviteUserRequest;
 import com.dtsx.astra.sdk.org.domain.ResponseAllUsers;
 import com.dtsx.astra.sdk.org.domain.Role;
@@ -146,7 +146,7 @@ public class UsersClient extends AbstractApiClient {
 
         // Build the invite request with expected roles
         RolesClient rolesClient = new RolesClient(token);
-        AstraDevopsApiClient devopsApiClient = new AstraDevopsApiClient(token);
+        AstraOpsClient devopsApiClient = new AstraOpsClient(token);
         InviteUserRequest inviteRequest = new InviteUserRequest(devopsApiClient.getOrganizationId(), email);
         Arrays.asList(roles).forEach(currentRole -> {
             if (IdUtils.isUUID(currentRole)) {

@@ -104,7 +104,8 @@ public class ApiLocator {
     public static String getApiJsonEndpoint(AstraEnvironment env, String dbId, String dbRegion) {
         Assert.hasLength(dbId, "dbId");
         Assert.hasLength(dbRegion, "dbRegion");
-        return HTTPS + dbId + "-" + dbRegion + env.getAppsSuffix() + "/api/json";
+        String val =  HTTPS + dbId + "-" + dbRegion + env.getAppsSuffix() + "/api/json";
+        return val;
     }
 
     /**

@@ -15,6 +15,9 @@ import java.util.Optional;
 
 /**
  * Kafka Client.
+ *
+ * @param <T>
+ *          type of data
  */
 public class SpecializedTelemetryClient<T> {
 

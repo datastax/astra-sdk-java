@@ -19,7 +19,7 @@ package com.dtsx.astra.sdk.db.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /** 
- * @author Cedrick LUNVEN (@clunven)
+ * Hold bean for reference cost.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseCost {
@@ -39,7 +39,12 @@ public class DatabaseCost {
     double costPerNetworkGbCents   = 0;
     double costPerWrittenGbCents   = 0;
     double costPerReadGbCents      = 0;
-    
+
+    /**
+     * Default constructor.
+     */
+    public DatabaseCost() {}
+
     /**
      * Getter accessor for attribute 'costPerMinCents'.
      *

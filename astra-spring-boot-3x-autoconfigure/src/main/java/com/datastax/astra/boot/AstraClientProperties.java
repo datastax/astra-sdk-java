@@ -21,9 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import com.datastax.astra.sdk.config.AstraClientConfig;
 
 /**
- * Load the client properties. 
- *
- * @author Cedrick LUNVEN (@clunven)
+ * Load the client properties.
  */
 @ConfigurationProperties(prefix = "astra")
 public class AstraClientProperties {
@@ -33,7 +31,13 @@ public class AstraClientProperties {
 
     /** Configuration regarding CQL sessions. */
     private Cql cql;
-    
+
+    /**
+     * Default constructor
+     */
+    public AstraClientProperties() {
+    }
+
     /**
      * Getter accessor for attribute 'api'.
      *
@@ -81,6 +85,12 @@ public class AstraClientProperties {
         private boolean enabled;
 
         /**
+         * Default constructor
+         */
+        public Grpc() {
+        }
+
+        /**
          * Getter accessor for attribute 'enabled'.
          *
          * @return
@@ -121,6 +131,12 @@ public class AstraClientProperties {
         
         /** Configuration regarding gRPC. */
         private Grpc grpc;
+
+        /**
+         * Default constructor
+         */
+        public Api() {
+        }
         
         /**
          * Getter accessor for attribute 'databaseId'.
@@ -234,6 +250,12 @@ public class AstraClientProperties {
 
         /** Get Values. */
         private Metrics metrics;
+
+        /**
+         * Default constructor
+         */
+        public Cql() {
+        }
         
         /**
          * Getter accessor for attribute 'enabled'.
@@ -303,6 +325,12 @@ public class AstraClientProperties {
         private boolean enabled;
 
         /**
+         * Default constructor
+         */
+        public Metrics() {
+        }
+
+        /**
          * Getter accessor for attribute 'enabled'.
          *
          * @return
@@ -336,7 +364,13 @@ public class AstraClientProperties {
 
         /** Path to Download. */
         private String path = AstraClientConfig.DEFAULT_SCB_FOLDER;
-        
+
+
+        /**
+         * Default constructor.
+         */
+        public DownloadSecureBundle() {}
+
         /**
          * Getter accessor for attribute 'enabled'.
          *

@@ -1,9 +1,7 @@
 package com.dtsx.astra.sdk.streaming;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
-import com.dtsx.astra.sdk.AstraDevopsApiClient;
-import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
+import com.dtsx.astra.sdk.AstraOpsClient;
 import com.dtsx.astra.sdk.streaming.domain.Tenant;
 import com.dtsx.astra.sdk.streaming.exception.TenantNotFoundException;
 import com.dtsx.astra.sdk.utils.ApiLocator;
@@ -16,7 +14,7 @@ import java.net.HttpURLConnection;
 import java.util.Optional;
 
 /**
- * @author Cedrick LUNVEN (@clunven)
+ * Client to work with Tenant
  */
 public class TenantClient extends AbstractApiClient {
 
@@ -56,7 +54,7 @@ public class TenantClient extends AbstractApiClient {
         super(token, env);
         Assert.hasLength(tenantId, "tenantId");
         this.tenantId       = tenantId;
-        this.organizationId = new AstraDevopsApiClient(token,env).getOrganizationId();
+        this.organizationId = new AstraOpsClient(token,env).getOrganizationId();
     }
 
     // ---------------------------------
