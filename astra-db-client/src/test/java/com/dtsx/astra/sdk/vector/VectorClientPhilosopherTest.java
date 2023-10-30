@@ -5,8 +5,8 @@ import com.dtsx.astra.sdk.AstraDBClient;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
+import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.vector.VectorCollectionRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class VectorClientPhilosopherTest {
 
-    static final String DBNAME_VECTOR_CLIENT = "vector_client_test";
+    static final String DBNAME_VECTOR_CLIENT = "test_java_astra_db_client";
     static final String VECTOR_STORE_NAME = "demo_philosophers";
     static final String DATASET = "/philosopher-quotes.csv";
 
@@ -45,7 +44,7 @@ class VectorClientPhilosopherTest {
         private Set<String> tags;
     }
 
-    static VectorCollectionRepository<Quote> vectorStore;
+    static CollectionRepository<Quote> quoteRepository;
 
     static OpenAiEmbeddingModel openaiVectorizer = OpenAiEmbeddingModel.builder()
             .apiKey(System.getenv("OPENAI_API_KEY"))
@@ -76,17 +75,19 @@ class VectorClientPhilosopherTest {
         // Init the Store
         AstraDB dbClient = new AstraDBClient().database(DBNAME_VECTOR_CLIENT);
         dbClient.deleteCollection(VECTOR_STORE_NAME);
-        vectorStore = dbClient.createCollection(VECTOR_STORE_NAME, 1536, Quote.class);
+        quoteRepository = dbClient.createCollection(VECTOR_STORE_NAME, 1536, Quote.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
-        assertTrue(dbClient.isCollectionExist(VECTOR_STORE_NAME));
+        assertTrue(dbClient.isCollectionExists(VECTOR_STORE_NAME));
 
         // Populate the Store
         AtomicInteger rowId = new AtomicInteger();
         loadQuotesFromCsv(DATASET).forEach(quote -> {
             log.info("Inserting {}: {}", rowId.get(), quote.getQuote());
-            vectorStore.insert(
+            Document<Quote> quoteDoc = new Document<Quote>(
                     String.valueOf(rowId.incrementAndGet()),
-                    quote, vectorize(quote.getQuote()));
+                    quote,
+                    vectorize(quote.getQuote()));
+            quoteRepository.insert(quoteDoc);
         });
     }
 
@@ -95,12 +96,12 @@ class VectorClientPhilosopherTest {
     @DisplayName("02. Should Similarity Search")
     public void shouldSimilaritySearch() {
 
-        vectorStore = new AstraDBClient()
+        quoteRepository = new AstraDBClient()
                 .database(DBNAME_VECTOR_CLIENT)
-                .collection(VECTOR_STORE_NAME, Quote.class);
+                .collectionRepository(VECTOR_STORE_NAME, Quote.class);
 
         float[] embeddings = vectorize("We struggle all our life for nothing");
-        vectorStore.similaritySearch(embeddings, 3)
+        quoteRepository.similaritySearch(embeddings, null,3)
                 .stream()
                 .map(Document::getData)
                 .map(Quote::getQuote)

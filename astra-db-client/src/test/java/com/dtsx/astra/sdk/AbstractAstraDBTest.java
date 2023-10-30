@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public abstract class AbstractAstraVectorTest {
+public abstract class AbstractAstraDBTest {
 
     @SuppressWarnings("unchecked")
     protected LinkedHashMap<String, List<?>> loadQuotes(String filePath) throws IOException {

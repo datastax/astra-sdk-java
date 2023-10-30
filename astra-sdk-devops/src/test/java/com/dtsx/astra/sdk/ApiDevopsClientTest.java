@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk;
 
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.DatabaseRegion;
+import com.dtsx.astra.sdk.db.domain.RegionType;
 import com.dtsx.astra.sdk.org.domain.Organization;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -77,7 +78,7 @@ public class ApiDevopsClientTest extends AbstractDevopsApiTest {
     @DisplayName("Listing serverless region for an organization")
     public void shouldListServerlessRegionTest() {
         AstraOpsClient iamClient = new AstraOpsClient(getToken());
-        Assertions.assertTrue(iamClient.db().regions().findAllServerless().count() > 0);
+        Assertions.assertTrue(iamClient.db().regions().findAllServerless(RegionType.ALL).count() > 0);
     }
 
 }

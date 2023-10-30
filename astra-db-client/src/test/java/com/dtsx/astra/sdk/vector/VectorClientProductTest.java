@@ -4,11 +4,10 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBClient;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.odm.Document;
 import io.stargate.sdk.json.domain.odm.Result;
-import io.stargate.sdk.json.vector.VectorCollectionRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class VectorClientProductTest {
 
-    public static final String DBNAME_VECTOR_CLIENT = "vector_client_test";
+    public static final String DBNAME_VECTOR_CLIENT = "test_java_astra_db_client";
 
     public static final String VECTOR_STORE_NAME = "demo_product";
 
@@ -49,7 +47,7 @@ class VectorClientProductTest {
         private Double price;
     }
 
-    static VectorCollectionRepository<Product> vectorStore;
+    static CollectionRepository<Product> productRepository;
 
     @BeforeAll
     public static void setup() {
@@ -67,18 +65,19 @@ class VectorClientProductTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldInsertStaticDocument() {
         // Recreating the store
-        AstraDB dbClient = new AstraDBClient().database(DBNAME_VECTOR_CLIENT);
-        dbClient.deleteCollection(VECTOR_STORE_NAME);
-        vectorStore = dbClient.createCollection(VECTOR_STORE_NAME, 14, Product.class);
+        AstraDB astraDB = new AstraDBClient().database(DBNAME_VECTOR_CLIENT);
+        astraDB.deleteCollection(VECTOR_STORE_NAME);
+        productRepository = astraDB.createCollection(VECTOR_STORE_NAME, 14, Product.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
-        assertTrue(dbClient.isCollectionExist(VECTOR_STORE_NAME));
+        assertTrue(astraDB.isCollectionExists(VECTOR_STORE_NAME));
 
         // Easy insert one
-        vectorStore.insert("pf7044",
+        Document<Product> doc = new Document<>("pf7044",
                 new Product("Pupper Sausage Beef dog Treats", 9.99),
                 new float[]{0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 0f});
+        productRepository.insert(doc);
         // Easy insert many
-        vectorStore.insertAll(List.of(
+        productRepository.insertAll(List.of(
                 new Document<>("pt0041",
                         new Product("Dog Ring Chew Toy", 9.99),
                         new float[]{0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f, 0f}),
@@ -87,21 +86,20 @@ class VectorClientProductTest {
                         new float[]{0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f, 0f})
         ));
         // Insert Many with Json
-        vectorStore.insertAllJson(List.of(
-                new JsonDocument("pf1844")
-                        .put("product_name", "HealthyFresh - Beef raw dog food")
-                        .put("product_price", 12.99)
-                        .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}),
-                new JsonDocument("pf1843")
-                        .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
-                        .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food")),
-                new JsonDocument()
+        productRepository.saveAll(List.of(
+                new Document<>("pf1844",
+                        new Product("HealthyFresh - Beef raw dog food", 12.99),
+                        new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}),
+                new Document<>("pf1843",
+                        new Product("HealthyFresh - Beef raw dog food", 12.99),
+                        new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}),
+                new Document<Product>()
                         .id("pt0021")
-                        .data("{ \"product_name\": \"Dog Tennis Ball Toy\" }")
+                        .data(new Product("Dog Tennis Ball Toy", 12.99))
                         .vector(new float[]{0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f}))
         );
-        assertEquals(6, vectorStore.count());
-        assertEquals(3, vectorStore.count(new Filter()
+        assertEquals(6, productRepository.count());
+        assertEquals(3, productRepository.count(new Filter()
                 .where("product_price").isEqualsTo(9.99)));
     }
 
@@ -110,12 +108,12 @@ class VectorClientProductTest {
     @DisplayName("02. Similarity Search")
     public void shouldSimilaritySearch() {
 
-        vectorStore = new AstraDBClient()
+        productRepository = new AstraDBClient()
                 .database(DBNAME_VECTOR_CLIENT)
-                .collection(VECTOR_STORE_NAME, Product.class);
+                .collectionRepository(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        for(Result<Product> result : vectorStore.similaritySearch(embeddings,2)) {
+        for(Result<Product> result : productRepository.similaritySearch(embeddings,null, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()
                     + ", vector=" + Arrays.toString(result.getVector()));
@@ -126,14 +124,14 @@ class VectorClientProductTest {
     @Order(3)
     @DisplayName("03. Search with Meta Data")
     public void shouldSimilaritySearchWithMetaData() {
-        vectorStore = new AstraDBClient()
+        productRepository = new AstraDBClient()
                 .database(DBNAME_VECTOR_CLIENT)
-                .collection(VECTOR_STORE_NAME, Product.class);
+                .collectionRepository(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
         Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
 
-        for(Result<Product> result : vectorStore
+        for(Result<Product> result : productRepository
                 .similaritySearch(embeddings, metadataFilter, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()

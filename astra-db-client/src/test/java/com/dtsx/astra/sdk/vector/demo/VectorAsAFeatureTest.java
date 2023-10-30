@@ -2,8 +2,8 @@ package com.dtsx.astra.sdk.vector.demo;
 
 import com.dtsx.astra.sdk.AstraDBClient;
 import io.stargate.sdk.core.domain.Page;
-import io.stargate.sdk.json.JsonCollectionClient;
-import io.stargate.sdk.json.JsonNamespaceClient;
+import io.stargate.sdk.json.CollectionClient;
+import io.stargate.sdk.json.NamespaceClient;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.JsonResult;
 import io.stargate.sdk.json.domain.SelectQuery;
@@ -25,13 +25,13 @@ public class VectorAsAFeatureTest {
     public void shouldDoCollection() {
 
         // Token retrieved from CLI config or env var
-        AstraDBClient vectorClient = new AstraDBClient();
+        AstraDBClient astraDBClient = new AstraDBClient();
 
         // Create Database
-        UUID uuid = vectorClient.createDatabase("vector_client_test");
+        UUID uuid = astraDBClient.createDatabase("vector_client_test");
 
         // Select Database / Namespace
-        JsonNamespaceClient db = vectorClient
+        NamespaceClient db = astraDBClient
                 .getRawJsonApiClient("vector_client_test")
                 .namespace("default_keyspace");
 
@@ -40,7 +40,7 @@ public class VectorAsAFeatureTest {
         db.createCollection("collection_test", 5);
 
         // User the collection
-        JsonCollectionClient collection = db.collection("collection_test");
+        CollectionClient collection = db.collection("collection_test");
 
         // # Insert into vector collection
         collection.insertOne("{" +

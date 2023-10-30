@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk;
 
-import com.dtsx.astra.sdk.db.DbOpsClient;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
+import com.dtsx.astra.sdk.db.DbOpsClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
@@ -11,7 +11,7 @@ import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
-import io.stargate.sdk.json.JsonApiClient;
+import io.stargate.sdk.json.ApiClient;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +52,11 @@ public class AstraDBClient {
     public static final String FREE_TIER_CLOUD_REGION = "us-east1";
 
     /**
+     * Token header param
+     */
+    public static final String TOKEN_HEADER_PARAM = "X-Cassandra-Token";
+
+    /**
      * Technical Keyspace name.
      */
     public static final String DEFAULT_KEYSPACE = "default_keyspace";
@@ -77,6 +82,9 @@ public class AstraDBClient {
      */
     final HttpClient httpClient;
 
+    /**
+     * Configuration token
+     */
     static String astraConfigToken;
 
     /*
@@ -159,9 +167,7 @@ public class AstraDBClient {
      */
     public boolean deleteDatabase(@NonNull String name) {
         Optional<Database> opDb = findDatabaseByName(name).findFirst();
-        opDb.ifPresent(db -> {
-            devopsDbClient.database(db.getId()).delete();
-        });
+        opDb.ifPresent(db -> devopsDbClient.database(db.getId()).delete());
         return opDb.isPresent();
     }
 
@@ -232,9 +238,9 @@ public class AstraDBClient {
      * Check if a database exists.
      *
      * @param name
-     *          a database name
+     *     a database name
      * @return
-     *          list of db matching the criteria
+     *     if the database exists
      */
     public boolean isDatabaseExists(String name) {
         return findDatabaseByName(name).findFirst().isPresent();
@@ -337,7 +343,7 @@ public class AstraDBClient {
                     .uri(URI.create(endpoint))
                     .timeout(Duration.ofSeconds(20))
                     .header("Content-Type", "application/json")
-                    .header("X-Cassandra-Token", token)
+                    .header(TOKEN_HEADER_PARAM, token)
                     .GET()
                     .build();
             HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
@@ -360,8 +366,8 @@ public class AstraDBClient {
      * @return
      *      database client
      */
-    public JsonApiClient getRawJsonApiClient(@NonNull String databaseName) {
-        return database(databaseName).getRawJsonApiClient();
+    public ApiClient getRawJsonApiClient(@NonNull String databaseName) {
+        return database(databaseName).getApiClient();
     }
 
     /**
@@ -372,8 +378,19 @@ public class AstraDBClient {
      * @return
      *      database client
      */
-    public JsonApiClient getRawJsonApiClient(@NonNull UUID databaseId) {
-        return database(databaseId).getRawJsonApiClient();
+    public ApiClient getApiClient(@NonNull UUID databaseId) {
+        return database(databaseId).getApiClient();
     }
+
+    /**
+     * Access the devops client.
+     *
+     * @return
+     *      devops client.
+     */
+    public AstraDBOpsClient getAstraDBOps() {
+        return this.devopsDbClient;
+    }
+
 
 }

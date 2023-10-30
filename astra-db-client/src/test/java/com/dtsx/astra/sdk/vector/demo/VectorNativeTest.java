@@ -3,14 +3,13 @@ package com.dtsx.astra.sdk.vector.demo;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBClient;
 import com.dtsx.astra.sdk.utils.ApiLocator;
-import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.stargate.sdk.core.domain.Page;
+import io.stargate.sdk.json.CollectionClient;
+import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.JsonResult;
 import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.vector.SimilarityMetric;
-import io.stargate.sdk.json.vector.VectorCollectionRepository;
-import io.stargate.sdk.json.vector.VectorCollectionRepositoryJson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -55,31 +54,30 @@ public class VectorNativeTest {
         // init
         AstraDB db = new AstraDB(apiKey, apiEndpoint);
         // create collection
-        VectorCollectionRepositoryJson col = db
-                .createCollection(collectionName, 14, SimilarityMetric.cosine);
+        CollectionClient col = db.createCollection(collectionName, 14);
         // Insertions
-        col.save(new JsonDocument().put("metadata1", "value1")
+        col.insertOne(new JsonDocument()
+                .put("metadata1", "value1")
                 .vector(new float[]{0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 0f}));
         // Search
-        List<JsonResult> resultSet = col
-                .similaritySearchJson(new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},2);
-
-
+        Page<JsonResult> resultSet = col
+                .similaritySearch(new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},
+                        null,2, null);
 
         AstraDB database = new AstraDB(apiKey, apiEndpoint);
         // Create Vector Store (if exist)
         database.deleteCollection(collectionName);
         // Create vector Store (if not exists)
-        database.createCollection(collectionName, 14, SimilarityMetric.cosine);
+        database.createCollection(collectionName, 14);
 
         // Given a bean 'Product', work with collection
-        VectorCollectionRepository<Product> collection =
-                database.collection(collectionName, Product.class);
+        CollectionRepository<Product> collection = database
+                .collectionRepository(collectionName, Product.class);
 
         // Insert Products
-        collection.save("pf7044",
+        collection.save(new Document<>("pf7044",
                 new Product("Pupper Sausage Beef dog Treats", 9.99),
-                new float[]{0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 0f});
+                new float[]{0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 0f}));
         collection.saveAll(List.of(
                 new Document<>("pt0041",
                         new Product("Dog Ring Chew Toy", 9.99),
@@ -91,7 +89,7 @@ public class VectorNativeTest {
 
         // Similarity Search
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        collection.similaritySearch(embeddings,2).forEach(r->  {
+        collection.similaritySearch(embeddings,null, 2).forEach(r->  {
             System.out.println(r.getSimilarity() + " - " + r.getId() + " - " + r.getData().getName());
         });
 
@@ -99,12 +97,12 @@ public class VectorNativeTest {
 
     public void useInApplication() {
 
-        VectorCollectionRepository<Product> vectorCollection = new AstraDBClient(apiKey)
+        CollectionRepository<Product> vectorCollection = new AstraDBClient(apiKey)
                 .database(databaseName)
-                .collection(collectionName, Product.class);
+                .collectionRepository(collectionName, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        vectorCollection.similaritySearch(embeddings,2).forEach(r->  {
+        vectorCollection.similaritySearch(embeddings,null, 2).forEach(r->  {
             System.out.println(r.getSimilarity() + " - " + r.getId() + " - " + r.getData().getName());
         });
 

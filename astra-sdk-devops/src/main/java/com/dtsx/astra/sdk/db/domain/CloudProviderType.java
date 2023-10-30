@@ -39,7 +39,7 @@ public enum CloudProviderType {
     AWS("AWS");
 
     /** */
-    private String code;
+    final String code;
     
     /**
      * Cloud provider
@@ -47,7 +47,7 @@ public enum CloudProviderType {
      * @param code
      *      cloud provider code
      */
-    private CloudProviderType(String code) {
+    CloudProviderType(String code) {
         this.code = code;
     }
     

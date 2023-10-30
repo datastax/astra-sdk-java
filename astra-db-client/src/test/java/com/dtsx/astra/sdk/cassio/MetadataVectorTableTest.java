@@ -2,9 +2,8 @@ package com.dtsx.astra.sdk.cassio;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dtsx.astra.sdk.AbstractAstraVectorTest;
+import com.dtsx.astra.sdk.AbstractAstraDBTest;
 import com.dtsx.astra.sdk.utils.TestUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +38,7 @@ import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
  */
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MetadataVectorTableTest extends AbstractAstraVectorTest {
+public class MetadataVectorTableTest extends AbstractAstraDBTest {
 
     public static final String LLM_MODEL_CHAT_COMPLETION = "gpt-3.5-turbo";
     public static final String LLM_MODEL_EMBEDDINGS     = "text-embedding-ada-002";

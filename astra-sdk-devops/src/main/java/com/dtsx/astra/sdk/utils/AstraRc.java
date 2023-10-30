@@ -48,6 +48,9 @@ public class AstraRc {
     /** ENV VAR to get part of the token: application token. */
     public static final String ASTRA_DB_APPLICATION_TOKEN = "ASTRA_DB_APPLICATION_TOKEN";
 
+    /** Key to add tarfet environment. */
+    public static final String ASTRA_ENV = "ASTRA_ENV";
+
     /** Sections in the file. [sectionName] -> key=Value. */
     private final Map<String, Map<String, String>> sections = new HashMap<>();
     

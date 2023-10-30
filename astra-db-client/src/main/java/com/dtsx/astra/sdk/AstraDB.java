@@ -5,26 +5,27 @@ import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
-import com.dtsx.astra.sdk.domain.LLMEmbedding;
 import io.stargate.sdk.ServiceDeployment;
 import io.stargate.sdk.api.SimpleTokenProvider;
 import io.stargate.sdk.http.ServiceHttp;
-import io.stargate.sdk.json.JsonApiClient;
-import io.stargate.sdk.json.JsonCollectionClient;
-import io.stargate.sdk.json.JsonNamespaceClient;
+import io.stargate.sdk.json.ApiClient;
+import io.stargate.sdk.json.CollectionClient;
+import io.stargate.sdk.json.CollectionRepository;
+import io.stargate.sdk.json.NamespaceClient;
 import io.stargate.sdk.json.domain.CollectionDefinition;
-import io.stargate.sdk.json.vector.SimilarityMetric;
-import io.stargate.sdk.json.vector.VectorCollectionRepository;
-import io.stargate.sdk.json.vector.VectorCollectionRepositoryJson;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
  * Hiding top level Json Api and skip interaction with namespaces
  */
+@Slf4j @Getter
 public class AstraDB {
 
     /**
@@ -35,23 +36,23 @@ public class AstraDB {
     /**
      * Top level resource for json api.
      */
-    private final JsonApiClient jsonClient;
+    private final ApiClient apiClient;
 
     /**
      * Namespace client
      */
-    private final JsonNamespaceClient nsClient;
+    private final NamespaceClient nsClient;
 
     /**
      * Initialization with endpoint and apikey.
      *
-     * @param apiKey
+     * @param token
      *      api token
      * @param apiEndpoint
      *      api endpoint
      */
-    public AstraDB(String apiKey, String apiEndpoint) {
-        Objects.requireNonNull(apiKey, "apiKey");
+    public AstraDB(String token, String apiEndpoint) {
+        Objects.requireNonNull(token, "token");
         Objects.requireNonNull(apiEndpoint, "apiEndpoint");
         // Finding Environment based on apiEndpoint (looping to devops)
         if (apiEndpoint.contains(AstraEnvironment.PROD.getAppsSuffix())) {
@@ -66,11 +67,10 @@ public class AstraDB {
 
         // deploy on a single url with a static token (token provider)
         ServiceDeployment<ServiceHttp> jsonDeploy = new ServiceDeployment<>();
-        jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(apiKey));
+        jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(token));
         jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
-        this.jsonClient = new JsonApiClient(jsonDeploy);
-
-        this.nsClient = jsonClient.namespace("default_keyspace");
+        this.apiClient = new ApiClient(jsonDeploy);
+        this.nsClient = apiClient.namespace(AstraDBClient.DEFAULT_KEYSPACE);
     }
 
     /**
@@ -79,7 +79,7 @@ public class AstraDB {
      * @param token
      *      token
      * @param databaseId
-     *      datbase identifier
+     *      database identifier
      * @param env
      *      environment
      */
@@ -89,7 +89,7 @@ public class AstraDB {
                 .findById(databaseId.toString())
                 .orElseThrow(() -> new DatabaseNotFoundException(databaseId.toString()));
 
-        this.jsonClient = AstraClient.builder()
+        this.apiClient = AstraClient.builder()
                 .env(env)
                 .withDatabaseRegion(db.getInfo().getRegion())
                 .withDatabaseId(databaseId.toString())
@@ -98,18 +98,12 @@ public class AstraDB {
                 .apiStargateJson();
 
         // will inherit 'default_keyspace' from the database
-        this.nsClient = jsonClient.namespace(db.getInfo().getKeyspace());
+        this.nsClient = apiClient.namespace(db.getInfo().getKeyspace());
     }
 
-    /**
-     * List all vector Stores for this environment.
-     *
-     * @return
-     *      name of all vector store.
-     */
-    public Stream<String> findAllCollections() {
-        return nsClient.findCollections();
-    }
+    // --------------------------
+    // ---  Find, FindAll    ----
+    // --------------------------
 
     /**
      * Check if a store exists.
@@ -119,9 +113,33 @@ public class AstraDB {
      * @return
      *      of the store already exist
      */
-    public boolean isCollectionExist(@NonNull  String store) {
-        return nsClient.existCollection(store);
+    public boolean isCollectionExists(@NonNull  String store) {
+        return nsClient.isCollectionExists(store);
     }
+
+    /**
+     * List all vector Stores for this environment.
+     *
+     * @return
+     *      name of all vector store.
+     */
+    public Stream<CollectionDefinition> findAllCollections() {
+        return nsClient.findCollections();
+    }
+
+    /**
+     * Return the collection definition if its exists.
+     *
+     * @param name
+     *      collection name
+     */
+    public Optional<CollectionDefinition> findCollection(String name) {
+        return nsClient.findCollectionByName(name);
+    }
+
+    // --------------------------
+    // ---       Delete      ----
+    // --------------------------
 
     /**
      * Delete a store if it exists.
@@ -133,6 +151,38 @@ public class AstraDB {
         nsClient.deleteCollection(name);
     }
 
+    // --------------------------
+    // ---      Create       ----
+    // --------------------------
+
+    /**
+     * Create the minimal store.
+     *
+     * @param name
+     *      store name
+     * @return
+     *      json vector store
+     */
+    public CollectionClient createCollection(String name) {
+        return nsClient.createCollection(name);
+    }
+
+    /**
+     * Create the minimal store.
+     *
+     * @param name
+     *      store name
+     * @param clazz
+     *      bean type
+     * @param <DOC>
+     *      type of document in used
+     * @return
+     *      json vector store
+     */
+    public <DOC> CollectionRepository<DOC> createCollection(String name, Class<DOC> clazz) {
+        return nsClient.createCollection(name, clazz);
+    }
+
     /**
      * Create the minimal store.
      *
@@ -143,26 +193,8 @@ public class AstraDB {
      * @return
      *      json vector store
      */
-    public VectorCollectionRepositoryJson createCollection(String name, int vectorDimension) {
-        nsClient.createCollection(name, vectorDimension);
-        return nsClient.vectorStore(name);
-    }
-
-    /**
-     * Create the minimal store.
-     *
-     * @param name
-     *      store name
-     * @param vectorDimension
-     *      vector dimension
-     * @param vectorMetric
-     *      metric for the similarity
-     * @return
-     *      json vector store
-     */
-    public VectorCollectionRepositoryJson createCollection(String name, int vectorDimension, SimilarityMetric vectorMetric) {
-        nsClient.createCollection(name, vectorDimension, vectorMetric);
-        return nsClient.vectorStore(name);
+    public CollectionClient createCollection(String name, int vectorDimension) {
+        return nsClient.createCollection(name, vectorDimension);
     }
 
     /**
@@ -179,51 +211,37 @@ public class AstraDB {
      * @param <T>
      *       object type
      */
-    public <T> VectorCollectionRepository<T> createCollection(String name, int vectorDimension, Class<T> bean) {
-        nsClient.createCollection(name, vectorDimension);
-        return nsClient.vectorStore(name, bean);
+    public <T> CollectionRepository<T> createCollection(String name, int vectorDimension, Class<T> bean) {
+        return nsClient.createCollection(name, vectorDimension, bean);
+    }
+
+
+    /**
+     * Create the minimal store.
+     *
+     * @param def
+     *      collection definition
+     * @return
+     *      json vector store
+     */
+    public CollectionClient createCollection(CollectionDefinition def) {
+        return nsClient.createCollection(def);
     }
 
     /**
      * Create the minimal store.
      *
-     * @param name
-     *      store name
-     * @param vectorDimension
-     *      dimension
-     * @param vectorMetric
-     *      similarity metric
-     * @param bean
-     *      class of pojo
-     * @return
-     *      vector store instance
-     * @param <T>
-     *       object type
-     */
-    public <T> VectorCollectionRepository<T> createCollection(String name, int vectorDimension, SimilarityMetric vectorMetric, Class<T> bean) {
-        nsClient.createCollection(name, vectorDimension, vectorMetric);
-        return nsClient.vectorStore(name, bean);
-    }
-
-    /**
-     * Create with the vectorize.
-     *
-     * @param name
-     *      vector name
-     * @param aiModel
-     *      ai model to use
+     * @param def
+     *      collection definition
+     * @param clazz
+     *      bean type
+     * @param <DOC>
+     *      type of document in used
      * @return
      *      json vector store
      */
-    public VectorCollectionRepositoryJson createCollection(@NonNull String name, @NonNull LLMEmbedding aiModel) {
-        nsClient.createCollection(CollectionDefinition.builder()
-                .name(name)
-                .vectorDimension(aiModel.getDimension())
-                .similarityMetric(SimilarityMetric.cosine)
-                .llmProvider(aiModel.getLlmprovider())
-                .llmModel(aiModel.getName())
-                .build());
-        return nsClient.vectorStore(name);
+    public <DOC> CollectionRepository<DOC> createCollection(CollectionDefinition def, Class<DOC> clazz) {
+        return nsClient.createCollection(def, clazz);
     }
 
     // --------------------
@@ -238,8 +256,8 @@ public class AstraDB {
      * @return
      *      storeName client
      */
-    public VectorCollectionRepositoryJson collection(@NonNull  String storeName) {
-        return nsClient.vectorStore(storeName);
+    public CollectionClient collection(@NonNull  String storeName) {
+        return nsClient.collection(storeName);
     }
 
     /**
@@ -254,30 +272,8 @@ public class AstraDB {
      * @param <T>
      *      type of the bean in use
      */
-    public <T> VectorCollectionRepository<T> collection(@NonNull  String storeName, Class<T> clazz) {
-        return nsClient.vectorStore(storeName, clazz);
-    }
-
-    /**
-     * Access json api client
-     *
-     * @return
-     *      json client
-     */
-    public JsonApiClient getRawJsonApiClient() {
-        return jsonClient;
-    }
-
-    /**
-     * Access to low level object.
-     *
-     * @param collectionName
-     *      collection name.
-     * @return
-     *      collection client
-     */
-    public JsonCollectionClient getRawJsonCollectionClient(String collectionName) {
-        return nsClient.collection(collectionName);
+    public <T> CollectionRepository<T> collectionRepository(@NonNull  String storeName, Class<T> clazz) {
+        return nsClient.collectionRepository(storeName, clazz);
     }
 
 }

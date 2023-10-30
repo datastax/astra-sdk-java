@@ -30,7 +30,7 @@ import io.stargate.sdk.gql.StargateGraphQLApiClient;
 import io.stargate.sdk.grpc.ServiceGrpc;
 import io.stargate.sdk.grpc.StargateGrpcApiClient;
 import io.stargate.sdk.http.ServiceHttp;
-import io.stargate.sdk.json.JsonApiClient;
+import io.stargate.sdk.json.ApiClient;
 import io.stargate.sdk.rest.StargateRestApiClient;
 import io.stargate.sdk.utils.AnsiUtils;
 import io.stargate.sdk.utils.Utils;
@@ -334,7 +334,7 @@ public class AstraClient implements Closeable {
      *
      * @return ApiDevopsClient
      */
-    public JsonApiClient apiStargateJson() {
+    public ApiClient apiStargateJson() {
         if (stargateClient == null) {
             throw new IllegalStateException("Json Api is not available "
                     + "you need to provide dbId/dbRegion/token at initialization.");

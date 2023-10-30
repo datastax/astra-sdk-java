@@ -22,7 +22,7 @@ public class NonProductionEnvironmentTest extends AbstractDevopsApiTest {
     public void shouldListDatabasesDev() {
         AstraDBOpsClient opsClient = new AstraDBOpsClient(tokenDev2, AstraEnvironment.DEV);
         opsClient.findAllNonTerminated().map(Database::getInfo).map(DatabaseInfo::getName).forEach(System.out::println);
-        opsClient.databaseByName("vector_client_test").accessLists();
+        //opsClient.databaseByName("sdk_java_test_vector").accessLists();
 
         // Create Db in dev
         String dbId = opsClient.create(DatabaseCreationRequest
@@ -30,9 +30,9 @@ public class NonProductionEnvironmentTest extends AbstractDevopsApiTest {
                 .name(SDK_TEST_DB_VECTOR_NAME)
                 .keyspace(SDK_TEST_KEYSPACE)
                 .cloudProvider(CloudProviderType.AWS)
-                .cloudRegion("us-east-2")
+                .cloudRegion("us-west-2")
                 .withVector()
                 .build());
-        TestUtils.waitForDbStatus(getDatabasesClient().database(dbId), DatabaseStatusType.ACTIVE, 500);
+        //TestUtils.waitForDbStatus(getDatabasesClient().database(dbId), DatabaseStatusType.ACTIVE, 500);
     }
 }

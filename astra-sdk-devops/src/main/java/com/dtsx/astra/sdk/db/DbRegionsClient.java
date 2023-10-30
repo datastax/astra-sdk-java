@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.db.domain.RegionType;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
@@ -71,14 +72,27 @@ public class DbRegionsClient extends AbstractApiClient {
 
     /**
      * List serverless regions.
-     *
+     * @param regionType
+     *      provide the filter you want
      * @return
      *      serverless region
      */
-    public Stream<DatabaseRegionServerless> findAllServerless() {
+    public Stream<DatabaseRegionServerless> findAllServerless(RegionType regionType) {
+        // Build Path
+        String url = ApiLocator.getApiDevopsEndpoint(environment) + PATH_REGIONS_SERVERLESS;
+        switch (regionType) {
+            case ALL:
+                url += "?region-type=all";
+                break;
+            case VECTOR:
+                url += "?region-type=vector";
+                break;
+            case SERVERLESS:
+            default:
+                break;
+        }
         // Invoke endpoint
-        ApiResponseHttp res = HttpClientWrapper
-                .getInstance().GET(ApiLocator.getApiDevopsEndpoint(environment) + PATH_REGIONS_SERVERLESS, token);
+        ApiResponseHttp res = HttpClientWrapper.getInstance().GET(url, token);
         // Marshall response
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<DatabaseRegionServerless>>(){}).stream();
     }
