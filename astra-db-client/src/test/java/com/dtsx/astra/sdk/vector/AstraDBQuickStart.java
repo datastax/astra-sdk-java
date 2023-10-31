@@ -42,6 +42,7 @@ public class AstraDBQuickStart {
         // Search
         List<JsonResult> resultsSet =
                 testCollection.similaritySearch(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f},10);
+        resultsSet.stream().forEach(System.out::println);
 
     }
 

@@ -43,18 +43,14 @@ public class VectorAsAFeatureTest {
         CollectionClient collection = db.collection("collection_test");
 
         // # Insert into vector collection
-        collection.insertOne("{" +
-                "  \"_id\": \"4\",\n" +
-                "  \"name\": \"Coded Cleats Copy\",\n" +
-                "  \"description\": \"ChatGPT integrated sneakers that talk to you\",\n" +
-                "  \"$vector\": [0.25, 0.25, 0.25, 0.25, 0.25]" +
-                "}");
-
+        collection.insertOne(new JsonDocument("4")
+                .put("name", "Coded Cleats Copy")
+                .put("description", "ChatGPT integrated sneakers that talk to you")
+                .vector(new float[]{0.25f, 0.25f, 0.25f, 0.25f, 0.25f}));
         // # Insert non-vector document
-        collection.insertOne("{ " +
-                "  \"_id\": \"Cliff1\",\n" +
-                "  \"first_name\": \"Cliff\",\n" +
-                "  \"last_name\": \"Wicklow\"}");
+        collection.insertOne(new JsonDocument("Cliff1")
+                .put("first_name", "Cliff")
+                .put("last_name", "Wicklow"));
 
         //  Insert Many document
         List<String> docs = collection.insertMany(List.of(
