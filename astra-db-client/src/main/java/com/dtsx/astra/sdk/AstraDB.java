@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk;
 
 import com.datastax.astra.sdk.AstraClient;
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
@@ -43,6 +44,7 @@ public class AstraDB {
      */
     private final NamespaceClient nsClient;
 
+
     /**
      * Initialization with endpoint and apikey.
      *
@@ -80,10 +82,37 @@ public class AstraDB {
      *      token
      * @param databaseId
      *      database identifier
+     */
+    public AstraDB(@NonNull String token, @NonNull UUID databaseId) {
+        this(token, databaseId, null, AstraEnvironment.PROD);
+    }
+
+    /**
+     * Full constructor.
+     *
+     * @param token
+     *      token
+     * @param databaseId
+     *      database identifier
      * @param env
      *      environment
      */
     public AstraDB(@NonNull String token, @NonNull UUID databaseId, @NonNull AstraEnvironment env) {
+        this(token, databaseId, null, env);
+    }
+
+    /**
+     * Accessing the database with id an region.
+     * @param token
+     *      astra token
+     * @param databaseId
+     *      databsae id
+     * @param region
+     *      database region
+     * @param env
+     *      environment
+     */
+    public AstraDB(@NonNull String token, @NonNull UUID databaseId, String region, @NonNull AstraEnvironment env) {
         this.env = env;
         Database db = new AstraDBOpsClient(token, env)
                 .findById(databaseId.toString())
@@ -91,7 +120,7 @@ public class AstraDB {
 
         this.apiClient = AstraClient.builder()
                 .env(env)
-                .withDatabaseRegion(db.getInfo().getRegion())
+                .withDatabaseRegion(region == null ? region : db.getInfo().getRegion())
                 .withDatabaseId(databaseId.toString())
                 .disableCrossRegionFailOver()
                 .build()

@@ -67,7 +67,7 @@ public class AstraDBOpsClient extends AbstractApiClient {
      *      work with regions
      */
     public DbRegionsClient regions() {
-        return new DbRegionsClient(token);
+        return new DbRegionsClient(token, getEnvironment());
     }
 
 

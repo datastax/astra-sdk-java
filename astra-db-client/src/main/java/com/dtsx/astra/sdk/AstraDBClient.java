@@ -1,5 +1,7 @@
 package com.dtsx.astra.sdk;
 
+import com.datastax.astra.sdk.AstraClient;
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.DbOpsClient;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
@@ -23,7 +25,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -380,6 +384,48 @@ public class AstraDBClient {
      */
     public ApiClient getApiClient(@NonNull UUID databaseId) {
         return database(databaseId).getApiClient();
+    }
+
+    Map<String, CqlSession> cqlSessions = new HashMap<>();
+
+    /**
+     * Access the cqlSession for the database.
+     *
+     * @param databaseName
+     *      current database
+     * @return
+     *      current cqlSession.
+     */
+    public CqlSession getCqlSession(String databaseName) {
+        // initialized if not present
+        cqlSessions.computeIfAbsent(databaseName, k -> {
+            List<Database> dbs = findDatabaseByName(databaseName).collect(Collectors.toList());
+            if (dbs.isEmpty()) {
+                throw new DatabaseNotFoundException(databaseName);
+            }
+            if (dbs.size()>1) {
+                throw new IllegalStateException("More than one database exists with the same name, use its uuid.");
+            }
+            Database db = dbs.get(0);
+            return AstraClient.builder()
+                    .env(env)
+                    .withDatabaseRegion(db.getInfo().getRegion())
+                    .withDatabaseId(db.getId())
+                    .disableCrossRegionFailOver()
+                    .enableCql()
+                    .enableDownloadSecureConnectBundle()
+                    .build().cqlSession();
+        });
+        return cqlSessions.get(databaseName);
+    }
+
+    // create a runtime shutdown hook to close each session
+    {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            cqlSessions.values().stream()
+                    .filter(session -> !session.isClosed())
+                    .forEach(CqlSession::close);
+        }));
     }
 
     /**
