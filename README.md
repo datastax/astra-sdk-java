@@ -19,3 +19,45 @@ This SDK *(Software Development Kit)* makes it easy to call Stargate and/or Astr
 2. [QuickStart for Astra](https://github.com/datastax/astra-sdk-java/wiki/Astra-SDK-Quickstart)
 3. [QuickStart for Astra Spring Boot Starter](https://github.com/datastax/astra-sdk-java/wiki/Spring-Boot-Starter-Quickstart)
 
+## Release Workflow
+
+### Prerequisites
+
+- [x] Start the `ssh-agent` 
+
+```console
+eval "$(ssh-agent -s)"
+```
+- [x] Add the ssh key to the agent
+
+```console
+cd ~/.ssh
+ssh-add githubff4j
+```
+
+- [x] cleanup sources
+
+```console
+find . -type f -name *.DS_Store -ls -delete
+git pull
+git add -A
+git commit -m "delivery"
+git push
+```
+
+### Release
+
+- [x] Run release 
+```
+mvn release:prepare release:perform
+```
+
+- Go to the [taglist](https://github.com/datastax/astra-sdk-java/tags) on github then create the release
+
+- Create a release note document
+```
+`Fixes:`
+ + XXX (#000)
+`Evolutions`
+ + YYY (#000)
+```
