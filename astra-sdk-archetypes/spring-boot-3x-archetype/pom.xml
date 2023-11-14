@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.datastax.astra</groupId>
     <artifactId>astra-sdk-archetypes</artifactId>
-    <version>0.7.5-SNAPSHOT</version>
+    <version>0.7.4-SNAPSHOT</version>
   </parent>
 
   <build>
