@@ -56,6 +56,10 @@ public class AstraDB {
     public AstraDB(String token, String apiEndpoint) {
         Objects.requireNonNull(token, "token");
         Objects.requireNonNull(apiEndpoint, "apiEndpoint");
+        // Fixing api
+        if (apiEndpoint.endsWith("com")) {
+            apiEndpoint = apiEndpoint + "/api/json";
+        }
         // Finding Environment based on apiEndpoint (looping to devops)
         if (apiEndpoint.contains(AstraEnvironment.PROD.getAppsSuffix())) {
             this.env = AstraEnvironment.PROD;
