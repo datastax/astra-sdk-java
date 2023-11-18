@@ -86,7 +86,7 @@ public abstract class AbstractCassandraTable<RECORD> {
     /**
      * Create table if not exist.
      */
-    public abstract void createSchema();
+    public abstract void create();
 
     /**
      * Upsert a row of the table.
@@ -132,4 +132,12 @@ public abstract class AbstractCassandraTable<RECORD> {
         cqlSession.execute("TRUNCATE " + keyspaceName + "." + tableName);
     }
 
+    /**
+     * Gets cqlSession
+     *
+     * @return value of cqlSession
+     */
+    public CqlSession getCqlSession() {
+        return cqlSession;
+    }
 }

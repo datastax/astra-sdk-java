@@ -170,7 +170,7 @@ public class TestUtils {
             // Db is active, should I add a keyspace ?
             if (!dbClient.keyspaces().findAll().contains(keyspace)) {
                 dbClient.keyspaces().create(keyspace);
-                waitForDbStatus(dbClient, DatabaseStatusType.ACTIVE, 100);
+                waitForDbStatus(dbClient, DatabaseStatusType.ACTIVE, 1000);
             }
             return db.getId();
         } else {
@@ -187,7 +187,7 @@ public class TestUtils {
             }
             String serverlessDbId = devopsDbCli.create(builder.build());
             DbOpsClient dbc = new DbOpsClient(devopsDbCli.getToken(), serverlessDbId);
-            waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 180);
+            waitForDbStatus(dbc, DatabaseStatusType.ACTIVE, 1800);
             return serverlessDbId;
         }
     }

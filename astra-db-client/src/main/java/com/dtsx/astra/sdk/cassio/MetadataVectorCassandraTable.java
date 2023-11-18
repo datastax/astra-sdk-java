@@ -58,13 +58,12 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
         super(session, keyspaceName, tableName);
         this.vectorDimension = vectorDimension;
         this.similarityMetric = metric;
-        createSchema();
     }
 
     /**
      * Create table and indexes if not exist.
      */
-    public void createSchema() {
+    public void create() {
         // Create Table
         cqlSession.execute("CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                 ROW_ID + " text, " +
@@ -76,19 +75,16 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
                 ROW_ID + ")" +
                 ")");
         log.info("+ Table '{}' has been created (if needed).", tableName);
-        // Create Vector Index
-        Map<String, Object> optionMap = new HashMap<>();
-        optionMap.put("similarity_function", similarityMetric.getOption());
         cqlSession.execute(
                 "CREATE CUSTOM INDEX IF NOT EXISTS idx_vector_" + tableName
                         + " ON " + tableName + " (" + VECTOR + ") "
                         + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex' "
-                        + "WITH OPTIONS = " + optionMap.toString());
+                        + "WITH OPTIONS = { 'similarity_function': '" +  similarityMetric.getOption() + "'};");
         log.info("+ Index '{}' has been created (if needed).", "idx_vector_" + tableName);
         // Create Metadata Index
         cqlSession.execute(
                 "CREATE CUSTOM INDEX IF NOT EXISTS eidx_metadata_s_" + tableName
-                        + " ON " + tableName + " ENTRIES(" + METADATA_S + ") "
+                        + " ON " + tableName + " (ENTRIES(" + METADATA_S + ")) "
                         + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex' ");
         log.info("+ Index '{}' has been created (if needed).", "eidx_metadata_s_" + tableName);
     }
