@@ -5,6 +5,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import io.stargate.sdk.ServiceDeployment;
 import io.stargate.sdk.api.SimpleTokenProvider;
@@ -44,6 +45,10 @@ public class AstraDB {
      */
     private final NamespaceClient nsClient;
 
+    /**
+     * Url to access the API
+     */
+    private final String apiEndpoint;
 
     /**
      * Initialization with endpoint and apikey.
@@ -60,6 +65,7 @@ public class AstraDB {
         if (apiEndpoint.endsWith("com")) {
             apiEndpoint = apiEndpoint + "/api/json";
         }
+        this.apiEndpoint = apiEndpoint;
         // Finding Environment based on apiEndpoint (looping to devops)
         if (apiEndpoint.contains(AstraEnvironment.PROD.getAppsSuffix())) {
             this.env = AstraEnvironment.PROD;
@@ -122,16 +128,25 @@ public class AstraDB {
                 .findById(databaseId.toString())
                 .orElseThrow(() -> new DatabaseNotFoundException(databaseId.toString()));
 
-        this.apiClient = AstraClient.builder()
-                .env(env)
-                .withDatabaseRegion(region == null ? region : db.getInfo().getRegion())
-                .withDatabaseId(databaseId.toString())
-                .disableCrossRegionFailOver()
-                .build()
-                .apiStargateJson();
+        this.apiEndpoint = ApiLocator
+                .getApiJsonEndpoint(env, databaseId.toString(), region != null ? region : db.getInfo().getRegion());
+        // Create Json Api Client without AstraDB
+        ServiceDeployment<ServiceHttp> jsonDeploy = new ServiceDeployment<>();
+        jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(token));
+        jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
+        this.apiClient = new ApiClient(jsonDeploy);
 
         // will inherit 'default_keyspace' from the database
         this.nsClient = apiClient.namespace(db.getInfo().getKeyspace());
+    }
+
+    /**
+     * Gets apiEndpoint
+     *
+     * @return value of apiEndpoint
+     */
+    public String getApiEndpoint() {
+        return apiEndpoint;
     }
 
     // --------------------------

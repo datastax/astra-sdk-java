@@ -92,6 +92,20 @@ public class ApiLocator {
     /**
      * END Point for the Json API
      *
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      region identifier
+     * @return
+     *      the url to invoke
+     */
+    public static String getApiEndpoint(String dbId, String dbRegion) {
+        return getApiEndpoint(AstraEnvironment.PROD, dbId, dbRegion);
+    }
+
+    /**
+     * END Point for the Json API
+     *
      * @param env
      *      target environment
      * @param dbId
@@ -102,10 +116,25 @@ public class ApiLocator {
      *      the url to invoke
      */
     public static String getApiJsonEndpoint(AstraEnvironment env, String dbId, String dbRegion) {
+        return getApiEndpoint(env, dbId, dbRegion) + "/api/json";
+    }
+
+    /**
+     * END Point for the Json API
+     *
+     * @param env
+     *      target environment
+     * @param dbId
+     *      database identifier
+     * @param dbRegion
+     *      region identifier
+     * @return
+     *      the url to invoke
+     */
+    public static String getApiEndpoint(AstraEnvironment env, String dbId, String dbRegion) {
         Assert.hasLength(dbId, "dbId");
         Assert.hasLength(dbRegion, "dbRegion");
-        String val =  HTTPS + dbId + "-" + dbRegion + env.getAppsSuffix() + "/api/json";
-        return val;
+        return HTTPS + dbId + "-" + dbRegion + env.getAppsSuffix();
     }
 
     /**
