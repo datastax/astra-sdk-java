@@ -35,6 +35,7 @@ public class AstraVectorQuickStart {
         // 2. Create a  store (delete if exist)
         AstraDB astraDB = astraDBClient.database(databaseName);
 
+
         // 3. Insert data in the store
         astraDB.deleteCollection(collectionName);
         CollectionClient collection = astraDB.createCollection(collectionName, 14);

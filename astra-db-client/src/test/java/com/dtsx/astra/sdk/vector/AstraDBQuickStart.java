@@ -38,7 +38,6 @@ public class AstraDBQuickStart {
                         .put("description", "Vision Vector Frame - A deep learning display that controls your mood")
                         .vector(new float[]{0.1f, 0.05f, 0.08f, 0.3f, 0.6f})
         ));
-
         // Search
         List<JsonResult> resultsSet =
                 testCollection.similaritySearch(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f},10);

@@ -219,4 +219,21 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
         );
     }
 
+    @Test
+    @Order(9)
+    @DisplayName("09. Upsert with CollectionClient")
+    public void shouldUpsertDocument() {
+        if (astraDb == null) {
+            astraDb = astraDbClient.database(TEST_DBNAME);
+        }
+        CollectionClient collection = astraDb.collection(TEST_COLLECTION_NAME);
+        Assertions.assertNotNull(collection);
+        JsonDocument doc = new JsonDocument()
+                .id("4")
+                .put("name", "Coded Cleats Copy")
+                .put("description", "ChatGPT integrated sneakers that talk to you");
+        collection.upsert(doc);
+        collection.upsert(doc);
+    }
+
 }
