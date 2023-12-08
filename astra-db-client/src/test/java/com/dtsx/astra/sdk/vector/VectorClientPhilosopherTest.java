@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
@@ -44,7 +45,7 @@ class VectorClientPhilosopherTest {
         private Set<String> tags;
     }
 
-    static CollectionRepository<Quote> quoteRepository;
+    static AstraDBRepository<Quote> quoteRepository;
 
     static OpenAiEmbeddingModel openaiVectorizer = OpenAiEmbeddingModel.builder()
             .apiKey(System.getenv("OPENAI_API_KEY"))
@@ -101,7 +102,7 @@ class VectorClientPhilosopherTest {
                 .collectionRepository(VECTOR_STORE_NAME, Quote.class);
 
         float[] embeddings = vectorize("We struggle all our life for nothing");
-        quoteRepository.similaritySearch(embeddings, null,3)
+        quoteRepository.findVector(embeddings,3)
                 .stream()
                 .map(Document::getData)
                 .map(Quote::getQuote)

@@ -36,7 +36,6 @@
                     <groupId>com.datastax.astra</groupId>
                     <artifactId>astra-sdk-pulsar</artifactId>
                 </exclusion>
-                <!--
                 <exclusion>
                     <groupId>com.datastax.stargate</groupId>
                     <artifactId>stargate-sdk-document</artifactId>
@@ -49,7 +48,14 @@
                     <groupId>com.datastax.stargate</groupId>
                     <artifactId>stargate-sdk-grpc</artifactId>
                 </exclusion>
-                -->
+                <exclusion>
+                    <groupId>com.datastax.stargate</groupId>
+                    <artifactId>stargate-sdk-grpc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.datastax.stargate</groupId>
+                    <artifactId>stargate-sdk-cql</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

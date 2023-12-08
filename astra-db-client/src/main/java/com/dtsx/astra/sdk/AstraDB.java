@@ -1,7 +1,5 @@
 package com.dtsx.astra.sdk;
 
-import com.datastax.astra.sdk.AstraClient;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.db.exception.DatabaseNotFoundException;
@@ -11,15 +9,13 @@ import io.stargate.sdk.ServiceDeployment;
 import io.stargate.sdk.api.SimpleTokenProvider;
 import io.stargate.sdk.http.ServiceHttp;
 import io.stargate.sdk.json.ApiClient;
-import io.stargate.sdk.json.CollectionClient;
-import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.NamespaceClient;
 import io.stargate.sdk.json.domain.CollectionDefinition;
+import io.stargate.sdk.json.domain.SimilarityMetric;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -59,13 +55,26 @@ public class AstraDB {
      *      api endpoint
      */
     public AstraDB(String token, String apiEndpoint) {
-        Objects.requireNonNull(token, "token");
-        Objects.requireNonNull(apiEndpoint, "apiEndpoint");
-        // Fixing api
+        this(token, apiEndpoint, AstraDBClient.DEFAULT_KEYSPACE);
+    }
+
+    /**
+     * Initialization with endpoint and apikey.
+     *
+     * @param token
+     *      api token
+     * @param apiEndpoint
+     *      api endpoint
+     * @param keyspace
+     *      keyspace
+     */
+    public AstraDB(@NonNull String token, @NonNull String apiEndpoint, @NonNull String keyspace) {
+        // Support for apiEndpoint with or without /api/json
         if (apiEndpoint.endsWith("com")) {
             apiEndpoint = apiEndpoint + "/api/json";
         }
         this.apiEndpoint = apiEndpoint;
+
         // Finding Environment based on apiEndpoint (looping to devops)
         if (apiEndpoint.contains(AstraEnvironment.PROD.getAppsSuffix())) {
             this.env = AstraEnvironment.PROD;
@@ -82,7 +91,7 @@ public class AstraDB {
         jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(token));
         jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
         this.apiClient = new ApiClient(jsonDeploy);
-        this.nsClient = apiClient.namespace(AstraDBClient.DEFAULT_KEYSPACE);
+        this.nsClient = apiClient.namespace(keyspace);
     }
 
     /**
@@ -94,7 +103,7 @@ public class AstraDB {
      *      database identifier
      */
     public AstraDB(@NonNull String token, @NonNull UUID databaseId) {
-        this(token, databaseId, null, AstraEnvironment.PROD);
+        this(token, databaseId, null, AstraEnvironment.PROD, AstraDBClient.DEFAULT_KEYSPACE);
     }
 
     /**
@@ -104,15 +113,32 @@ public class AstraDB {
      *      token
      * @param databaseId
      *      database identifier
-     * @param env
-     *      environment
+     * @param keyspace
+     *      database keyspace
      */
-    public AstraDB(@NonNull String token, @NonNull UUID databaseId, @NonNull AstraEnvironment env) {
-        this(token, databaseId, null, env);
+    public AstraDB(@NonNull String token, @NonNull UUID databaseId, @NonNull String keyspace) {
+        this(token, databaseId, null, AstraEnvironment.PROD, keyspace);
+    }
+
+    /**
+     * Full constructor.
+     *
+     * @param token
+     *      token
+     * @param databaseId
+     *      database identifier
+     * @param region
+     *      database region
+     * @param keyspace
+     *      keyspace
+     */
+    public AstraDB(@NonNull String token, @NonNull UUID databaseId, @NonNull String region, @NonNull String keyspace) {
+        this(token, databaseId, region, AstraEnvironment.PROD, keyspace);
     }
 
     /**
      * Accessing the database with id an region.
+     *
      * @param token
      *      astra token
      * @param databaseId
@@ -122,7 +148,7 @@ public class AstraDB {
      * @param env
      *      environment
      */
-    public AstraDB(@NonNull String token, @NonNull UUID databaseId, String region, @NonNull AstraEnvironment env) {
+    public AstraDB(@NonNull String token, @NonNull UUID databaseId, String region, @NonNull AstraEnvironment env, String keyspace) {
         this.env = env;
         Database db = new AstraDBOpsClient(token, env)
                 .findById(databaseId.toString())
@@ -135,18 +161,10 @@ public class AstraDB {
         jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(token));
         jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
         this.apiClient = new ApiClient(jsonDeploy);
-
-        // will inherit 'default_keyspace' from the database
-        this.nsClient = apiClient.namespace(db.getInfo().getKeyspace());
-    }
-
-    /**
-     * Gets apiEndpoint
-     *
-     * @return value of apiEndpoint
-     */
-    public String getApiEndpoint() {
-        return apiEndpoint;
+        if (keyspace == null) {
+            keyspace = db.getInfo().getKeyspace();
+        }
+        this.nsClient = apiClient.namespace(keyspace);
     }
 
     // --------------------------
@@ -211,8 +229,8 @@ public class AstraDB {
      * @return
      *      json vector store
      */
-    public CollectionClient createCollection(String name) {
-        return nsClient.createCollection(name);
+    public AstraDBCollection createCollection(String name) {
+        return new AstraDBCollection(nsClient.createCollection(name));
     }
 
     /**
@@ -227,8 +245,8 @@ public class AstraDB {
      * @return
      *      json vector store
      */
-    public <DOC> CollectionRepository<DOC> createCollection(String name, Class<DOC> clazz) {
-        return nsClient.createCollection(name, clazz);
+    public <DOC> AstraDBRepository<DOC> createCollection(String name, Class<DOC> clazz) {
+        return new AstraDBRepository<DOC>(nsClient.createCollection(name, clazz));
     }
 
     /**
@@ -241,8 +259,26 @@ public class AstraDB {
      * @return
      *      json vector store
      */
-    public CollectionClient createCollection(String name, int vectorDimension) {
-        return nsClient.createCollection(name, vectorDimension);
+    public AstraDBCollection createCollection(String name, int vectorDimension) {
+        return new AstraDBCollection(nsClient.createCollection(name, vectorDimension));
+    }
+
+    /**
+     * Create the minimal store.
+     *
+     * @param name
+     *      store name
+     * @param vectorDimension
+     *      dimension
+     * @return
+     *      json vector store
+     */
+    public AstraDBCollection createCollection(String name, int vectorDimension, SimilarityMetric metric) {
+        return new AstraDBCollection(nsClient.createCollection(CollectionDefinition
+                .builder()
+                .name(name)
+                .vector(vectorDimension, metric)
+                .build()));
     }
 
     /**
@@ -259,8 +295,8 @@ public class AstraDB {
      * @param <T>
      *       object type
      */
-    public <T> CollectionRepository<T> createCollection(String name, int vectorDimension, Class<T> bean) {
-        return nsClient.createCollection(name, vectorDimension, bean);
+    public <T> AstraDBRepository<T> createCollection(String name, int vectorDimension, Class<T> bean) {
+        return new AstraDBRepository(nsClient.createCollection(name, vectorDimension, bean));
     }
 
 
@@ -272,8 +308,8 @@ public class AstraDB {
      * @return
      *      json vector store
      */
-    public CollectionClient createCollection(CollectionDefinition def) {
-        return nsClient.createCollection(def);
+    public AstraDBCollection createCollection(CollectionDefinition def) {
+        return new AstraDBCollection(nsClient.createCollection(def));
     }
 
     /**
@@ -288,8 +324,8 @@ public class AstraDB {
      * @return
      *      json vector store
      */
-    public <DOC> CollectionRepository<DOC> createCollection(CollectionDefinition def, Class<DOC> clazz) {
-        return nsClient.createCollection(def, clazz);
+    public <DOC> AstraDBRepository<DOC> createCollection(CollectionDefinition def, Class<DOC> clazz) {
+        return new AstraDBRepository<DOC>(nsClient.createCollection(def, clazz));
     }
 
     // --------------------
@@ -304,8 +340,8 @@ public class AstraDB {
      * @return
      *      storeName client
      */
-    public CollectionClient collection(@NonNull  String storeName) {
-        return nsClient.collection(storeName);
+    public AstraDBCollection collection(@NonNull  String storeName) {
+        return new AstraDBCollection(nsClient.collection(storeName));
     }
 
     /**
@@ -320,8 +356,18 @@ public class AstraDB {
      * @param <T>
      *      type of the bean in use
      */
-    public <T> CollectionRepository<T> collectionRepository(@NonNull  String storeName, Class<T> clazz) {
-        return nsClient.collectionRepository(storeName, clazz);
+    public <T> AstraDBRepository<T> collectionRepository(@NonNull  String storeName, Class<T> clazz) {
+        return new AstraDBRepository<T>(nsClient.collectionRepository(storeName, clazz));
+    }
+
+    /**
+     * Access the low level Stargate Namespace resource operation.
+     *
+     * @return
+     *      raw namespace client
+     */
+    public NamespaceClient getRawNamespaceClient() {
+        return nsClient;
     }
 
 }

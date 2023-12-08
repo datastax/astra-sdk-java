@@ -2,6 +2,8 @@ package com.dtsx.astra.sdk.vector.demo;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBCollection;
+import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.core.domain.Page;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class VectorNativeTest {
 
@@ -54,15 +57,14 @@ public class VectorNativeTest {
         // init
         AstraDB db = new AstraDB(apiKey, apiEndpoint);
         // create collection
-        CollectionClient col = db.createCollection(collectionName, 14);
+        AstraDBCollection col = db.createCollection(collectionName, 14);
         // Insertions
         col.insertOne(new JsonDocument()
                 .put("metadata1", "value1")
                 .vector(new float[]{0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 0f}));
+
         // Search
-        Page<JsonResult> resultSet = col
-                .similaritySearch(new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},
-                        null,2, null);
+        Stream<JsonResult> resultSet = col.findVector(new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f});
 
         AstraDB database = new AstraDB(apiKey, apiEndpoint);
         // Create Vector Store (if exist)
@@ -71,8 +73,7 @@ public class VectorNativeTest {
         database.createCollection(collectionName, 14);
 
         // Given a bean 'Product', work with collection
-        CollectionRepository<Product> collection = database
-                .collectionRepository(collectionName, Product.class);
+        AstraDBRepository<Product> collection = database.collectionRepository(collectionName, Product.class);
 
         // Insert Products
         collection.save(new Document<>("pf7044",
@@ -89,7 +90,7 @@ public class VectorNativeTest {
 
         // Similarity Search
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        collection.similaritySearch(embeddings,null, 2).forEach(r->  {
+        collection.findVector(embeddings,null, 2).forEach(r->  {
             System.out.println(r.getSimilarity() + " - " + r.getId() + " - " + r.getData().getName());
         });
 
@@ -97,12 +98,12 @@ public class VectorNativeTest {
 
     public void useInApplication() {
 
-        CollectionRepository<Product> vectorCollection = new AstraDBClient(apiKey)
+        AstraDBRepository<Product> vectorCollection = new AstraDBClient(apiKey)
                 .database(databaseName)
                 .collectionRepository(collectionName, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        vectorCollection.similaritySearch(embeddings,null, 2).forEach(r->  {
+        vectorCollection.findVector(embeddings,null, 2).forEach(r->  {
             System.out.println(r.getSimilarity() + " - " + r.getId() + " - " + r.getData().getName());
         });
 

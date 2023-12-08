@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.json.CollectionRepository;
@@ -47,7 +48,7 @@ class VectorClientProductTest {
         private Double price;
     }
 
-    static CollectionRepository<Product> productRepository;
+    static AstraDBRepository<Product> productRepository;
 
     @BeforeAll
     public static void setup() {
@@ -113,7 +114,7 @@ class VectorClientProductTest {
                 .collectionRepository(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        for(Result<Product> result : productRepository.similaritySearch(embeddings,null, 2)) {
+        for(Result<Product> result : productRepository.findVector(embeddings,null, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()
                     + ", vector=" + Arrays.toString(result.getVector()));
@@ -132,7 +133,28 @@ class VectorClientProductTest {
         Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
 
         for(Result<Product> result : productRepository
-                .similaritySearch(embeddings, metadataFilter, 2)) {
+                .findVector(embeddings, metadataFilter, 2)) {
+            System.out.println(result.getId()
+                    + ") similarity=" + result.getSimilarity()
+                    + ", vector=" + Arrays.toString(result.getVector()));
+        }
+
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("04. Search with Meta Data")
+    public void shouldSimilaritySearcAndNotReturnVector() {
+        productRepository = new AstraDBClient()
+                .database(DBNAME_VECTOR_CLIENT)
+                .collectionRepository(VECTOR_STORE_NAME, Product.class);
+
+        float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
+        Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
+        new Filter().where("product_price").isEqualsTo(9.99);
+
+        for(Result<Product> result : productRepository
+                .findVector(embeddings, metadataFilter, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()
                     + ", vector=" + Arrays.toString(result.getVector()));

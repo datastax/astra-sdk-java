@@ -37,6 +37,7 @@ import static io.stargate.sdk.json.domain.SimilarityMetric.cosine;
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
+
     /**
      * Test Constants
      */
@@ -53,9 +54,9 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     static AstraDBClient astraDbClient;
     static AstraDB astraDb;
     static UUID databaseId;
-    static CollectionRepository<Product> productRepositoryVector;
+    static AstraDBRepository<Product> productRepositoryVector;
 
-    static CollectionRepository<Product> productRepositorySimple;
+    static AstraDBRepository<Product> productRepositorySimple;
 
     @Data
     @NoArgsConstructor
@@ -84,7 +85,7 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
         // When
         astraDbClient = new AstraDBClient(astraToken, targetEnvironment);
         // Then
-        Assertions.assertNotNull(astraDbClient.getAstraDBOps());
+        Assertions.assertNotNull(astraDbClient.getRawDevopsApiClient());
         Assertions.assertNotNull(astraDbClient.getToken());
         log.info("Initialization OK: environment '{}', cloud '{}', region '{}'",
                 targetEnvironment, targetCloud.name(), targetRegion);
@@ -206,7 +207,7 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     @Order(8)
     @DisplayName("08. Insert with CollectionClient")
     public void shouldInsertWithSimpleCollectionJsonMapping() {
-        CollectionClient collection = astraDb.collection(TEST_COLLECTION_NAME);
+        AstraDBCollection collection = astraDb.collection(TEST_COLLECTION_NAME);
         Assertions.assertNotNull(collection);
         collection.insertOne(new JsonDocument()
                 .id("4")
@@ -226,7 +227,7 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
         if (astraDb == null) {
             astraDb = astraDbClient.database(TEST_DBNAME);
         }
-        CollectionClient collection = astraDb.collection(TEST_COLLECTION_NAME);
+        AstraDBCollection collection = astraDb.collection(TEST_COLLECTION_NAME);
         Assertions.assertNotNull(collection);
         JsonDocument doc = new JsonDocument()
                 .id("4")

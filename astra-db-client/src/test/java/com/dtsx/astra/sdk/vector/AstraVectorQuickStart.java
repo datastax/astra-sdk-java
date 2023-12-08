@@ -2,9 +2,9 @@ package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBCollection;
+import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.CollectionClient;
-import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.odm.Document;
 import io.stargate.sdk.json.domain.odm.Result;
@@ -38,7 +38,7 @@ public class AstraVectorQuickStart {
 
         // 3. Insert data in the store
         astraDB.deleteCollection(collectionName);
-        CollectionClient collection = astraDB.createCollection(collectionName, 14);
+        AstraDBCollection collection = astraDB.createCollection(collectionName, 14);
            // 3a. Insert One (attributes as key/value)
            collection.insertOne(new JsonDocument()
                 .id("doc1") // generated if not set
@@ -66,15 +66,14 @@ public class AstraVectorQuickStart {
                     .vector(new float[]{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
                     .put("product_name", "HealthyFresh - Chicken raw dog food")
                     .put("product_price", 9.99));
-           collection.similaritySearch(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},
-                   null, 2, null);
+           collection.findVector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f});
 
         // ------------------------------------------
         // ----- Crud Repository                 ----
         // ------------------------------------------
 
         // With ODM
-        CollectionRepository<Product> productRepository =
+        AstraDBRepository<Product> productRepository =
                 astraDB.collectionRepository(collectionName, Product.class);
 
         // 3 fields: id, payload, vector
@@ -91,7 +90,7 @@ public class AstraVectorQuickStart {
         Assertions.assertEquals(6, productRepository.count());
 
         List<Result<Product>> results = productRepository
-                .similaritySearch(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}, null, 2);
+                .findVector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}, null, 2);
     }
 
     @Data
