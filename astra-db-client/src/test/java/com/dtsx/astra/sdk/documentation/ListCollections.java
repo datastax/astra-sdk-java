@@ -1,12 +1,12 @@
-package com.dtsx.astra.sdk;
-
+package com.dtsx.astra.sdk.documentation;
+import com.dtsx.astra.sdk.AstraDB;
 import io.stargate.sdk.json.domain.CollectionDefinition;
 
-public class Documentation {
-    public static void listCollections() {
+public class ListCollections {
+    public static void main(String[] args) {
         // Given an active db
         AstraDB db = new AstraDB("<token>", "<api_endpoint>");
-
+        // Iterate over all collections
         db.findAllCollections().forEach(col -> {
             System.out.println("name=" + col.getName());
             if (col.getOptions() != null && col.getOptions().getVector() != null) {
@@ -17,8 +17,3 @@ public class Documentation {
         });
     }
 }
-
-
-// [...]
-
-
