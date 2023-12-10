@@ -4,6 +4,7 @@ import io.stargate.sdk.json.domain.CollectionDefinition;
 
 public class FindAllCollections {
   public static void main(String[] args) {
+
     // Given an active db
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 

@@ -6,10 +6,11 @@ import java.util.Optional;
 
 public class DeleteCollection {
   public static void main(String[] args) {
+
     // Given an active db
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 
     // Find a collection
-    db.deleteCollection("tmp_collection");
+    db.deleteCollection("collection_vector1");
   }
 }

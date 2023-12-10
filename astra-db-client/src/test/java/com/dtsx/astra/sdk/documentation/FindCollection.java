@@ -6,13 +6,14 @@ import java.util.Optional;
 
 public class FindCollection {
   public static void main(String[] args) {
+
     // Given an active db
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 
     // Find a collection
-    Optional<CollectionDefinition> collection = db.findCollection("collection1");
+    Optional<CollectionDefinition> collection = db.findCollection("collection_vector1");
 
     // Another test with a collection that does not exist
-    boolean collectionExists = db.isCollectionExists("collection1");
+    boolean collectionExists = db.isCollectionExists("collection_vector2");
   }
 }
