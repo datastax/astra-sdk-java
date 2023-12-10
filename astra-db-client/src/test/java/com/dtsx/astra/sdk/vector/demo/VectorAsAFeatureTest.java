@@ -76,12 +76,12 @@ public class VectorAsAFeatureTest {
         doc2.ifPresent(this::showResult);
 
         // Find documents using vector search
-        Page<JsonResult> results = collection.queryForPage(
+        Page<JsonResult> results = collection.findPage(
                 SelectQuery.builder()
                 .where("$vector").isEqualsTo(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
                 // best way to do it below
                 //.orderByAnn(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
-                .limit(2)
+                .withLimit(2)
                 .build());
         System.out.println(results.getResults().get(0).getData().get("name"));
         System.out.println(results.getResults().size());
@@ -94,11 +94,11 @@ public class VectorAsAFeatureTest {
          * options = {"limit": 100}
          * projection = {"$vector": 1, "$similarity": 1}
           */
-        Page<JsonResult> results2 = collection.queryForPage(
+        Page<JsonResult> results2 = collection.findPage(
                 SelectQuery.builder()
                         .orderByAnn(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
-                        .limit(2)
-                        .selectVector().selectSimilarity()
+                        .withLimit(2)
+                        .includeSimilarity()
                         .build());
         showPage(results2);
 
@@ -110,7 +110,6 @@ public class VectorAsAFeatureTest {
          */
         Optional<JsonResult> doc3 = collection.findOne(SelectQuery.builder()
                 .orderByAnn(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
-                .selectVector()
                 .build());
         doc3.ifPresent(this::showResult);
 

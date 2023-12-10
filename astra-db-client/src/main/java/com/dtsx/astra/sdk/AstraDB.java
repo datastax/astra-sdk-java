@@ -154,12 +154,22 @@ public class AstraDB {
                 .findById(databaseId.toString())
                 .orElseThrow(() -> new DatabaseNotFoundException(databaseId.toString()));
 
-        this.apiEndpoint = ApiLocator
-                .getApiJsonEndpoint(env, databaseId.toString(), region != null ? region : db.getInfo().getRegion());
-        // Create Json Api Client without AstraDB
+        if (region == null) region = db.getInfo().getRegion();
+
         ServiceDeployment<ServiceHttp> jsonDeploy = new ServiceDeployment<>();
         jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(token));
+        this.apiEndpoint = ApiLocator.getApiJsonEndpoint(env, databaseId.toString(), region);
         jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
+
+        final String defaultRegion = region;
+        db.getInfo()
+          .getDatacenters().stream()
+          .filter(dc->!dc.getRegion().equals(defaultRegion))
+          .forEach(dc -> {
+           String dcApiEndpoint = ApiLocator.getApiJsonEndpoint(env, databaseId.toString(), dc.getRegion());
+           jsonDeploy.addDatacenterServices(dc.getName(), new ServiceHttp("json", dcApiEndpoint, dcApiEndpoint));
+        });
+
         this.apiClient = new ApiClient(jsonDeploy);
         if (keyspace == null) {
             keyspace = db.getInfo().getKeyspace();
@@ -296,7 +306,10 @@ public class AstraDB {
      *       object type
      */
     public <T> AstraDBRepository<T> createCollection(String name, int vectorDimension, Class<T> bean) {
-        return new AstraDBRepository(nsClient.createCollection(name, vectorDimension, bean));
+        return new AstraDBRepository<T>(nsClient.createCollection(CollectionDefinition.builder()
+                .name(name)
+                .vector(vectorDimension, SimilarityMetric.cosine)
+                .build(), bean));
     }
 
 
