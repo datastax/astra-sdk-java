@@ -16,11 +16,13 @@ AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 /*
  * Given a collection with vector (dimension 14)
  * Can be created with:
- * AstraDBCollection collection = db.createCollection("collection_vector1", 14);
+ * AstraDBCollection collection = db
+ *   .createCollection("collection_vector1", 14);
  */
 AstraDBCollection collection = db.collection("collection_vector1");
 // Adding this list to allow the test to be re-runnable
 collection.deleteAll();
+
 //  (1) You can insert records with key/value.
 collection.insertOne(new JsonDocument()
  .id("doc1") // uuid is generated if not explicitely set
@@ -45,7 +47,7 @@ collection.insertOne(new JsonDocument()
  .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food"))
 );
 
-// (4) All hybrid combination are possible (key/value, json, map)
+// (4) Any combination is possible (key/value, json, map)
 collection.insertOne(new JsonDocument()
  .id("doc4")
  .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
@@ -63,12 +65,7 @@ try {
 }
 
 /*
-* (5) Insertion rules
-*
-* - all attributes are nullable
-* - id is generated if needed, the id is returned by insertOne()
-* - Add any property you want, but needs to use [A-Za-z_-.] and not starting by '$'
-* - It is schema less, values can be any simple type
+* (6) If not provided id is generated and returned
 */
 String generatedId = collection.insertOne(
         new JsonDocument().put("demo", 1));

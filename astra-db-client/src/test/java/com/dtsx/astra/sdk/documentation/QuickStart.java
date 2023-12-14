@@ -27,10 +27,8 @@ demoCollection.insertOne(new JsonDocument()
 demoCollection.insertOne(new JsonDocument()
  .id("doc2")
  .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
- .data("{"
-  + "   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
-  + "  \"product_price\": 9.99"
-  + "}"));
+ .put("product_name", "HealthyFresh - Chicken raw dog food")
+ .put("product_price", 9.99));
 demoCollection.insertOne(new JsonDocument()
  .id("doc3")
  .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
