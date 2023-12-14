@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,14 +26,14 @@ public class AstraVectorQuickStart {
         String collectionName  = "collection_quickstart";
 
         // 1a. Initialization with a client
-        AstraDBClient astraDBClient = new AstraDBClient(astraToken);
+        AstraDBAdmin astraDBAdmin = new AstraDBAdmin(astraToken);
         // 1b. Create DB (Skip if you already have a database running)
-        if (!astraDBClient.isDatabaseExists(databaseName)) {
-            astraDBClient.createDatabase(databaseName);
+        if (!astraDBAdmin.isDatabaseExists(databaseName)) {
+            astraDBAdmin.createDatabase(databaseName);
         }
 
         // 2. Create a  store (delete if exist)
-        AstraDB astraDB = astraDBClient.database(databaseName);
+        AstraDB astraDB = astraDBAdmin.database(databaseName);
 
 
         // 3. Insert data in the store

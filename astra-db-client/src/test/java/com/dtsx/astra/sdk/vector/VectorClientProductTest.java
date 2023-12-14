@@ -1,11 +1,10 @@
 package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.Filter;
 import io.stargate.sdk.json.domain.odm.Document;
 import io.stargate.sdk.json.domain.odm.Result;
@@ -55,7 +54,7 @@ class VectorClientProductTest {
         if (System.getenv(AstraRc.ASTRA_DB_APPLICATION_TOKEN) == null) {
             throw new IllegalStateException("Please setup 'ASTRA_DB_APPLICATION_TOKEN' env variable");
         }
-        AstraDBClient vectorClient = new AstraDBClient();
+        AstraDBAdmin vectorClient = new AstraDBAdmin();
         UUID databaseId = vectorClient.createDatabase(DBNAME_VECTOR_CLIENT);
         log.info("{} is created and active", databaseId);
     }
@@ -66,7 +65,7 @@ class VectorClientProductTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldInsertStaticDocument() {
         // Recreating the store
-        AstraDB astraDB = new AstraDBClient().database(DBNAME_VECTOR_CLIENT);
+        AstraDB astraDB = new AstraDBAdmin().database(DBNAME_VECTOR_CLIENT);
         astraDB.deleteCollection(VECTOR_STORE_NAME);
         productRepository = astraDB.createCollection(VECTOR_STORE_NAME, 14, Product.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
@@ -109,7 +108,7 @@ class VectorClientProductTest {
     @DisplayName("02. Similarity Search")
     public void shouldSimilaritySearch() {
 
-        productRepository = new AstraDBClient()
+        productRepository = new AstraDBAdmin()
                 .database(DBNAME_VECTOR_CLIENT)
                 .collectionRepository(VECTOR_STORE_NAME, Product.class);
 
@@ -125,7 +124,7 @@ class VectorClientProductTest {
     @Order(3)
     @DisplayName("03. Search with Meta Data")
     public void shouldSimilaritySearchWithMetaData() {
-        productRepository = new AstraDBClient()
+        productRepository = new AstraDBAdmin()
                 .database(DBNAME_VECTOR_CLIENT)
                 .collectionRepository(VECTOR_STORE_NAME, Product.class);
 
@@ -145,7 +144,7 @@ class VectorClientProductTest {
     @Order(4)
     @DisplayName("04. Search with Meta Data")
     public void shouldSimilaritySearcAndNotReturnVector() {
-        productRepository = new AstraDBClient()
+        productRepository = new AstraDBAdmin()
                 .database(DBNAME_VECTOR_CLIENT)
                 .collectionRepository(VECTOR_STORE_NAME, Product.class);
 

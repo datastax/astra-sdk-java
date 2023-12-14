@@ -23,9 +23,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,7 +36,7 @@ import static io.stargate.sdk.utils.Utils.readEnvVariable;
  * Astra Vector Client, Native experience for Vector Database.
  */
 @Slf4j
-public class AstraDBClient {
+public class AstraDBAdmin {
 
     /** Default timeout for connection. */
     public static final int CONNECT_TIMEOUT_SECONDS = 20;
@@ -103,7 +101,7 @@ public class AstraDBClient {
     /**
      * Load with token from environment
      */
-    public AstraDBClient() {
+    public AstraDBAdmin() {
         this(astraConfigToken);
     }
 
@@ -113,7 +111,7 @@ public class AstraDBClient {
      * @param token
      *      a token is all you need
      */
-    public AstraDBClient(String token) {
+    public AstraDBAdmin(String token) {
         this(token, AstraEnvironment.PROD);
     }
 
@@ -125,7 +123,7 @@ public class AstraDBClient {
      * @param env
      *      target environments
      */
-    public AstraDBClient(String token, AstraEnvironment env) {
+    public AstraDBAdmin(String token, AstraEnvironment env) {
         this.env = env;
         this.token = token;
         this.devopsDbClient = new AstraDBOpsClient(token, env);
@@ -293,7 +291,7 @@ public class AstraDBClient {
      *      database client
      */
     public AstraDB database(UUID databaseId) {
-        return new AstraDB(token, databaseId, null, env, AstraDBClient.DEFAULT_KEYSPACE);
+        return new AstraDB(token, databaseId, null, env, AstraDBAdmin.DEFAULT_KEYSPACE);
     }
 
     /**

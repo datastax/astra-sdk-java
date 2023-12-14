@@ -1,14 +1,11 @@
 package com.dtsx.astra.sdk.vector.demo;
 
 import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.core.domain.Page;
-import io.stargate.sdk.json.CollectionClient;
-import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.JsonResult;
 import io.stargate.sdk.json.domain.odm.Document;
@@ -42,12 +39,12 @@ public class VectorNativeTest {
     public void shouldDoMagic() {
 
         // Create Db if not exist, resume if needed
-        UUID dbTest = new AstraDBClient(apiKey).createDatabase("vector_client_test");
+        UUID dbTest = new AstraDBAdmin(apiKey).createDatabase("vector_client_test");
 
         // Database already exists
         AstraDB db1 = new AstraDB(apiKey, apiEndpoint);
-        AstraDB db2 = new AstraDBClient(apiKey).database("vector_client_test");
-        AstraDB db3 = new AstraDBClient(apiKey).database(dbTest);
+        AstraDB db2 = new AstraDBAdmin(apiKey).database("vector_client_test");
+        AstraDB db3 = new AstraDBAdmin(apiKey).database(dbTest);
 
         // Access the db in dev
         //AstraDB dbDev = new AstraDBClient(apiKey, AstraEnvironment.DEV).database(dbTest);
@@ -98,7 +95,7 @@ public class VectorNativeTest {
 
     public void useInApplication() {
 
-        AstraDBRepository<Product> vectorCollection = new AstraDBClient(apiKey)
+        AstraDBRepository<Product> vectorCollection = new AstraDBAdmin(apiKey)
                 .database(databaseName)
                 .collectionRepository(collectionName, Product.class);
 

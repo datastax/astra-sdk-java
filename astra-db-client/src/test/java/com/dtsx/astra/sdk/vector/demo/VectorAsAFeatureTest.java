@@ -1,6 +1,6 @@
 package com.dtsx.astra.sdk.vector.demo;
 
-import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBAdmin;
 import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.json.CollectionClient;
 import io.stargate.sdk.json.NamespaceClient;
@@ -25,13 +25,13 @@ public class VectorAsAFeatureTest {
     public void shouldDoCollection() {
 
         // Token retrieved from CLI config or env var
-        AstraDBClient astraDBClient = new AstraDBClient();
+        AstraDBAdmin astraDBAdmin = new AstraDBAdmin();
 
         // Create Database
-        UUID uuid = astraDBClient.createDatabase("vector_client_test");
+        UUID uuid = astraDBAdmin.createDatabase("vector_client_test");
 
         // Select Database / Namespace
-        NamespaceClient db = astraDBClient
+        NamespaceClient db = astraDBAdmin
                 .getRawJsonApiClient("vector_client_test")
                 .namespace("default_keyspace");
 

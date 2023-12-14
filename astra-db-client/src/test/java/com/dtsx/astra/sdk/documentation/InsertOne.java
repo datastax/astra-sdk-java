@@ -19,7 +19,8 @@ AstraDB db = new AstraDB("<token>", "<api_endpoint>");
  * AstraDBCollection collection = db.createCollection("collection_vector1", 14);
  */
 AstraDBCollection collection = db.collection("collection_vector1");
-
+// Adding this list to allow the test to be re-runnable
+collection.deleteAll();
 //  (1) You can insert records with key/value.
 collection.insertOne(new JsonDocument()
  .id("doc1") // uuid is generated if not explicitely set

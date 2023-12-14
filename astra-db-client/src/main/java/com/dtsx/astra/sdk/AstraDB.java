@@ -55,7 +55,7 @@ public class AstraDB {
      *      api endpoint
      */
     public AstraDB(String token, String apiEndpoint) {
-        this(token, apiEndpoint, AstraDBClient.DEFAULT_KEYSPACE);
+        this(token, apiEndpoint, AstraDBAdmin.DEFAULT_KEYSPACE);
     }
 
     /**
@@ -103,7 +103,7 @@ public class AstraDB {
      *      database identifier
      */
     public AstraDB(@NonNull String token, @NonNull UUID databaseId) {
-        this(token, databaseId, null, AstraEnvironment.PROD, AstraDBClient.DEFAULT_KEYSPACE);
+        this(token, databaseId, null, AstraEnvironment.PROD, AstraDBAdmin.DEFAULT_KEYSPACE);
     }
 
     /**

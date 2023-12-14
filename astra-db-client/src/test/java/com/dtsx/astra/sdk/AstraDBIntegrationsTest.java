@@ -6,8 +6,6 @@ import com.dtsx.astra.sdk.db.domain.DatabaseInfo;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.CollectionClient;
-import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.CollectionDefinition;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.odm.Document;
@@ -45,13 +43,13 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     static final String TEST_COLLECTION_NAME = "collection_simple";
     static final String TEST_COLLECTION_VECTOR = "collection_vector";
     static AstraEnvironment targetEnvironment = AstraEnvironment.PROD;
-    static CloudProviderType targetCloud = AstraDBClient.FREE_TIER_CLOUD;
-    static String targetRegion = AstraDBClient.FREE_TIER_CLOUD_REGION;
+    static CloudProviderType targetCloud = AstraDBAdmin.FREE_TIER_CLOUD;
+    static String targetRegion = AstraDBAdmin.FREE_TIER_CLOUD_REGION;
     /**
      * Shared working environment
      */
     static String astraToken;
-    static AstraDBClient astraDbClient;
+    static AstraDBAdmin astraDbAdmin;
     static AstraDB astraDb;
     static UUID databaseId;
     static AstraDBRepository<Product> productRepositoryVector;
@@ -83,10 +81,10 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
             targetCloud = CloudProviderType.valueOf(System.getenv("ASTRA_CLOUD").toUpperCase());
         }
         // When
-        astraDbClient = new AstraDBClient(astraToken, targetEnvironment);
+        astraDbAdmin = new AstraDBAdmin(astraToken, targetEnvironment);
         // Then
-        Assertions.assertNotNull(astraDbClient.getRawDevopsApiClient());
-        Assertions.assertNotNull(astraDbClient.getToken());
+        Assertions.assertNotNull(astraDbAdmin.getRawDevopsApiClient());
+        Assertions.assertNotNull(astraDbAdmin.getToken());
         log.info("Initialization OK: environment '{}', cloud '{}', region '{}'",
                 targetEnvironment, targetCloud.name(), targetRegion);
     }
@@ -96,7 +94,7 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     @DisplayName("01. List Databases (devops)")
     public void shouldListDatabases() {
         log.info("Databases currently running in your organization:");
-        List<Database> list = astraDbClient.findAllDatabases().collect(Collectors.toList());
+        List<Database> list = astraDbAdmin.findAllDatabases().collect(Collectors.toList());
         Assertions.assertNotNull(list);
         list.stream().map(Database::getInfo)
                 .map(DatabaseInfo::getName)
@@ -107,17 +105,17 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     @Order(2)
     @DisplayName("02. Create Database (devops)")
     public void shouldCreateDatabases() {
-        databaseId = astraDbClient.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
-        Assertions.assertTrue(astraDbClient.isDatabaseExists(TEST_DBNAME));
+        databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
+        Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
     }
 
     @Test
     @Order(3)
     @DisplayName("03. Find Database (devops)")
     public void shouldLoadDatabase() {
-        astraDb = astraDbClient.database(TEST_DBNAME);
+        astraDb = astraDbAdmin.database(TEST_DBNAME);
         Assertions.assertNotNull(astraDb);
-        Assertions.assertNotNull(astraDbClient.database(databaseId));
+        Assertions.assertNotNull(astraDbAdmin.database(databaseId));
     }
 
     @Test
@@ -170,7 +168,7 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     @Order(6)
     @DisplayName("06. Insert with CollectionRepository and vector")
     public void shouldInsertRecords() {
-        astraDb = astraDbClient.database(TEST_DBNAME);
+        astraDb = astraDbAdmin.database(TEST_DBNAME);
         productRepositoryVector = astraDb.collectionRepository(TEST_COLLECTION_VECTOR, Product.class);
 
         productRepositoryVector.insert(new Document<>(
@@ -225,7 +223,7 @@ public class AstraDBIntegrationsTest extends AbstractAstraDBTest {
     @DisplayName("09. Upsert with CollectionClient")
     public void shouldUpsertDocument() {
         if (astraDb == null) {
-            astraDb = astraDbClient.database(TEST_DBNAME);
+            astraDb = astraDbAdmin.database(TEST_DBNAME);
         }
         AstraDBCollection collection = astraDb.collection(TEST_COLLECTION_NAME);
         Assertions.assertNotNull(collection);

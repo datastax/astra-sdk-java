@@ -1,12 +1,11 @@
 package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBClient;
+import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
-import io.stargate.sdk.json.CollectionRepository;
 import io.stargate.sdk.json.domain.odm.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -64,7 +63,7 @@ class VectorClientPhilosopherTest {
         if (System.getenv(AstraRc.ASTRA_DB_APPLICATION_TOKEN) == null) {
             throw new IllegalStateException("Please setup 'ASTRA_DB_APPLICATION_TOKEN' env variable");
         }
-        new AstraDBClient().createDatabase(DBNAME_VECTOR_CLIENT);
+        new AstraDBAdmin().createDatabase(DBNAME_VECTOR_CLIENT);
         log.info("db is created and active");
     }
 
@@ -74,7 +73,7 @@ class VectorClientPhilosopherTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldIngestCsv() {
         // Init the Store
-        AstraDB dbClient = new AstraDBClient().database(DBNAME_VECTOR_CLIENT);
+        AstraDB dbClient = new AstraDBAdmin().database(DBNAME_VECTOR_CLIENT);
         dbClient.deleteCollection(VECTOR_STORE_NAME);
         quoteRepository = dbClient.createCollection(VECTOR_STORE_NAME, 1536, Quote.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
@@ -97,7 +96,7 @@ class VectorClientPhilosopherTest {
     @DisplayName("02. Should Similarity Search")
     public void shouldSimilaritySearch() {
 
-        quoteRepository = new AstraDBClient()
+        quoteRepository = new AstraDBAdmin()
                 .database(DBNAME_VECTOR_CLIENT)
                 .collectionRepository(VECTOR_STORE_NAME, Quote.class);
 

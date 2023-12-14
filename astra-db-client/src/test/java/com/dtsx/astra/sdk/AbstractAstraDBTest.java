@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk;
 
 import com.dtsx.astra.sdk.cassio.MetadataVectorTableTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.stargate.sdk.json.domain.SelectQuery;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -16,6 +17,11 @@ public abstract class AbstractAstraDBTest {
 
     @SuppressWarnings("unchecked")
     protected LinkedHashMap<String, List<?>> loadQuotes(String filePath) throws IOException {
+        SelectQuery.builder()
+                .where("metadata")
+                .isEqualsTo("value")
+                .withLimit(5)
+                .build()
         File inputFile = new File(MetadataVectorTableTest.class.getClassLoader().getResource(filePath).getFile());
         LinkedHashMap<String, Object> sampleQuotes = new ObjectMapper().readValue(inputFile, LinkedHashMap.class);
         System.out.println("Quotes by Author:");

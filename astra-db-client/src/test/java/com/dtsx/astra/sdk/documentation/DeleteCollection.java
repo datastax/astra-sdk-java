@@ -11,6 +11,6 @@ public class DeleteCollection {
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 
     // Find a collection
-    db.deleteCollection("collection_vector1");
+    db.deleteCollection("collection_vector2");
   }
 }
