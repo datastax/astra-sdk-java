@@ -3,7 +3,7 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.exception.ApiException;
+import io.stargate.sdk.json.exception.JsonApiException;
 
 import java.util.Map;
 
@@ -60,7 +60,7 @@ collection.insertOne(new JsonDocument()
 // (5) You cannot insert a document with an existing id
 try {
     collection.insertOne(new JsonDocument("doc4"));
-} catch(ApiException e) {
+} catch(JsonApiException e) {
     System.out.println("Expected ERROR: " + e.getMessage());
 }
 
