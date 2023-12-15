@@ -9,48 +9,42 @@ import io.stargate.sdk.json.domain.SelectQuery;
 import io.stargate.sdk.json.domain.odm.Result;
 
 public class FindPage {
-    public static void main(String[] args) {
+  public static void main(String[] args) {
+    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
-// Accessing existing DB
-AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    // Retrieve page 1 of a search (up to 20 results)
+    Page<JsonResult> page1 = collection.findPage(
+        SelectQuery.builder()
+            .where("product_price")
+            .isEqualsTo(9.99)
+            .build());
 
-// Access existing collection
-AstraDBCollection collection = db
- .createCollection("collection_vector1", 14);
+    // Retrieve page 2 of the same search (if there are more than 20 results)
+    page1.getPageState().ifPresent(pageState -> {
+        Page<JsonResult> page2 = collection.findPage(
+            SelectQuery.builder()
+                .where("product_price").isEqualsTo(9.99)
+                .withPagingState(pageState)
+                .build());
+    });
 
-// Retrieve page1 of a search
-Page<JsonResult> page1 = collection.findPage(SelectQuery.builder()
- .where("product_price").isEqualsTo(9.99)
- .build());
-
-// Retrieving page 2 of the same search if more than 20
-page1.getPageState().ifPresent(pageState -> {
-    Page<JsonResult> page2 = collection.findPage(SelectQuery.builder()
-     .where("product_price").isEqualsTo(9.99)
-     .withPagingState(pageState)
-     .build());
-});
-
-/*
- * As for any find* you can map the output as Result<T>
- * using either a java pojo or mapper.
- */
-Page<Result<MyBean>> page = collection.findPage(SelectQuery.builder()
- .where("product_price").isEqualsTo(9.99)
- .build(), MyBean.class);
-
-}
-
-public static class MyBean {
-    @JsonProperty("product_name")
-    String name;
-    @JsonProperty("product_price")
-    Double price;
+    // You can map the output as Result<T> using either a Java pojo or mapper
+    Page<Result<MyBean>> page = collection.findPage(
+        SelectQuery.builder()
+            .where("product_price")
+            .isEqualsTo(9.99)
+            .build(),
+        MyBean.class);
+  }
+    
+  public static class MyBean {
+    @JsonProperty("product_name") String name;
+    @JsonProperty("product_price") Double price;
 
     public MyBean(String name, Double price) {
-        this.name = name;
-        this.price = price;
+      this.name = name;
+      this.price = price;
     }
-// getters and setters
-}
+  }
 }
