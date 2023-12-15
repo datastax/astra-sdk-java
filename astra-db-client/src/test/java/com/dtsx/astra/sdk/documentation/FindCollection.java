@@ -11,7 +11,7 @@ public class FindCollection {
     // Find a collection
     Optional<CollectionDefinition> collection = db.findCollection("collection_vector1");
 
-    // Verify if a collection exists
+    // Check if a collection exists
     boolean collectionExists = db.isCollectionExists("collection_vector2");
   }
 }
