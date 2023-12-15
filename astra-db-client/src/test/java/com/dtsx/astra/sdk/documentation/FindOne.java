@@ -2,7 +2,6 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.SelectQuery;
 
 import java.util.ArrayList;

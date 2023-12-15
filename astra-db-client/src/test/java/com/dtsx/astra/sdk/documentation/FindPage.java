@@ -3,16 +3,10 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.langchain4j.internal.Json;
 import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.json.domain.JsonResult;
 import io.stargate.sdk.json.domain.SelectQuery;
 import io.stargate.sdk.json.domain.odm.Result;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class FindPage {
     public static void main(String[] args) {

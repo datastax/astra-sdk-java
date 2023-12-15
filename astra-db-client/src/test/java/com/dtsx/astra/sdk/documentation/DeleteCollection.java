@@ -1,8 +1,6 @@
 package com.dtsx.astra.sdk.documentation;
-import com.dtsx.astra.sdk.AstraDB;
-import io.stargate.sdk.json.domain.CollectionDefinition;
 
-import java.util.Optional;
+import com.dtsx.astra.sdk.AstraDB;
 
 public class DeleteCollection {
   public static void main(String[] args) {

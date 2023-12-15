@@ -1,12 +1,10 @@
 package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBCollection;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.json.domain.CollectionDefinition;
 import io.stargate.sdk.json.domain.SimilarityMetric;
-import io.stargate.sdk.json.exception.JsonApiException;
 
 public class ObjectMappingCreateCollection {
 
