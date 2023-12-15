@@ -6,23 +6,17 @@ import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ObjectMappingClearCollection {
+  static class Product {
+    @JsonProperty("product_name") private String name;
+    @JsonProperty("product_price") private Double price;
+  }
 
-static class Product {
- @JsonProperty("product_name")
- private String name;
- @JsonProperty("product_price")
- private Double price;
-}
- public static void main(String[] args) {
+  public static void main(String[] args) {
+    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDBRepository<Product> collection1 =
+        db.createCollection("collection_simple", Product.class);
 
-// Accessing existing DB
-AstraDB db = new AstraDB("<token>", "<api_endpoint>");
-
-// Access existing collection
-AstraDBRepository<Product> collection1 = db
-        .createCollection("collection_simple", Product.class);
-
-// Clear collection
-collection1.deleteAll();
-}
+    // Delete all rows in a collection
+    collection1.deleteAll();
+  }
 }
