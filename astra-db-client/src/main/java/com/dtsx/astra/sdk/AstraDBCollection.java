@@ -147,6 +147,18 @@ public class AstraDBCollection {
     /**
      * Find one document matching the query.
      *
+     * @param rawJsonQuery
+     *      query documents and vector
+     * @return
+     *      result if exists
+     */
+    public Optional<JsonResult> findOne(String rawJsonQuery) {
+        return collectionClient.findOne(rawJsonQuery);
+    }
+
+    /**
+     * Find one document matching the query.
+     *
      * @param query
      *      query documents and vector
      * @return
@@ -177,6 +189,22 @@ public class AstraDBCollection {
      *
      * @param query
      *      query documents and vector
+     * @param clazz
+     *     class of the document
+     * @return
+     *      result if exists
+     * @param <DOC>
+     *       class to be marshalled
+     */
+    public <DOC> Optional<Result<DOC>> findOne(String query, Class<DOC> clazz) {
+        return findOne(query).map(r -> new Result<>(r, clazz));
+    }
+
+    /**
+     * Find one document matching the query.
+     *
+     * @param query
+     *      query documents and vector
      * @param mapper
      *      convert a json into expected pojo
      * @return
@@ -185,6 +213,23 @@ public class AstraDBCollection {
      *       class to be marshalled
      */
     public <DOC> Optional<Result<DOC>> findOne(SelectQuery query, ResultMapper<DOC> mapper) {
+        return findOne(query).map(mapper::map);
+    }
+
+
+    /**
+     * Find one document matching the query.
+     *
+     * @param query
+     *      query documents and vector
+     * @param mapper
+     *      convert a json into expected pojo
+     * @return
+     *      result if exists
+     * @param <DOC>
+     *       class to be marshalled
+     */
+    public <DOC> Optional<Result<DOC>> findOne(String query, ResultMapper<DOC> mapper) {
         return findOne(query).map(mapper::map);
     }
 
@@ -309,6 +354,18 @@ public class AstraDBCollection {
      *      page of results
      */
     public Page<JsonResult> findPage(SelectQuery pagedQuery) {
+        return collectionClient.findPage(pagedQuery);
+    }
+
+    /**
+     * Find documents matching the pagedQuery.
+     *
+     * @param pagedQuery
+     *      current pagedQuery
+     * @return
+     *      page of results
+     */
+    public Page<JsonResult> findPage(String pagedQuery) {
         return collectionClient.findPage(pagedQuery);
     }
 

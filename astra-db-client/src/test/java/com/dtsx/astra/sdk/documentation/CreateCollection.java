@@ -1,10 +1,10 @@
 package com.dtsx.astra.sdk.documentation;
+
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.json.domain.CollectionDefinition;
 import io.stargate.sdk.json.domain.SimilarityMetric;
-import io.stargate.sdk.json.exception.ApiException;
-import io.stargate.sdk.json.exception.InvalidJsonApiArgumentException;
+import io.stargate.sdk.json.exception.JsonApiException;
 
 public class CreateCollection {
   public static void main(String[] args) {
@@ -34,7 +34,7 @@ public class CreateCollection {
      */
     try {
       db.createCollection("invalid.name");
-    } catch(ApiException e) {
+    } catch(JsonApiException e) {
       // will fail
     }
   }
