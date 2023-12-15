@@ -8,7 +8,6 @@ import io.stargate.sdk.json.exception.JsonApiException;
 
 public class CreateCollection {
   public static void main(String[] args) {
-    // Given an active db
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 
     // Create a non-vector collection
