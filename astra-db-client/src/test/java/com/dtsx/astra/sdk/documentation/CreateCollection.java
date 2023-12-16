@@ -8,34 +8,29 @@ import io.stargate.sdk.json.exception.JsonApiException;
 
 public class CreateCollection {
   public static void main(String[] args) {
-    // Given an active db
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 
-    /*
-     * Create collection with no vector.
-     */
+    // Create a non-vector collection
     AstraDBCollection collection1 = db.createCollection("collection_simple");
 
-    // Create collection with vector
+    // Create a vector collection
     AstraDBCollection collection2 = db.createCollection(
-            "collection_vector1",
-            14,
-            SimilarityMetric.cosine);
+        "collection_vector1",
+        14,
+        SimilarityMetric.cosine);
 
-    // Create collection with vector (builder)
+    // Create a vector collection with a builder
     AstraDBCollection collection3 = db.createCollection(CollectionDefinition
-            .builder()
-            .name("collection_vector2")
-            .vector(1536, SimilarityMetric.euclidean)
-            .build());
+        .builder()
+        .name("collection_vector2")
+        .vector(1536, SimilarityMetric.euclidean)
+        .build());
 
-    /*
-     * Collection name should follow [a-zA-Z][a-zA-Z0-9_]* pattern (snake case)
-     */
+    // Collection names should use snake case ([a-zA-Z][a-zA-Z0-9_]*)
     try {
       db.createCollection("invalid.name");
     } catch(JsonApiException e) {
-      // will fail
+      // invalid.name is not valid
     }
   }
 }
