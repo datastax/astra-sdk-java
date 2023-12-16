@@ -4,74 +4,64 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.exception.JsonApiException;
-
 import java.util.Map;
 
 public class InsertOne {
-    public static void main(String[] args) {
+  public static void main(String[] args) {
+    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
 
-// Given an active db
-AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    // Assumes a collection with a vector field of dimension 14
+    AstraDBCollection collection = db.collection("collection_vector1");
 
-/*
- * Given a collection with vector (dimension 14)
- * Can be created with:
- * AstraDBCollection collection = db
- *   .createCollection("collection_vector1", 14);
- */
-AstraDBCollection collection = db.collection("collection_vector1");
-// Adding this list to allow the test to be re-runnable
-collection.deleteAll();
+    // You must delete any existing rows with the same IDs as the
+    // rows you want to insert
+    collection.deleteAll();
 
-//  (1) You can insert records with key/value.
-collection.insertOne(new JsonDocument()
- .id("doc1") // uuid is generated if not explicitely set
- .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
- .put("product_name", "HealthyFresh - Beef raw dog food")
- .put("product_price", 12.99));
+    // Insert rows defined by key/value
+    collection.insertOne(
+        new JsonDocument()
+            .id("doc1") // uuid is generated if not explicitely set
+            .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+            .put("product_name", "HealthyFresh - Beef raw dog food")
+            .put("product_price", 12.99));
+      
+    // Insert rows defined as a JSON String
+    collection.insertOne(
+        new JsonDocument()
+            .data(
+                "{" +
+                "\"_id\": \"doc2\", " +
+                "\"$vector\": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], " +
+                "\"product_name\": \"HealthyFresh - Chicken raw dog food\", " +
+                "\"product_price\": 9.99" +
+                "}"));
 
-// (2) You can insert records payload as a Json String
-collection.insertOne(new JsonDocument()
- .data("{"
-  +"   \"_id\": \"doc2\", "
-  +"   \"$vector\": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
-  +"   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
-  + "  \"product_price\": 9.99"
-  + "}")
-);
+    // Insert rows defined as a Map
+    collection.insertOne(
+        new JsonDocument()
+            .id("doc3")
+            .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+            .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food")));
 
-// (3) You can also insert records payload as a Map
-collection.insertOne(new JsonDocument()
- .id("doc3")
- .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
- .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food"))
-);
+    // Insert rows defined as a combination of key/value, JSON, and Map
+    collection.insertOne(
+        new JsonDocument()
+            .id("doc4")
+            .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+            .data("{" +
+                  "\"product_name\": \"HealthyFresh - Chicken raw dog food\", " +
+                  "\"product_price\": 9.99" +
+                  "}"));
 
-// (4) Any combination is possible (key/value, json, map)
-collection.insertOne(new JsonDocument()
- .id("doc4")
- .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
- .data("{"
-  +"   \"product_name\": \"HealthyFresh - Chicken raw dog food\", "
-  + "  \"product_price\": 9.99"
-  + "}")
-);
-
-// (5) You cannot insert a document with an existing id
-try {
-    collection.insertOne(new JsonDocument("doc4"));
-} catch(JsonApiException e) {
-    System.out.println("Expected ERROR: " + e.getMessage());
-}
-
-/*
-* (6) If not provided id is generated and returned
-*/
-String generatedId = collection.insertOne(
-        new JsonDocument().put("demo", 1));
-
-// (6) can the payload be a bean/pojo ?
-// Yes! check Object Mapping section
-
+    // You cannot insert a document with an existing ID
+    try {
+        collection.insertOne(new JsonDocument("doc4"));
+    } catch(JsonApiException e) {
+        System.out.println("Expected ERROR: " + e.getMessage());
     }
+
+    // If you do not provide an ID, they are generated automatically
+    String generatedId = collection.insertOne(
+        new JsonDocument().put("demo", 1));
+  }
 }
