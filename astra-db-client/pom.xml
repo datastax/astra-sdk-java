@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <openai-java.version>0.16.0</openai-java.version>
+        <openai-java.version>0.18.2</openai-java.version>
     </properties>
 
     <dependencies>
