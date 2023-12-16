@@ -4,16 +4,11 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 
 public class ClearCollection {
-    public static void main(String[] args) {
+  public static void main(String[] args) {
+    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
-// Accessing existing DB
-AstraDB db = new AstraDB("<token>", "<api_endpoint>");
-
-// Access existing collection
-AstraDBCollection collection = db.createCollection("collection_vector1", 14);
-
-// Clear collection
-collection.deleteAll();
-
-    }
+    // Delete all rows from an existing collection
+    collection.deleteAll();
+  }
 }
