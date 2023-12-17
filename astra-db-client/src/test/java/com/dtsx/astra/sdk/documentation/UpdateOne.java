@@ -6,25 +6,24 @@ import io.stargate.sdk.json.domain.JsonDocument;
 import io.stargate.sdk.json.domain.UpdateQuery;
 
 public class UpdateOne {
- public static void main(String[] args) {
-   AstraDB db = new AstraDB("<token>", "<api_endpoint>");
-   AstraDBCollection collection = db.collection("collection_vector1");
+  public static void main(String[] args) {
+    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDBCollection collection = db.collection("collection_vector1");
 
-   // You must delete any existing rows with the same IDs as the
+    // You must delete any existing rows with the same IDs as the
     // rows you want to insert
     collection.deleteAll();
 
-    // Insert rows defined by key/value
+    // Upsert a document based on a query
     collection.updateOne(UpdateQuery.builder()
       .updateSet("product_name", 12.99)
       .where("product_name")
       .isEqualsTo("HealthyFresh - Beef raw dog food")
-      .build()
-    );
+      .build());
 
-    // Upsert
+    // Upsert a document by ID
     collection.upsert(new JsonDocument()
-            .id("id1")
-            .put("product_name", 12.99));
- }
+        .id("id1")
+        .put("product_name", 12.99));
+  }
 }
