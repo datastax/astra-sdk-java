@@ -55,9 +55,9 @@ public class InsertOne {
 
     // You cannot insert a document with an existing ID
     try {
-        collection.insertOne(new JsonDocument("doc4"));
+      collection.insertOne(new JsonDocument("doc4"));
     } catch(JsonApiException e) {
-        System.out.println("Expected ERROR: " + e.getMessage());
+      System.out.println("Expected ERROR: " + e.getMessage());
     }
 
     // If you do not provide an ID, they are generated automatically
