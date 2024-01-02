@@ -5,7 +5,6 @@ import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.json.domain.Filter;
 import io.stargate.sdk.json.domain.JsonResult;
 import io.stargate.sdk.json.domain.SelectQuery;
-
 import java.util.stream.Stream;
 
 public class FindVector {
@@ -28,5 +27,4 @@ public class FindVector {
     // Same using another signature
     Stream<JsonResult> result = collection.findVector(embeddings, metadataFilter, maxRecord);
   }
-
 }

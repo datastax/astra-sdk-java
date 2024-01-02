@@ -7,20 +7,20 @@ import io.stargate.sdk.json.domain.DeleteQuery;
 import io.stargate.sdk.json.domain.odm.Document;
 
 public class ObjectMappingDeleteOne {
- static class Product {
-   @JsonProperty("product_name") private String name;
-   @JsonProperty("product_price") private Double price;
- }
+  static class Product {
+    @JsonProperty("product_name") private String name;
+    @JsonProperty("product_price") private Double price;
+  }
 
- public static void main(String[] args) {
-   AstraDB db = new AstraDB("<token>", "<api_endpoint>");
-   AstraDBRepository<Product> collection1 = db
-      .createCollection("collection_simple", Product.class);
+  public static void main(String[] args) {
+    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDBRepository<Product> collection1 =
+        db.createCollection("collection_simple", Product.class);
 
-   // Delete document from its id
-   collection1.deleteById("id1");
+    // Delete a document by ID
+    collection1.deleteById("id1");
 
-   // Delete provided document
-   collection1.delete(new Document<Product>().id("id2"));
+    // Delete a specific document
+    collection1.delete(new Document<Product>().id("id2"));
   }
 }

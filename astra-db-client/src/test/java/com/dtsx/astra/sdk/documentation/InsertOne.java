@@ -53,13 +53,6 @@ public class InsertOne {
                   "\"product_price\": 9.99" +
                   "}"));
 
-    // You cannot insert a document with an existing ID
-    try {
-      collection.insertOne(new JsonDocument("doc4"));
-    } catch(JsonApiException e) {
-      System.out.println("Expected ERROR: " + e.getMessage());
-    }
-
     // If you do not provide an ID, they are generated automatically
     String generatedId = collection.insertOne(
         new JsonDocument().put("demo", 1));
