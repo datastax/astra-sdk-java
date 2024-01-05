@@ -528,6 +528,18 @@ public class AstraDBTestSuiteIT {
         andCriteriaList.add(criteria2);
         existAndNotEquals.setFilter(Map.of("$and", andCriteriaList));
         Assertions.assertEquals(2, collectionVector.find(existAndNotEquals).count());
+
+        SelectQuery query2 = SelectQuery.builder().withJsonFilter("{" +
+                "\"$and\":[" +
+                "   {" +
+                        "\"product_price\": {\"$exists\":true}" +
+                "}," +
+                "{" +
+                        "\"product_price\":{\"$ne\":9.99}}]" +
+                "}")
+                .build();
+        Assertions.assertEquals(2, collectionVector.find(query2).count());
+
     }
 
     // ----------------------------------------
