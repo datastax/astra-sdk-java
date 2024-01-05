@@ -1,4 +1,4 @@
-package com.dtsx.astra.sdk.vector.demo;
+package com.dtsx.astra.sdk.vector;
 
 import com.dtsx.astra.sdk.AstraDBAdmin;
 import io.stargate.sdk.core.domain.Page;
@@ -19,7 +19,7 @@ import java.util.UUID;
 /**
  * Demo using Json client
  */
-public class VectorAsAFeatureTest {
+public class AstraDBDemoTest {
 
     @Test
     public void shouldDoCollection() {

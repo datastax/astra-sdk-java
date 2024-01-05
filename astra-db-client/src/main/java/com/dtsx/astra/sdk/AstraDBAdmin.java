@@ -158,17 +158,33 @@ public class AstraDBAdmin {
     }
 
     /**
-     * Create Db in free Tier.
+     * Delete a Database if exists from its name
      *
      * @param name
      *    database name
      * @return
      *      if the db has been deleted
      */
-    public boolean deleteDatabase(@NonNull String name) {
+    public boolean deleteDatabaseByName(@NonNull String name) {
         Optional<Database> opDb = findDatabaseByName(name).findFirst();
         opDb.ifPresent(db -> devopsDbClient.database(db.getId()).delete());
         return opDb.isPresent();
+    }
+
+    /**
+     * Delete a Database if exists from its name
+     *
+     * @param databaseId
+     *    database identifier
+     * @return
+     *      if the db has been deleted
+     */
+    public boolean deleteDatabaseById(@NonNull UUID databaseId) {
+        if (findDatabaseById(databaseId).isPresent()) {
+            devopsDbClient.database(databaseId.toString()).delete();
+            return true;
+        }
+        return false;
     }
 
     /**

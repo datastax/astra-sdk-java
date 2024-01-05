@@ -2,8 +2,8 @@ package com.dtsx.astra.sdk.cassio;
 
 import com.datastax.astra.sdk.AstraClient;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dtsx.astra.sdk.AbstractAstraDBTest;
 import com.dtsx.astra.sdk.utils.TestUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
  */
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MetadataVectorTableTest extends AbstractAstraDBTest {
+public class MetadataVectorTableTest {
 
     public static final String LLM_MODEL_CHAT_COMPLETION = "gpt-3.5-turbo";
     public static final String LLM_MODEL_EMBEDDINGS     = "text-embedding-ada-002";
@@ -55,6 +56,25 @@ public class MetadataVectorTableTest extends AbstractAstraDBTest {
     private static final String ASTRA_DB_DATABASE = "sdk_java_test_vector";
     private static CqlSession cqlSession;
     private static MetadataVectorCassandraTable v_table;
+
+    protected LinkedHashMap<String, List<?>> loadQuotes(String filePath) throws IOException {
+        File inputFile = new File(MetadataVectorTableTest.class.getClassLoader().getResource(filePath).getFile());
+        LinkedHashMap<String, Object> sampleQuotes = new ObjectMapper().readValue(inputFile, LinkedHashMap.class);
+        System.out.println("Quotes by Author:");
+        ((LinkedHashMap<?,?>) sampleQuotes.get("quotes")).forEach((k,v) ->
+                System.out.println("   " + k + " (" + ((ArrayList<?>)v).size() + ") "));
+        log.info("Sample Quotes");
+        ((LinkedHashMap<?, ?>) sampleQuotes.get("quotes"))
+                .entrySet().stream().limit(2)
+                .forEach(e -> {
+                    System.out.println("   " + e.getKey() + " : ");
+                    Map<String, Object> entry = (Map<String,Object>) ((ArrayList<?>)e.getValue()).get(0);
+                    System.out.println("      " + ((String) entry.get("body")).substring(0, 50) + "... (tags: " + entry.get("tags") + ")");
+                    entry = (Map<String,Object>) ((ArrayList<?>)e.getValue()).get(1);
+                    System.out.println("      " + ((String) entry.get("body")).substring(0, 50) + "... (tags: " + entry.get("tags") + ")");
+                });
+        return  ((LinkedHashMap<String, List<?>>) sampleQuotes.get("quotes"));
+    }
 
     @BeforeAll
     public static void setupEnvironment() throws InterruptedException {
