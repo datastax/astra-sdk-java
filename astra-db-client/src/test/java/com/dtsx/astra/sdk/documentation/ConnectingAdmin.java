@@ -1,8 +1,6 @@
 package com.dtsx.astra.sdk.documentation;
 
-import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBAdmin;
-import java.util.UUID;
 
 public class ConnectingAdmin {
   public static void main(String[] args) {

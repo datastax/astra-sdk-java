@@ -3,9 +3,8 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.JsonResult;
-import io.stargate.sdk.json.domain.odm.Result;
-import io.stargate.sdk.json.domain.odm.ResultMapper;
+import io.stargate.sdk.data.domain.JsonDocumentResult;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
 import java.util.Optional;
 
 public class FindById {
@@ -14,22 +13,19 @@ public class FindById {
     AstraDBCollection collection = db.collection("collection_vector1");
 
     // Fetch a document by ID and return it as JSON
-    Optional<JsonResult> res = collection.findById("doc1");
+    Optional<JsonDocumentResult> res = collection.findById("doc1");
     res.ifPresent(jsonResult -> System.out.println(jsonResult.getSimilarity()));
 
     // Fetch a document by ID and map it to an object with ResultMapper
-    Optional<Result<MyBean>> res2 = collection.findById("doc1", new ResultMapper<MyBean>() {
-      @Override
-      public Result<MyBean> map(JsonResult record) {
-        MyBean bean = new MyBean(
-            (String) record.getData().get("product_name"),
-            (Double) record.getData().get("product_price"));
-        return new Result<>(record, bean);
-      }
+    Optional<DocumentResult<MyBean>> res2 = collection.findById("doc1", record -> {
+      MyBean bean = new MyBean(
+          (String) record.getData().get("product_name"),
+          (Double) record.getData().get("product_price"));
+      return new DocumentResult<>(record, bean);
     });
 
     // Fetch a document by ID and map it to a class
-    Optional<Result<MyBean>> res3 = collection.findById("doc1", MyBean.class);
+    Optional<DocumentResult<MyBean>> res3 = collection.findById("doc1", MyBean.class);
 
     // Check if a document exists
     boolean exists = collection.isDocumentExists("doc1");

@@ -4,8 +4,8 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.core.domain.Page;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.odm.Result;
+import io.stargate.sdk.data.domain.query.Filter;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
 
 public class ObjectMappingPaging {
   static class Product {
@@ -20,6 +20,6 @@ public class ObjectMappingPaging {
     // Retrieve page 1 of a search (up to 20 results)
     float[] embeddings = new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
     Filter metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
-    Page<Result<Product>> page1 = productRepository.findVector(embeddings, metadataFilter);
+    Page<DocumentResult<Product>> page1 = productRepository.findVector(embeddings, metadataFilter);
   }
 }

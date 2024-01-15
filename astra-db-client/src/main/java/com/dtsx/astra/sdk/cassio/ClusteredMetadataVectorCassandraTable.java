@@ -173,6 +173,7 @@ public class ClusteredMetadataVectorCassandraTable
         }
     }
 
+    /* {@inheritDoc} */
     @Override
     public void create() {
         // Create Table
@@ -200,11 +201,13 @@ public class ClusteredMetadataVectorCassandraTable
 
     }
 
+    /* {@inheritDoc} */
     @Override
     public void put(Record row) {
 
     }
 
+    /* {@inheritDoc} */
     @Override
     public Record mapRow(Row row) {
         return null;

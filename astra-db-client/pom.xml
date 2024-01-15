@@ -11,10 +11,15 @@
     </parent>
 
     <properties>
+        <!-- used for test in this module -->
+        <stargate-sdk.version>2.3.0</stargate-sdk.version>
         <openai-java.version>0.18.2</openai-java.version>
+        <langchain4j.version>0.25.0</langchain4j.version>
+        <okhttp.version>4.10.0</okhttp.version>
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -25,36 +30,24 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <!-- DATA API -->
+        <dependency>
+            <groupId>com.datastax.stargate</groupId>
+            <artifactId>stargate-sdk-data</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <!-- CQL API (CassioIO) -->
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-core</artifactId>
+        </dependency>
+
+        <!-- DEVOPS AI -->
         <dependency>
             <groupId>com.datastax.astra</groupId>
-            <artifactId>astra-sdk</artifactId>
+            <artifactId>astra-sdk-devops</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.datastax.astra</groupId>
-                    <artifactId>astra-sdk-pulsar</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.datastax.stargate</groupId>
-                    <artifactId>stargate-sdk-document</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.datastax.stargate</groupId>
-                    <artifactId>stargate-sdk-graphql</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.datastax.stargate</groupId>
-                    <artifactId>stargate-sdk-grpc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.datastax.stargate</groupId>
-                    <artifactId>stargate-sdk-grpc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.datastax.stargate</groupId>
-                    <artifactId>stargate-sdk-cql</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- TEST -->
@@ -69,6 +62,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.theokanning.openai-gpt3-java</groupId>
             <artifactId>service</artifactId>
             <version>${openai-java.version}</version>
@@ -77,15 +75,10 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-open-ai</artifactId>
-            <version>0.25.0</version>
+            <version>${langchain4j.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-hugging-face</artifactId>
-            <version>0.25.0</version>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 
     <build>

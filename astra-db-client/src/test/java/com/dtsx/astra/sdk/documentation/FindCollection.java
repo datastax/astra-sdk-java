@@ -1,7 +1,7 @@
 package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
-import io.stargate.sdk.json.domain.CollectionDefinition;
+import io.stargate.sdk.data.domain.CollectionDefinition;
 import java.util.Optional;
 
 public class FindCollection {

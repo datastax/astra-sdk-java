@@ -2,7 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.UpdateQuery;
+import io.stargate.sdk.data.domain.query.UpdateQuery;
 
 public class UpdateMany {
   public static void main(String[] args) {

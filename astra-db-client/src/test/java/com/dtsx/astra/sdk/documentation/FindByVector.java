@@ -3,9 +3,8 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.JsonResult;
-import io.stargate.sdk.json.domain.odm.Result;
-import io.stargate.sdk.json.domain.odm.ResultMapper;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
+
 import java.util.Optional;
 
 public class FindByVector {
@@ -19,22 +18,19 @@ public class FindByVector {
         .ifPresent(jsonResult -> System.out.println(jsonResult.getSimilarity()));
 
     // Fetch a row by ID and map it to an object with ResultMapper
-    Optional<Result<MyBean>> res2 = collection
+    Optional<DocumentResult<MyBean>> res2 = collection
         .findOneByVector(
             new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},
-            new ResultMapper<MyBean>() {
-                @Override
-                public Result<MyBean> map(JsonResult record) {
+                record -> {
                     MyBean bean = new MyBean(
                         (String)record.getData().get("product_name"),
                         (Double)record.getData().get("product_price"));
-                    return new Result<>(record, bean);
+                    return new DocumentResult<>(record, bean);
                 }
-            }
         );
 
     // Fetch a row by ID and map the result to a class
-    Optional<Result<MyBean>> res3 = collection.findOneByVector(
+    Optional<DocumentResult<MyBean>> res3 = collection.findOneByVector(
         new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f},
         MyBean.class);
   }

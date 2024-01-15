@@ -2,9 +2,9 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.CollectionDefinition;
-import io.stargate.sdk.json.domain.SimilarityMetric;
-import io.stargate.sdk.json.exception.JsonApiException;
+import io.stargate.sdk.data.domain.CollectionDefinition;
+import io.stargate.sdk.data.domain.SimilarityMetric;
+import io.stargate.sdk.data.exception.DataApiException;
 
 public class CreateCollection {
   public static void main(String[] args) {
@@ -29,7 +29,7 @@ public class CreateCollection {
     // Collection names should use snake case ([a-zA-Z][a-zA-Z0-9_]*)
     try {
       db.createCollection("invalid.name");
-    } catch(JsonApiException e) {
+    } catch(DataApiException e) {
       // invalid.name is not valid
     }
   }

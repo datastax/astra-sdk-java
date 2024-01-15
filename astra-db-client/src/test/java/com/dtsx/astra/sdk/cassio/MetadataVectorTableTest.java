@@ -1,6 +1,5 @@
 package com.dtsx.astra.sdk.cassio;
 
-import com.datastax.astra.sdk.AstraClient;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.utils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +26,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -87,18 +87,13 @@ public class MetadataVectorTableTest {
         String databaseId = setupDatabase(ASTRA_DB_DATABASE, ASTRA_DB_KEYSPACE);
         log.info("Astra Database is ready");
 
-        // Open Cassandra Connection
-        cqlSession = AstraClient.builder()
-                .withToken(getAstraToken())
-                .withCqlKeyspace(ASTRA_DB_KEYSPACE)
-                .withDatabaseId(databaseId).withDatabaseRegion(TestUtils.TEST_REGION)
-                .enableCql()
-                .enableDownloadSecureConnectBundle()
-                .build().cqlSession();
+        cqlSession = CassIO.init(getAstraToken(),
+                UUID.fromString(databaseId),
+                TestUtils.TEST_REGION, ASTRA_DB_KEYSPACE);
         log.info("Astra connection is opened");
 
         // Initializing table
-        v_table = new MetadataVectorCassandraTable(cqlSession, ASTRA_DB_KEYSPACE,"philosophers", LLM_MODEL_DIMENSION);
+        v_table = CassIO.metadataVectorTable("philosophers", LLM_MODEL_DIMENSION);
         log.info("Destination Table is created");
     }
 

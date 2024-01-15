@@ -7,11 +7,11 @@ import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import io.stargate.sdk.ServiceDeployment;
 import io.stargate.sdk.api.SimpleTokenProvider;
+import io.stargate.sdk.data.DataApiClient;
+import io.stargate.sdk.data.NamespaceClient;
+import io.stargate.sdk.data.domain.CollectionDefinition;
+import io.stargate.sdk.data.domain.SimilarityMetric;
 import io.stargate.sdk.http.ServiceHttp;
-import io.stargate.sdk.json.ApiClient;
-import io.stargate.sdk.json.NamespaceClient;
-import io.stargate.sdk.json.domain.CollectionDefinition;
-import io.stargate.sdk.json.domain.SimilarityMetric;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class AstraDB {
     /**
      * Top level resource for json api.
      */
-    private final ApiClient apiClient;
+    private final DataApiClient apiClient;
 
     /**
      * Namespace client
@@ -90,7 +90,7 @@ public class AstraDB {
         ServiceDeployment<ServiceHttp> jsonDeploy = new ServiceDeployment<>();
         jsonDeploy.addDatacenterTokenProvider("default", new SimpleTokenProvider(token));
         jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
-        this.apiClient = new ApiClient(jsonDeploy);
+        this.apiClient = new DataApiClient(jsonDeploy);
         this.nsClient = apiClient.namespace(keyspace);
     }
 
@@ -142,11 +142,13 @@ public class AstraDB {
      * @param token
      *      astra token
      * @param databaseId
-     *      databsae id
+     *      database id
      * @param region
      *      database region
      * @param env
      *      environment
+     * @param keyspace
+     *      destination keyspace
      */
     public AstraDB(@NonNull String token, @NonNull UUID databaseId, String region, @NonNull AstraEnvironment env, String keyspace) {
         this.env = env;
@@ -170,7 +172,7 @@ public class AstraDB {
            jsonDeploy.addDatacenterServices(dc.getName(), new ServiceHttp("json", dcApiEndpoint, dcApiEndpoint));
         });
 
-        this.apiClient = new ApiClient(jsonDeploy);
+        this.apiClient = new DataApiClient(jsonDeploy);
         if (keyspace == null) {
             keyspace = db.getInfo().getKeyspace();
         }
@@ -208,6 +210,8 @@ public class AstraDB {
      *
      * @param name
      *      collection name
+     * @return
+     *      collection definition
      */
     public Optional<CollectionDefinition> findCollection(String name) {
         return nsClient.findCollectionByName(name);
@@ -280,6 +284,8 @@ public class AstraDB {
      *      store name
      * @param vectorDimension
      *      dimension
+     * @param metric
+     *      similarity metric for the vector
      * @return
      *      json vector store
      */

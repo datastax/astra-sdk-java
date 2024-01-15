@@ -2,8 +2,8 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.domain.UpdateQuery;
+import io.stargate.sdk.data.domain.JsonDocument;
+import io.stargate.sdk.data.domain.query.UpdateQuery;
 
 public class UpdateOne {
   public static void main(String[] args) {
@@ -22,7 +22,7 @@ public class UpdateOne {
       .build());
 
     // Upsert a document by ID
-    collection.upsert(new JsonDocument()
+    collection.upsertOne(new JsonDocument()
         .id("id1")
         .put("product_name", 12.99));
   }

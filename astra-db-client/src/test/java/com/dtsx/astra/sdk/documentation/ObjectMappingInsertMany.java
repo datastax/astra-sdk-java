@@ -3,7 +3,8 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.odm.Document;
+import io.stargate.sdk.data.DocumentMutationResult;
+import io.stargate.sdk.data.domain.odm.Document;
 import java.util.List;
 
 public class ObjectMappingInsertMany {
@@ -22,7 +23,7 @@ public class ObjectMappingInsertMany {
         db.createCollection("collection_vector1", 14, Product.class);
 
     // Insert documents into the collection (IDs are generated automatically)
-    List<String> identifiers = productRepository.saveAll(
+    List<DocumentMutationResult<Product>> identifiers = productRepository.saveAll(
         List.of(
             new Document<Product>()
                 .vector(new float[]{1f, 0f, 1f, 1f, .5f, 1f, 0f, 0.3f, 0f, 0f, 0f, 0f, 0f, 0f})

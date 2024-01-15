@@ -2,7 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.DeleteQuery;
+import io.stargate.sdk.data.domain.query.DeleteQuery;
 
 public class DeleteOne {
   public static void main(String[] args) {

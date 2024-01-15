@@ -3,8 +3,7 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.DeleteQuery;
-import io.stargate.sdk.json.domain.odm.Document;
+import io.stargate.sdk.data.domain.odm.Document;
 
 public class ObjectMappingDeleteOne {
   static class Product {

@@ -2,9 +2,9 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.JsonResult;
-import io.stargate.sdk.json.domain.SelectQuery;
+import io.stargate.sdk.data.domain.JsonDocumentResult;
+import io.stargate.sdk.data.domain.query.Filter;
+import io.stargate.sdk.data.domain.query.SelectQuery;
 import java.util.stream.Stream;
 
 public class FindVector {
@@ -25,6 +25,6 @@ public class FindVector {
     .forEach(System.out::println);
 
     // Same using another signature
-    Stream<JsonResult> result = collection.findVector(embeddings, metadataFilter, maxRecord);
+    Stream<JsonDocumentResult> result = collection.findVector(embeddings, metadataFilter, maxRecord);
   }
 }

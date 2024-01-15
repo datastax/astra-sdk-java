@@ -2,7 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.SelectQuery;
+import io.stargate.sdk.data.domain.query.SelectQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,14 +23,6 @@ public class FindOne {
     collection.findOne(SelectQuery.builder()
         .where("product_price")
         .isEqualsTo(12.99).build())
-    .ifPresent(System.out::println);
- 
-    // Retrieve the first document where product_price is 12.99 and
-    // product_name is "HealthyFresh - Beef raw dog food"
-    collection.findOne(SelectQuery.builder()
-        .where("product_name").isEqualsTo("HealthyFresh - Chicken raw dog food")
-        .andWhere("product_price")
-        .isEqualsTo(9.99).build())
     .ifPresent(System.out::println);
 
     // Send the request as a JSON String

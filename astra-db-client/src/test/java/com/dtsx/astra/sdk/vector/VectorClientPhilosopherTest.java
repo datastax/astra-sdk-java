@@ -6,7 +6,7 @@ import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
-import io.stargate.sdk.json.domain.odm.Document;
+import io.stargate.sdk.data.domain.odm.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

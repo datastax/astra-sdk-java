@@ -1,25 +1,36 @@
 package com.dtsx.astra.sdk;
 
 import io.stargate.sdk.core.domain.Page;
-import io.stargate.sdk.json.CollectionClient;
-import io.stargate.sdk.json.domain.DeleteQuery;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.domain.JsonResult;
-import io.stargate.sdk.json.domain.JsonResultUpdate;
-import io.stargate.sdk.json.domain.SelectQuery;
-import io.stargate.sdk.json.domain.SelectQueryBuilder;
-import io.stargate.sdk.json.domain.UpdateQuery;
-import io.stargate.sdk.json.domain.UpdateStatus;
-import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.domain.odm.Result;
-import io.stargate.sdk.json.domain.odm.ResultMapper;
+import io.stargate.sdk.data.CollectionClient;
+import io.stargate.sdk.data.DocumentMutationResult;
+import io.stargate.sdk.data.JsonDocumentMutationResult;
+import io.stargate.sdk.data.domain.JsonDocument;
+import io.stargate.sdk.data.domain.JsonDocumentResult;
+import io.stargate.sdk.data.domain.JsonResultUpdate;
+import io.stargate.sdk.data.domain.UpdateStatus;
+import io.stargate.sdk.data.domain.odm.Document;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
+import io.stargate.sdk.data.domain.odm.DocumentResultMapper;
+import io.stargate.sdk.data.domain.query.DeleteQuery;
+import io.stargate.sdk.data.domain.query.Filter;
+import io.stargate.sdk.data.domain.query.SelectQuery;
+import io.stargate.sdk.data.domain.query.SelectQueryBuilder;
+import io.stargate.sdk.data.domain.query.UpdateQuery;
 import lombok.NonNull;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.stargate.sdk.utils.AnsiUtils.green;
 
 /**
  * Operation On a Collection.
@@ -46,41 +57,159 @@ public class AstraDBCollection {
     // --------------------------
 
     /**
-     * Insert with a Json Document.
+     * Insert with a Json String.
      *
-     * @param bean
-     *      current bean
-     * @param <DOC>
-     *      type of object in use
+     * @param json
+     *      json Strings
      * @return
-     *      new id
+     *      mutation result with status and id
      */
-    public final <DOC> String insertOne(@NonNull Document<DOC> bean) {
-        return collectionClient.insertOne(bean.toJsonDocument());
+    public final JsonDocumentMutationResult insertOne(String json) {
+        return collectionClient.insertOne(json);
     }
 
     /**
-     * Insert a new document for a vector collection
+     * Insert with a Json String and get return asynchrounously.
      *
-     * @param jsonDocument
-     *      json Document
+     * @param json
+     *      json Strings
      * @return
-     *      identifier for the document
+     *      mutation result with status and id
      */
-    public String insertOne(JsonDocument jsonDocument) {
-        return collectionClient.insertOne(jsonDocument);
+    public final CompletableFuture<JsonDocumentMutationResult> insertOneAsync(String json) {
+        return collectionClient.insertOneAsync(json);
+    }
+
+    /**
+     * Insert with a Json Document (schemaless)
+     *
+     * @param document
+     *      current bean
+     * @return
+     *      mutation result with status and id
+     */
+    public final JsonDocumentMutationResult insertOne(JsonDocument document) {
+        return collectionClient.insertOne(document);
+    }
+
+    /**
+     * Insert with a Json Document (schemaless)
+     *
+     * @param document
+     *      current bean
+     * @return
+     *      mutation result with status and id
+     */
+    public final CompletableFuture<JsonDocumentMutationResult> insertOneAsync(JsonDocument document) {
+        return collectionClient.insertOneAsync(document);
+    }
+
+    /**
+     * Insert with a Json Document object (SchemaFull)
+     *
+     * @param document
+     *      current bean
+     * @param <DOC>
+     *     payload of document
+     * @return
+     *      mutation result with status and id
+     */
+    public final <DOC> DocumentMutationResult<DOC> insertOne(Document<DOC> document) {
+        return collectionClient.insertOne(document);
+    }
+
+    /**
+     * Insert with a Json Document object (SchemaFull)
+     *
+     * @param document
+     *      current bean
+     * @param <DOC>
+     *     payload of document
+     * @return
+     *      mutation result with status and id
+     */
+    public final <DOC> CompletableFuture<DocumentMutationResult<DOC>> insertOneASync(Document<DOC> document) {
+        return collectionClient.insertOneASync(document);
+    }
+
+    // --------------------------
+    // ---   Upsert One      ----
+    // --------------------------
+
+    /**
+     * Insert with a Json String.
+     *
+     * @param json
+     *      json Strings
+     * @return
+     *      mutation result with status and id
+     */
+    public final JsonDocumentMutationResult upsertOne(String json) {
+        return collectionClient.upsertOne(json);
+    }
+
+    /**
+     * Insert with a Json String and get return asynchronously.
+     *
+     * @param json
+     *      json Strings
+     * @return
+     *      mutation result with status and id
+     */
+    public final CompletableFuture<JsonDocumentMutationResult> upsertOneAsync(String json) {
+        return collectionClient.upsertOneAsync(json);
     }
 
     /**
      * Upsert a document in the collection.
      *
-     * @param jsonDocument
+     * @param document
      *      current document
      * @return
      *      document id
      */
-    public String upsert(@NonNull JsonDocument jsonDocument) {
-        return collectionClient.upsert(jsonDocument);
+    public final JsonDocumentMutationResult upsertOne(JsonDocument document) {
+        return collectionClient.upsertOne(document);
+    }
+
+    /**
+     * Upsert a document in the collection.
+     *
+     * @param document
+     *      current document
+     * @return
+     *      document id
+     */
+    public final CompletableFuture<JsonDocumentMutationResult> upsertOneAsync(JsonDocument document) {
+        return CompletableFuture.supplyAsync(() -> collectionClient.upsertOne(document));
+    }
+
+    /**
+     * Upsert a document in the collection.
+     *
+     * @param document
+     *      current document
+     * @param <DOC>
+     *     payload of document
+     * @return
+     *      document id
+     */
+    public final <DOC> DocumentMutationResult<DOC> upsertOne(Document<DOC> document) {
+        return collectionClient.upsertOne(document);
+    }
+
+    /**
+     * Upsert a document in the collection.
+     *
+     * @param document
+     *      current document
+     * @param <DOC>
+     *     payload of document
+     * @return
+     *      document id
+     */
+    public final <DOC> CompletableFuture<DocumentMutationResult<DOC>> upsertOneAsync(Document<DOC> document) {
+        return CompletableFuture.supplyAsync(() -> collectionClient.upsertOne(document));
     }
 
     // --------------------------
@@ -88,17 +217,272 @@ public class AstraDBCollection {
     // --------------------------
 
     /**
+     * Insert multiple records in one call, up to 20, then use insertManyChunked.
+     *
+     * @param json
+     *      json String
+     * @return
+     *      for each document its id and insertion status
+     */
+    public final List<JsonDocumentMutationResult> insertMany(String json) {
+        return collectionClient.insertMany(json);
+    }
+
+    /**
+     * Insert multiple records in one call, up to 20, then use insertManyChunked asynchronously.
+     *
+     * @param json
+     *      json String
+     * @return
+     *      for each document its id and insertion status
+     */
+    public final CompletableFuture<List<JsonDocumentMutationResult>> insertManyASync(String json) {
+        return collectionClient.insertManyASync(json);
+    }
+
+    /**
+     * Insert multiple records in one call, up to 20, then use insertManyChunked.
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      for each document its id and insertion status
+     */
+    public final List<JsonDocumentMutationResult> insertManyJsonDocuments(List<JsonDocument> documents) {
+        return collectionClient.insertManyJsonDocuments(documents);
+    }
+
+    /**
+     * Insert multiple records in one call, up to 20, asynchronously then use insertManyChunked.
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      for each document its id and insertion status
+     */
+    public final CompletableFuture<List<JsonDocumentMutationResult>> insertManyJsonDocumentsASync(List<JsonDocument> documents) {
+        return collectionClient.insertManyJsonDocumentsASync(documents);
+    }
+
+    /**
      * Low level insertion of multiple records
      *
      * @param documents
      *      list of documents
      * @param <DOC>
-     *      object T in use.
+     *     payload of document
      * @return
      *      list of ids
      */
-    public final <DOC> List<String> insertMany(List<DOC> documents) {
+    public final <DOC> List<DocumentMutationResult<DOC>> insertMany(List<Document<DOC>> documents) {
         return collectionClient.insertMany(documents);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param <DOC>
+     *     payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> insertManyASync(List<Document<DOC>> documents) {
+        return collectionClient.insertManyASync(documents);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param ordered
+     *      if item should be processed in order
+     * @param upsert
+     *      if the upsert should be done
+     * @param <DOC>
+     *     payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> List<DocumentMutationResult<DOC>> insertMany(List<Document<DOC>> documents, boolean ordered, boolean upsert) {
+        return collectionClient.insertMany(documents, ordered, upsert);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param ordered
+     *      ordered or not
+     * @param upsert
+     *      replace or insert
+     * @return
+     *      list of ids
+     */
+    public final List<JsonDocumentMutationResult> insertManyJsonDocuments(List<JsonDocument> documents, boolean ordered, boolean upsert) {
+        return  collectionClient.insertManyJsonDocuments(documents, ordered, upsert);
+    }
+
+    // -------------------------------
+    // ---   Insert Many Chunked  ----
+    // -------------------------------
+
+    /**
+     * Insert a list of documents in a distributed manner
+     *
+     * @param documents
+     *      list of documents
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> List<DocumentMutationResult<DOC>> insertManyChunked(List<Document<DOC>> documents) {
+        return collectionClient.insertManyChunked(documents);
+    }
+
+    /**
+     * Insert a list of documents in a distributed manner asynchronously.
+     *
+     * @param documents
+     *      list of documents.
+     * @param <DOC>
+     *     represent the pojo, payload of documents.
+     * @return
+     *      list of ids
+     */
+    public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> insertManyChunkedASync(List<Document<DOC>> documents) {
+        return collectionClient.insertManyChunkedASync(documents);
+    }
+
+    /**
+     * Enforce Mapping with JsonDocument
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      json document list
+     */
+    public final List<JsonDocumentMutationResult> insertManyChunkedJsonDocuments(List<JsonDocument> documents) {
+        return collectionClient.insertManyChunkedJsonDocuments(documents);
+    }
+
+    /**
+     * Enforce Mapping with JsonDocument asynchronously
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      json document list
+     */
+    public final CompletableFuture<List<JsonDocumentMutationResult>> insertManyChunkedJsonDocumentsASync(List<JsonDocument> documents) {
+        return collectionClient.insertManyChunkedJsonDocumentsASync(documents);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      number of blocks in parallel
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> List<DocumentMutationResult<DOC>> insertManyChunked(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionClient.insertManyChunked(documents, chunkSize, concurrency);
+    }
+
+    /**
+     * Low level insertion of multiple records asynchronously
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      number of blocks in parallel
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> insertManyChunkedASync(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionClient.insertManyChunkedASync(documents, chunkSize, concurrency);
+    }
+
+    // ------------------------------
+    // ---      Upsert Many      ----
+    // ------------------------------
+
+    /**
+     * Upsert any items in the collection.
+     * @param documents
+     *      current collection list
+     * @return
+     *      list of statuses
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     */
+    public final <DOC> List<DocumentMutationResult<DOC>> upsertMany(List<Document<DOC>> documents) {
+        return collectionClient.upsertMany(documents);
+    }
+
+    /**
+     * Upsert any items in the collection asynchronously.
+     *
+     * @param documents
+     *      current collection list
+     * @return
+     *      list of statuses
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     */
+    public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> upsertManyASync(List<Document<DOC>> documents) {
+        return collectionClient.upsertManyASync(documents);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      concurrency
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> List<DocumentMutationResult<DOC>> upsertManyChunked(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionClient.upsertManyChunked(documents, chunkSize, concurrency);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      concurrency
+     * @param <DOC>
+     *     represent the pojo, payload of document
+     * @return
+     *      list of ids
+     */
+    public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> upsertManyChunkedASync(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionClient.upsertManyChunkedASync(documents, chunkSize, concurrency);
     }
 
     // --------------------------
@@ -152,7 +536,7 @@ public class AstraDBCollection {
      * @return
      *      result if exists
      */
-    public Optional<JsonResult> findOne(String rawJsonQuery) {
+    public Optional<JsonDocumentResult> findOne(String rawJsonQuery) {
         return collectionClient.findOne(rawJsonQuery);
     }
 
@@ -164,7 +548,7 @@ public class AstraDBCollection {
      * @return
      *      result if exists
      */
-    public Optional<JsonResult> findOne(SelectQuery query) {
+    public Optional<JsonDocumentResult> findOne(SelectQuery query) {
         return collectionClient.findOne(query);
     }
 
@@ -180,8 +564,8 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findOne(SelectQuery query, Class<DOC> clazz) {
-        return findOne(query).map(r -> new Result<>(r, clazz));
+    public <DOC> Optional<DocumentResult<DOC>> findOne(SelectQuery query, Class<DOC> clazz) {
+        return findOne(query).map(r -> new DocumentResult<>(r, clazz));
     }
 
     /**
@@ -196,8 +580,8 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findOne(String query, Class<DOC> clazz) {
-        return findOne(query).map(r -> new Result<>(r, clazz));
+    public <DOC> Optional<DocumentResult<DOC>> findOne(String query, Class<DOC> clazz) {
+        return findOne(query).map(r -> new DocumentResult<>(r, clazz));
     }
 
     /**
@@ -212,7 +596,7 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findOne(SelectQuery query, ResultMapper<DOC> mapper) {
+    public <DOC> Optional<DocumentResult<DOC>> findOne(SelectQuery query, DocumentResultMapper<DOC> mapper) {
         return findOne(query).map(mapper::map);
     }
 
@@ -229,7 +613,7 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findOne(String query, ResultMapper<DOC> mapper) {
+    public <DOC> Optional<DocumentResult<DOC>> findOne(String query, DocumentResultMapper<DOC> mapper) {
         return findOne(query).map(mapper::map);
     }
 
@@ -245,7 +629,7 @@ public class AstraDBCollection {
      * @return
      *      document
      */
-    public Optional<JsonResult> findById(String id) {
+    public Optional<JsonDocumentResult> findById(String id) {
         return findOne(SelectQuery.findById(id));
     }
 
@@ -261,8 +645,8 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findById(@NonNull String id, Class<DOC> clazz) {
-        return findById(id).map(r -> new Result<>(r, clazz));
+    public <DOC> Optional<DocumentResult<DOC>> findById(@NonNull String id, Class<DOC> clazz) {
+        return findById(id).map(r -> new DocumentResult<>(r, clazz));
     }
 
     /**
@@ -277,7 +661,7 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findById(@NonNull String id, ResultMapper<DOC> mapper) {
+    public <DOC> Optional<DocumentResult<DOC>> findById(@NonNull String id, DocumentResultMapper<DOC> mapper) {
         return findById(id).map(mapper::map);
     }
 
@@ -293,7 +677,7 @@ public class AstraDBCollection {
      * @return
      *      document
      */
-    public Optional<JsonResult> findOneByVector(float[] vector) {
+    public Optional<JsonDocumentResult> findOneByVector(float[] vector) {
         return findOne(SelectQuery.findByVector(vector));
     }
 
@@ -309,8 +693,8 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findOneByVector(float[] vector, Class<DOC> clazz) {
-        return findOneByVector(vector).map(r -> new Result<>(r, clazz));
+    public <DOC> Optional<DocumentResult<DOC>> findOneByVector(float[] vector, Class<DOC> clazz) {
+        return findOneByVector(vector).map(r -> new DocumentResult<>(r, clazz));
     }
 
     /**
@@ -325,7 +709,7 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public <DOC> Optional<Result<DOC>> findOneByVector(float[] vector, ResultMapper<DOC> mapper) {
+    public <DOC> Optional<DocumentResult<DOC>> findOneByVector(float[] vector, DocumentResultMapper<DOC> mapper) {
         return findOneByVector(vector).map(mapper::map);
     }
 
@@ -341,7 +725,7 @@ public class AstraDBCollection {
      * @return
      *      all items
      */
-    public Stream<JsonResult> find(SelectQuery query) {
+    public Stream<JsonDocumentResult> find(SelectQuery query) {
         return collectionClient.find(query);
     }
 
@@ -353,7 +737,7 @@ public class AstraDBCollection {
      * @return
      *      page of results
      */
-    public Page<JsonResult> findPage(SelectQuery pagedQuery) {
+    public Page<JsonDocumentResult> findPage(SelectQuery pagedQuery) {
         return collectionClient.findPage(pagedQuery);
     }
 
@@ -365,7 +749,7 @@ public class AstraDBCollection {
      * @return
      *      page of results
      */
-    public Page<JsonResult> findPage(String pagedQuery) {
+    public Page<JsonDocumentResult> findPage(String pagedQuery) {
         return collectionClient.findPage(pagedQuery);
     }
 
@@ -381,7 +765,7 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public  <DOC> Stream<Result<DOC>> find(SelectQuery query, Class<DOC> clazz) {
+    public  <DOC> Stream<DocumentResult<DOC>> find(SelectQuery query, Class<DOC> clazz) {
         return collectionClient.find(query, clazz);
     }
 
@@ -397,7 +781,7 @@ public class AstraDBCollection {
      * @param <DOC>
      *       class to be marshalled
      */
-    public  <DOC> Stream<Result<DOC>> find(SelectQuery query, ResultMapper<DOC> mapper) {
+    public  <DOC> Stream<DocumentResult<DOC>> find(SelectQuery query, DocumentResultMapper<DOC> mapper) {
         return collectionClient.find(query, mapper);
     }
 
@@ -407,7 +791,7 @@ public class AstraDBCollection {
      * @return
      *      all items
      */
-    public Stream<JsonResult> findAll() {
+    public Stream<JsonDocumentResult> findAll() {
         return collectionClient.findAll();
     }
 
@@ -416,12 +800,12 @@ public class AstraDBCollection {
      *
      * @param clazz
      *      class to be used
-     * @return
-     *      stream of results
      * @param <DOC>
      *       class to be marshalled
+     * @return
+     *      stream of results
      */
-    public <DOC> Stream<Result<DOC>> findAll(Class<DOC> clazz) {
+    public <DOC> Stream<DocumentResult<DOC>> findAll(Class<DOC> clazz) {
         return collectionClient.findAll(clazz);
     }
 
@@ -430,12 +814,12 @@ public class AstraDBCollection {
      *
      * @param mapper
      *      convert a json into expected pojo
-     * @return
-     *      stream of results
      * @param <DOC>
      *       class to be marshalled
+     * @return
+     *      stream of results
      */
-    public <DOC> Stream<Result<DOC>> findAll(ResultMapper<DOC> mapper) {
+    public <DOC> Stream<DocumentResult<DOC>> findAll(DocumentResultMapper<DOC> mapper) {
         return collectionClient.findAll(mapper);
     }
 
@@ -451,7 +835,7 @@ public class AstraDBCollection {
      * @param <T>
      *     class to be marshalled
      */
-    public <T> Page<Result<T>> findPage(SelectQuery query, Class<T> clazz) {
+    public <T> Page<DocumentResult<T>> findPage(SelectQuery query, Class<T> clazz) {
         return collectionClient.findPage(query, clazz);
     }
 
@@ -607,7 +991,7 @@ public class AstraDBCollection {
      * @return
      *      result page
      */
-    public Stream<JsonResult> findVector(float[] vector, Integer limit) {
+    public Stream<JsonDocumentResult> findVector(float[] vector, Integer limit) {
         return findVector(vector, null, limit);
     }
 
@@ -623,7 +1007,7 @@ public class AstraDBCollection {
      * @return
      *      result page
      */
-    public Stream<JsonResult> findVector(float[] vector, Filter filter, Integer limit) {
+    public Stream<JsonDocumentResult> findVector(float[] vector, Filter filter, Integer limit) {
         return find(SelectQuery.builder()
                 .withFilter(filter)
                 .orderByAnn(vector)
@@ -641,7 +1025,7 @@ public class AstraDBCollection {
      * @return
      *      page page of results
      */
-    public Page<JsonResult> findVectorPage(SelectQuery query) {
+    public Page<JsonDocumentResult> findVectorPage(SelectQuery query) {
         return findPage(query);
     }
 
@@ -659,7 +1043,7 @@ public class AstraDBCollection {
      * @return
      *      result page
      */
-    public Page<JsonResult> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState) {
+    public Page<JsonDocumentResult> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState) {
         return findVectorPage(SelectQuery.builder()
                 .withFilter(filter)
                 .orderByAnn(vector)
@@ -687,7 +1071,7 @@ public class AstraDBCollection {
      * @return
      *      page of results
      */
-    public <DOC> Page<Result<DOC>> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState, Class<DOC> clazz) {
+    public <DOC> Page<DocumentResult<DOC>> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState, Class<DOC> clazz) {
         return collectionClient.findVectorPage(vector, filter, limit, pagingState, clazz);
     }
 
@@ -709,7 +1093,7 @@ public class AstraDBCollection {
      * @return
      *      page of results
      */
-    public <DOC> Page<Result<DOC>> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState, ResultMapper<DOC> mapper) {
+    public <DOC> Page<DocumentResult<DOC>> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState, DocumentResultMapper<DOC> mapper) {
         return collectionClient.findVectorPage(vector, filter, limit, pagingState, mapper);
     }
 
@@ -721,7 +1105,7 @@ public class AstraDBCollection {
      * @return
      *      the list of results
      */
-    public Stream<JsonResult> findVector(float[] vector) {
+    public Stream<JsonDocumentResult> findVector(float[] vector) {
         return find(SelectQuery.findByVector(vector));
     }
 
@@ -737,7 +1121,7 @@ public class AstraDBCollection {
      * @return
      *      the list of results
      */
-    public Stream<JsonResult> findVector(float[] vector, Filter filter, int recordCount) {
+    public Stream<JsonDocumentResult> findVector(float[] vector, Filter filter, int recordCount) {
         return findVector(SelectQuery.builder()
                 .includeSimilarity()
                 .withFilter(filter)
@@ -757,8 +1141,9 @@ public class AstraDBCollection {
      *       expected type
      * @return
      *      the list of results
-     */public <T> Stream<Result<T>> findVector(float[] vector, Class<T> clazz) {
-        return findVector(vector).map(r -> new Result<>(r, clazz));
+     */
+    public <T> Stream<DocumentResult<T>> findVector(float[] vector, Class<T> clazz) {
+        return findVector(vector).map(r -> new DocumentResult<>(r, clazz));
     }
 
     /**
@@ -771,9 +1156,9 @@ public class AstraDBCollection {
      * @return
      *      the list of results
      * @param <T>
-     *     expected type
+     *    expected type
      */
-    public <T> Stream<Result<T>> findVector(float[] vector, ResultMapper<T> mapper) {
+    public <T> Stream<DocumentResult<T>> findVector(float[] vector, DocumentResultMapper<T> mapper) {
         return findVector(vector).map(mapper::map);
     }
 
@@ -787,7 +1172,7 @@ public class AstraDBCollection {
      * @return
      *     stream of results
      */
-    public Stream<JsonResult> findVector(SelectQuery query) {
+    public Stream<JsonDocumentResult> findVector(SelectQuery query) {
         return find(query);
     }
 
@@ -803,8 +1188,8 @@ public class AstraDBCollection {
      * @param <T>
      *     expected type
      */
-    public <T> Stream<Result<T>> findVector(SelectQuery query, Class<T> clazz) {
-        return findVector(query).map(r -> new Result<>(r, clazz));
+    public <T> Stream<DocumentResult<T>> findVector(SelectQuery query, Class<T> clazz) {
+        return findVector(query).map(r -> new DocumentResult<>(r, clazz));
     }
 
     /**
@@ -819,12 +1204,11 @@ public class AstraDBCollection {
      * @param <T>
      *     expected type
      */
-    public <T> Stream<Result<T>> findVector(SelectQuery query, ResultMapper<T> mapper) {
+    public <T> Stream<DocumentResult<T>> findVector(SelectQuery query, DocumentResultMapper<T> mapper) {
         return findVector(query).map(mapper::map);
     }
 
     // Find Vector with a filter and conditions
-
 
     /**
      * Query builder.
@@ -833,12 +1217,14 @@ public class AstraDBCollection {
      *      vector embeddings
      * @param filter
      *      metadata filter
+     * @param limit
+     *      how many items to be retrieved at most
      * @param includeSimilarity
      *      include similarity
      * @return
      *      result page
      */
-    public Stream<JsonResult> findVector(float[] vector, Filter filter, Integer limit, boolean includeSimilarity) {
+    public Stream<JsonDocumentResult> findVector(float[] vector, Filter filter, Integer limit, boolean includeSimilarity) {
         SelectQueryBuilder builder = SelectQuery
                 .builder()
                 .withFilter(filter)
@@ -856,13 +1242,9 @@ public class AstraDBCollection {
      * @return
      *   result page
      */
-    public Page<JsonResult> findPageVector(SelectQuery query) {
+    public Page<JsonDocumentResult> findPageVector(SelectQuery query) {
         return findPage(query);
     }
-
-
-
-
 
     /**
      * Internal Client for a collection.
@@ -873,5 +1255,6 @@ public class AstraDBCollection {
     public CollectionClient getRawCollectionClient() {
         return collectionClient;
     }
+
 
 }

@@ -5,9 +5,9 @@ import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.domain.odm.Result;
+import io.stargate.sdk.data.domain.query.Filter;
+import io.stargate.sdk.data.domain.odm.Document;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -113,7 +113,7 @@ class VectorClientProductTest {
                 .collectionRepository(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
-        for(Result<Product> result : productRepository.findVector(embeddings,null, 2)) {
+        for(DocumentResult<Product> result : productRepository.findVector(embeddings,null, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()
                     + ", vector=" + Arrays.toString(result.getVector()));
@@ -131,7 +131,7 @@ class VectorClientProductTest {
         float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
         Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
 
-        for(Result<Product> result : productRepository
+        for(DocumentResult<Product> result : productRepository
                 .findVector(embeddings, metadataFilter, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()
@@ -152,7 +152,7 @@ class VectorClientProductTest {
         Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
         new Filter().where("product_price").isEqualsTo(9.99);
 
-        for(Result<Product> result : productRepository
+        for(DocumentResult<Product> result : productRepository
                 .findVector(embeddings, metadataFilter, 2)) {
             System.out.println(result.getId()
                     + ") similarity=" + result.getSimilarity()

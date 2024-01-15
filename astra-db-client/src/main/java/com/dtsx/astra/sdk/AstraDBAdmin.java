@@ -11,7 +11,7 @@ import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
-import io.stargate.sdk.json.ApiClient;
+import io.stargate.sdk.data.DataApiClient;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -382,7 +382,7 @@ public class AstraDBAdmin {
      * @return
      *      database client
      */
-    public ApiClient getRawJsonApiClient(@NonNull String databaseName) {
+    public DataApiClient getInternalDataApiClient(@NonNull String databaseName) {
         return database(databaseName).getApiClient();
     }
 
@@ -394,7 +394,7 @@ public class AstraDBAdmin {
      * @return
      *      database client
      */
-    public ApiClient getApiClient(@NonNull UUID databaseId) {
+    public DataApiClient getInternalDataApiClient(@NonNull UUID databaseId) {
         return database(databaseId).getApiClient();
     }
 
@@ -404,7 +404,7 @@ public class AstraDBAdmin {
      * @return
      *      devops client.
      */
-    public AstraDBOpsClient getRawDevopsApiClient() {
+    public AstraDBOpsClient getInternalDevopsApiClient() {
         return this.devopsDbClient;
     }
 

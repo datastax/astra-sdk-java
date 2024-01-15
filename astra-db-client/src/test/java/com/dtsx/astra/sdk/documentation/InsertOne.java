@@ -2,8 +2,8 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.exception.JsonApiException;
+import io.stargate.sdk.data.JsonDocumentMutationResult;
+import io.stargate.sdk.data.domain.JsonDocument;
 import java.util.Map;
 
 public class InsertOne {
@@ -54,7 +54,8 @@ public class InsertOne {
                   "}"));
 
     // If you do not provide an ID, they are generated automatically
-    String generatedId = collection.insertOne(
+   JsonDocumentMutationResult result = collection.insertOne(
         new JsonDocument().put("demo", 1));
+   String generatedId = result.getDocument().getId();
   }
 }

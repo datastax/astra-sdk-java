@@ -1,19 +1,16 @@
 package com.dtsx.astra.sdk;
 
 import io.stargate.sdk.core.domain.Page;
-import io.stargate.sdk.json.CollectionRepository;
-import io.stargate.sdk.json.domain.DeleteQuery;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.JsonResult;
-import io.stargate.sdk.json.domain.SelectQuery;
-import io.stargate.sdk.json.domain.SelectQueryBuilder;
-import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.domain.odm.Result;
-import io.stargate.sdk.json.domain.odm.ResultMapper;
+import io.stargate.sdk.data.CollectionRepository;
+import io.stargate.sdk.data.DocumentMutationResult;
+import io.stargate.sdk.data.domain.odm.Document;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
+import io.stargate.sdk.data.domain.query.DeleteQuery;
+import io.stargate.sdk.data.domain.query.Filter;
+import io.stargate.sdk.data.domain.query.SelectQuery;
 import lombok.NonNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -64,12 +61,56 @@ public class AstraDBRepository<DOC> {
      * @return
      *      generated identifier
      */
-    public String insert(Document<DOC> bean) {
+    public DocumentMutationResult<DOC> insert(Document<DOC> bean) {
         return collectionRepository.insert(bean);
     }
 
+    /**
+     * Save a NEW RECORD with a defined id asynchronously
+     *
+     * @param bean
+     *      current object
+     * @return
+     *      generated identifier
+     */
+    public CompletableFuture<DocumentMutationResult<DOC>> insertAsync(Document<DOC> bean) {
+        return collectionRepository.insertASync(bean);
+    }
+
     // --------------------------
-    // ---      SaveOne      ----
+    // ---    Insert All     ----
+    // --------------------------
+
+    /**
+     * Low level insertion of multiple records, they should not exist, or it will fail.
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      list of ids
+     */
+    public final List<DocumentMutationResult<DOC>> insertAll(List<Document<DOC>> documents) {
+        return collectionRepository.insertAll(documents);
+    }
+
+    /**
+     * Low level insertion of multiple records, they should not exist, or it will fail.
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      how many document per chunk
+     * @param concurrency
+     *      how many thread in parallel
+     * @return
+     *      list of ids
+     */
+    public final List<DocumentMutationResult<DOC>> insertAllDistributed(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionRepository.insertAllDistributed(documents, chunkSize, concurrency);
+    }
+
+    // --------------------------
+    // ---      Save         ----
     // --------------------------
 
     /**
@@ -80,9 +121,22 @@ public class AstraDBRepository<DOC> {
      * @return
      *      an unique identifier for the document
      */
-    public final String save(@NonNull Document<DOC> current) {
+    public final DocumentMutationResult<DOC> save(@NonNull Document<DOC> current) {
         return collectionRepository.save(current);
     }
+
+    /**
+     * Save by record asynchronously.
+     *
+     * @param current
+     *      object Mapping
+     * @return
+     *      an unique identifier for the document
+     */
+    public final CompletableFuture<DocumentMutationResult<DOC>> saveASync(@NonNull Document<DOC> current) {
+        return collectionRepository.saveASync(current);
+    }
+
 
     // --------------------------
     // ---    saveAll        ----
@@ -96,21 +150,52 @@ public class AstraDBRepository<DOC> {
      * @return
      *      an unique identifier for the document
      */
-    public final List<String> saveAll(@NonNull List<Document<DOC>> documentList) {
-        if (documentList.isEmpty()) return new ArrayList<>();
-        return documentList.stream().map(this::save).collect(Collectors.toList());
+    public final List<DocumentMutationResult<DOC>> saveAll(List<Document<DOC>> documentList) {
+        return collectionRepository.saveAll(documentList);
     }
 
     /**
-     * Low level insertion of multiple records
+     * Create a new document a generating identifier asynchronously
      *
-     * @param documents
-     *      list of documents
+     * @param documentList
+     *      object Mapping
      * @return
-     *      list of ids
+     *      an unique identifier for the document
      */
-    public final List<String> insertAll(List<Document<DOC>> documents) {
-        return collectionRepository.insertAll(documents);
+    public final CompletableFuture<List<DocumentMutationResult<DOC>>> saveAllASync(List<Document<DOC>> documentList) {
+        return collectionRepository.saveAllASync(documentList);
+    }
+
+    /**
+     * Create a new document a generating identifier.
+     *
+     * @param documentList
+     *      object Mapping
+     * @param chunkSize
+     *      size of the chunk to process items
+     * @param concurrency
+     *      concurrency to process items
+     * @return
+     *      an unique identifier for the document
+     */
+    public final List<DocumentMutationResult<DOC>> saveAllDistributed(List<Document<DOC>> documentList, int chunkSize, int concurrency) {
+        return collectionRepository.saveAllDistributed(documentList, chunkSize, concurrency);
+    }
+
+    /**
+     * Create a new document a generating identifier asynchronously
+     *
+     * @param documentList
+     *      object Mapping
+     * @param chunkSize
+     *      size of the chunk to process items
+     * @param concurrency
+     *      concurrency to process items
+     * @return
+     *      an unique identifier for the document
+     */
+    public final CompletableFuture<List<DocumentMutationResult<DOC>>> saveAllDistributedASync(List<Document<DOC>> documentList, int chunkSize, int concurrency) {
+        return collectionRepository.saveAllDistributedASync(documentList, chunkSize, concurrency);
     }
 
     // --------------------------
@@ -151,7 +236,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      object if presents
      */
-    public Optional<Result<DOC>> findById(@NonNull String id) {
+    public Optional<DocumentResult<DOC>> findById(@NonNull String id) {
         return collectionRepository.findById(id);
     }
 
@@ -161,7 +246,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      retrieve all items
      */
-    public Stream<Result<DOC>> findAll() {
+    public Stream<DocumentResult<DOC>> findAll() {
        return collectionRepository.search();
     }
 
@@ -173,7 +258,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      retrieve all items
      */
-    public Stream<Result<DOC>> find(@NonNull SelectQuery query) {
+    public Stream<DocumentResult<DOC>> find(@NonNull SelectQuery query) {
         return collectionRepository.search(query);
     }
 
@@ -185,7 +270,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      page of records
      */
-    public Page<Result<DOC>> searchPage(SelectQuery query) {
+    public Page<DocumentResult<DOC>> searchPage(SelectQuery query) {
         return collectionRepository.searchPage(query);
     }
 
@@ -194,14 +279,14 @@ public class AstraDBRepository<DOC> {
     // --------------------------
 
     /**
-     * Delete a document from id or vector
-     * .
+     * Delete a document from id or vector.
+     *
      * @param document
      *      document
      * @return
      *      if document has been deleted.
      */
-    public boolean delete(@NonNull Document<DOC> document) {
+    public boolean delete(Document<DOC> document) {
         return collectionRepository.delete(document);
     }
 
@@ -237,7 +322,7 @@ public class AstraDBRepository<DOC> {
      * Delete item through a query.
      *
      * @param deleteQuery
-     *      delete queru
+     *      delete query
      * @return
      *       number of records deleted
      */
@@ -257,7 +342,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      object if presents
      */
-    public Optional<Result<DOC>> findByVector(@NonNull float[] vector) {
+    public Optional<DocumentResult<DOC>> findByVector(@NonNull float[] vector) {
         return collectionRepository.findByVector(vector);
     }
 
@@ -300,7 +385,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      page of results
      */
-    public Page<Result<DOC>> findVector(float[] vector, Filter metadataFilter) {
+    public Page<DocumentResult<DOC>> findVector(float[] vector, Filter metadataFilter) {
         return collectionRepository.findVector(vector, metadataFilter);
     }
 
@@ -314,7 +399,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      page of results
      */
-    public List<Result<DOC>> findVector(float[] vector, Integer limit) {
+    public List<DocumentResult<DOC>> findVector(float[] vector, Integer limit) {
         return collectionRepository.findVector(vector, limit);
     }
     /**
@@ -329,7 +414,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      page of results
      */
-    public List<Result<DOC>> findVector(float[] vector, Filter metadataFilter, Integer limit) {
+    public List<DocumentResult<DOC>> findVector(float[] vector, Filter metadataFilter, Integer limit) {
         return collectionRepository.findVector(vector, metadataFilter, limit);
     }
 

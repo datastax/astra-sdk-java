@@ -4,10 +4,11 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import com.dtsx.astra.sdk.AstraDBRepository;
+import com.dtsx.astra.sdk.AstraDBTestSuiteIT;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.domain.odm.Document;
-import io.stargate.sdk.json.domain.odm.Result;
+import io.stargate.sdk.data.domain.JsonDocument;
+import io.stargate.sdk.data.domain.odm.Document;
+import io.stargate.sdk.data.domain.odm.DocumentResult;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class AstraDBQuickStart {
     @Test
     public void quickStartTest() {
         String astraToken      = System.getenv("ASTRA_DB_APPLICATION_TOKEN");
-        String databaseName    = "test_java_astra_db_client";
+        String databaseName    = AstraDBTestSuiteIT.TEST_DBNAME;
         String collectionName  = "collection_quickstart";
 
         // 1a. Initialization with a client
@@ -34,8 +35,6 @@ public class AstraDBQuickStart {
 
         // 2. Create a  store (delete if exist)
         AstraDB astraDB = astraDBAdmin.database(databaseName);
-
-
         // 3. Insert data in the store
         astraDB.deleteCollection(collectionName);
         AstraDBCollection collection = astraDB.createCollection(collectionName, 14);
@@ -89,7 +88,7 @@ public class AstraDBQuickStart {
 
         Assertions.assertEquals(6, productRepository.count());
 
-        List<Result<Product>> results = productRepository
+        List<DocumentResult<Product>> results = productRepository
                 .findVector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}, null, 2);
     }
 

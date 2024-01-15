@@ -2,9 +2,9 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.json.domain.Filter;
-import io.stargate.sdk.json.domain.JsonDocument;
-import io.stargate.sdk.json.domain.JsonResult;
+import io.stargate.sdk.data.domain.query.Filter;
+import io.stargate.sdk.data.domain.JsonDocument;
+import io.stargate.sdk.data.domain.JsonDocumentResult;
 
 import java.util.Map;
 import java.util.stream.Stream;
@@ -47,6 +47,6 @@ public class QuickStart {
     float[] embeddings = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
     Filter metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
     int maxRecord = 10;
-    Stream<JsonResult> resultsSet = demoCollection.findVector(embeddings, metadataFilter, maxRecord);
+    Stream<JsonDocumentResult> resultsSet = demoCollection.findVector(embeddings, metadataFilter, maxRecord);
   }
 }
