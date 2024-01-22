@@ -77,7 +77,7 @@ class VectorClientProductTest {
                 new float[]{0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 1f, 0f});
         productRepository.insert(doc);
         // Easy insert many
-        productRepository.insertAll(List.of(
+        productRepository.insert(List.of(
                 new Document<>("pt0041",
                         new Product("Dog Ring Chew Toy", 9.99),
                         new float[]{0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f, 0f}),

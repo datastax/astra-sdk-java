@@ -137,7 +137,7 @@ public class AstraDB {
     }
 
     /**
-     * Accessing the database with id an region.
+     * Accessing the database with id and region.
      *
      * @param token
      *      astra token
@@ -260,7 +260,7 @@ public class AstraDB {
      *      json vector store
      */
     public <DOC> AstraDBRepository<DOC> createCollection(String name, Class<DOC> clazz) {
-        return new AstraDBRepository<DOC>(nsClient.createCollection(name, clazz));
+        return new AstraDBRepository<>(nsClient.createCollection(name, clazz));
     }
 
     /**
@@ -312,7 +312,7 @@ public class AstraDB {
      *       object type
      */
     public <T> AstraDBRepository<T> createCollection(String name, int vectorDimension, Class<T> bean) {
-        return new AstraDBRepository<T>(nsClient.createCollection(CollectionDefinition.builder()
+        return new AstraDBRepository<>(nsClient.createCollection(CollectionDefinition.builder()
                 .name(name)
                 .vector(vectorDimension, SimilarityMetric.cosine)
                 .build(), bean));
@@ -344,7 +344,7 @@ public class AstraDB {
      *      json vector store
      */
     public <DOC> AstraDBRepository<DOC> createCollection(CollectionDefinition def, Class<DOC> clazz) {
-        return new AstraDBRepository<DOC>(nsClient.createCollection(def, clazz));
+        return new AstraDBRepository<>(nsClient.createCollection(def, clazz));
     }
 
     // --------------------
@@ -376,7 +376,7 @@ public class AstraDB {
      *      type of the bean in use
      */
     public <T> AstraDBRepository<T> collectionRepository(@NonNull  String storeName, Class<T> clazz) {
-        return new AstraDBRepository<T>(nsClient.collectionRepository(storeName, clazz));
+        return new AstraDBRepository<>(nsClient.collectionRepository(storeName, clazz));
     }
 
     /**
@@ -385,7 +385,7 @@ public class AstraDB {
      * @return
      *      raw namespace client
      */
-    public NamespaceClient getRawNamespaceClient() {
+    public NamespaceClient getNamespaceClient() {
         return nsClient;
     }
 

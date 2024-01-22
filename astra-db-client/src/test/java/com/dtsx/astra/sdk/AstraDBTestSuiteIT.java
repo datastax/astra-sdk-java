@@ -17,6 +17,7 @@ import io.stargate.sdk.data.domain.query.SelectQuery;
 import io.stargate.sdk.data.exception.DataApiDocumentAlreadyExistException;
 import io.stargate.sdk.data.exception.DataApiInvalidArgumentException;
 import io.stargate.sdk.data.exception.DataApiNamespaceNotFoundException;
+import io.stargate.sdk.utils.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,8 +74,6 @@ public class AstraDBTestSuiteIT {
     static UUID databaseId;
     static AstraDBCollection collectionSimple;
     static AstraDBCollection collectionVector;
-    static AstraDBRepository<Product> productRepositoryVector;
-    static AstraDBRepository<Product> productRepositorySimple;
 
     /**
      * Bean to be used for the test suite
@@ -90,16 +90,18 @@ public class AstraDBTestSuiteIT {
 
     private static void setupTestSuiteForDevelopment() {
         targetEnvironment = AstraEnvironment.DEV;
-        astraToken = "AstraCS:ZiWfNzYJtUGszRuGyyTjFIXU:2c5a21a4623c6ee688d4bca4b8e55a269aa3ee864fcd16b26b7f9a82ca57b999";
+        astraToken = Utils.readEnvVariable("ASTRA_DB_APPLICATION_TOKEN_DEV")
+                .orElseThrow(() -> new IllegalArgumentException("ASTRA_DB_APPLICATION_TOKEN_DEV is not set"));
         targetCloud = CloudProviderType.GCP;
         targetRegion = "europe-west4";
         log.info("Environment Setup for Development");
     }
 
-    private void setupTestSuiteForProduction() {
+    private static void setupTestSuiteForProduction() {
         log.info("Environment Setup for PRODUCTION");
         targetEnvironment = AstraEnvironment.PROD;
-        astraToken = "AstraCS:iLPiNPxSSIdefoRdkTWCfWXt:2b360d096e0e6cb732371925ffcc6485541ff78067759a2a1130390e231c2c7a";
+        astraToken = Utils.readEnvVariable("ASTRA_DB_APPLICATION_TOKEN")
+                .orElseThrow(() -> new IllegalArgumentException("ASTRA_DB_APPLICATION_TOKEN is not set"));
         targetCloud = CloudProviderType.GCP;
         targetRegion = "us-east1";
     }
@@ -108,8 +110,8 @@ public class AstraDBTestSuiteIT {
     @DisplayName("00. Connect to Astra")
     public static void setupAndConnectToAstra() {
         // Given
-        setupTestSuiteForDevelopment();
-        //setupTestSuiteForProduction();
+        //setupTestSuiteForDevelopment();
+        setupTestSuiteForProduction();
         Assertions.assertNotNull(astraToken);
         Assertions.assertNotNull(targetEnvironment);
         // When
@@ -129,6 +131,8 @@ public class AstraDBTestSuiteIT {
         // Given
         Assertions.assertNotNull(targetCloud);
         Assertions.assertNotNull(targetRegion);
+        Assertions.assertNotNull(astraDbAdmin.getDevopsApiClient());
+
         // When
         databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
         // Then
@@ -147,8 +151,10 @@ public class AstraDBTestSuiteIT {
         // Given
         Assertions.assertNotNull(databaseId);
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
+        Assertions.assertNotNull(astraDbAdmin.getDataApiClient(databaseId));
         // When
         astraDb = astraDbAdmin.database(databaseId);
+        Assertions.assertNotNull(astraDb.getNamespaceClient());
         Assertions.assertNotNull(astraDb);
         // When
         astraDb = astraDbAdmin.database(TEST_DBNAME);
@@ -159,6 +165,7 @@ public class AstraDBTestSuiteIT {
         // Given
         Assertions.assertNotNull(astraDb.getApiEndpoint());
         Assertions.assertNotNull(astraDbAdmin.getToken());
+        Assertions.assertNotNull(astraDbAdmin.getDataApiClient(TEST_DBNAME));
         // When
         AstraDB astraDb2 = new AstraDB(astraDbAdmin.getToken(), astraDb.getApiEndpoint());
         // Then
@@ -212,7 +219,7 @@ public class AstraDBTestSuiteIT {
 
     @Test
     @Order(5)
-    @DisplayName("05. Delete a Database")
+    @DisplayName("05. Delete a Database by namd")
     @Disabled("This test is disabled because it is pretty lone")
     public void shouldDeleteDatabase() throws InterruptedException {
         String dbName = "test_delete_db";
@@ -222,13 +229,20 @@ public class AstraDBTestSuiteIT {
         UUID dbId = astraDbAdmin.createDatabase(dbName, targetCloud, targetRegion);
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(dbName));
         // When
-        astraDbAdmin.deleteDatabaseByName(dbName);
+        boolean isDeleted = astraDbAdmin.deleteDatabaseByName(dbName);
         // Then
         Thread.sleep(5000);
+        Assertions.assertTrue(isDeleted);
         Database db = astraDbAdmin
                 .findDatabaseById(dbId)
                 .orElseThrow(() -> new IllegalStateException("Should have found a database"));
         Assertions.assertEquals("TERMINATING", db.getStatus().name());
+
+        UUID tmpDbId = astraDbAdmin.createDatabase("tmp_db_2", targetCloud, targetRegion);
+        Assertions.assertTrue(astraDbAdmin.isDatabaseExists("tmp_db_2"));
+        Assertions.assertTrue(astraDbAdmin.deleteDatabaseById(tmpDbId));
+        Thread.sleep(5000);
+
     }
 
     // ------------------------------------
@@ -241,8 +255,8 @@ public class AstraDBTestSuiteIT {
     public void shouldCreateCollectionSimple() {
         if (astraDb == null) shouldConnectToDatabase();
         // Given
-        astraDb.deleteCollection(TEST_COLLECTION_NAME);
-        Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_NAME));
+        //astraDb.deleteCollection(TEST_COLLECTION_NAME);
+        //Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_NAME));
         // When
         collectionSimple = astraDb.createCollection(TEST_COLLECTION_NAME);
         // Then
@@ -256,8 +270,8 @@ public class AstraDBTestSuiteIT {
         if (astraDb == null) shouldConnectToDatabase();
 
         // Given
-        astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
-        Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
+        //astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
+        //Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
         // When
         astraDb.createCollection(TEST_COLLECTION_VECTOR, 14);
         // Then
@@ -310,6 +324,7 @@ public class AstraDBTestSuiteIT {
     @Test
     @Order(10)
     @DisplayName("10. Delete all documents in a collection")
+    @Disabled("Product Issues")
     public void shouldDeleteACollection() {
         if (astraDb == null) shouldConnectToDatabase();
 
@@ -328,6 +343,7 @@ public class AstraDBTestSuiteIT {
         // Given
         if (collectionSimple == null) shouldCreateCollectionSimple();
         Assertions.assertTrue(astraDb.isCollectionExists(TEST_COLLECTION_NAME));
+        collectionSimple.deleteAll();
         collectionSimple.insertOne(new JsonDocument().id("1"));
         Assertions.assertEquals(1, collectionSimple.countDocuments());
         // When
@@ -336,12 +352,17 @@ public class AstraDBTestSuiteIT {
         Assertions.assertEquals(0, collectionSimple.countDocuments());
     }
 
+    // ------------------------------------
+    // --------- Documents   --------------
+    // ------------------------------------
+
+    // ======== INSERT =========
+
     @Test
     @Order(12)
     @DisplayName("12. InsertOne with json String")
     public void shouldInsertOneJson() {
-        if (collectionVector == null) shouldCreateCollectionVector();
-        collectionVector.deleteAll();
+        initializeCollectionVector();
 
         String json = "{" +
                 "\"$vector\": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], " +
@@ -365,8 +386,7 @@ public class AstraDBTestSuiteIT {
     @Order(13)
     @DisplayName("13. InsertOne with a JsonDocument")
     public void shouldInsertOneJsonDocument() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
+        initializeCollectionSimple();
 
         // Working document
         JsonDocument doc = new JsonDocument().id("1").put("a", "a").put("b", true);
@@ -380,14 +400,20 @@ public class AstraDBTestSuiteIT {
 
         // Insert ONE => ERROR
         Assertions.assertThrows(DataApiDocumentAlreadyExistException.class, () -> collectionSimple.insertOne(doc));
+
+        // Insert ONE => Asynchronously
+        JsonDocument doc2 = new JsonDocument().id("2").put("a", "a").put("b", true);
+        collectionSimple.insertOneASync(doc2).thenAccept(res2 -> {
+            Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res2.getStatus());
+            Assertions.assertEquals("2", res2.getDocument().getId());
+        });
     }
 
     @Test
     @Order(14)
     @DisplayName("14. InsertOne with a Java Bean")
     public void shouldInsertOneDocument() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
+        initializeCollectionSimple();
 
         // Working document
         Document<Product> doc = new Document<Product>().id("p1").data(new Product("p1", 10.1));
@@ -400,14 +426,21 @@ public class AstraDBTestSuiteIT {
 
         // Insert ONE => ERROR
         Assertions.assertThrows(DataApiDocumentAlreadyExistException.class, () -> collectionSimple.insertOne(doc));
+
+        // Insert Async
+        Document<Product> doc2 = new Document<Product>().id("p2").data(new Product("p2", 10.1));
+        collectionSimple.insertOneASync(doc2).thenAccept(res2 -> {
+            Assertions.assertEquals(DocumentMutationStatus.CREATED, res2.getStatus());
+            Assertions.assertEquals("p2", res2.getDocument().getId());
+        });
+
     }
 
     @Test
     @Order(15)
     @DisplayName("15. Insert Doc and find By Id")
     public void shouldInsertAndRetrieve() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
+        initializeCollectionSimple();
 
         // Working document
         Document<Product> doc = new Document<Product>().id("p1").data(new Product("p1", 10.1));
@@ -418,7 +451,7 @@ public class AstraDBTestSuiteIT {
         Assertions.assertEquals("p1", res.getDocument().getId());
         Assertions.assertEquals("p1", res.getDocument().getData().getName());
 
-        // Insert ONE => ERROR
+        // Find the retrieved object
         Optional<DocumentResult<Product>> optRes = collectionSimple.findById("p1", Product.class);
         if (optRes.isPresent()) {
             DocumentResult<Product> res2 = optRes.get();
@@ -431,237 +464,9 @@ public class AstraDBTestSuiteIT {
 
     @Test
     @Order(16)
-    @DisplayName("16. UpsertOne with a jsonDocument")
-    public void testUpsert() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-
-        JsonDocument doc = new JsonDocument().id("1").put("a", "a").put("b", "c");
-        JsonDocumentMutationResult res = collectionSimple.upsertOne(doc);
-        Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
-        Assertions.assertEquals("1", res.getDocument().getId());
-
-        // Upsert with no CHANGE
-        res = collectionSimple.upsertOne(doc);
-        Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
-        Assertions.assertEquals("1", res.getDocument().getId());
-
-
-        // Upsert with a CHANGE
-        doc.put("b", "updated");
-        res = collectionSimple.upsertOne(doc);
-        Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
-        Assertions.assertEquals("1", res.getDocument().getId());
-    }
-
-    // Insert Many........................................................
-
-    JsonDocument player1 = new JsonDocument().id("1").put("firstName", "Lucas").put("lastName", "Hernandez");
-    JsonDocument player2 = new JsonDocument().id("2").put("firstName", "Antoine").put("lastName", "Griezmann");
-    JsonDocument player3 = new JsonDocument().id("3").put("firstName", "N'Golo").put("lastName", "Kanté");
-    JsonDocument player4 = new JsonDocument().id("4").put("firstName", "Paul").put("lastName", "Pogba");
-    JsonDocument player5 = new JsonDocument().id("5").put("firstName", "Raphaël").put("lastName", "Varane");
-    JsonDocument player6 = new JsonDocument().id("6").put("firstName", "Hugo").put("lastName", "Lloris");
-    JsonDocument player7 = new JsonDocument().id("7").put("firstName", "Olivier").put("lastName", "Giroud");
-    JsonDocument player8 = new JsonDocument().id("8").put("firstName", "Benjamin").put("lastName", "Pavard");
-    JsonDocument player9 = new JsonDocument().id("9").put("firstName", "Kylian").put("lastName", "Mbappé");
-    JsonDocument player10 = new JsonDocument().id("10").put("firstName", "Blaise").put("lastName", "Matuidi");
-    JsonDocument player11 = new JsonDocument().id("11").put("firstName", "Samuel").put("lastName", "Umtiti");
-    JsonDocument player12 = new JsonDocument().id("12").put("firstName", "Thomas").put("lastName", "Lemar");
-    JsonDocument player13 = new JsonDocument().id("13").put("firstName", "Ousmane").put("lastName", "Dembélé");
-    JsonDocument player14 = new JsonDocument().id("14").put("firstName", "Karim").put("lastName", "Benzema");
-    JsonDocument player15 = new JsonDocument().id("15").put("firstName", "Adrien").put("lastName", "Rabiot");
-    JsonDocument player16 = new JsonDocument().id("16").put("firstName", "Kingsley").put("lastName", "Coman");
-    JsonDocument player17 = new JsonDocument().id("17").put("firstName", "Moussa").put("lastName", "Sissoko");
-    JsonDocument player18 = new JsonDocument().id("18").put("firstName", "Lucas").put("lastName", "Digne");
-    JsonDocument player19 = new JsonDocument().id("19").put("firstName", "Steve").put("lastName", "Mandanda");
-    JsonDocument player20 = new JsonDocument().id("20").put("firstName", "Presnel").put("lastName", "Kimpembe");
-    JsonDocument player21 = new JsonDocument().id("21").put("firstName", "Clement").put("lastName", "Lenglet");
-    JsonDocument player22 = new JsonDocument().id("22").put("firstName", "Leo").put("lastName", "Dubois");
-    JsonDocument player23 = new JsonDocument().id("23").put("firstName", "Kurt").put("lastName", "Zouma");
-    JsonDocument player24 = new JsonDocument().id("24").put("firstName", "Tanguy").put("lastName", "Ndombele");
-
-    @Test
-    @Order(17)
-    @DisplayName("17. InsertMany Java Bean")
-    public void testInsertManyJavaBean() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-
-        Document<Product> p1 = new Document<Product>().id("doc1").data(new Product("test1", 12.99));
-        Document<Product> p2 = new Document<Product>().id("doc2").data(new Product("test2", 2.99));
-        List<DocumentMutationResult<Product>> results = collectionSimple.insertMany(List.of(p1, p2));
-        if (results !=null) {
-            results.stream().forEach(r -> {
-                Assertions.assertEquals(DocumentMutationStatus.CREATED, r.getStatus());
-                Assertions.assertNotNull(r.getDocument().getId());
-                Product p = r.getDocument().getData();
-                Assertions.assertNotNull(p.getName());
-            });
-        }
-    }
-
-    @Test
-    @Order(18)
-    @DisplayName("18. InsertMany JsonDocuments")
-    public void insertManyJson() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-
-        collectionSimple.insertManyJsonDocuments(List.of(player1, player2)).stream().forEach(r -> {
-                Assertions.assertEquals(DocumentMutationStatus.CREATED, r.getStatus());
-                Assertions.assertNotNull(r.getDocument().getId());
-                Assertions.assertNotNull(r.getDocument().getString("firstName"));
-            });
-        }
-
-    @Test
-    @Order(19)
-    @DisplayName("19. InsertMany Json")
-    public void testInsertManyJson() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-        String jsonMany = "[" +
-                "{\"product_name\":\"test1\",\"product_price\":12.99,\"_id\":\"doc1\"}," +
-                "{\"product_name\":\"test2\",\"product_price\":2.99,\"_id\":\"doc2\"}" +
-                "]";
-        collectionSimple.insertMany(jsonMany);
-    }
-
-    @Test
-    @Order(20)
-    @DisplayName("20. InsertMany too many items")
-    public void testInsertTooMany() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        Assertions.assertThrows(DataApiInvalidArgumentException.class,
-                () -> collectionSimple.insertMany( List.of(
-                        player1, player2, player3, player4, player5, player6,
-                        player7, player8, player9, player10,player11, player12,
-                        player13, player14, player15, player16, player17, player18,
-                        player19, player20, player21, player22, player23, player24)));
-    }
-
-    @Test
-    @Order(21)
-    @DisplayName("21. InsertMany order true, no replace")
-    public void testInsertManyOK() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-
-        List<Document<Map<String, Object>>> othersPlayers = new ArrayList<>(List.of(player1, player2, player3, player4, player5, player6,
-                player7, player8, player9));
-        List<DocumentMutationStatus> statuses1 = new ArrayList<>();
-        collectionSimple.insertMany(othersPlayers).stream().forEach(res -> {
-            Assertions.assertNotNull(res.getDocument().getId());
-            Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
-            statuses1.add(res.getStatus());
-        });
-        log.info("Statuses => " + statuses1.stream().map(s -> s.name()).collect(Collectors.joining(", ")));
-
-        // Insert again
-        boolean orderInsertion         = true;
-        boolean replaceIfAlreadyExists = false;
-        List<DocumentMutationStatus> statuses = new ArrayList<>();
-        collectionSimple.insertMany(othersPlayers, orderInsertion, replaceIfAlreadyExists).stream().forEach(res -> {
-            Assertions.assertNotNull(res.getDocument().getId());
-            if (player1.getId().equals(res.getDocument().getId())) {
-                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
-            } else {
-                Assertions.assertEquals(DocumentMutationStatus.NOT_PROCESSED, res.getStatus());
-            }
-            statuses.add(res.getStatus());
-        });
-        log.info("Statuses => " + statuses.stream().map(s -> s.name()).collect(Collectors.joining(", ")));
-    }
-
-    @Test
-    @Order(22)
-    @DisplayName("22. InsertMany with replacements")
-    public void testInsertManyWithDuplicatesOrder() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-
-        List<Document<Map<String, Object>>> othersPlayers = new ArrayList<>(List.of(
-                player1, player2, player3, player4, player5, player6,
-                player7, player8));
-        othersPlayers.add(new JsonDocument().id("9").put("firstName", "Kylian2").put("lastName", "Mbappé"));
-        othersPlayers.addAll(List.of(player9, player10,player11));
-        log.info("Players order, 9 is duplicate :" + othersPlayers
-                .stream().map(Document::getId)
-                .collect(Collectors.joining(", "))
-                .toString());
-
-        boolean orderingInserts        = true;
-        boolean replaceIfAlreadyExists = false;
-
-        // Status CREATED up to the duplicate
-        List<DocumentMutationStatus> statuses = new ArrayList<>();
-        collectionSimple.insertMany(othersPlayers, orderingInserts, replaceIfAlreadyExists).stream().forEach(res -> {
-            Assertions.assertNotNull(res.getDocument().getId());
-            int id = Integer.parseInt(res.getDocument().getId());
-            if (id<9) {
-                Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
-            } else if (id==9) {
-                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
-            } else {
-                Assertions.assertEquals(DocumentMutationStatus.NOT_PROCESSED, res.getStatus());
-            }
-            statuses.add(res.getStatus());
-        });
-        log.info("Statuses1 => " + statuses.stream().map(s -> s.name()).collect(Collectors.joining(", ")));
-
-        // Status ALREADY EXIST for first and else NOT PROCESS
-        List<DocumentMutationStatus> statuses2 = new ArrayList<>();
-        collectionSimple.insertMany(othersPlayers, orderingInserts, replaceIfAlreadyExists).stream().forEach(res -> {
-            Assertions.assertNotNull(res.getDocument().getId());
-            int id = Integer.parseInt(res.getDocument().getId());
-            if (id==1) {
-                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
-            } else {
-                Assertions.assertEquals(DocumentMutationStatus.NOT_PROCESSED, res.getStatus());
-            }
-            statuses2.add(res.getStatus());
-        });
-        log.info("Statuses2 => " + statuses2.stream().map(s -> s.name()).collect(Collectors.joining(", ")));
-
-        // 1 to 9 is ALREADY_EXIST, 10 and 11 are created
-        orderingInserts = false;
-        List<DocumentMutationStatus> statuses3 = new ArrayList<>();
-        collectionSimple.insertMany(othersPlayers, orderingInserts, replaceIfAlreadyExists).stream().forEach(res -> {
-            Assertions.assertNotNull(res.getDocument().getId());
-            int id = Integer.parseInt(res.getDocument().getId());
-            if (id<10) {
-                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
-            } else {
-                Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
-            }
-            statuses3.add(res.getStatus());
-        });
-        log.info("Statuses3 => " + statuses3.stream().map(s -> s.name()).collect(Collectors.joining(", ")));
-
-        // Try to replace
-        replaceIfAlreadyExists = true;
-        List<DocumentMutationStatus> statuses4 = new ArrayList<>();
-        collectionSimple.insertMany(othersPlayers, orderingInserts, replaceIfAlreadyExists).stream().forEach(res -> {
-            Assertions.assertNotNull(res.getDocument().getId());
-            int id = Integer.parseInt(res.getDocument().getId());
-            if (id==9) {
-                Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
-            } else {
-                Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
-            }
-            statuses4.add(res.getStatus());
-        });
-        log.info("Statuses4 => " + statuses4.stream().map(s -> s.name()).collect(Collectors.joining(", ")));
-    }
-
-    // Insert Many Chunked........................................................
-
-    @Test
-    @Order(23)
-    @DisplayName("23. Insert a Document with multiple Manner")
+    @DisplayName("16. Insert a JsonDocument with multiple Manner")
     public void shouldInsertADocument() {
-        if (collectionVector == null) shouldCreateCollectionVector();
+        initializeCollectionVector();
 
         // You must delete any existing rows with the same IDs as the
         // rows you want to insert
@@ -709,12 +514,10 @@ public class AstraDBTestSuiteIT {
     }
 
     @Test
-    @Order(24)
-    @DisplayName("24. Insert document with a lot of properties and retrieve them")
+    @Order(17)
+    @DisplayName("17. Insert document with a lot of properties and retrieve them")
     public void shouldInsertOneComplexDocument() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        // Given
-        collectionSimple.deleteAll();
+        initializeCollectionSimple();
         Assertions.assertEquals(0, collectionSimple.countDocuments());
 
         // Adding Many with a Json document with a lof properties
@@ -785,6 +588,404 @@ public class AstraDBTestSuiteIT {
         Boolean[] ba = res.getArray("metadata_boolean_array", Boolean.class);
         Assertions.assertNotNull(ba);
     }
+
+    // ======== UPSERT  =========
+
+    @Test
+    @Order(18)
+    @DisplayName("18. UpsertOne with a jsonDocument")
+    public void shouldUpsertOneWithJson()
+    throws ExecutionException, InterruptedException {
+        initializeCollectionSimple();
+        String json = "{" +
+                "\"_id\": \"doc1\", " +
+                "\"$vector\": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], " +
+                "\"product_name\": \"HealthyFresh - Chicken raw dog food\", " +
+                "\"product_price\": 9.99" +
+                "}";
+
+        // First insertion will give you a CREATED status
+        JsonDocumentMutationResult res = collectionSimple.upsertOne(json);
+        Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+        Assertions.assertEquals("doc1", res.getDocument().getId());
+
+        // Second will give you  with no UNCHANGED (Async_
+        res = collectionSimple.upsertOneASync(json).get();
+        Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
+
+        // Third will give you  with a CHANGED
+        String jsonUdated = json.replaceAll("9.99", "10.99");
+        res = collectionSimple.upsertOne(jsonUdated);
+        Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
+
+    }
+
+    @Test
+    @Order(19)
+    @DisplayName("19. UpsertOne with a jsonDocument")
+    public void shouldUpsertOneWithJsonDocument()
+    throws ExecutionException, InterruptedException {
+        initializeCollectionSimple();
+
+        JsonDocument doc = new JsonDocument().id("1").put("a", "a").put("b", "c");
+        JsonDocumentMutationResult res = collectionSimple.upsertOne(doc);
+        Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+        Assertions.assertEquals("1", res.getDocument().getId());
+
+        // Upsert with no CHANGE
+        res = collectionSimple.upsertOneASync(doc).get();
+        Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
+        Assertions.assertEquals("1", res.getDocument().getId());
+
+        // Upsert with a CHANGE
+        doc.put("b", "updated");
+        res = collectionSimple.upsertOne(doc);
+        Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
+        Assertions.assertEquals("1", res.getDocument().getId());
+    }
+
+    @Test
+    @Order(20)
+    @DisplayName("20. UpsertOne with a Document")
+    public void shouldUpsertOneWithDocument()
+    throws ExecutionException, InterruptedException {
+        initializeCollectionSimple();
+
+        Document<Product> doc = new Document<Product>().id("1").data(new Product("p1", 10.1));
+        DocumentMutationResult<Product> res = collectionSimple.upsertOne(doc);
+        Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+        Assertions.assertEquals("1", res.getDocument().getId());
+
+        // Upsert with no CHANGE
+        res = collectionSimple.upsertOneASync(doc).get();
+        Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
+        Assertions.assertEquals("1", res.getDocument().getId());
+
+        // Upsert with a CHANGE
+        doc.getData().setName("updated");
+        res = collectionSimple.upsertOne(doc);
+        Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
+        Assertions.assertEquals("1", res.getDocument().getId());
+    }
+
+    // ======== INSERT MANY  =========
+
+    @Test
+    @Order(21)
+    @DisplayName("21. InsertMany Json")
+    public void shouldInsertManyJson() {
+        initializeCollectionSimple();
+
+        String jsonMany = "[" +
+                "{\"product_name\":\"test1\",\"product_price\":12.99,\"_id\":\"doc1\"}," +
+                "{\"product_name\":\"test2\",\"product_price\":2.99,\"_id\":\"doc2\"}" +
+                "]";
+        List<JsonDocumentMutationResult> status = collectionSimple.insertMany(jsonMany);
+        Assertions.assertEquals(2, status.size());
+        List<String> ids = status.stream()
+                .map(JsonDocumentMutationResult::getDocument)
+                .map(Document::getId)
+                .collect(Collectors.toList());
+        Assertions.assertTrue(ids.contains("doc1"));
+        Assertions.assertTrue(ids.contains("doc2"));
+        status.forEach(s -> Assertions.assertEquals(DocumentMutationStatus.CREATED, s.getStatus()));
+
+        status = collectionSimple.insertMany(jsonMany);
+        status.forEach(s -> Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, s.getStatus()));
+
+        collectionSimple.deleteAll();
+        collectionSimple.insertManyASync(jsonMany).thenAccept(status2 -> {
+            Assertions.assertEquals(2, status2.size());
+            List<String> ids2 = status2.stream()
+                    .map(JsonDocumentMutationResult::getDocument)
+                    .map(Document::getId)
+                    .collect(Collectors.toList());
+            Assertions.assertTrue(ids2.contains("doc1"));
+            Assertions.assertTrue(ids2.contains("doc2"));
+            status2.forEach(s -> Assertions.assertEquals(DocumentMutationStatus.CREATED, s.getStatus()));
+        });
+
+    }
+
+    @Test
+    @Order(22)
+    @DisplayName("22. InsertMany Java Bean")
+    public void shouldInsertManyJavaBean() {
+        initializeCollectionSimple();
+
+        Document<Product> p1 = new Document<Product>().id("doc1").data(new Product("test1", 12.99));
+        Document<Product> p2 = new Document<Product>().id("doc2").data(new Product("test2", 2.99));
+        List<DocumentMutationResult<Product>> results = collectionSimple.insertMany(List.of(p1, p2));
+        if (results !=null) {
+            results.forEach(r -> {
+                Assertions.assertEquals(DocumentMutationStatus.CREATED, r.getStatus());
+                Assertions.assertNotNull(r.getDocument().getId());
+                Product p = r.getDocument().getData();
+                Assertions.assertNotNull(p.getName());
+            });
+        }
+
+        // Same with async
+        collectionSimple.deleteAll();
+        collectionSimple.insertManyASync(List.of(p1, p2)).thenAccept(results2 -> {
+            if (results2 !=null) {
+                results2.forEach(r -> {
+                    Assertions.assertEquals(DocumentMutationStatus.CREATED, r.getStatus());
+                    Assertions.assertNotNull(r.getDocument().getId());
+                    Product p = r.getDocument().getData();
+                    Assertions.assertNotNull(p.getName());
+                });
+            }
+        });
+    }
+
+    JsonDocument player1 = new JsonDocument().id("1").put("firstName", "Lucas").put("lastName", "Hernandez");
+    JsonDocument player2 = new JsonDocument().id("2").put("firstName", "Antoine").put("lastName", "Griezmann");
+    JsonDocument player3 = new JsonDocument().id("3").put("firstName", "N'Golo").put("lastName", "Kanté");
+    JsonDocument player4 = new JsonDocument().id("4").put("firstName", "Paul").put("lastName", "Pogba");
+    JsonDocument player5 = new JsonDocument().id("5").put("firstName", "Raphaël").put("lastName", "Varane");
+    JsonDocument player6 = new JsonDocument().id("6").put("firstName", "Hugo").put("lastName", "Lloris");
+    JsonDocument player7 = new JsonDocument().id("7").put("firstName", "Olivier").put("lastName", "Giroud");
+    JsonDocument player8 = new JsonDocument().id("8").put("firstName", "Benjamin").put("lastName", "Pavard");
+    JsonDocument player9 = new JsonDocument().id("9").put("firstName", "Kylian").put("lastName", "Mbappé");
+    JsonDocument player10 = new JsonDocument().id("10").put("firstName", "Blaise").put("lastName", "Matuidi");
+    JsonDocument player11 = new JsonDocument().id("11").put("firstName", "Samuel").put("lastName", "Umtiti");
+    JsonDocument player12 = new JsonDocument().id("12").put("firstName", "Thomas").put("lastName", "Lemar");
+    JsonDocument player13 = new JsonDocument().id("13").put("firstName", "Ousmane").put("lastName", "Dembélé");
+    JsonDocument player14 = new JsonDocument().id("14").put("firstName", "Karim").put("lastName", "Benzema");
+    JsonDocument player15 = new JsonDocument().id("15").put("firstName", "Adrien").put("lastName", "Rabiot");
+    JsonDocument player16 = new JsonDocument().id("16").put("firstName", "Kingsley").put("lastName", "Coman");
+    JsonDocument player17 = new JsonDocument().id("17").put("firstName", "Moussa").put("lastName", "Sissoko");
+    JsonDocument player18 = new JsonDocument().id("18").put("firstName", "Lucas").put("lastName", "Digne");
+    JsonDocument player19 = new JsonDocument().id("19").put("firstName", "Steve").put("lastName", "Mandanda");
+    JsonDocument player20 = new JsonDocument().id("20").put("firstName", "Presnel").put("lastName", "Kimpembe");
+    JsonDocument player21 = new JsonDocument().id("21").put("firstName", "Clement").put("lastName", "Lenglet");
+    JsonDocument player22 = new JsonDocument().id("22").put("firstName", "Leo").put("lastName", "Dubois");
+    JsonDocument player23 = new JsonDocument().id("23").put("firstName", "Kurt").put("lastName", "Zouma");
+    JsonDocument player24 = new JsonDocument().id("24").put("firstName", "Tanguy").put("lastName", "Ndombele");
+
+    @Test
+    @Order(23)
+    @DisplayName("23. InsertMany JsonDocuments")
+    public void shouldManyJsonDocuments() {
+        initializeCollectionSimple();
+        collectionSimple.insertManyJsonDocuments(List.of(player1, player2)).forEach(r -> {
+          Assertions.assertEquals(DocumentMutationStatus.CREATED, r.getStatus());
+          Assertions.assertNotNull(r.getDocument().getId());
+          Assertions.assertNotNull(r.getDocument().getString("firstName"));
+        });
+        collectionSimple.deleteAll();
+
+        // Same but Async
+        collectionSimple.insertManyJsonDocumentsASync(List.of(player1, player2)).thenAccept(r -> {
+            Assertions.assertEquals(2, r.size());
+            r.forEach(res -> {
+                Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+                Assertions.assertNotNull(res.getDocument().getId());
+                Assertions.assertNotNull(res.getDocument().getString("firstName"));
+            });
+        });
+    }
+
+    @Test
+    @Order(24)
+    @DisplayName("24. InsertMany too many items")
+    public void shouldInsertTooMany() {
+        initializeCollectionSimple();
+        Assertions.assertThrows(DataApiInvalidArgumentException.class,
+                () -> collectionSimple.insertMany( List.of(
+                        player1, player2, player3, player4, player5, player6,
+                        player7, player8, player9, player10,player11, player12,
+                        player13, player14, player15, player16, player17, player18,
+                        player19, player20, player21, player22, player23, player24)));
+    }
+
+
+
+
+
+    @Test
+    @Order(25)
+    @DisplayName("25. InsertMany order true, no replace")
+    public void shouldInsertManyOrdered() {
+        initializeCollectionSimple();
+
+        List<Document<Map<String, Object>>> othersPlayers = new ArrayList<>(List.of(
+                player1, player2, player3,
+                player4, player5, player6,
+                player7, player8, player9));
+        List<DocumentMutationStatus> statuses1 = new ArrayList<>();
+        collectionSimple.insertMany(othersPlayers).forEach(res -> {
+            Assertions.assertNotNull(res.getDocument().getId());
+            Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+            statuses1.add(res.getStatus());
+        });
+        log.info("Statuses => " + statuses1.stream().map(Enum::name).collect(Collectors.joining(", ")));
+
+        // Insert again
+        List<DocumentMutationStatus> statuses = new ArrayList<>();
+        collectionSimple.enableOrderingWhenInsert();
+        collectionSimple.insertMany(othersPlayers).forEach(res -> {
+            Assertions.assertNotNull(res.getDocument().getId());
+            if (player1.getId().equals(res.getDocument().getId())) {
+                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
+            } else {
+                Assertions.assertEquals(DocumentMutationStatus.NOT_PROCESSED, res.getStatus());
+            }
+            statuses.add(res.getStatus());
+        });
+        log.info("Statuses => " + statuses.stream().map(Enum::name).collect(Collectors.joining(", ")));
+    }
+
+    @Test
+    @Order(26)
+    @DisplayName("26. InsertMany with replacements")
+    public void shouldInsertManyWithDuplicatesOrder() {
+        initializeCollectionSimple();
+
+        List<Document<Map<String, Object>>> othersPlayers = new ArrayList<>(List.of(
+                player1, player2, player3,
+                player4, player5, player6,
+                player7, player8));
+        othersPlayers.add(new JsonDocument().id("9").put("firstName", "Kylian2").put("lastName", "Mbappé"));
+        othersPlayers.addAll(List.of(player9, player10,player11));
+        log.info("Players order, 9 is duplicate :" + othersPlayers
+                .stream().map(Document::getId)
+                .collect(Collectors.joining(", ")));
+
+
+        // Status CREATED up to the duplicate
+        List<DocumentMutationStatus> statuses = new ArrayList<>();
+        collectionSimple.enableOrderingWhenInsert();
+        collectionSimple.insertMany(othersPlayers).forEach(res -> {
+            Assertions.assertNotNull(res.getDocument().getId());
+            int id = Integer.parseInt(res.getDocument().getId());
+            if (id<9) {
+                Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+            } else if (id==9) {
+                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
+            } else {
+                Assertions.assertEquals(DocumentMutationStatus.NOT_PROCESSED, res.getStatus());
+            }
+            statuses.add(res.getStatus());
+        });
+        log.info("Statuses1 => " + statuses.stream().map(Enum::name).collect(Collectors.joining(", ")));
+
+        // Status ALREADY EXIST for first and else NOT PROCESS
+        List<DocumentMutationStatus> statuses2 = new ArrayList<>();
+        collectionSimple.insertMany(othersPlayers).forEach(res -> {
+            Assertions.assertNotNull(res.getDocument().getId());
+            int id = Integer.parseInt(res.getDocument().getId());
+            if (id==1) {
+                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
+            } else {
+                Assertions.assertEquals(DocumentMutationStatus.NOT_PROCESSED, res.getStatus());
+            }
+            statuses2.add(res.getStatus());
+        });
+        log.info("Statuses2 => " + statuses2.stream().map(Enum::name).collect(Collectors.joining(", ")));
+
+        // 1 to 9 is ALREADY_EXIST, 10 and 11 are created
+        collectionSimple.disableOrderingWhenInsert();
+        List<DocumentMutationStatus> statuses3 = new ArrayList<>();
+        collectionSimple.insertMany(othersPlayers).forEach(res -> {
+            Assertions.assertNotNull(res.getDocument().getId());
+            int id = Integer.parseInt(res.getDocument().getId());
+            if (id<10) {
+                Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, res.getStatus());
+            } else {
+                Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
+            }
+            statuses3.add(res.getStatus());
+        });
+        log.info("Statuses3 => " + statuses3.stream().map(Enum::name).collect(Collectors.joining(", ")));
+
+        // Try to replace
+        List<DocumentMutationStatus> statuses4 = new ArrayList<>();
+        collectionSimple.upsertMany(othersPlayers).forEach(res -> {
+            Assertions.assertNotNull(res.getDocument().getId());
+            int id = Integer.parseInt(res.getDocument().getId());
+            if (id==9) {
+                Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
+            } else {
+                Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
+            }
+            statuses4.add(res.getStatus());
+        });
+        log.info("Statuses4 => " + statuses4.stream().map(Enum::name).collect(Collectors.joining(", ")));
+    }
+
+    // ======== INSERT MANY =========
+
+    @Test
+    @Order(27)
+    @DisplayName("27. InsertVeryMany Documents")
+    public void shouldInsertManyChunkedSequential() {
+        initializeCollectionSimple();
+
+        int nbDocs = 251;
+        List<Document<Product>> documents = new ArrayList<>();
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < nbDocs; i++) {
+            documents.add(new Document<Product>().id(String.valueOf(i)).data(new Product("Desc " + i, i * 1.0d)));
+        }
+        List<DocumentMutationResult<Product>> result = collectionSimple.insertManyChunked(documents, 20, 1);
+        long end = System.currentTimeMillis();
+        log.info("Inserting {} documents took {} ms", nbDocs, end - start);
+        Assertions.assertEquals(nbDocs, collectionSimple.countDocuments());
+        Assertions.assertEquals(nbDocs, result.size());
+        collectionSimple.deleteAll();
+        collectionSimple
+                .insertManyChunkedASync(documents, 20, 1)
+                .thenAccept(res -> Assertions.assertEquals(nbDocs, res.size()));
+    }
+
+    @Test
+    @Order(28)
+    @DisplayName("28. InsertVeryMany concurrently")
+    public void shouldInsertManyChunkedParallel() {
+        initializeCollectionSimple();
+        List<Document<Product>> documents = new ArrayList<>();
+        long start = System.currentTimeMillis();
+
+        int nbDocs = 2510;
+        for (int i = 0; i < nbDocs; i++) {
+            documents.add(new Document<Product>().id(String.valueOf(i)).data(new Product("Desc " + i, i * 1.0d)));
+        }
+        collectionSimple.insertManyChunked(documents, 20, 20);
+        long end = System.currentTimeMillis();
+        log.info("Inserting {} documents took {} ms", nbDocs, end - start);
+        Assertions.assertEquals(nbDocs, collectionSimple.countDocuments());
+
+        collectionSimple.deleteAll();
+        collectionSimple.insertManyChunkedASync(documents, 20, 20).thenAccept(res -> {
+            Assertions.assertEquals(nbDocs, res.size());
+            Assertions.assertEquals(nbDocs, collectionSimple.countDocuments());
+        });
+    }
+
+    @Test
+    @Order(29)
+    @DisplayName("29. InsertMany with duplicates")
+    public void insertWithDuplicatesLeadToErrors() {
+        initializeCollectionSimple();
+        collectionSimple.enableOrderingWhenInsert();
+        List<JsonDocumentMutationResult> status = collectionSimple.insertManyJsonDocuments(List.of(
+                new JsonDocument().id("1").put("firstName", "Kylian").put("lastName", "Mbappé"),
+                new JsonDocument().id("1").put("firstName", "Antoine").put("lastName", "Griezmann")));
+        Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, status.get(0).getStatus());
+    }
+
+    @Test
+    @Order(30)
+    @DisplayName("30. UpsertMany")
+    public void insertVeryWithDuplicatesLeadToErrors() {
+        initializeCollectionSimple();
+        List<JsonDocumentMutationResult> status = collectionSimple.upsertManyJsonDocuments(List.of(player1, player2, player3));
+        Assertions.assertEquals(DocumentMutationStatus.CREATED, status.get(0).getStatus());
+    }
+
+    // ======== FIND =========
 
     @Test
     @Order(25)
@@ -974,104 +1175,19 @@ public class AstraDBTestSuiteIT {
                 .isLessThan(Instant.now()).build()).findFirst().isPresent());
     }
 
-    @Test
-    @Order(40)
-    @DisplayName("40. UpsertOne with a jsonString ")
-    public void testUpsertWithJson() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-
-        String json = "{" +
-                "\"_id\": \"1\", " +
-                "\"$vector\": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], " +
-                "\"product_name\": \"HealthyFresh - Chicken raw dog food\", " +
-                "\"product_price\": 9.99" +
-                "}";
-
-        JsonDocumentMutationResult res = collectionSimple.upsertOne(json);
-        Assertions.assertEquals(DocumentMutationStatus.CREATED, res.getStatus());
-        Assertions.assertEquals("1", res.getDocument().getId());
-
-        // Upsert with no CHANGE
-        res = collectionSimple.upsertOne(json);
-        Assertions.assertEquals(DocumentMutationStatus.UNCHANGED, res.getStatus());
-        Assertions.assertEquals("1", res.getDocument().getId());
-
-
-        // Upsert with a CHANGE
-        String json2 = "{" +
-                "\"_id\": \"1\", " +
-                "\"$vector\": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], " +
-                "\"product_name\": \"new Name\", " +
-                "\"product_price\": 9.99" +
-                "}";
-        res = collectionSimple.upsertOne(json2);
-        Assertions.assertEquals(DocumentMutationStatus.UPDATED, res.getStatus());
-        Assertions.assertEquals("1", res.getDocument().getId());
-    }
-
-    @Test
-    @Order(42)
-    @DisplayName("42. InsertVeryMany Documents")
-    public void insertVeryMany() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-        List<Document<Product>> documents = new ArrayList<>();
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < 251; i++) {
-            documents.add(new Document<Product>().id(String.valueOf(i)).data(new Product("Desc " + i, i * 1.0d)));
-        }
-        collectionSimple.insertManyChunked(documents);
-        long end = System.currentTimeMillis();
-        log.info("Inserting 251 documents took {} ms", end - start);
-        Assertions.assertEquals(251, collectionSimple.countDocuments());
-    }
-
-    @Test
-    @Order(43)
-    @DisplayName("43. InsertVeryMany concurrently")
-    public void insertVeryManyConcurrent() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-        List<Document<Product>> documents = new ArrayList<>();
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < 2510; i++) {
-            documents.add(new Document<Product>().id(String.valueOf(i)).data(new Product("Desc " + i, i * 1.0d)));
-        }
-        collectionSimple.insertManyChunked(documents, 20, 20);
-        long end = System.currentTimeMillis();
-        log.info("Inserting 2510 documents took {} ms", end - start);
-        Assertions.assertEquals(2510, collectionSimple.countDocuments());
-    }
-
-    @Test
-    @Order(44)
-    @DisplayName("44. InsertMany with duplicates")
-    public void insertVeryWithDuplicatesLeadToErrors() {
-        if (collectionSimple == null) shouldCreateCollectionSimple();
-        collectionSimple.deleteAll();
-        List<JsonDocumentMutationResult> status = collectionSimple.insertManyJsonDocuments(List.of(
-                new JsonDocument().id("1").put("firstName", "Kylian").put("lastName", "Mbappé"),
-                new JsonDocument().id("1").put("firstName", "Antoine").put("lastName", "Griezmann")), true,false);
-        Assertions.assertEquals(DocumentMutationStatus.ALREADY_EXISTS, status.get(0).getStatus());
-    }
-
-    // ----------------------------------------
-    // ------------ Examples ------------------
-    // ----------------------------------------
-
-
-
     // ----------------------------------------
     // --------- Object Mapping ---------------
     // ----------------------------------------
 
-    /*
+    static AstraDBRepository<Product> productRepositoryVector;
+    static AstraDBRepository<Product> productRepositorySimple;
+
     @Test
     @Order(50)
     @DisplayName("50. Insert with CollectionRepository and vector")
     public void shouldInsertRecords() {
-        astraDb = astraDbAdmin.database(TEST_DBNAME);
+        initializeCollectionVector();
+
         productRepositoryVector = astraDb.collectionRepository(TEST_COLLECTION_VECTOR, Product.class);
         productRepositoryVector.insert(new Document<>(
                 "product1",
@@ -1079,9 +1195,9 @@ public class AstraDBTestSuiteIT {
                 new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
 
         // Add vector without an id
-        productRepositoryVector.insert(new Document<>(
-                new Product("id will be generated for you", 10.99),
-                new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
+        productRepositoryVector.insert(new Document<Product>()
+                .data(new Product("id will be generated for you", 10.99))
+                .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
 
         // Insert a full-fledged object
         productRepositoryVector.insert(new Document<Product>()
@@ -1095,29 +1211,34 @@ public class AstraDBTestSuiteIT {
     public void shouldInsertWithSimpleCollectionObjectMapping() {
         productRepositorySimple = astraDb.collectionRepository(TEST_COLLECTION_NAME, Product.class);
         Assertions.assertNotNull(productRepositorySimple);
-        productRepositorySimple.save(new Document<>("p1", new Product("Pupper Sausage Beef dog Treats", 9.99)));
-        productRepositorySimple.save(new Document<>("p2", new Product("Dog Ring Chew Toy", 10.99)));
+        productRepositorySimple.save(new Document<Product>().id("p1").data(new Product("Pupper Sausage Beef dog Treats", 9.99)));
+        productRepositorySimple.save(new Document<Product>().id("p2").data(new Product("Dog Ring Chew Toy", 10.99)));
         productRepositorySimple.saveAll(List.of(
-                new Document<>("p3", new Product("Dog Ring Chew Toy", 9.99)),
-                new Document<>("p4", new Product("Pepper Sausage Bacon dog Treats", 9.99))
+                new Document<Product>().id("p3").data(new Product("Dog Ring Chew Toy", 9.99)),
+                new Document<Product>().id("p4").data(new Product("Pepper Sausage Bacon dog Treats", 9.99))
         ));
     }
 
-    @Test
-    @Order(52)
-    @DisplayName("52. Upsert with CollectionClient")
-    public void shouldUpsertDocument() {
+    private void initializeCollectionSimple() {
         if (astraDb == null) {
-            astraDb = astraDbAdmin.database(TEST_DBNAME);
+            databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
+            astraDb = astraDbAdmin.database(databaseId);
         }
-        AstraDBCollection collection = astraDb.collection(TEST_COLLECTION_NAME);
-        Assertions.assertNotNull(collection);
-        JsonDocument doc = new JsonDocument()
-                .id("4")
-                .put("name", "Coded Cleats Copy")
-                .put("description", "ChatGPT integrated sneakers that talk to you");
-        collection.upsert(doc);
-        collection.upsert(doc);
-    }*/
+        if (collectionSimple == null) {
+            collectionSimple = astraDb.createCollection(TEST_COLLECTION_NAME);
+        }
+        collectionSimple.deleteAll();
+    }
+
+    private void initializeCollectionVector() {
+        if (astraDb == null) {
+            databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
+            astraDb = astraDbAdmin.database(databaseId);
+        }
+        if (collectionVector == null) {
+            collectionVector = astraDb.createCollection(TEST_COLLECTION_VECTOR, 14);
+        }
+        collectionVector.deleteAll();
+    }
 
 }

@@ -16,25 +16,18 @@ import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import io.stargate.sdk.data.domain.query.SelectQueryBuilder;
 import io.stargate.sdk.data.domain.query.UpdateQuery;
+import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static io.stargate.sdk.utils.AnsiUtils.green;
 
 /**
  * Operation On a Collection.
  */
+@Getter
 public class AstraDBCollection {
 
     /**
@@ -69,7 +62,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json String and get return asynchrounously.
+     * Insert with a Json String and get return asynchronously.
      *
      * @param json
      *      json Strings
@@ -100,7 +93,7 @@ public class AstraDBCollection {
      * @return
      *      mutation result with status and id
      */
-    public final CompletableFuture<JsonDocumentMutationResult> insertOneAsync(JsonDocument document) {
+    public final CompletableFuture<JsonDocumentMutationResult> insertOneASync(JsonDocument document) {
         return collectionClient.insertOneAsync(document);
     }
 
@@ -156,7 +149,7 @@ public class AstraDBCollection {
      * @return
      *      mutation result with status and id
      */
-    public final CompletableFuture<JsonDocumentMutationResult> upsertOneAsync(String json) {
+    public final CompletableFuture<JsonDocumentMutationResult> upsertOneASync(String json) {
         return collectionClient.upsertOneAsync(json);
     }
 
@@ -180,7 +173,7 @@ public class AstraDBCollection {
      * @return
      *      document id
      */
-    public final CompletableFuture<JsonDocumentMutationResult> upsertOneAsync(JsonDocument document) {
+    public final CompletableFuture<JsonDocumentMutationResult> upsertOneASync(JsonDocument document) {
         return CompletableFuture.supplyAsync(() -> collectionClient.upsertOne(document));
     }
 
@@ -208,8 +201,8 @@ public class AstraDBCollection {
      * @return
      *      document id
      */
-    public final <DOC> CompletableFuture<DocumentMutationResult<DOC>> upsertOneAsync(Document<DOC> document) {
-        return CompletableFuture.supplyAsync(() -> collectionClient.upsertOne(document));
+    public final <DOC> CompletableFuture<DocumentMutationResult<DOC>> upsertOneASync(Document<DOC> document) {
+        return collectionClient.upsertOneASync(document);
     }
 
     // --------------------------
@@ -292,95 +285,9 @@ public class AstraDBCollection {
         return collectionClient.insertManyASync(documents);
     }
 
-    /**
-     * Low level insertion of multiple records
-     *
-     * @param documents
-     *      list of documents
-     * @param ordered
-     *      if item should be processed in order
-     * @param upsert
-     *      if the upsert should be done
-     * @param <DOC>
-     *     payload of document
-     * @return
-     *      list of ids
-     */
-    public final <DOC> List<DocumentMutationResult<DOC>> insertMany(List<Document<DOC>> documents, boolean ordered, boolean upsert) {
-        return collectionClient.insertMany(documents, ordered, upsert);
-    }
-
-    /**
-     * Low level insertion of multiple records
-     *
-     * @param documents
-     *      list of documents
-     * @param ordered
-     *      ordered or not
-     * @param upsert
-     *      replace or insert
-     * @return
-     *      list of ids
-     */
-    public final List<JsonDocumentMutationResult> insertManyJsonDocuments(List<JsonDocument> documents, boolean ordered, boolean upsert) {
-        return  collectionClient.insertManyJsonDocuments(documents, ordered, upsert);
-    }
-
     // -------------------------------
     // ---   Insert Many Chunked  ----
     // -------------------------------
-
-    /**
-     * Insert a list of documents in a distributed manner
-     *
-     * @param documents
-     *      list of documents
-     * @param <DOC>
-     *     represent the pojo, payload of document
-     * @return
-     *      list of ids
-     */
-    public final <DOC> List<DocumentMutationResult<DOC>> insertManyChunked(List<Document<DOC>> documents) {
-        return collectionClient.insertManyChunked(documents);
-    }
-
-    /**
-     * Insert a list of documents in a distributed manner asynchronously.
-     *
-     * @param documents
-     *      list of documents.
-     * @param <DOC>
-     *     represent the pojo, payload of documents.
-     * @return
-     *      list of ids
-     */
-    public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> insertManyChunkedASync(List<Document<DOC>> documents) {
-        return collectionClient.insertManyChunkedASync(documents);
-    }
-
-    /**
-     * Enforce Mapping with JsonDocument
-     *
-     * @param documents
-     *      list of documents
-     * @return
-     *      json document list
-     */
-    public final List<JsonDocumentMutationResult> insertManyChunkedJsonDocuments(List<JsonDocument> documents) {
-        return collectionClient.insertManyChunkedJsonDocuments(documents);
-    }
-
-    /**
-     * Enforce Mapping with JsonDocument asynchronously
-     *
-     * @param documents
-     *      list of documents
-     * @return
-     *      json document list
-     */
-    public final CompletableFuture<List<JsonDocumentMutationResult>> insertManyChunkedJsonDocumentsASync(List<JsonDocument> documents) {
-        return collectionClient.insertManyChunkedJsonDocumentsASync(documents);
-    }
 
     /**
      * Low level insertion of multiple records
@@ -401,7 +308,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Low level insertion of multiple records asynchronously
+     * Low level insertion of multiple records
      *
      * @param documents
      *      list of documents
@@ -415,12 +322,76 @@ public class AstraDBCollection {
      *      list of ids
      */
     public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> insertManyChunkedASync(List<Document<DOC>> documents, int chunkSize, int concurrency) {
-        return collectionClient.insertManyChunkedASync(documents, chunkSize, concurrency);
+        return CompletableFuture.supplyAsync(() -> insertManyChunked(documents, chunkSize, concurrency));
+    }
+
+    /**
+     * Enforce Mapping with JsonDocument
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      json document list
+     */
+    public final List<JsonDocumentMutationResult> insertManyChunkedJsonDocuments(List<JsonDocument> documents, int chunkSize, int concurrency) {
+        return collectionClient.insertManyJsonDocumentsChunked(documents, chunkSize, concurrency);
+    }
+
+    public final CompletableFuture<List<JsonDocumentMutationResult>> insertManyChunkedJsonDocumentsAsync(List<JsonDocument> documents, int chunkSize, int concurrency) {
+        return CompletableFuture.supplyAsync(() -> insertManyChunkedJsonDocuments(documents, chunkSize, concurrency));
     }
 
     // ------------------------------
     // ---      Upsert Many      ----
     // ------------------------------
+
+    /**
+     * Upsert any items in the collection.
+     *
+     * @param json
+     *      json String
+     * @return
+     *      list of statuses
+     */
+    public final List<JsonDocumentMutationResult> upsertMany(String json) {
+        return collectionClient.upsertMany(json);
+    }
+
+    /**
+     * Upsert any items in the collection.
+     *
+     * @param json
+     *      json String
+     * @return
+     *      list of statuses
+     */
+    public final CompletableFuture<List<JsonDocumentMutationResult>> upsertManyASync(String json) {
+        return collectionClient.upsertManyASync(json);
+    }
+
+    /**
+     * Upsert any items in the collection.
+     *
+     * @param documents
+     *      current collection list
+     * @return
+     *      list of statuses
+     */
+    public final List<JsonDocumentMutationResult> upsertManyJsonDocuments(List<JsonDocument> documents) {
+        return collectionClient.upsertManyJsonDocuments(documents);
+    }
+
+    /**
+     * Upsert any items in the collection.
+     *
+     * @param documents
+     *      current collection list
+     * @return
+     *      list of statuses
+     */
+    public final CompletableFuture<List<JsonDocumentMutationResult>> upsertManyJsonDocumentsASync(List<JsonDocument> documents) {
+        return collectionClient.upsertManyJsonDocumentsASync(documents);
+    }
 
     /**
      * Upsert any items in the collection.
@@ -448,6 +419,10 @@ public class AstraDBCollection {
     public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> upsertManyASync(List<Document<DOC>> documents) {
         return collectionClient.upsertManyASync(documents);
     }
+
+    // --------------------------------
+    // ---   Upsert Many  Chunked  ----
+    // --------------------------------
 
     /**
      * Low level insertion of multiple records
@@ -483,6 +458,38 @@ public class AstraDBCollection {
      */
     public final <DOC> CompletableFuture<List<DocumentMutationResult<DOC>>> upsertManyChunkedASync(List<Document<DOC>> documents, int chunkSize, int concurrency) {
         return collectionClient.upsertManyChunkedASync(documents, chunkSize, concurrency);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      concurrency
+     * @return
+     *      list of ids
+     */
+    public final List<JsonDocumentMutationResult> upsertManyJsonDocumentsChunked(List<JsonDocument> documents, int chunkSize, int concurrency) {
+        return collectionClient.upsertManyJsonDocumentsChunked(documents, chunkSize, concurrency);
+    }
+
+    /**
+     * Low level insertion of multiple records
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      concurrency
+     * @return
+     *      list of ids
+     */
+    public final CompletableFuture<List<JsonDocumentMutationResult>> upsertManyJsonDocumentsChunkedAsync(List<JsonDocument> documents, int chunkSize, int concurrency) {
+        return collectionClient.upsertManyJsonDocumentsChunkedASync(documents, chunkSize, concurrency);
     }
 
     // --------------------------
@@ -1023,7 +1030,7 @@ public class AstraDBCollection {
      * @param query
      *      return query Page
      * @return
-     *      page page of results
+     *      page of results
      */
     public Page<JsonDocumentResult> findVectorPage(SelectQuery query) {
         return findPage(query);
@@ -1165,7 +1172,7 @@ public class AstraDBCollection {
     // Find Vector with a filter and conditions
 
     /**
-     * Full fledge search with a filter and conditions.
+     * Full-fledged search with a filter and conditions.
      *
      * @param query
      *      vector query
@@ -1177,7 +1184,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Full fledge search with a filter and conditions.
+     * Full-fledged search with a filter and conditions.
      *
      * @param query
      *      vector query
@@ -1254,6 +1261,20 @@ public class AstraDBCollection {
      */
     public CollectionClient getRawCollectionClient() {
         return collectionClient;
+    }
+
+    /**
+     * Set this options during insertMany: {"ordered": true}.
+     */
+    public void enableOrderingWhenInsert() {
+        collectionClient.setInsertManyOrdered(true);
+    }
+
+    /**
+     * Set this options during insertMany: {"ordered": false}.
+     */
+    public void disableOrderingWhenInsert() {
+        collectionClient.setInsertManyOrdered(false);
     }
 
 

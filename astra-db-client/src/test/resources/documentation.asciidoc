@@ -1,0 +1,1433 @@
+= Java client reference
+:navtitle: Java reference
+:page-toclevels: 3
+
+Astra SDK Java is the official Java client for {product}.
+See common usages below, or check out the https://github.com/datastax/astra-sdk-java[GitHub repo].
+
+[.ds-feature-buttons]
+xref:astra-api-docs:ROOT:attachment$java-client/com/dtsx/astra/sdk/package-summary.html[API reference,role="ds-button ds-button\--color-primary ds-button\--variant-solid"]
+
+== Prerequisites
+
+The code samples on this page assume the following:
+
+* You have an active https://astra.datastax.com/signup[Astra account^].
+* You have created an xref:administration:manage-application-tokens.adoc[application token] with the Database Administrator role.
+* You have installed Java 11+.
+
+== Databases
+
+Use the `AstraDBAdmin` and `AstraDB` classes to work with databases.
+
+=== Connect to Astra
+
+Connect to Astra by initializing the `AstraDBAdmin` class.
+
+[source,java]
+----
+AstraDBAdmin();
+AstraDBAdmin(String token);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `token`
+| `String`
+| The authentication token used to access AstraDB. This is optional if the `ASTRA_DB_APPLICATION_TOKEN` environment variable is set or the Astra CLI is used.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ConnectingAdmin.java[]
+----
+
+=== Connect to a database
+
+Connect to a database by initializing the `AstraDB` class.
+
+[source,java]
+----
+AstraDB(String token, String apiEndpoint);
+AstraDB(String token, String apiEndpoint, String keyspace);
+AstraDB(String token, UUID databaseId);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `token`
+| `String`
+| The authentication token used to access AstraDB.
+
+| `apiEndpoint`
+| `String`
+| The API endpoint for the AstraDB instance.
+
+| `keyspace`
+| `String`
+| The keyspace to use, if not provided default is `default_keyspace`
+
+| `databaseId`
+| `UUID`
+| The database identifier.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/Connecting.java[]
+----
+
+=== Create a database
+
+Create a database with the `AstraDBAdmin.createDatabase` method.
+
+[source,java]
+----
+UUID createDatabase(String name);
+UUID createDatabase(String name, CloudProviderType cloud, String cloudRegion);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `name`
+| `String`
+| The name of the database to create.
+
+| `cloud`
+| `CloudProviderType`
+| The cloud provider where the database will be created.
+
+| `cloudRegion`
+| `String`
+| The region of the cloud provider where the database will be created.
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `UUID`
+| The unique identifier of the created database.
+
+|===
+
+NOTE: The service is blocking until the database is created and status is `ACTIVE`.
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/CreateDatabase.java[]
+----
+
+=== Find a single database
+
+Find one database by ID or name, using the `AstraDBAdmin.findDatabaseById` and `AstraDBAdmin.findDatabaseByName` methods, respectively.
+
+[source,java]
+----
+Optional<Database> findDatabaseById(UUID id);
+Stream<Database> findDatabaseByName(String name);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `id`
+| `UUID`
+| The unique identifier of the database to find.
+
+| `name`
+| `String`
+| The name of the database to find.
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `Optional<Database>`
+| Database information wrapped in an Optional object. UUID ensures the unicity of the database: you get one database or nothing.
+
+| `Stream<Database>`
+| Database information list exposed as a Stream. Several databases can have the same name.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindDatabase.java[]
+----
+
+=== Find all databases
+
+Find all databases with the `AstraDBAdmin.findAllDatabases` method.
+
+[source,java]
+----
+Stream<Database> findAllDatabases();
+----
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `Stream<Database>`
+| Database information list exposed as a Stream.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindAllDatabases.java[]
+----
+
+=== Delete a database
+
+Delete a database with the `AstraDBAdmin.deleteDatabase` method.
+
+[source,java]
+----
+boolean deleteDatabase(String name);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `name`
+| `String`
+| The name of the database to delete.
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `boolean`
+| Flag indicating if the database was deleted.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/DeleteDatabase.java[]
+----
+
+== Collections
+
+Use the `AstraDB` and `AstraDBCollection` classes to work with collections.
+
+=== Create a collection
+
+Create a collection with the `AstraDB.createCollection` method.
+
+[source,java]
+----
+AstraDBCollection createCollection(String name);
+AstraDBCollection createCollection(String name, int vectorDimension);
+AstraDBCollection createCollection(String name, int vectorDimension, SimilarityMetric metric);
+AstraDBCollection createCollection(CollectionDefinition def);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `name`
+| `String`
+| The name of the collection to create.
+
+| `vectorDimension`
+| `int`
+| The dimension for the vector in the collection.
+
+| `metric`
+| `SimilarityMetric`
+| The similarity metric to use for the vectors in the collection.
+
+| `def`
+| `CollectionDefinition`
+| The definition of the collection to create.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/CreateCollection.java[]
+----
+
+=== Find a single collection
+
+Find one collection with the `AstraDB.findCollection` method.
+
+[source,java]
+----
+Optional<CollectionDefinition> findCollection(String name);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `name`
+| `String`
+| The name of the collection to find.
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `Optional<CollectionDefinition>`
+| Collection information wrapped in an Optional object. Collection name ensures unicity: you get one collection or nothing.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindCollection.java[]
+----
+
+=== Find all collections
+
+Find all collections with the `AstraDB.findAllCollections` method.
+
+[source,java]
+----
+Stream<CollectionDefinition> findAllCollections();
+----
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `Stream<CollectionDefinition>`
+| Collections information list exposed as a Stream.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindAllCollections.java[]
+----
+
+=== Delete all documents in a collection
+
+Delete all documents in a collection with the `AstraDBCollection.deleteAll` method.
+
+[source,java]
+----
+int deleteAll();
+----
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `int`
+| Number of deleted documents.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ClearCollection.java[]
+----
+
+=== Delete a collection
+
+Delete a collection with the `AstraDB.deleteCollection` method.
+
+[source,java]
+----
+void deleteCollection(String name);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `name`
+| `String`
+| The name of the store to delete.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/DeleteCollection.java[]
+----
+
+== Documents
+
+Use the `AstraDBCollection` class to work with documents.
+
+=== Insert a document
+
+Insert one document with the `AstraDBCollection.insertOne` method.
+The system generates IDs automatically as needed. Each method is available in synchronous and asynchronous mode.
+
+[source,java]
+----
+JsonDocumentMutationResult insertOne(String json);
+CompletableFuture<JsonDocumentMutationResult> insertOneASync(String json);
+
+JsonDocumentMutationResult insertOne(JsonDocument jsonDocument);
+CompletableFuture<JsonDocumentMutationResult> insertOneASync(JsonDocument jsonDocument);
+
+DocumentMutationResult<T> insertOne(Document<T> bean);
+CompletableFuture<DocumentMutationResult<DOC>> insertOneASync(Document<DOC> bean);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `json`
+| `String`
+| The Json String representing the document to insert.
+
+| `bean`
+| `Document<DOC>`
+| The bean representing the document to insert.
+
+| `jsonDocument`
+| `JsonDocument`
+| The JSON document to insert.
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `JsonDocumentMutationResult`
+| An object containing the document amended with a generated id and a status `DocumentMutationStatus` which can take the values `CREATED`, `UPDATED`,`UNCHANGED`,`NOT_PROCESSED` or `ALREADY_EXISTS`.
+
+| `DocumentMutationResult<T>`
+| An object containing the document amended with a generated id and a status `DocumentMutationStatus` which can take the values `CREATED`, `UPDATED`,`UNCHANGED`,`NOT_PROCESSED` or `ALREADY_EXISTS`.
+
+|===
+
+NOTE: You cannot insert a document with an existing ID, the exception `DataApiDocumentAlreadyExistException` is raised. To update a document if it already exists use the method `upsert`.
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/InsertOne.java[]
+----
+
+=== Upsert a document
+
+Upsert one document with the `AstraDBCollection.upsertOne` method.
+
+- If the document does not exist it will be created
+- If the document exists it will be updated.
+
+[source,java]
+----
+JsonDocumentMutationResult
+  upsertOne(String json);
+CompletableFuture<JsonDocumentMutationResult>
+  upsertOneAsync(String json);
+
+JsonDocumentMutationResult
+  upsertOne(JsonDocument jsonDocument);
+CompletableFuture<JsonDocumentMutationResult>
+  upsertOneAsync(JsonDocument jsonDocument);
+
+DocumentMutationResult<DOC>
+  upsertOne(Document<DOC> bean);
+CompletableFuture<DocumentMutationResult<DOC>>
+  upsertOneAsync(Document<DOC> bean);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `json`
+| `String`
+| The Json String representing the document to insert.
+
+| `jsonDocument`
+| `JsonDocument`
+| The JSON document to insert.
+
+| `bean`
+| `Document<DOC>`
+| The bean representing the document to insert.
+
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `JsonDocumentMutationResult`
+| Key-Value Object containing the `JsonDocument` amended with a generated id and a status `DocumentMutationStatus`.
+
+| `DocumentMutationResult<T>`
+| An object containing the `Document<T>` amended with a generated id and a status `DocumentMutationStatus`.
+
+|===
+
+=== Insert many documents
+
+Insert many documents with the `AstraDBCollection.insertMany` method.
+The system generates IDs automatically as needed.
+
+[source,java]
+----
+List<JsonDocumentMutationResult>
+  insertMany(String json);
+CompletableFuture<List<JsonDocumentMutationResult>>
+  insertManyASync(String json);
+
+List<JsonDocumentMutationResult>
+  insertManyJsonDocuments(List<JsonDocument> jsonDocuments);
+CompletableFuture<List<JsonDocumentMutationResult>>
+  insertManyJsonDocumentsASync(List<JsonDocument> jsonDocuments);
+
+List<DocumentMutationResult<T>>
+  insertMany(List<T> documents);
+CompletableFuture<List<DocumentMutationResult<T>>>
+  insertManyASync(List<Document<T>> documents);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `json`
+| `String`
+| The Json String representing the document to insert.
+
+| `jsonDocument`
+| `JsonDocument`
+| The JSON document to insert.
+
+| `bean`
+| `Document<DOC>`
+| The bean representing the document to insert.
+
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `JsonDocumentMutationResult`
+| Key-Value Object containing the `JsonDocument` amended with a generated id and a status `DocumentMutationStatus`.
+
+| `DocumentMutationResult<T>`
+| An object containing the `Document<T>` amended with a generated id and a status `DocumentMutationStatus`.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/InsertMany.java[]
+----
+
+NOTE: The insertMany methods are limited to a maximum number of 20 documents in the list. If you need to insert more documents, use the `insertManyChunked*` method.
+
+
+=== Insert many documents in chunks
+
+Insert many documents with the `AstraDBCollection.insertManyChunked` method.
+The system generates IDs automatically as needed. The input list is split into chunks of `X` documents (chunk Size, default is 20). The processing of the different chunks can be parallelized to improve the performance.
+
+NOTE: Each method is presented in synchronous and asynchronous mode. The asynchronous mode returns a `CompletableFuture` object.
+
+[source,java]
+----
+// Working with Key_value (JsonDocument)
+List<JsonDocumentMutationResult>
+  insertManyChunkedJsonDocuments(List<JsonDocument> jsonDocuments);
+CompletableFuture<List<JsonDocumentMutationResult>>
+  insertManyChunkedJsonDocumentsASync(List<JsonDocument> jsonDocuments);
+List<JsonDocumentMutationResult>
+  insertManyJsonDocuments(List<JsonDocument> documents, boolean ordered, boolean upsert);
+
+// Working with Pojo (Document<T>)
+List<DocumentMutationResult<T>>
+  insertManyChunked(List<Document<T>> beans);
+CompletableFuture<List<DocumentMutationResult<T>>>
+  insertManyChunkedASync(List<Document<T>> beans);
+List<DocumentMutationResult<T>>
+  insertManyChunked(List<Document<T>> beans, int chunkSize, int concurrency);
+CompletableFuture<List<DocumentMutationResult<T>>>
+  insertManyChunkedASync(List<Document<T>> beans, int chunkSize, int concurrency);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `jsonDocuments`
+| `List<JsonDocument>`
+| The list of `JsonDocument` (key/value) to insert.
+
+| `ordered`
+| `boolean`
+| Enforce the processing of the documents in the order of the list. If an error occurs, the processing is stopped. Default is `false`
+
+| `concurrency`
+| `int`
+| Set the number of parallel threads to process the chunks. Default is `1`
+
+| `bean`
+| `Document<T>`
+| The list of `Documents`  to insert.
+
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `JsonDocumentMutationResult`
+| Key-Value Object containing the `JsonDocument` amended with a generated id and a status `DocumentMutationStatus`.
+
+| `DocumentMutationResult<T>`
+| An object containing the `Document<T>` amended with a generated id and a status `DocumentMutationStatus`.
+
+|===
+
+=== Find a single document by query
+
+Find one document by query, using the `AstraDBCollection.find` method.
+
+[source,java]
+----
+Stream<JsonDocumentResult> find(SelectQuery query);
+Stream<DocumentResult<T>> find(SelectQuery query, Class<T> bean);
+Stream<DocumentResult<T>> find(SelectQuery query, DocumentResultMapper<T> mapper);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `query`
+| `SelectQuery`
+| The filter used to search records.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO. This is used for object mapping of the results.
+
+| `mapper`
+| `ResultMapper<T>`
+| The mapper to convert JSON into the expected POJO.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/Find.java[]
+----
+
+Find one document by query, using the `AstraDBCollection.findOne` method.
+
+[source,java]
+----
+Optional<JsonDocumentResult> findOne(String rawJsonQuery);
+Optional<JsonDocumentResult> findOne(SelectQuery query);
+Optional<DocumentResult<T>> findOne(SelectQuery query, Class<T> bean);
+Optional<DocumentResult<T>> findOne(String query, Class<T> bean);
+Optional<DocumentResult<T>> findOne(SelectQuery query, DocumentResultMapper<T> mapper);
+Optional<DocumentResult<T>> findOne(String query, DocumentResultMapper<T> mapper);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `rawJsonQuery`
+| `String`
+| The raw JSON query string used to find a document.
+
+| `query`
+| `SelectQuery`
+| The query object used to find a document.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO for object mapping.
+
+| `mapper`
+| `DocumentResultMapper<T>`
+| The mapper to convert JSON into the expected POJO.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindOne.java[]
+----
+
+=== Find a single document by ID
+
+Find one document by ID with the `AstraDBCollection.findById` method.
+
+[source,java]
+----
+Optional<JsonDocumentResult> findById(String id);
+Optional<DocumentResult<T>> findById(String id, Class<T> bean);
+Optional<DocumentResult<T>> findById(String id, DocumentResultMapper<T> mapper);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `id`
+| `String`
+| The identifier of the document to find.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO for object mapping.
+
+| `mapper`
+| `ResultMapper<T>`
+| The mapper to convert JSON into the expected POJO.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindById.java[]
+----
+
+=== Find a single document by vector
+
+Find one document by vector with the `AstraDBCollection.findOneByVector` method.
+
+[source,java]
+----
+Optional<JsonDocumentResult> findOneByVector(float[] vector);
+Optional<DocumentResult<T>> findOneByVector(float[] vector, Class<T> bean);
+Optional<DocumentResult<T>> findOneByVector(float[] vector, DocumentResultMapper<T> mapper);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `vector`
+| `float[]`
+| The vector of the document to find.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO for object mapping.
+
+| `mapper`
+| `ResultMapper<T>`
+| The mapper to convert JSON into the expected POJO.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindByVector.java[]
+----
+
+=== Perform a similarity search
+
+Perform a similarity search with the `AstraDBCollection.findVector` method.
+This method returns documents with vectors that are close to a given vector.
+
+[source,java]
+----
+Stream<JsonDocumentResult> findVector(SelectQuery query);
+Stream<DocumentResult<T>> findVector(SelectQuery query, Class<T> bean);
+Stream<DocumentResult<T>> findVector(SelectQuery query, DocumentResultMapper<T> mapper);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `query`
+| `SelectQuery`
+| The query object used to search records.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO for object mapping.
+
+| `mapper`
+| `ResultMapper<T>`
+| The mapper to convert JSON into the expected POJO.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindVector.java[]
+----
+
+=== Paginate the results from a search
+
+Get a page of search results with the `AstraDBCollection.findPage` method.
+
+[source,java]
+----
+Page<JsonDocumentResult> findPage(SelectQuery pagedQuery);
+Page<JsonDocumentResult> findPage(String pagedQuery);
+Page<DocumentResult<T>> findPage(SelectQuery query, Class<T> bean);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `pagedQuery`
+| `SelectQuery` or `String`
+| The paged query object or string used to find documents.
+
+| `query`
+| `SelectQuery`
+| The query object used for finding documents in pages.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO for object mapping.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/FindPage.java[]
+----
+
+=== Update a document
+
+Update one document with the `AstraDBCollection.updateOne` method.
+
+[source,java]
+----
+UpdateStatus updateOne(UpdateQuery query);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `query`
+| `UpdateQuery`
+| The query object used to find and update a single record.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/UpdateOne.java[]
+----
+
+=== Update many documents
+
+Update many documents with the `AstraDBCollection.updateMany` method.
+
+[source,java]
+----
+UpdateStatus updateMany(UpdateQuery query);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `query`
+| `UpdateQuery`
+| The query object used to find and update multiple records.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/UpdateMany.java[]
+----
+
+=== Delete a document
+
+Delete one document with the `AstraDBCollection.deleteOne` method.
+
+[source,java]
+----
+int deleteOne(DeleteQuery deleteQuery);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `deleteQuery`
+| `DeleteQuery`
+| The delete query object used to remove a single record.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/DeleteOne.java[]
+----
+
+=== Delete many documents
+
+Delete many documents with the `AstraDBCollection.deleteMany` method.
+
+[source,java]
+----
+int deleteMany(DeleteQuery deleteQuery);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `deleteQuery`
+| `DeleteQuery`
+| The delete query object used to remove multiple records.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/DeleteMany.java[]
+----
+
+== Object mapping
+
+An alternative way to work with databases is to use the `AstraDB` and `AstraDBRepository` classes to map documents to objects.
+
+=== Create a collection
+
+Create a collection with the `AstraDB.createCollection` method.
+
+[source,java]
+----
+AstraDBRepository<T> createCollection(String name, Class<T> bean);
+AstraDBRepository<T> createCollection(String name, int vectorDimension, Class<T> bean);
+AstraDBRepository<T> createCollection(CollectionDefinition def, Class<T> bean);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `name`
+| `String`
+| The name of the store to create.
+
+| `vectorDimension`
+| `int`
+| The dimension for the vector in the collection.
+
+| `def`
+| `CollectionDefinition`
+| The definition of the collection to create.
+
+| `bean`
+| `Class<T>`
+| The class type of the document used in the collection.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingCreateCollection.java[]
+----
+
+=== Upsert a document
+
+Upsert one document with the `AstraDBRepository.save` method.
+The system generates IDs automatically as needed.
+
+[source,java]
+----
+DocumentMutationResult<DOC> insert(Document<DOC> current);
+CompletableFuture<DocumentMutationResult<DOC>> insertASync(Document<DOC> current);
+
+DocumentMutationResult<DOC> save(Document<DOC> current);
+CompletableFuture<DocumentMutationResult<DOC>> saveASync(Document<DOC> current);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `current`
+| `Document<T>`
+| The object representing the document to save.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingInsertOne.java[]
+----
+
+=== Upsert Many documents
+
+Upsert many documents with the `AstraDBCollection.upsertManyChunked` method.
+The system generates IDs automatically as needed. The input list is split into chunks of `X` documents (chunk Size, default is 20). The processing of the different chunks can be parallelized to improve the performance.
+
+NOTE: Each method is presented in synchronous and asynchronous mode. The asynchronous mode returns a `CompletableFuture` object.
+
+[source,java]
+----
+// Upsert less than 20
+List<DocumentMutationResult<DOC>>
+  upsertMany(List<Document<DOC>> beans);
+CompletableFuture<List<DocumentMutationResult<DOC>>>
+  upsertManyASync(List<Document<DOC>> beans);
+
+// Upsert in chunks
+List<DocumentMutationResult<DOC>>
+  upsertManyChunked(List<Document<DOC>> documents, int chunkSize, int concurrency) ;
+CompletableFuture<List<DocumentMutationResult<DOC>>>
+  upsertManyChunkedASync(List<Document<DOC>> documents, int chunkSize, int concurrency);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `chunkSize`
+| `int`
+| The size of the chunk. Default is `20`
+
+| `concurrency`
+| `int`
+| The number of parallel threads to process the chunks. Default is `1`
+
+| `beans`
+| `List<Document<T>>`
+| The list of `Documents`  to insert.
+
+|===
+
+Returned Values:
+
+[cols="1,4", options="header"]
+|===
+| Type | Description
+
+| `JsonDocumentMutationResult`
+| Key-Value Object containing the `JsonDocument` amended with a generated id and a status `DocumentMutationStatus`.
+
+| `DocumentMutationResult<T>`
+| An object containing the `Document<T>` amended with a generated id and a status `DocumentMutationStatus`.
+
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingInsertMany.java[]
+----
+
+=== Find a single document by query
+
+Find one document by query, using the `AstraDBCollection.find` method.
+
+[source,java]
+----
+Stream<JsonDocumentResult> find(SelectQuery query);
+Stream<DocumentResult<T>> find(SelectQuery query, Class<T> bean);
+Stream<DocumentResult<T>> find(SelectQuery query, DocumentResultMapper<T> mapper);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `query`
+| `SelectQuery`
+| The filter used to search records.
+
+| `bean`
+| `Class<T>`
+| The class for the target POJO. This is used for object mapping of the results.
+
+| `mapper`
+| `ResultMapper<T>`
+| The mapper to convert JSON into the expected POJO.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingFind.java[]
+----
+
+=== Find a single document by ID or vector
+
+Find one document by ID or vector, using the `AstraDBRepository.findById` or `AstraDBRepository.findByVector` methods, respectively.
+
+[source,java]
+----
+Optional<DocumentResult<T>> findById(String id);
+Optional<DocumentResult<T>> findByVector(float[] vector);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `id`
+| `String`
+| The identifier of the document to find.
+
+| `vector`
+| `float[]`
+| The vector associated with the document to find.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingFindOne.java[]
+----
+
+=== Perform a similarity search
+
+Perform a similarity search with the `AstraDBRepository.findVector` method.
+This method returns documents with vectors that are close to a given vector.
+
+[source,java]
+----
+Page<DocumentResultResult<T>> findVector(float[] vector, Filter metadataFilter);
+List<DocumentResultResult<T>> findVector(float[] vector, Integer limit);
+List<DocumentResultResult<T>> findVector(float[] vector, Filter metadataFilter, Integer limit);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `vector`
+| `float[]`
+| The vector for similarity search.
+
+| `metadataFilter`
+| `Filter`
+| The metadata filter for refining the search.
+
+| `limit`
+| `Integer`
+| The limit for the number of results to return.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingFindVector.java[]
+----
+
+=== Paginate the results from a search
+
+Get a page of search results with the `AstraDBRepository.findVector` method.
+
+[source,java]
+----
+Page<DocumentResult<T>> findVector(float[] vector, Filter metadataFilter);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `vector`
+| `float[]`
+| The vector for the similarity search
+
+| `metadataFilter`
+| `Filter`
+| The filter to apply to the search results
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingPaging.java[]
+----
+
+=== Update a document
+
+Update one document with the `AstraDBRepository.save` method.
+
+[source,java]
+----
+DocumentMutationResult<DOC> save(Document<DOC> current);
+CompletableFuture<DocumentMutationResult<DOC>> saveASync(Document<DOC> current);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `current`
+| `Document<T>`
+| The object representing the document to save.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingUpdateOne.java[]
+----
+
+=== Update many documents
+
+Update many documents with the `AstraDBRepository.saveAll` method.
+
+[source,java]
+----
+List<DocumentMutationResult<DOC>> saveAll(List<Document<DOC>> documentList);
+CompletableFuture<List<DocumentMutationResult<DOC>>> saveAllASync(List<Document<DOC>> documentList);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `documentList`
+| `List<Document<T>>`
+| The list of documents to save.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingUpdateMany.java[]
+----
+
+=== Delete a document
+
+Delete one document with the `AstraDBRepository.delete` method.
+
+[source,java]
+----
+boolean delete(Document<T> document);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `document`
+| `Document<T>`
+| The document to delete.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingDeleteOne.java[]
+----
+
+=== Delete many documents
+
+Delete many documents with the `AstraDBRepository.deleteAll` method.
+
+[source,java]
+----
+int deleteAll();
+int deleteAll(List<Document<T>> documents);
+int deleteAll(DeleteQuery deleteQuery);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `documents`
+| `List<Document<T>>`
+| The list of documents to delete.
+
+| `deleteQuery`
+| `DeleteQuery`
+| The delete query object used to remove multiple records.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingDeleteMany.java[]
+----
+
+=== Delete all documents in a collection
+
+Delete all documents in a collection with the `AstraDBRepository.deleteAll` method.
+
+[source,java]
+----
+int deleteAll();
+int deleteAll(List<Document<T>> documents);
+int deleteAll(DeleteQuery deleteQuery);
+----
+
+Parameters:
+
+[cols="1,1,3", options="header"]
+|===
+| Name | Type | Description
+
+| `documents`
+| `List<Document<T>>`
+| The list of documents to delete.
+
+| `deleteQuery`
+| `DeleteQuery`
+| The delete query object used to remove multiple records.
+|===
+
+Example:
+
+[source,java]
+----
+include::https://raw.githubusercontent.com/datastax/astra-sdk-java/main/astra-db-client/src/test/java/com/dtsx/astra/sdk/documentation/ObjectMappingClearCollection.java[]
+----

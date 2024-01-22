@@ -11,8 +11,6 @@
     </parent>
 
     <properties>
-        <!-- used for test in this module -->
-        <stargate-sdk.version>2.3.0</stargate-sdk.version>
         <openai-java.version>0.18.2</openai-java.version>
         <langchain4j.version>0.25.0</langchain4j.version>
         <okhttp.version>4.10.0</okhttp.version>
@@ -34,7 +32,6 @@
         <dependency>
             <groupId>com.datastax.stargate</groupId>
             <artifactId>stargate-sdk-data</artifactId>
-            <version>2.3.0</version>
         </dependency>
 
         <!-- CQL API (CassioIO) -->

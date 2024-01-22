@@ -34,7 +34,7 @@ public class AstraDBDemoTest {
 
         // Select Database / Namespace
         NamespaceClient db = astraDBAdmin
-                .getInternalDataApiClient(AstraDBTestSuiteIT.TEST_DBNAME)
+                .getDataApiClient(AstraDBTestSuiteIT.TEST_DBNAME)
                 .namespace("default_keyspace");
 
         // Create a collection

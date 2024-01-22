@@ -8,9 +8,9 @@ import io.stargate.sdk.data.domain.odm.DocumentResult;
 import io.stargate.sdk.data.domain.query.DeleteQuery;
 import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
+import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +23,7 @@ import java.util.stream.Stream;
  * @param <DOC>
  *       working document
  */
+@Getter
 public class AstraDBRepository<DOC> {
 
     CollectionRepository<DOC> collectionRepository;
@@ -89,8 +90,20 @@ public class AstraDBRepository<DOC> {
      * @return
      *      list of ids
      */
-    public final List<DocumentMutationResult<DOC>> insertAll(List<Document<DOC>> documents) {
-        return collectionRepository.insertAll(documents);
+    public final List<DocumentMutationResult<DOC>> insert(List<Document<DOC>> documents) {
+        return collectionRepository.insert(documents);
+    }
+
+    /**
+     * Insert a List asynchronously.
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      list of ids
+     */
+    public final CompletableFuture<List<DocumentMutationResult<DOC>>> insertASync(List<Document<DOC>> documents) {
+        return collectionRepository.insertASync(documents);
     }
 
     /**
@@ -105,8 +118,24 @@ public class AstraDBRepository<DOC> {
      * @return
      *      list of ids
      */
-    public final List<DocumentMutationResult<DOC>> insertAllDistributed(List<Document<DOC>> documents, int chunkSize, int concurrency) {
-        return collectionRepository.insertAllDistributed(documents, chunkSize, concurrency);
+    public final List<DocumentMutationResult<DOC>> insert(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionRepository.insert(documents, chunkSize, concurrency);
+    }
+
+    /**
+     * Insert a List asynchronously.
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      split into chunks
+     * @param concurrency
+     *      number of thread to process the chunks
+     * @return
+     *      list of ids
+     */
+    public final CompletableFuture<List<DocumentMutationResult<DOC>>> insertASync(List<Document<DOC>> documents, int chunkSize, int concurrency) {
+        return collectionRepository.insertASync(documents, chunkSize, concurrency);
     }
 
     // --------------------------
@@ -178,8 +207,8 @@ public class AstraDBRepository<DOC> {
      * @return
      *      an unique identifier for the document
      */
-    public final List<DocumentMutationResult<DOC>> saveAllDistributed(List<Document<DOC>> documentList, int chunkSize, int concurrency) {
-        return collectionRepository.saveAllDistributed(documentList, chunkSize, concurrency);
+    public final List<DocumentMutationResult<DOC>> saveAll(List<Document<DOC>> documentList, int chunkSize, int concurrency) {
+        return collectionRepository.saveAll(documentList, chunkSize, concurrency);
     }
 
     /**
@@ -194,8 +223,8 @@ public class AstraDBRepository<DOC> {
      * @return
      *      an unique identifier for the document
      */
-    public final CompletableFuture<List<DocumentMutationResult<DOC>>> saveAllDistributedASync(List<Document<DOC>> documentList, int chunkSize, int concurrency) {
-        return collectionRepository.saveAllDistributedASync(documentList, chunkSize, concurrency);
+    public final CompletableFuture<List<DocumentMutationResult<DOC>>> saveAllASync(List<Document<DOC>> documentList, int chunkSize, int concurrency) {
+        return collectionRepository.saveAllASync(documentList, chunkSize, concurrency);
     }
 
     // --------------------------
@@ -229,7 +258,7 @@ public class AstraDBRepository<DOC> {
     // --------------------------
 
     /**
-     * Find by Id.
+     * Find by id.
      *
      * @param id
      *      identifier
@@ -342,7 +371,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *      object if presents
      */
-    public Optional<DocumentResult<DOC>> findByVector(@NonNull float[] vector) {
+    public Optional<DocumentResult<DOC>> findByVector(float[] vector) {
         return collectionRepository.findByVector(vector);
     }
 
@@ -417,15 +446,4 @@ public class AstraDBRepository<DOC> {
     public List<DocumentResult<DOC>> findVector(float[] vector, Filter metadataFilter, Integer limit) {
         return collectionRepository.findVector(vector, metadataFilter, limit);
     }
-
-    /**
-     * Access Stargate Collection Repository.
-     *
-     * @return
-     *      stargate collection repository.
-     */
-    public CollectionRepository<DOC> getRawCollectionRepository() {
-        return collectionRepository;
-    }
-
 }

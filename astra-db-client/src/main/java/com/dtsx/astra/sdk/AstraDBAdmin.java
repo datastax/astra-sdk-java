@@ -54,7 +54,7 @@ public class AstraDBAdmin {
     /**
      * Token header param
      */
-    public static final String TOKEN_HEADER_PARAM = "X-Cassandra-Token";
+    public static final String TOKEN_HEADER_PARAM = "X-Token";
 
     /**
      * Technical Keyspace name.
@@ -353,7 +353,7 @@ public class AstraDBAdmin {
      */
     private void resumeDb(Database db) {
         try {
-            // Compute Endpoint for the Keyspaces
+            // Compute Endpoint for the Keyspace
             String endpoint = ApiLocator.getApiRestEndpoint(db.getId(), db.getInfo().getRegion()) + "/v2/schemas/keyspace";
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
@@ -382,7 +382,7 @@ public class AstraDBAdmin {
      * @return
      *      database client
      */
-    public DataApiClient getInternalDataApiClient(@NonNull String databaseName) {
+    public DataApiClient getDataApiClient(@NonNull String databaseName) {
         return database(databaseName).getApiClient();
     }
 
@@ -394,7 +394,7 @@ public class AstraDBAdmin {
      * @return
      *      database client
      */
-    public DataApiClient getInternalDataApiClient(@NonNull UUID databaseId) {
+    public DataApiClient getDataApiClient(@NonNull UUID databaseId) {
         return database(databaseId).getApiClient();
     }
 
@@ -404,7 +404,7 @@ public class AstraDBAdmin {
      * @return
      *      devops client.
      */
-    public AstraDBOpsClient getInternalDevopsApiClient() {
+    public AstraDBOpsClient getDevopsApiClient() {
         return this.devopsDbClient;
     }
 
