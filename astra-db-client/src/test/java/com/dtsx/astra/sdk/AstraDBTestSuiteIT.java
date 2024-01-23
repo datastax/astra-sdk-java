@@ -4,9 +4,9 @@ import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.data.DocumentMutationResult;
-import io.stargate.sdk.data.DocumentMutationStatus;
-import io.stargate.sdk.data.JsonDocumentMutationResult;
+import io.stargate.sdk.data.domain.DocumentMutationResult;
+import io.stargate.sdk.data.domain.DocumentMutationStatus;
+import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
 import io.stargate.sdk.data.domain.CollectionDefinition;
 import io.stargate.sdk.data.domain.JsonDocument;
 import io.stargate.sdk.data.domain.JsonDocumentResult;
@@ -33,6 +33,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -1151,6 +1152,7 @@ public class AstraDBTestSuiteIT {
     @Order(37)
     @DisplayName("37. Should find with $lte")
     public void shouldFindWithLTE() {
+        shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
                 .where("metadata_int")
                 .isLessOrEqualsThan(1).build()).findFirst().isPresent());
@@ -1160,6 +1162,7 @@ public class AstraDBTestSuiteIT {
     @Order(38)
     @DisplayName("38. Should find with $gt")
     public void shouldFindWithGTE() {
+        shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
                 .where("metadata_int")
                 .isGreaterThan(0).build()).findFirst().isPresent());
@@ -1169,10 +1172,68 @@ public class AstraDBTestSuiteIT {
     @Order(39)
     @DisplayName("39. Should find with $gte and Instant")
     public void shouldFindWithGTEInstant() {
-        log.info("Search with $gte and an Instant...");
+        shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
                 .where("metadata_instant")
                 .isLessThan(Instant.now()).build()).findFirst().isPresent());
+    }
+
+    @Test
+    @Order(40)
+    @DisplayName("40. ToString should provide the json String")
+    public void shouldSerializedAsJson() {
+
+        // Serializing a JsonDocument give you back the Json String
+        JsonDocument doc1 = new JsonDocument().id("1").put("a", "a").put("b", "c");
+        Assertions.assertEquals("{\"a\":\"a\",\"b\":\"c\",\"_id\":\"1\"}", doc1.toString());
+
+        // Serializing a Document<T> give you back a Json String
+        Document<Product> doc2 = new Document<Product>().id("1").data(new Product("name", 1d));
+        Assertions.assertEquals("{\"product_name\":\"name\",\"product_price\":1.0,\"_id\":\"1\"}", doc2.toString());
+
+        initializeCollectionVector();
+        collectionVector.insertManyJsonDocuments(List.of(
+            new JsonDocument()
+                .id("doc1") // generated if not set
+                .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                .put("product_name", "HealthyFresh - Beef raw dog food")
+                .put("product_price", 12.99),
+            new JsonDocument()
+                .id("doc2")
+                .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                .data("{\"product_name\": \"HealthyFresh - Chicken raw dog food\", \"product_price\": 9.99}"),
+            new JsonDocument()
+                .id("doc3")
+                .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food")),
+            new JsonDocument()
+                .id("doc4")
+                .vector(new float[]{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
+                .put("product_name", "HealthyFresh - Chicken raw dog food")
+                .put("product_price", 9.99)
+        ));
+
+        SelectQuery query2 = SelectQuery.builder()
+                .orderByAnn(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                .withLimit(4)
+                .includeSimilarity()
+                .build();
+        collectionVector.find(query2).forEach(System.out::println);
+    }
+
+    @Test
+    public void testFindInArray() {
+        initializeCollectionSimple();
+        // Given 2 records
+        collectionSimple.insertManyJsonDocuments(List.of(
+           new JsonDocument().id("1").put("names", List.of("John", "Doe")),
+           new JsonDocument().id("2").put("names", List.of("Cedrick", "Lunven"))
+        ));
+        // I should perform an any filter in a collection
+        Assertions.assertEquals(1, collectionSimple.find(SelectQuery.builder()
+                .where("names")
+                .isEqualsTo("John")
+                .build()).count());
     }
 
     // ----------------------------------------

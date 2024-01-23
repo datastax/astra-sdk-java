@@ -2,7 +2,7 @@ package com.dtsx.astra.sdk;
 
 import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.data.CollectionRepository;
-import io.stargate.sdk.data.DocumentMutationResult;
+import io.stargate.sdk.data.domain.DocumentMutationResult;
 import io.stargate.sdk.data.domain.odm.Document;
 import io.stargate.sdk.data.domain.odm.DocumentResult;
 import io.stargate.sdk.data.domain.query.DeleteQuery;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Operation on Collection With object Mapping for Astra.
+ * Client for AstraDB collection using repository pattern.
  *
  * @param <DOC>
  *       working document

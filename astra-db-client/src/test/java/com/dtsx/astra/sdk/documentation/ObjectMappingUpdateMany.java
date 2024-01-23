@@ -4,7 +4,7 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.langchain4j.agent.tool.P;
-import io.stargate.sdk.data.DocumentMutationResult;
+import io.stargate.sdk.data.domain.DocumentMutationResult;
 import io.stargate.sdk.data.domain.odm.Document;
 import java.util.List;
 

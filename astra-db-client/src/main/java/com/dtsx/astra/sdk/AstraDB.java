@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * Hiding top level Json Api and skip interaction with namespaces
+ * Client for AstraDB at database level (crud for collections).
  */
 @Slf4j @Getter
 public class AstraDB {

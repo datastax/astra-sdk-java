@@ -213,6 +213,16 @@ public class ClusteredMetadataVectorCassandraTable
         return null;
     }
 
-    public static class Record {}
+    /**
+     * Table record.
+     */
+    public static class Record {
+
+        /**
+         * Default constructor.
+         */
+        public Record() {}
+
+    }
 
 }

@@ -3,7 +3,7 @@ package com.dtsx.astra.sdk.documentation;
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.stargate.sdk.data.DocumentMutationResult;
+import io.stargate.sdk.data.domain.DocumentMutationResult;
 import io.stargate.sdk.data.domain.odm.Document;
 import java.util.List;
 

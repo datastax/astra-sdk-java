@@ -38,4 +38,9 @@ public class SimilaritySearchQuery {
      */
     private Map<String, String> metaData;
 
+    /**
+     * Default constructor.
+     */
+    public SimilaritySearchQuery() {}
+
 }

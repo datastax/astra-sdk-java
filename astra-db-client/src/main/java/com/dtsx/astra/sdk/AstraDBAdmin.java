@@ -33,62 +33,44 @@ import static io.stargate.sdk.utils.AnsiUtils.green;
 import static io.stargate.sdk.utils.Utils.readEnvVariable;
 
 /**
- * Astra Vector Client, Native experience for Vector Database.
+ * Client for AstraDB at organization level (crud for databases).
  */
 @Slf4j
 public class AstraDBAdmin {
 
-    /** Default timeout for connection. */
+    /** Default timeout for initiating connection. */
     public static final int CONNECT_TIMEOUT_SECONDS = 20;
 
-    /**
-     * Free tier.
-     */
+    /** Default cloud provider if not provided by user. (free-tier) */
     public static final CloudProviderType FREE_TIER_CLOUD = CloudProviderType.GCP;
 
-    /**
-     * Free tier.
-     */
+    /** Default region if not provided by user. (free-tier) */
     public static final String FREE_TIER_CLOUD_REGION = "us-east1";
 
-    /**
-     * Token header param
-     */
+    /** Header name used to hold the Astra Token. */
     public static final String TOKEN_HEADER_PARAM = "X-Token";
 
-    /**
-     * Technical Keyspace name.
-     */
+    /** Default keyspace name if not provided by user. */
     public static final String DEFAULT_KEYSPACE = "default_keyspace";
 
-    /**
-     * First Level of the API will
-     */
+    /** Client for the Astra Devops Api. (crud on databases) */
     final AstraDBOpsClient devopsDbClient;
 
-    /**
-     * Environment
-     */
+    /** Target Astra Environment, default is PROD. */
     final AstraEnvironment env;
 
-    /**
-     * Token required to initialize the clients
-     */
+    /** Astra Token used as credentials. */
     @Getter
     final String token;
 
-    /**
-     * JDK HttpClient
-     */
+    /** JDK11 HttpClient to interact with apis. */
     final HttpClient httpClient;
 
-    /**
-     * Configuration token
-     */
+    /** Token value read for environment variable. */
     static String astraConfigToken;
 
     /*
-     * Load from environment.
+     * Load token values from environment variables and ~/.astrarc.
      */
     static {
         new AstraRc().getSectionKey(
@@ -99,29 +81,30 @@ public class AstraDBAdmin {
     }
 
     /**
-     * Load with token from environment
+     * Default initialization, the token is retrieved from environment variable <code>ASTRA_DB_APPLICATION_TOKEN</code> or from
+     * file <code>~/.astrarc</code>, section <code>default</code>,  key <code>ASTRA_DB_APPLICATION_TOKEN</code>.
      */
     public AstraDBAdmin() {
         this(astraConfigToken);
     }
 
     /**
-     * Default constructor.
+     * Initialization with an authentification token, defaulting to production environment.
      *
      * @param token
-     *      a token is all you need
+     *      authentication token
      */
     public AstraDBAdmin(String token) {
         this(token, AstraEnvironment.PROD);
     }
 
     /**
-     * Second constructor for non-production environments.
+     * Initialization with an authentification token and target environment, Use this constructor for testing purpose.
      *
      * @param token
-     *      token
+     *      authentication token
      * @param env
-     *      target environments
+     *      target Astra environment
      */
     public AstraDBAdmin(String token, AstraEnvironment env) {
         this.env = env;
@@ -134,10 +117,10 @@ public class AstraDBAdmin {
     }
 
     /**
-     * List active vector databases.
+     * List active databases with vector enabled in current organization.
      *
      * @return
-     *      active devops databases.
+     *      active databases list
      */
     public Stream<Database> findAllDatabases() {
         return devopsDbClient
@@ -146,7 +129,7 @@ public class AstraDBAdmin {
     }
 
     /**
-     * Create Db in free Tier.
+     * Create new database with a name on free tier. The database name should not exist in the tenant.
      *
      * @param name
      *    database name
@@ -158,37 +141,9 @@ public class AstraDBAdmin {
     }
 
     /**
-     * Delete a Database if exists from its name
-     *
-     * @param name
-     *    database name
-     * @return
-     *      if the db has been deleted
-     */
-    public boolean deleteDatabaseByName(@NonNull String name) {
-        Optional<Database> opDb = findDatabaseByName(name).findFirst();
-        opDb.ifPresent(db -> devopsDbClient.database(db.getId()).delete());
-        return opDb.isPresent();
-    }
-
-    /**
-     * Delete a Database if exists from its name
-     *
-     * @param databaseId
-     *    database identifier
-     * @return
-     *      if the db has been deleted
-     */
-    public boolean deleteDatabaseById(@NonNull UUID databaseId) {
-        if (findDatabaseById(databaseId).isPresent()) {
-            devopsDbClient.database(databaseId.toString()).delete();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Create a database with the full definition.
+     * Create new database with a name on the specified cloud provider and region.
+     * If the database with same name already exists it will be resumed if not active.
+     * The method will wait for the database to be active.
      *
      * @param name
      *      database name
@@ -197,7 +152,7 @@ public class AstraDBAdmin {
      * @param cloudRegion
      *      cloud region
      * @return
-     *      database uid
+     *      database identifier
      */
     public UUID createDatabase(@NonNull String name, @NonNull CloudProviderType cloud, @NonNull String cloudRegion) {
         Optional<Database> optDb = findDatabaseByName(name).findFirst();
@@ -235,6 +190,38 @@ public class AstraDBAdmin {
         waitForDatabase(devopsDbClient.database(newDbId.toString()));
         return newDbId;
     }
+
+    /**
+     * Delete a Database if exists from its name
+     *
+     * @param name
+     *    database name
+     * @return
+     *      if the db has been deleted
+     */
+    public boolean deleteDatabaseByName(@NonNull String name) {
+        Optional<Database> opDb = findDatabaseByName(name).findFirst();
+        opDb.ifPresent(db -> devopsDbClient.database(db.getId()).delete());
+        return opDb.isPresent();
+    }
+
+    /**
+     * Delete a Database if exists from its name
+     *
+     * @param databaseId
+     *    database identifier
+     * @return
+     *      if the db has been deleted
+     */
+    public boolean deleteDatabaseById(@NonNull UUID databaseId) {
+        if (findDatabaseById(databaseId).isPresent()) {
+            devopsDbClient.database(databaseId.toString()).delete();
+            return true;
+        }
+        return false;
+    }
+
+
 
 
     /**

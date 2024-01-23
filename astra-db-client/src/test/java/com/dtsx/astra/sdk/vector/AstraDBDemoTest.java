@@ -4,7 +4,7 @@ import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraDBTestSuiteIT;
 import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.data.CollectionClient;
-import io.stargate.sdk.data.JsonDocumentMutationResult;
+import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
 import io.stargate.sdk.data.NamespaceClient;
 import io.stargate.sdk.data.domain.JsonDocument;
 import io.stargate.sdk.data.domain.JsonDocumentResult;

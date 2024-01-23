@@ -2,7 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
-import io.stargate.sdk.data.JsonDocumentMutationResult;
+import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
 import io.stargate.sdk.data.domain.JsonDocument;
 import java.util.List;
 

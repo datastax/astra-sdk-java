@@ -2,9 +2,9 @@ package com.dtsx.astra.sdk;
 
 import io.stargate.sdk.core.domain.Page;
 import io.stargate.sdk.data.CollectionClient;
-import io.stargate.sdk.data.DocumentMutationResult;
-import io.stargate.sdk.data.JsonDocumentMutationResult;
+import io.stargate.sdk.data.domain.DocumentMutationResult;
 import io.stargate.sdk.data.domain.JsonDocument;
+import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
 import io.stargate.sdk.data.domain.JsonDocumentResult;
 import io.stargate.sdk.data.domain.JsonResultUpdate;
 import io.stargate.sdk.data.domain.UpdateStatus;
@@ -25,18 +25,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 /**
- * Operation On a Collection.
+ * Client for AstraDB at collection level (crud for documents).
  */
 @Getter
 public class AstraDBCollection {
 
     /**
-     * Stargate Client for a collection
+     * Internal Stargate data api client.
      */
     CollectionClient collectionClient;
 
     /**
-     * Default constructor.
+     * Constructor with the internal client
      *
      * @param collectionClient
      *      collection description
@@ -50,10 +50,10 @@ public class AstraDBCollection {
     // --------------------------
 
     /**
-     * Insert with a Json String.
+     * Insert a single document from a Json String.
      *
      * @param json
-     *      json Strings
+     *      json String
      * @return
      *      mutation result with status and id
      */
@@ -62,7 +62,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json String and get return asynchronously.
+     * Insert a single document from a Json String, asynchronously.
      *
      * @param json
      *      json Strings
@@ -74,7 +74,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json Document (schemaless)
+     * Insert a single document from a Json Document (schemaless).
      *
      * @param document
      *      current bean
@@ -86,7 +86,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json Document (schemaless)
+     * Insert a single document from a Json Document (schemaless), asynchronously.
      *
      * @param document
      *      current bean
@@ -98,7 +98,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json Document object (SchemaFull)
+     * Insert a single document from a Document&lt;T&gt; object (SchemaFull)
      *
      * @param document
      *      current bean
@@ -112,7 +112,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json Document object (SchemaFull)
+     * Insert a single document from a Document&lt;T&gt; object (SchemaFull), asynchronously.
      *
      * @param document
      *      current bean
@@ -130,7 +130,7 @@ public class AstraDBCollection {
     // --------------------------
 
     /**
-     * Insert with a Json String.
+     * Upsert a single document from a Json String.
      *
      * @param json
      *      json Strings
@@ -142,7 +142,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert with a Json String and get return asynchronously.
+     * Upsert a single document from a Json String, asynchronously.
      *
      * @param json
      *      json Strings
@@ -154,7 +154,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Upsert a document in the collection.
+     * Upsert a single document from a Json Document (schemaless).
      *
      * @param document
      *      current document
@@ -166,7 +166,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Upsert a document in the collection.
+     * Upsert a single document from a Json Document (schemaless), asynchronously.
      *
      * @param document
      *      current document
@@ -178,7 +178,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Upsert a document in the collection.
+     * Upsert a single document from a Document&lt;T&gt; object (SchemaFull)
      *
      * @param document
      *      current document
@@ -192,7 +192,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Upsert a document in the collection.
+     * Upsert a single document from a Document&lt;T&gt; object (SchemaFull), asynchronously
      *
      * @param document
      *      current document
@@ -210,7 +210,7 @@ public class AstraDBCollection {
     // --------------------------
 
     /**
-     * Insert multiple records in one call, up to 20, then use insertManyChunked.
+     * Insert multiple documents (up to 20) as a Json String , for more document check <code>insertManyChunked</code>.
      *
      * @param json
      *      json String
@@ -222,7 +222,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert multiple records in one call, up to 20, then use insertManyChunked asynchronously.
+     * Insert multiple documents (up to 20) as a Json String , for more document check <code>insertManyChunked</code>, Asynchronously.
      *
      * @param json
      *      json String
@@ -234,7 +234,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert multiple records in one call, up to 20, then use insertManyChunked.
+     * Insert multiple documents (up to 20) as <code>JsonDocument</code> List , for more document check <code>insertManyChunked</code>.
      *
      * @param documents
      *      list of documents
@@ -246,7 +246,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Insert multiple records in one call, up to 20, asynchronously then use insertManyChunked.
+     * Insert multiple documents (up to 20) as <code>JsonDocument</code> List , for more document check <code>insertManyChunked</code>, asynchronously.
      *
      * @param documents
      *      list of documents
@@ -258,7 +258,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Low level insertion of multiple records
+     * Insert multiple documents (up to 20) as generic <code>Document&lt;T&gt;</code> List , for more document check <code>insertManyChunked</code>.
      *
      * @param documents
      *      list of documents
@@ -272,7 +272,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Low level insertion of multiple records
+     * Insert multiple documents (up to 20) as generic <code>Document&lt;T&gt;</code> List , for more document check <code>insertManyChunked</code>, asynchronously.
      *
      * @param documents
      *      list of documents
@@ -290,16 +290,16 @@ public class AstraDBCollection {
     // -------------------------------
 
     /**
-     * Low level insertion of multiple records
+     * Insert large number of documents as generic <code>Document&lt;T&gt;</code> List. Insertions a redistributed in chunks and chunk processing are parallelized.
      *
      * @param documents
      *      list of documents
      * @param chunkSize
-     *      size of the block
+     *      number of documents in one chunk (up to 20)
      * @param concurrency
-     *      number of blocks in parallel
+     *      number of chunks processed in parallel (depends on document size)
      * @param <DOC>
-     *     represent the pojo, payload of document
+     *     payload for the documents
      * @return
      *      list of ids
      */
@@ -308,7 +308,7 @@ public class AstraDBCollection {
     }
 
     /**
-     * Low level insertion of multiple records
+     * Insert large number of documents as generic <code>Document&lt;T&gt;</code> List. Insertions a redistributed in chunks and chunk processing are parallelized., Asynchronously
      *
      * @param documents
      *      list of documents
@@ -326,17 +326,33 @@ public class AstraDBCollection {
     }
 
     /**
-     * Enforce Mapping with JsonDocument
+     * Insert large number of documents as <code>JsonDocument</code> List. Insertions a redistributed in chunks and chunk processing are parallelized.,
      *
      * @param documents
      *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      number of blocks in parallel
      * @return
-     *      json document list
+     *      list of mutation status
      */
     public final List<JsonDocumentMutationResult> insertManyChunkedJsonDocuments(List<JsonDocument> documents, int chunkSize, int concurrency) {
         return collectionClient.insertManyJsonDocumentsChunked(documents, chunkSize, concurrency);
     }
 
+    /**
+     * Insert large number of documents as <code>JsonDocument</code> List. Insertions a redistributed in chunks and chunk processing are parallelized., Asynchronously
+     *
+     * @param documents
+     *      list of documents
+     * @param chunkSize
+     *      size of the block
+     * @param concurrency
+     *      number of blocks in parallel
+     * @return
+     *      list of mutation status
+     */
     public final CompletableFuture<List<JsonDocumentMutationResult>> insertManyChunkedJsonDocumentsAsync(List<JsonDocument> documents, int chunkSize, int concurrency) {
         return CompletableFuture.supplyAsync(() -> insertManyChunkedJsonDocuments(documents, chunkSize, concurrency));
     }
