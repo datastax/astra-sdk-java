@@ -1,7 +1,8 @@
 package com.dtsx.astra.sdk.cassio;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.Map;
 /**
  * Wrap query parameters as a Bean.
  */
-@Data @Builder
+@Getter @Setter @Builder
 public class AnnQuery {
 
     /**
@@ -36,10 +37,5 @@ public class AnnQuery {
      * If provided search on metadata
      */
     private Map<String, String> metaData;
-
-    /**
-     * Default constructor
-     */
-    protected AnnQuery() {}
 
 }

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>astra-spring-boot-3x-autoconfigure</artifactId>
-  <name>+ astra-spring-boot-3x-autoconfigure</name>
+  <artifactId>astra-spring-boot-autoconfigure</artifactId>
+  <name>+ astra-spring-boot-autoconfigure</name>
   <packaging>jar</packaging>
   
   <parent>
     <groupId>com.datastax.astra</groupId>
     <artifactId>astra-sdk-parent</artifactId>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.5-SNAPSHOT</version>
   </parent>
   
   <properties>
-    <spring-boot.version>3.2.1</spring-boot.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
   </properties>
   
   <dependencies>
-
+    
     <!-- Core Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -34,17 +34,12 @@
       <version>${spring-boot.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency>
+	<dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
       <version>${spring-boot.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-      <version>${spring-boot.version}</version>
-      <optional>true</optional>
-    </dependency>
+
     
     <!-- SDK -->
     <dependency>
@@ -62,12 +57,11 @@
   </dependencies>
   
   <build>
-    <finalName>astra-spring-boot-autoconfigure-3x</finalName>
+    <finalName>astra-spring-boot-autoconfigure</finalName>
     <directory>target</directory>
     <sourceDirectory>src/main/java</sourceDirectory>
     <outputDirectory>target/classes</outputDirectory>
   </build>
-
   <licenses>
     <license>
       <name>Apache-2.0</name>
@@ -76,5 +70,6 @@
       <comments>A business-friendly OSS license</comments>
     </license>
   </licenses>
+
   
 </project>
