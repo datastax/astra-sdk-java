@@ -37,4 +37,9 @@ public class AnnQuery {
      */
     private Map<String, String> metaData;
 
+    /**
+     * Default constructor
+     */
+    protected AnnQuery() {}
+
 }

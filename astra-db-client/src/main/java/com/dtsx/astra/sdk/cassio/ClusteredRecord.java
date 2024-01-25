@@ -6,9 +6,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Default Constructor.
+ */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class ClusteredRecord {
 
     /** Partition id. */
@@ -19,5 +21,10 @@ public class ClusteredRecord {
 
     /** Text body. */
     String body;
+
+    /**
+     * Record for a clustered table.
+     */
+    public ClusteredRecord() {}
 
 }

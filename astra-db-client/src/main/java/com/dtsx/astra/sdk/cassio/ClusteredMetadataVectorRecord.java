@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Partitioned table with cluster and vector.
+ */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class ClusteredMetadataVectorRecord {
 
     /** Partition id. */
@@ -37,5 +39,10 @@ public class ClusteredMetadataVectorRecord {
      * Embeddings
      */
     List<Float> vector;
+
+    /**
+     * Default Constructor.
+     */
+    public ClusteredMetadataVectorRecord() {}
     
 }
