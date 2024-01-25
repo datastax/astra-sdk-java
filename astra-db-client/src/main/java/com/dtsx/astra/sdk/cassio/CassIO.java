@@ -4,7 +4,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import io.stargate.sdk.utils.Utils;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -151,10 +150,10 @@ public class CassIO {
      * @return
      *      table to store vector
      */
-    public static MetadataVectorCassandraTable metadataVectorTable(String tableName, int vectorDimension) {
+    public static MetadataVectorTable metadataVectorTable(String tableName, int vectorDimension) {
         if (tableName == null || tableName.isEmpty()) throw new IllegalArgumentException("Table name must be provided");
         if (vectorDimension < 1) throw new IllegalArgumentException("Vector dimension must be greater than 0");
-        return new MetadataVectorCassandraTable(
+        return new MetadataVectorTable(
                 getCqlSession(),
                 cqlSession.getKeyspace().orElseThrow(() ->
                         new IllegalArgumentException("CqlSession does not select any keyspace")).asInternal(),

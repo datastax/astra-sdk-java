@@ -9,7 +9,7 @@ import lombok.Data;
  *       record.
  */
 @Data
-public class SimilaritySearchResult<EMBEDDED> {
+public class AnnResult<EMBEDDED> {
 
     /**
      * Embedded object
@@ -24,6 +24,6 @@ public class SimilaritySearchResult<EMBEDDED> {
     /**
      * Default constructor.
      */
-    public SimilaritySearchResult() {}
+    public AnnResult() {}
 
 }

@@ -15,6 +15,7 @@ import io.stargate.sdk.data.domain.odm.Document;
 import io.stargate.sdk.data.domain.odm.DocumentResult;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import io.stargate.sdk.data.exception.DataApiDocumentAlreadyExistException;
+import io.stargate.sdk.data.exception.DataApiException;
 import io.stargate.sdk.data.exception.DataApiInvalidArgumentException;
 import io.stargate.sdk.data.exception.DataApiNamespaceNotFoundException;
 import io.stargate.sdk.utils.Utils;
@@ -91,8 +92,8 @@ public class AstraDBTestSuiteIT {
 
     private static void setupTestSuiteForDevelopment() {
         targetEnvironment = AstraEnvironment.DEV;
-        astraToken = Utils.readEnvVariable("ASTRA_DB_APPLICATION_TOKEN_DEV")
-                .orElseThrow(() -> new IllegalArgumentException("ASTRA_DB_APPLICATION_TOKEN_DEV is not set"));
+        astraToken = "AstraCS:ZiWfNzYJtUGszRuGyyTjFIXU:2c5a21a4623c6ee688d4bca4b8e55a269aa3ee864fcd16b26b7f9a82ca57b999";
+                //.orElseThrow(() -> new IllegalArgumentException("ASTRA_DB_APPLICATION_TOKEN_DEV is not set"));
         targetCloud = CloudProviderType.GCP;
         targetRegion = "europe-west4";
         log.info("Environment Setup for Development");
@@ -111,8 +112,8 @@ public class AstraDBTestSuiteIT {
     @DisplayName("00. Connect to Astra")
     public static void setupAndConnectToAstra() {
         // Given
-        //setupTestSuiteForDevelopment();
-        setupTestSuiteForProduction();
+        setupTestSuiteForDevelopment();
+        //setupTestSuiteForProduction();
         Assertions.assertNotNull(astraToken);
         Assertions.assertNotNull(targetEnvironment);
         // When
@@ -220,7 +221,7 @@ public class AstraDBTestSuiteIT {
 
     @Test
     @Order(5)
-    @DisplayName("05. Delete a Database by namd")
+    @DisplayName("05. Delete a Database by name")
     @Disabled("This test is disabled because it is pretty lone")
     public void shouldDeleteDatabase() throws InterruptedException {
         String dbName = "test_delete_db";
@@ -271,8 +272,8 @@ public class AstraDBTestSuiteIT {
         if (astraDb == null) shouldConnectToDatabase();
 
         // Given
-        //astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
-        //Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
+        astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
+        Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
         // When
         astraDb.createCollection(TEST_COLLECTION_VECTOR, 14);
         // Then
@@ -285,6 +286,72 @@ public class AstraDBTestSuiteIT {
                 .name(TEST_COLLECTION_VECTOR)
                 .vector(14, SimilarityMetric.cosine)
                 .build());
+        Assertions.assertTrue(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
+
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("07. Create Collections (with vector)")
+    public void shouldCreateCollectionWithIndexingOptions() {
+
+        // Given
+        if (astraDb == null) shouldConnectToDatabase();
+
+        astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
+        Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
+
+        // Allow and Deny are mutually exclusive
+        Assertions.assertThrows(IllegalStateException.class, () ->  collectionVector = astraDb.createCollection(CollectionDefinition.builder()
+                .name(TEST_COLLECTION_VECTOR)
+                .vector(14, SimilarityMetric.cosine)
+                .indexingDeny("blob_body")
+                .indexingAllow("property1")
+                .build()));
+
+        // ---- TESTING WITH DENY -----
+        // When
+        collectionVector = astraDb.createCollection(CollectionDefinition.builder()
+                .name(TEST_COLLECTION_VECTOR)
+                .vector(14, SimilarityMetric.cosine)
+                .indexingDeny("blob_body")
+                .build());
+        collectionVector.insertOne(new JsonDocument()
+                .id("p1")
+                .put("prop1", "value1")
+                .put("blob_body", "hello"));
+        // Then
+        Assertions.assertTrue(collectionVector
+                .findById("p1").isPresent());
+        Assertions.assertTrue(collectionVector
+                .findOne(SelectQuery.builder().where("prop1").isEqualsTo("value1").build()).isPresent());
+        Assertions.assertThrows(DataApiException.class, () -> collectionVector
+                .findOne(SelectQuery.builder()
+                        .where("blob_body")
+                        .isEqualsTo("hello")
+                        .build()));
+
+        // ---- TESTING WITH ALLOW -----
+
+        // When
+        astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
+        collectionVector = astraDb.createCollection(CollectionDefinition.builder()
+                .name(TEST_COLLECTION_VECTOR)
+                .vector(14, SimilarityMetric.cosine)
+                .indexingAllow("prop1")
+                .build());
+        collectionVector.insertOne(new JsonDocument()
+                .id("p1")
+                .put("prop1", "value1")
+                .put("blob_body", "hello"));
+        Assertions.assertTrue(collectionVector
+                .findOne(SelectQuery.builder().where("prop1").isEqualsTo("value1").build()).isPresent());
+        Assertions.assertThrows(DataApiException.class, () -> collectionVector
+                .findOne(SelectQuery.builder()
+                        .where("blob_body")
+                        .isEqualsTo("hello")
+                        .build()));
+
     }
 
     @Test

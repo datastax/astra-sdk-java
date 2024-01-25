@@ -2,7 +2,6 @@ package com.dtsx.astra.sdk.cassio;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,7 @@ import java.util.Map;
  * Wrap query parameters as a Bean.
  */
 @Data @Builder
-public class SimilaritySearchQuery {
+public class AnnQuery {
 
     /**
      * Maximum number of item returned
@@ -31,7 +30,7 @@ public class SimilaritySearchQuery {
     /**
      * Default distance is cosine
      */
-    private SimilarityMetric distance = SimilarityMetric.DOT_PRODUCT;
+    private CassandraSimilarityMetric metric = CassandraSimilarityMetric.COSINE;
 
     /**
      * If provided search on metadata

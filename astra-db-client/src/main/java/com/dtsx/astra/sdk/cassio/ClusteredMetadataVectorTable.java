@@ -13,8 +13,7 @@ import lombok.extern.slf4j.Slf4j;
  * - column: value
  */
 @Slf4j
-public class ClusteredMetadataVectorCassandraTable
-        extends AbstractCassandraTable<ClusteredMetadataVectorCassandraTable.Record> {
+public class ClusteredMetadataVectorTable extends AbstractCassandraTable<ClusteredMetadataVectorRecord> {
 
     /**
      * Dimension of the vector in use
@@ -24,7 +23,7 @@ public class ClusteredMetadataVectorCassandraTable
     /**
      * Similarity Metric, Vector is indexed with this metric.
      */
-    private final SimilarityMetric similarityMetric;
+    private final CassandraSimilarityMetric similarityMetric;
 
     /**
      * Prepared statements
@@ -44,28 +43,28 @@ public class ClusteredMetadataVectorCassandraTable
      * @param vectorDimension vector dimension
      * @param metric          similarity metric
      */
-    public ClusteredMetadataVectorCassandraTable(
+    public ClusteredMetadataVectorTable(
             @NonNull CqlSession session,
             @NonNull  String keyspaceName,
             @NonNull String tableName,
             @NonNull Integer vectorDimension,
-            @NonNull SimilarityMetric metric) {
+            @NonNull CassandraSimilarityMetric metric) {
         super(session, keyspaceName, tableName);
         this.vectorDimension = vectorDimension;
         this.similarityMetric = metric;
     }
 
     /**
-     * Builder class for creating instances of {@link ClusteredMetadataVectorCassandraTable}.
+     * Builder class for creating instances of {@link ClusteredMetadataVectorTable}.
      * This class follows the builder pattern to allow setting various parameters
-     * before creating an instance of {@link ClusteredMetadataVectorCassandraTable}.
+     * before creating an instance of {@link ClusteredMetadataVectorTable}.
      */
     public static class Builder {
         private CqlSession session;
         private String keyspaceName;
         private String tableName;
         private Integer vectorDimension;
-        private SimilarityMetric metric = SimilarityMetric.COS;
+        private CassandraSimilarityMetric metric = CassandraSimilarityMetric.COSINE;
 
         /**
          * Sets the CqlSession.
@@ -117,7 +116,7 @@ public class ClusteredMetadataVectorCassandraTable
          * @param metric The SimilarityMetric to be used.
          * @return The current Builder instance for chaining.
          */
-        public Builder withMetric(SimilarityMetric metric) {
+        public Builder withMetric(CassandraSimilarityMetric metric) {
             this.metric = metric;
             return this;
         }
@@ -127,8 +126,8 @@ public class ClusteredMetadataVectorCassandraTable
          *
          * @return A new instance of ClusteredMetadataVectorCassandraTable.
          */
-        public ClusteredMetadataVectorCassandraTable build() {
-            return new ClusteredMetadataVectorCassandraTable(session, keyspaceName, tableName, vectorDimension, metric);
+        public ClusteredMetadataVectorTable build() {
+            return new ClusteredMetadataVectorTable(session, keyspaceName, tableName, vectorDimension, metric);
         }
 
         /**
@@ -143,7 +142,7 @@ public class ClusteredMetadataVectorCassandraTable
      * @return
      *      builder for the class
      */
-    public static ClusteredMetadataVectorCassandraTable.Builder builder() {
+    public static ClusteredMetadataVectorTable.Builder builder() {
         return new Builder();
     }
 
@@ -203,13 +202,13 @@ public class ClusteredMetadataVectorCassandraTable
 
     /* {@inheritDoc} */
     @Override
-    public void put(Record row) {
+    public void put(ClusteredMetadataVectorRecord row) {
 
     }
 
     /* {@inheritDoc} */
     @Override
-    public Record mapRow(Row row) {
+    public ClusteredMetadataVectorRecord mapRow(Row row) {
         return null;
     }
 

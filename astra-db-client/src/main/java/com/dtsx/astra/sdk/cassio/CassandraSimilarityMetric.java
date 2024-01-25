@@ -6,16 +6,16 @@ import lombok.Getter;
  * Option for the similarity metric.
  */
 @Getter
-public enum SimilarityMetric {
+public enum CassandraSimilarityMetric {
 
     /** dot product. */
     DOT_PRODUCT("DOT_PRODUCT","similarity_dot_product"),
 
     /** cosine. */
-    COS("COSINE","similarity_cosine"),
+    COSINE("COSINE","similarity_cosine"),
 
     /** euclidean. */
-    DOT("EUCLIDEAN","similarity_euclidean");
+    EUCLIDEAN("EUCLIDEAN","similarity_euclidean");
 
     /**
      * Option.
@@ -35,7 +35,7 @@ public enum SimilarityMetric {
      * @param function
      *      function to be used in the query
      */
-    SimilarityMetric(String option, String function) {
+    CassandraSimilarityMetric(String option, String function) {
         this.option = option;
         this.function = function;
     }

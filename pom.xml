@@ -39,7 +39,7 @@
         <lombok.version>1.18.30</lombok.version>
 
         <!-- Stargate -->
-        <stargate-sdk.version>2.3.3</stargate-sdk.version>
+        <stargate-sdk.version>2.3.4</stargate-sdk.version>
         <stargate-grpc.version>2.1.0-BETA-7</stargate-grpc.version>
         <grpc-netty.version>1.61.0</grpc-netty.version>
 

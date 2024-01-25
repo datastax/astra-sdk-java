@@ -4,24 +4,33 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.CqlVector;
-import com.datastax.oss.driver.api.core.uuid.Uuids;
-import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static io.stargate.sdk.utils.AnsiUtils.cyan;
+import static io.stargate.sdk.utils.AnsiUtils.yellow;
+
 /**
- * Table representing persistence for Vector Stores support.
+ * Table representing persistence for Vector Stores support. As the name stated
+ * it holds both a vector and a metadata map.
+ * <code>
+ * CREATE TABLE langchain4j.test_embedding_store (
+ *     row_id text PRIMARY KEY,
+ *     attributes_blob text,
+ *     body_blob text,
+ *     metadata_s map&lt;text, text&gt;,
+ *     vector vector&lt;float, 11&gt;
+ * );
+ * </code>
  */
 @Slf4j
 @Getter
-public class MetadataVectorCassandraTable extends AbstractCassandraTable<MetadataVectorCassandraTable.Record> {
+public class MetadataVectorTable extends AbstractCassandraTable<MetadataVectorRecord> {
 
     /**
      * Dimension of the vector in use
@@ -31,7 +40,7 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
     /**
      * Similarity Metric, Vector is indexed with this metric.
      */
-    private final SimilarityMetric similarityMetric;
+    private final CassandraSimilarityMetric similarityMetric;
 
     /**
      * Constructor with mandatory parameters.
@@ -41,8 +50,8 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
      * @param tableName       table name
      * @param vectorDimension vector dimension
      */
-    public MetadataVectorCassandraTable(CqlSession session, String keyspaceName, String tableName, int vectorDimension) {
-        this(session, keyspaceName, tableName, vectorDimension, SimilarityMetric.DOT_PRODUCT);
+    public MetadataVectorTable(CqlSession session, String keyspaceName, String tableName, int vectorDimension) {
+        this(session, keyspaceName, tableName, vectorDimension, CassandraSimilarityMetric.COSINE);
     }
 
     /**
@@ -54,10 +63,11 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
      * @param vectorDimension vector dimension
      * @param metric          similarity metric
      */
-    public MetadataVectorCassandraTable(CqlSession session, String keyspaceName, String tableName, int vectorDimension, SimilarityMetric metric) {
+    public MetadataVectorTable(CqlSession session, String keyspaceName, String tableName, int vectorDimension, CassandraSimilarityMetric metric) {
         super(session, keyspaceName, tableName);
         this.vectorDimension = vectorDimension;
         this.similarityMetric = metric;
+        create();
     }
 
     /**
@@ -65,7 +75,7 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
      */
     public void create() {
         // Create Table
-        cqlSession.execute("CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+        String cqlQueryCreateTable = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                 ROW_ID + " text, " +
                 ATTRIBUTES_BLOB + " text, " +
                 BODY_BLOB + " text, " +
@@ -73,24 +83,25 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
                 VECTOR + " vector<float, " + vectorDimension + ">, " +
                 "PRIMARY KEY (" +
                 ROW_ID + ")" +
-                ")");
-        log.info("+ Table '{}' has been created (if needed).", tableName);
+                ")";
+        cqlSession.execute(cqlQueryCreateTable);
+        log.info("Table '{}' has been created (if needed).", tableName);
         cqlSession.execute(
                 "CREATE CUSTOM INDEX IF NOT EXISTS idx_vector_" + tableName
                         + " ON " + tableName + " (" + VECTOR + ") "
                         + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex' "
                         + "WITH OPTIONS = { 'similarity_function': '" +  similarityMetric.getOption() + "'};");
-        log.info("+ Index '{}' has been created (if needed).", "idx_vector_" + tableName);
+        log.info("Index '{}' has been created (if needed).", "idx_vector_" + tableName);
         // Create Metadata Index
         cqlSession.execute(
                 "CREATE CUSTOM INDEX IF NOT EXISTS eidx_metadata_s_" + tableName
                         + " ON " + tableName + " (ENTRIES(" + METADATA_S + ")) "
-                        + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex' ");
-        log.info("+ Index '{}' has been created (if needed).", "eidx_metadata_s_" + tableName);
+                        + "USING 'org.apache.cassandra.index.sai.StorageAttachedIndex';");
+        log.info("Index '{}' has been created (if needed).", "eidx_metadata_s_" + tableName);
     }
 
     /** {@inheritDoc} */
-    public void put(Record row) {
+    public void put(MetadataVectorRecord row) {
         cqlSession.execute(row.insertStatement(keyspaceName, tableName));
     }
 
@@ -100,19 +111,21 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
      * @param cqlRow cql row
      * @return resul
      */
-    private SimilaritySearchResult<Record> mapResult(Row cqlRow) {
+    private AnnResult<MetadataVectorRecord> mapResult(Row cqlRow) {
         if (cqlRow == null) return null;
-        SimilaritySearchResult<Record> res = new SimilaritySearchResult<>();
+        AnnResult<MetadataVectorRecord> res = new AnnResult<>();
         res.setEmbedded(mapRow(cqlRow));
         res.setSimilarity(cqlRow.getFloat(COLUMN_SIMILARITY));
+        log.debug("Result similarity '{}' for embedded id='{}'", res.getSimilarity(), res.getEmbedded().getRowId());
         return res;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public Record mapRow(Row cqlRow) {
+    public MetadataVectorRecord mapRow(Row cqlRow) {
         if (cqlRow == null) return null;
-        Record record = new Record();
+
+        MetadataVectorRecord record = new MetadataVectorRecord();
         record.setRowId(cqlRow.getString(ROW_ID));
         record.setBody(cqlRow.getString(BODY_BLOB));
         record.setVector(((CqlVector<Float>) Objects.requireNonNull(cqlRow.getObject(VECTOR)))
@@ -134,11 +147,11 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
      * @return
      *      results
      */
-    public List<SimilaritySearchResult<Record>> similaritySearch(SimilaritySearchQuery query) {
+    public List<AnnResult<MetadataVectorRecord>> similaritySearch(AnnQuery query) {
         StringBuilder cqlQuery = new StringBuilder("SELECT " + ROW_ID + ","
                 + VECTOR + "," + BODY_BLOB + ","
                 + ATTRIBUTES_BLOB + "," + METADATA_S + ",");
-        cqlQuery.append(query.getDistance().getFunction()).append("(vector, :vector) as ").append(COLUMN_SIMILARITY);
+        cqlQuery.append(query.getMetric().getFunction()).append("(vector, :vector) as ").append(COLUMN_SIMILARITY);
         cqlQuery.append(" FROM ").append(tableName);
         if (query.getMetaData() != null && !query.getMetaData().isEmpty()) {
             cqlQuery.append(" WHERE ");
@@ -156,6 +169,10 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
         }
         cqlQuery.append(" ORDER BY vector ANN OF :vector ");
         cqlQuery.append(" LIMIT :maxRecord");
+        log.debug("Query on table '{}' with vector size '{}' and max record='{}'",
+                yellow(tableName),
+                cyan("[" + query.getEmbeddings().size() + "]"),
+                cyan("" + (query.getRecordCount() > 0 ? query.getRecordCount() : DEFAULT_RECORD_COUNT)));
         return cqlSession.execute(SimpleStatement.builder(cqlQuery.toString())
                         .addNamedValue("vector", CqlVector.newInstance(query.getEmbeddings()))
                         .addNamedValue("maxRecord", query.getRecordCount() > 0 ? query.getRecordCount() : DEFAULT_RECORD_COUNT)
@@ -166,79 +183,5 @@ public class MetadataVectorCassandraTable extends AbstractCassandraTable<Metadat
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Record for the Metadata Vector Table in Cassandra.
-     */
-    @Data
-    public static class Record implements Serializable {
 
-        /**
-         * Identifier of the row in Cassandra
-         */
-        private String rowId;
-
-        /**
-         * Store special attributes
-         */
-        private String attributes;
-
-        /**
-         * Body, contains the Text Fragment.
-         */
-        private String body;
-
-        /**
-         * Metadata (for metadata filtering)
-         */
-        private Map<String, String> metadata = new HashMap<>();
-
-        /**
-         * Embeddings
-         */
-        private List<Float> vector;
-
-        /**
-         * Default Constructor
-         */
-        public Record() {
-            this(Uuids.timeBased().toString(), null);
-        }
-
-        /**
-         * Create a record with a vector.
-         *
-         * @param vector current vector.
-         */
-        public Record(List<Float> vector) {
-            this(Uuids.timeBased().toString(), vector);
-        }
-
-        /**
-         * Create a record with a vector.
-         * @param rowId  identifier for the row
-         * @param vector current vector.
-         */
-        public Record(String rowId, List<Float> vector) {
-            this.rowId  = rowId;
-            this.vector = vector;
-        }
-
-        /**
-         * Build insert statement dynamically.
-         *
-         * @param keyspaceName
-         *      keyspace name
-         * @param tableName
-         *      table bane
-         * @return
-         *      statement
-         */
-        public SimpleStatement insertStatement(String keyspaceName, String tableName) {
-            if (rowId == null) throw new IllegalStateException("Row Id cannot be null");
-            if (vector == null) throw new IllegalStateException("Vector cannot be null");
-            return SimpleStatement.newInstance("INSERT INTO " + keyspaceName + "." + tableName + " ("
-                    + ROW_ID + "," + VECTOR + "," + ATTRIBUTES_BLOB + "," + BODY_BLOB + "," + METADATA_S + ") VALUES (?,?,?,?,?)",
-                    rowId, CqlVector.newInstance(vector), attributes, body, metadata);
-        }
-    }
 }

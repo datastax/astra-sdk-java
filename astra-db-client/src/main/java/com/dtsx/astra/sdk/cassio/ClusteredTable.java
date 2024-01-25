@@ -6,8 +6,6 @@ import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,7 +18,7 @@ import java.util.stream.Collectors;
  * Table representing persistence for LangChain operations
  */
 @Slf4j
-public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCassandraTable.Record> {
+public class ClusteredTable extends AbstractCassandraTable<ClusteredRecord> {
 
     /**
      * Prepared statements
@@ -41,7 +39,7 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
      * @param tableName
      *      table name
      */
-    public ClusteredCassandraTable(@NonNull CqlSession session, @NonNull String  keyspaceName, @NonNull  String tableName) {
+    public ClusteredTable(@NonNull CqlSession session, @NonNull String  keyspaceName, @NonNull  String tableName) {
         super(session, keyspaceName, tableName);
     }
 
@@ -85,15 +83,15 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
 
     /** {@inheritDoc} */
     @Override
-    public void put(@NonNull ClusteredCassandraTable.Record row) {
+    public void put(@NonNull ClusteredRecord row) {
         prepareStatements();
         cqlSession.execute(insertRowStatement.bind(row.getPartitionId(), row.getRowId(), row.getBody()));
     }
 
     /** {@inheritDoc} */
     @Override
-    public Record mapRow(@NonNull Row row) {
-        return new Record(
+    public ClusteredRecord mapRow(@NonNull Row row) {
+        return new ClusteredRecord(
                 row.getString(PARTITION_ID),
                 row.getUuid(ROW_ID),
                 row.getString(BODY_BLOB));
@@ -107,7 +105,7 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
      * @return
      *      list of rows
      */
-    public List<Record> findPartition(@NonNull String partitionDd) {
+    public List<ClusteredRecord> findPartition(@NonNull String partitionDd) {
         prepareStatements();
         return cqlSession.execute(findPartitionStatement.bind(partitionDd))
                 .all().stream()
@@ -121,12 +119,12 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
      * @param rows
      *      current rows.
      */
-    public void upsertPartition(List<Record> rows) {
+    public void upsertPartition(List<ClusteredRecord> rows) {
         prepareStatements();
         if (rows != null && !rows.isEmpty()) {
             BatchStatementBuilder batch = BatchStatement.builder(BatchType.LOGGED);
             String currentPartitionId = null;
-            for (Record row : rows) {
+            for (ClusteredRecord row : rows) {
                 if (currentPartitionId != null && !currentPartitionId.equals(row.getPartitionId())) {
                     log.warn("Not all rows are part of the same partition");
                 }
@@ -146,7 +144,7 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
      * @return
      *      record if exists
      */
-    public Optional<Record> findById(String partition, UUID rowId) {
+    public Optional<ClusteredRecord> findById(String partition, UUID rowId) {
         prepareStatements();
         return Optional.ofNullable(cqlSession
                         .execute(findRowStatement.bind(partition, rowId))
@@ -191,28 +189,5 @@ public class ClusteredCassandraTable extends AbstractCassandraTable<ClusteredCas
         prepareStatements();
         cqlSession.execute(insertRowStatement.bind(partitionId,rowId, bodyBlob));
     }
-
-    /**
-     * Represents a row of the Table
-     */
-    @Data @AllArgsConstructor
-    public static class Record {
-
-        /** Partition id. */
-        private String partitionId;
-
-        /** Row identifier. */
-        private UUID rowId;
-
-        /** Text body. */
-        private String body;
-
-        /**
-         * Default constructor
-         */
-        public Record() {
-        }
-    }
-
 
 }

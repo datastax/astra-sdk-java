@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.cassio;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.utils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
@@ -52,10 +53,9 @@ public class MetadataVectorTableTest {
     /**
      * Settings from Astra Usage
      */
-    private static final String ASTRA_DB_KEYSPACE = "openai";
-    private static final String ASTRA_DB_DATABASE = "sdk_java_test_vector";
+    private static final String ASTRA_DB_DATABASE = "test_java_astra_db_client";
     private static CqlSession cqlSession;
-    private static MetadataVectorCassandraTable v_table;
+    private static MetadataVectorTable v_table;
 
     protected LinkedHashMap<String, List<?>> loadQuotes(String filePath) throws IOException {
         File inputFile = new File(MetadataVectorTableTest.class.getClassLoader().getResource(filePath).getFile());
@@ -84,12 +84,10 @@ public class MetadataVectorTableTest {
         log.info("OpenAI is initialized");
 
         // Setup Astra
-        String databaseId = setupDatabase(ASTRA_DB_DATABASE, ASTRA_DB_KEYSPACE);
+        UUID databaseId = new AstraDBAdmin(getAstraToken()).createDatabase(ASTRA_DB_DATABASE);
         log.info("Astra Database is ready");
 
-        cqlSession = CassIO.init(getAstraToken(),
-                UUID.fromString(databaseId),
-                TestUtils.TEST_REGION, ASTRA_DB_KEYSPACE);
+        cqlSession = CassIO.init(getAstraToken(), databaseId, TestUtils.TEST_REGION, AstraDBAdmin.DEFAULT_KEYSPACE);
         log.info("Astra connection is opened");
 
         // Initializing table
@@ -200,7 +198,7 @@ public class MetadataVectorTableTest {
      * @return
      *      generated
      */
-    private static List<String> generateQuotes(MetadataVectorCassandraTable v_table, String topic, int n, String author) {
+    private static List<String> generateQuotes(MetadataVectorTable v_table, String topic, int n, String author) {
         log.info("Generate Quotes");
         String promptTemplate =
                 "Generate a single short philosophical quote on the given topic,\n" +
@@ -239,7 +237,7 @@ public class MetadataVectorTableTest {
      * @param recordCount
      *      record count
      */
-    private static List<String> findQuotes(MetadataVectorCassandraTable vTable, String query, int recordCount) {
+    private static List<String> findQuotes(MetadataVectorTable vTable, String query, int recordCount) {
         log.info("Search for quotes:");
         return findQuotesDetailed(vTable, query, null, recordCount, null,  (String[]) null);
     }
@@ -264,17 +262,17 @@ public class MetadataVectorTableTest {
      * will see this quantity rescaled to fit the [0, 1] interval, which means the numerical values and
      * adequate thresholds will be slightly different.
      */
-    private static List<String> findQuotesWithThreshold(MetadataVectorCassandraTable vTable, String query,int recordCount, double threshold) {
+    private static List<String> findQuotesWithThreshold(MetadataVectorTable vTable, String query, int recordCount, double threshold) {
         log.info(" Cutting out irrelevant results:");
         return findQuotesDetailed(vTable, query, threshold, recordCount, null, (String[]) null);
     }
 
-    private static List<String> findQuotesWithAuthor(MetadataVectorCassandraTable vTable, String query, int recordCount, String author) {
+    private static List<String> findQuotesWithAuthor(MetadataVectorTable vTable, String query, int recordCount, String author) {
         log.info("Search restricted to an author:");
         return findQuotesDetailed(vTable, query, null, recordCount, author, (String[])  null);
     }
 
-    private static List<String> findQuotesWithATags(MetadataVectorCassandraTable vTable, String query, int recordCount, String... tags) {
+    private static List<String> findQuotesWithATags(MetadataVectorTable vTable, String query, int recordCount, String... tags) {
         log.info("Search constrained to a tag (out of those saved earlier with the quotes");
        return findQuotesDetailed(vTable, query, null, recordCount, null, tags);
     }
@@ -311,11 +309,10 @@ public class MetadataVectorTableTest {
      * @param tags
      *      tags
      */
-    private static List<String> findQuotesDetailed(MetadataVectorCassandraTable vTable, String query, Double threshold, int recordCount, String author, String... tags) {
+    private static List<String> findQuotesDetailed(MetadataVectorTable vTable, String query, Double threshold, int recordCount, String author, String... tags) {
         // Build the query
-        SimilaritySearchQuery.SimilaritySearchQueryBuilder queryBuilder =
-                SimilaritySearchQuery.builder()
-                .distance(SimilarityMetric.COS)
+        AnnQuery.AnnQueryBuilder queryBuilder = AnnQuery.builder()
+                .metric(CassandraSimilarityMetric.COSINE)
                 .recordCount(recordCount)
                 .embeddings(computeOpenAIEmbeddings(query));
 
@@ -337,16 +334,16 @@ public class MetadataVectorTableTest {
 
         return vTable.similaritySearch(queryBuilder.build())
                      .stream()
-                     .map(SimilaritySearchResult::getEmbedded)
-                     .map(MetadataVectorCassandraTable.Record::getBody)
+                     .map(AnnResult::getEmbedded)
+                     .map(MetadataVectorRecord::getBody)
                      .collect(Collectors.toList());
     }
 
 
 
     @SuppressWarnings("unchecked")
-    private static MetadataVectorCassandraTable.Record mapQuote(AtomicInteger quote_idx, String author, Object q) {
-        MetadataVectorCassandraTable.Record record = new MetadataVectorCassandraTable.Record();
+    private static MetadataVectorRecord mapQuote(AtomicInteger quote_idx, String author, Object q) {
+        MetadataVectorRecord record = new MetadataVectorRecord();
         Map<String, Object> quote = (Map<String, Object>) q;
         String body = (String) quote.get("body");
         record.setBody(body);
