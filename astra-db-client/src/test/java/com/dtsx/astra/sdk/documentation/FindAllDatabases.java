@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 public class FindAllDatabases {
   public static void main(String[] args) {
-    AstraDBAdmin client = new AstraDBAdmin("<token>");
+    AstraDBAdmin client = new AstraDBAdmin("TOKEN");
     boolean exists = client.isDatabaseExists("<database_name>");
 
     // List all available databases
