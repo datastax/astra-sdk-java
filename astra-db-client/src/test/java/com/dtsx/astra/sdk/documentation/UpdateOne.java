@@ -5,6 +5,8 @@ import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.data.domain.JsonDocument;
 import io.stargate.sdk.data.domain.query.UpdateQuery;
 
+import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
+
 public class UpdateOne {
   public static void main(String[] args) {
     AstraDB db = new AstraDB("<token>", "<api_endpoint>");
@@ -17,8 +19,7 @@ public class UpdateOne {
     // Upsert a document based on a query
     collection.updateOne(UpdateQuery.builder()
       .updateSet("product_name", 12.99)
-      .where("product_name")
-      .isEqualsTo("HealthyFresh - Beef raw dog food")
+      .where("product_name", EQUALS_TO, "HealthyFresh - Beef raw dog food")
       .build());
 
     // Upsert a document by ID

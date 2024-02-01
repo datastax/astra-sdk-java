@@ -6,6 +6,7 @@ import io.stargate.sdk.data.domain.DocumentMutationResult;
 import io.stargate.sdk.data.domain.odm.Document;
 import io.stargate.sdk.data.domain.odm.DocumentResult;
 import io.stargate.sdk.data.domain.query.DeleteQuery;
+import io.stargate.sdk.data.domain.query.DeleteResult;
 import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import lombok.Getter;
@@ -325,7 +326,7 @@ public class AstraDBRepository<DOC> {
      * @return
      *     number of document deleted
      */
-    public int deleteAll() {
+    public DeleteResult deleteAll() {
         return collectionRepository.deleteAll();
     }
 
@@ -355,8 +356,22 @@ public class AstraDBRepository<DOC> {
      * @return
      *       number of records deleted
      */
-    public int deleteAll(DeleteQuery deleteQuery) {
+    public DeleteResult deleteAll(DeleteQuery deleteQuery) {
         return collectionRepository.deleteAll(deleteQuery);
+    }
+
+    /**
+     * Delete item through a query.
+     *
+     * @param deleteQuery
+     *      delete query
+     * @param concurrent
+     *      How many threads in parallel
+     * @return
+     *       number of records deleted
+     */
+    public DeleteResult deleteAllChunked(DeleteQuery deleteQuery, int concurrent) {
+        return collectionRepository.deleteAllChunked(deleteQuery, concurrent);
     }
 
     // ------------------------------

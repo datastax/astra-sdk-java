@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
+import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,44 +15,44 @@ public class Find {
     AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
     // Retrieve the first document with a product_price
-    collection.find(
-        SelectQuery.builder()
+    Filter filter = new Filter()
             .where("product_price")
-            .exists()
-            .build())
-        .forEach(System.out::println);
+            .exists();
+    collection.find(
+        SelectQuery.builder().filter(filter).build()
+    ).forEach(System.out::println);
 
     // Retrieve the first document where the product_price is 12.99
-    collection.find(
-        SelectQuery.builder()
+    Filter filter2 = new Filter()
             .where("product_price")
-            .isEqualsTo(12.99)
-            .build())
-        .forEach(System.out::println);
+            .isEqualsTo(12.99);
+    collection
+            .find(SelectQuery.builder().filter(filter2).build())
+            .forEach(System.out::println);
 
     // Only retrieve the product_name and product_price fields
     collection.find(
         SelectQuery.builder()
             .select("product_name", "product_price")
-            .where("product_price")
-            .isEqualsTo(9.99)
+            .filter(filter2)
             .build())
         .forEach(System.out::println);
 
     // Order the results by similarity
     collection.find(
         SelectQuery.builder()
-            .where("product_price")
-            .isEqualsTo(9.99)
+            .filter(filter2)
             .orderByAnn(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
             .build())
         .forEach(System.out::println);
 
     // Order the results by a specific field
+    Filter filter3 = new Filter()
+            .where("product_name")
+            .isEqualsTo("HealthyFresh - Chicken raw dog food");
     collection.find(
         SelectQuery.builder()
-            .where("product_name")
-            .isEqualsTo("HealthyFresh - Chicken raw dog food")
+            .filter(filter3)
             .orderBy("product_price", 1)
             .build())
         .forEach(System.out::println);

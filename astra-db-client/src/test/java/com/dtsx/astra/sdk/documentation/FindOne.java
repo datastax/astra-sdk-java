@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
+import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,15 +15,19 @@ public class FindOne {
     AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
     // Retrieve the first document where product_price exists
+    Filter filter = new Filter()
+            .where("product_price")
+            .exists();
     collection.findOne(SelectQuery.builder()
-        .where("product_price")
-        .exists().build())
-    .ifPresent(System.out::println);
+            .filter(filter).build())
+            .ifPresent(System.out::println);
 
     // Retrieve the first document where product_price is 12.99
+    Filter filter2 = new Filter()
+            .where("product_price")
+            .isEqualsTo(12.99);
     collection.findOne(SelectQuery.builder()
-        .where("product_price")
-        .isEqualsTo(12.99).build())
+        .filter(filter2).build())
     .ifPresent(System.out::println);
 
     // Send the request as a JSON String
@@ -37,15 +42,13 @@ public class FindOne {
     // Only retrieve the product_name and product_price fields
     collection.findOne(SelectQuery.builder()
         .select("product_name", "product_price")
-        .where("product_price")
-        .isEqualsTo(9.99)
+        .filter(filter2)
         .build())
     .ifPresent(System.out::println);
 
     // Perform a similarity search
     collection.findOne(SelectQuery.builder()
-        .where("product_price")
-        .isEqualsTo(9.99)
+        .filter(filter2)
         .orderByAnn(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
         .build());
 

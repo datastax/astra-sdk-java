@@ -8,6 +8,7 @@ import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
 import io.stargate.sdk.data.NamespaceClient;
 import io.stargate.sdk.data.domain.JsonDocument;
 import io.stargate.sdk.data.domain.JsonDocumentResult;
+import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import io.stargate.sdk.data.domain.query.UpdateQuery;
 import io.stargate.sdk.data.domain.query.UpdateQueryBuilder;
@@ -71,16 +72,15 @@ public class AstraDBDemoTest {
         ));
 
         // Find a document
-        Optional<JsonDocumentResult> doc1 = collection.findOne(SelectQuery.builder()
-                        .where("_id")
-                        .isEqualsTo("4").build());
+        Filter filter = new Filter().where("_id").isEqualsTo("4");
+        Optional<JsonDocumentResult> doc1 = collection.findOne(SelectQuery.builder().filter(filter).build());
         Optional<JsonDocumentResult> doc2 = collection.findById("4");
         doc2.ifPresent(this::showResult);
 
         // Find documents using vector search
+        Filter filterVector = new Filter().where("$vector").isEqualsTo(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f});
         Page<JsonDocumentResult> results = collection.findPage(
-                SelectQuery.builder()
-                .where("$vector").isEqualsTo(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
+                SelectQuery.builder().filter(filterVector)
                 // best way to do it below
                 //.orderByAnn(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
                 .withLimit(2)
@@ -127,9 +127,9 @@ public class AstraDBDemoTest {
                 .orderByAnn(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
                 .withReturnDocument(UpdateQueryBuilder.ReturnDocument.after)
                 .build());
+        Filter filter3 = new Filter().where("status").isEqualsTo("active");
         Optional<JsonDocumentResult> result = collection.findOne(SelectQuery.builder()
-                .where("status")
-                .isEqualsTo("active")
+                .filter(filter3)
                 .build());
         result.ifPresent(this::showResult);
 
@@ -155,9 +155,9 @@ public class AstraDBDemoTest {
                 .orderByAnn(new float[]{0.15f, 0.1f, 0.1f, 0.35f, 0.55f})
                 .withReturnDocument(UpdateQueryBuilder.ReturnDocument.after)
                 .build());
+        Filter filter4 = new Filter().where("name").isEqualsTo("Vision Vector Frame");
         Optional<JsonDocumentResult> result2 = collection.findOne(SelectQuery.builder()
-                .where("name")
-                .isEqualsTo("Vision Vector Frame")
+                        .filter(filter4)
                 .build());
         result2.ifPresent(this::showResult);
     }

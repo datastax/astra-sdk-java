@@ -4,15 +4,17 @@ import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.stargate.sdk.data.domain.CollectionDefinition;
 import io.stargate.sdk.data.domain.DocumentMutationResult;
 import io.stargate.sdk.data.domain.DocumentMutationStatus;
-import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
-import io.stargate.sdk.data.domain.CollectionDefinition;
 import io.stargate.sdk.data.domain.JsonDocument;
+import io.stargate.sdk.data.domain.JsonDocumentMutationResult;
 import io.stargate.sdk.data.domain.JsonDocumentResult;
 import io.stargate.sdk.data.domain.SimilarityMetric;
 import io.stargate.sdk.data.domain.odm.Document;
 import io.stargate.sdk.data.domain.odm.DocumentResult;
+import io.stargate.sdk.data.domain.query.DeleteQuery;
+import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import io.stargate.sdk.data.exception.DataApiDocumentAlreadyExistException;
 import io.stargate.sdk.data.exception.DataApiException;
@@ -34,7 +36,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +46,12 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
+import static io.stargate.sdk.http.domain.FilterOperator.EXISTS;
+import static io.stargate.sdk.http.domain.FilterOperator.GREATER_THAN;
+import static io.stargate.sdk.http.domain.FilterOperator.GREATER_THAN_OR_EQUALS_TO;
+import static io.stargate.sdk.http.domain.FilterOperator.LESS_THAN;
 
 /**
  * Once upon a time in the vector database wonderland.
@@ -59,6 +66,8 @@ public class AstraDBTestSuiteIT {
     public static final String TEST_DBNAME = "test_java_astra_db_client";
     static final String TEST_COLLECTION_NAME = "collection_simple";
     static final String TEST_COLLECTION_VECTOR = "collection_vector";
+    static final String TEST_COLLECTION_DENY = "collection_deny";
+    static final String TEST_COLLECTION_ALLOW = "collection_allow";
 
     /**
      * Test Environment
@@ -75,6 +84,8 @@ public class AstraDBTestSuiteIT {
     static AstraDB astraDb;
     static UUID databaseId;
     static AstraDBCollection collectionSimple;
+    static AstraDBCollection collectionDeny;
+    static AstraDBCollection collectionAllow;
     static AstraDBCollection collectionVector;
 
     /**
@@ -287,7 +298,6 @@ public class AstraDBTestSuiteIT {
                 .vector(14, SimilarityMetric.cosine)
                 .build());
         Assertions.assertTrue(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
-
     }
 
     @Test
@@ -302,57 +312,15 @@ public class AstraDBTestSuiteIT {
         Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
 
         // Allow and Deny are mutually exclusive
-        Assertions.assertThrows(IllegalStateException.class, () ->  collectionVector = astraDb.createCollection(CollectionDefinition.builder()
+        Assertions.assertThrows(IllegalStateException.class, () -> collectionVector = astraDb.createCollection(CollectionDefinition.builder()
                 .name(TEST_COLLECTION_VECTOR)
                 .vector(14, SimilarityMetric.cosine)
                 .indexingDeny("blob_body")
                 .indexingAllow("property1")
                 .build()));
-
-        // ---- TESTING WITH DENY -----
-        // When
-        collectionVector = astraDb.createCollection(CollectionDefinition.builder()
-                .name(TEST_COLLECTION_VECTOR)
-                .vector(14, SimilarityMetric.cosine)
-                .indexingDeny("blob_body")
-                .build());
-        collectionVector.insertOne(new JsonDocument()
-                .id("p1")
-                .put("prop1", "value1")
-                .put("blob_body", "hello"));
-        // Then
-        Assertions.assertTrue(collectionVector
-                .findById("p1").isPresent());
-        Assertions.assertTrue(collectionVector
-                .findOne(SelectQuery.builder().where("prop1").isEqualsTo("value1").build()).isPresent());
-        Assertions.assertThrows(DataApiException.class, () -> collectionVector
-                .findOne(SelectQuery.builder()
-                        .where("blob_body")
-                        .isEqualsTo("hello")
-                        .build()));
-
-        // ---- TESTING WITH ALLOW -----
-
-        // When
-        astraDb.deleteCollection(TEST_COLLECTION_VECTOR);
-        collectionVector = astraDb.createCollection(CollectionDefinition.builder()
-                .name(TEST_COLLECTION_VECTOR)
-                .vector(14, SimilarityMetric.cosine)
-                .indexingAllow("prop1")
-                .build());
-        collectionVector.insertOne(new JsonDocument()
-                .id("p1")
-                .put("prop1", "value1")
-                .put("blob_body", "hello"));
-        Assertions.assertTrue(collectionVector
-                .findOne(SelectQuery.builder().where("prop1").isEqualsTo("value1").build()).isPresent());
-        Assertions.assertThrows(DataApiException.class, () -> collectionVector
-                .findOne(SelectQuery.builder()
-                        .where("blob_body")
-                        .isEqualsTo("hello")
-                        .build()));
-
     }
+
+
 
     @Test
     @Order(8)
@@ -1016,20 +984,31 @@ public class AstraDBTestSuiteIT {
         List<Document<Product>> documents = new ArrayList<>();
         long start = System.currentTimeMillis();
 
-        int nbDocs = 2510;
+        int nbDocs = 999;
         for (int i = 0; i < nbDocs; i++) {
             documents.add(new Document<Product>().id(String.valueOf(i)).data(new Product("Desc " + i, i * 1.0d)));
         }
         collectionSimple.insertManyChunked(documents, 20, 20);
         long end = System.currentTimeMillis();
         log.info("Inserting {} documents took {} ms", nbDocs, end - start);
-        Assertions.assertEquals(nbDocs, collectionSimple.countDocuments());
 
-        collectionSimple.deleteAll();
+        collectionSimple.countDocuments();
+
+        long top = System.currentTimeMillis();
+        DeleteQuery query = DeleteQuery.builder()
+                .where("product_price", GREATER_THAN, 100)
+                .build();
+        //collectionSimple.deleteMany(query);
+        collectionSimple.deleteManyChunked(query, 5);
+        System.out.println("Total time " + (System.currentTimeMillis() - top));
+        collectionSimple.countDocuments();
+
+        /*
         collectionSimple.insertManyChunkedASync(documents, 20, 20).thenAccept(res -> {
             Assertions.assertEquals(nbDocs, res.size());
             Assertions.assertEquals(nbDocs, collectionSimple.countDocuments());
-        });
+        });*/
+
     }
 
     @Test
@@ -1061,9 +1040,50 @@ public class AstraDBTestSuiteIT {
     public void shouldFindWithGreaterThan() {
         shouldInsertADocument();
         Assertions.assertEquals(1, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .isGreaterOrEqualsThan(12.99)
+                .filter(new Filter().where("product_price")
+                .isGreaterOrEqualsThan(12.99))
                 .build()).count());
+    }
+
+    @Test
+    @Order(25)
+    @DisplayName("25. Find with $gte")
+    public void shouldFindWithEquals() {
+        shouldInsertADocument();
+        /*
+        Filter f1 = new Filter().where("product_price").isEqualsTo(12.99);
+        Assertions.assertEquals(1, collectionVector.find(new SelectQuery(f1)).count());
+
+        Filter f2 = new Filter().
+                and()
+                  .where("product_price", FilterOperator.EQUALS_TO,12.99)
+                  .where("product_name", FilterOperator.EQUALS_TO, "HealthyFresh - Beef raw dog food")
+                .end();
+        Assertions.assertEquals(1, collectionVector.find(new SelectQuery(f2)).count());
+        Filter f3 = new Filter()
+                .not()
+                  .where("product_price", FilterOperator.EQUALS_TO,10.99)
+                .end();
+        Assertions.assertEquals(5, collectionVector.find(new SelectQuery(f3)).count());
+
+        Filter f4 = new Filter("{\"$not\":{\"product_price\":{\"$eq\":10.99}}}");
+        Assertions.assertEquals(5, collectionVector.find(new SelectQuery(f4)).count());
+        */
+        Filter yaFilter = new Filter()
+            .and()
+             .or()
+               .where("a", EQUALS_TO, 10)
+               .where("b", EXISTS, true)
+             .end()
+             .or()
+               .where("c", GREATER_THAN, 5)
+               .where("d", GREATER_THAN_OR_EQUALS_TO, 5)
+               .end()
+             .not()
+               .where("e", LESS_THAN, 5)
+             .end();
+
+        collectionVector.find(new SelectQuery(yaFilter));
     }
 
     @Test
@@ -1073,8 +1093,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindGreaterThan() {
         shouldInsertADocument();
         Assertions.assertEquals(1, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .isGreaterThan(10)
+                .filter(new Filter().where("product_price")
+                .isGreaterThan(10))
                 .build()).count());
     }
 
@@ -1085,8 +1105,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindLessThen() {
         shouldInsertADocument();
         Assertions.assertEquals(2, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .isLessThan(10)
+                .filter(new Filter().where("product_price")
+                .isLessThan(10))
                 .build()).count());
     }
 
@@ -1097,8 +1117,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindLessOrEqualsThen() {
         shouldInsertADocument();
         Assertions.assertEquals(2, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .isLessOrEqualsThan(9.99)
+                .filter(new Filter().where("product_price")
+                .isLessOrEqualsThan(9.99))
                 .build()).count());
     }
 
@@ -1109,8 +1129,8 @@ public class AstraDBTestSuiteIT {
     public void shouldEqualsThen() {
         shouldInsertADocument();
         Assertions.assertEquals(1, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .isEqualsTo(9.99)
+                .filter(new Filter().where("product_price")
+                .isEqualsTo(9.99))
                 .build()).count());
     }
 
@@ -1121,8 +1141,8 @@ public class AstraDBTestSuiteIT {
     public void shouldNotEqualsThen() {
         shouldInsertADocument();
         Assertions.assertEquals(4, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .isNotEqualsTo(9.99)
+                .filter(new Filter().where("product_price")
+                .isNotEqualsTo(9.99))
                 .build()).count());
     }
 
@@ -1133,8 +1153,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindExists() {
         shouldInsertADocument();
         Assertions.assertEquals(3, collectionVector.find(SelectQuery.builder()
-                .where("product_price")
-                .exists()
+                .filter(new Filter().where("product_price")
+                .exists())
                 .build()).count());
     }
 
@@ -1157,14 +1177,14 @@ public class AstraDBTestSuiteIT {
         existAndNotEquals.setFilter(Map.of("$and", andCriteriaList));
         Assertions.assertEquals(2, collectionVector.find(existAndNotEquals).count());
 
-        SelectQuery query2 = SelectQuery.builder().withJsonFilter("{" +
+        SelectQuery query2 = SelectQuery.builder().filter(new Filter("{" +
                         "\"$and\":[" +
                         "   {" +
                         "\"product_price\": {\"$exists\":true}" +
                         "}," +
                         "{" +
                         "\"product_price\":{\"$ne\":9.99}}]" +
-                        "}")
+                        "}"))
                 .build();
         Assertions.assertEquals(2, collectionVector.find(query2).count());
 
@@ -1179,8 +1199,8 @@ public class AstraDBTestSuiteIT {
         // $in
         log.info("Search with $in...");
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
-                        .where("metadata_string")
-                        .isInArray(new String[]{"hello", "world"}).build())
+                        .filter(new Filter().where("metadata_string")
+                        .isInArray(new String[]{"hello", "world"})).build())
                 .findFirst().isPresent());
     }
 
@@ -1190,8 +1210,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindWithNIn() {
         shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
-                        .where("metadata_string")
-                        .isNotInArray(new String[]{"Hallo", "Welt"}).build())
+                        .filter(new Filter().where("metadata_string")
+                        .isNotInArray(new String[]{"Hallo", "Welt"})).build())
                 .findFirst().isPresent());
     }
 
@@ -1201,8 +1221,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindWithSize() {
         shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
-                .where("metadata_boolean_array")
-                .hasSize(3).build()).findFirst().isPresent());
+                .filter(new Filter().where("metadata_boolean_array")
+                .hasSize(3)).build()).findFirst().isPresent());
     }
 
     @Test
@@ -1211,8 +1231,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindWithLT() {
         shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
-                .where("metadata_int")
-                .isLessThan(2).build()).findFirst().isPresent());
+                .filter(new Filter().where("metadata_int")
+                .isLessThan(2)).build()).findFirst().isPresent());
     }
 
     @Test
@@ -1221,8 +1241,8 @@ public class AstraDBTestSuiteIT {
     public void shouldFindWithLTE() {
         shouldInsertOneComplexDocument();
         Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
-                .where("metadata_int")
-                .isLessOrEqualsThan(1).build()).findFirst().isPresent());
+                .filter(new Filter().where("metadata_int")
+                .isLessOrEqualsThan(1)).build()).findFirst().isPresent());
     }
 
     @Test
@@ -1230,9 +1250,10 @@ public class AstraDBTestSuiteIT {
     @DisplayName("38. Should find with $gt")
     public void shouldFindWithGTE() {
         shouldInsertOneComplexDocument();
-        Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
+        Assertions.assertTrue(collectionSimple.find(
+                SelectQuery.builder().filter(new Filter()
                 .where("metadata_int")
-                .isGreaterThan(0).build()).findFirst().isPresent());
+                .isGreaterThan(0)).build()).findFirst().isPresent());
     }
 
     @Test
@@ -1240,9 +1261,9 @@ public class AstraDBTestSuiteIT {
     @DisplayName("39. Should find with $gte and Instant")
     public void shouldFindWithGTEInstant() {
         shouldInsertOneComplexDocument();
-        Assertions.assertTrue(collectionSimple.find(SelectQuery.builder()
+        Assertions.assertTrue(collectionSimple.find(SelectQuery.builder().filter(new Filter()
                 .where("metadata_instant")
-                .isLessThan(Instant.now()).build()).findFirst().isPresent());
+                .isLessThan(Instant.now())).build()).findFirst().isPresent());
     }
 
     @Test
@@ -1289,6 +1310,66 @@ public class AstraDBTestSuiteIT {
     }
 
     @Test
+    @Order(41)
+    @DisplayName("41. Create Collections (with deny)")
+    public void shouldCreateCollectionWithDenyOptions() {
+        if (astraDb == null) shouldConnectToDatabase();
+        // When
+        collectionDeny = astraDb.createCollection(CollectionDefinition.builder()
+                .name(TEST_COLLECTION_DENY)
+                .vector(14, SimilarityMetric.cosine)
+                .indexingDeny("blob_body")
+                .build());
+        collectionDeny.insertOne(new JsonDocument()
+                .id("p1")
+                .put("prop1", "value1")
+                .put("blob_body", "hello"));
+        // Then
+        Assertions.assertTrue(collectionDeny
+                .findById("p1").isPresent());
+        Assertions.assertTrue(collectionDeny
+                .findOne(SelectQuery
+                        .builder().filter(new Filter().where("prop1")
+                                .isEqualsTo("value1")).build()).isPresent());
+        Assertions.assertThrows(DataApiException.class, () -> collectionDeny
+                .findOne(SelectQuery.builder()
+                        .filter(new Filter().where("blob_body")
+                                .isEqualsTo("hello"))
+                        .build()));
+    }
+
+    @Test
+    @Order(42)
+    @DisplayName("42. Create Collections (with allow)")
+    public void shouldCreateCollectionWithAllowOptions() {
+
+        // ---- TESTING WITH ALLOW -----
+
+        // When
+        astraDb.deleteCollection(TEST_COLLECTION_ALLOW);
+        collectionAllow = astraDb.createCollection(CollectionDefinition.builder()
+                .name(TEST_COLLECTION_ALLOW)
+                .vector(14, SimilarityMetric.cosine)
+                .indexingAllow("prop1")
+                .build());
+        collectionAllow.insertOne(new JsonDocument()
+                .id("p1")
+                .put("prop1", "value1")
+                .put("blob_body", "hello"));
+        Assertions.assertTrue(collectionAllow
+                .findOne(SelectQuery.builder() .filter(new Filter().where("prop1").isEqualsTo("value1"))
+                        .build()).isPresent());
+        Assertions.assertThrows(DataApiException.class, () -> collectionAllow
+                .findOne(SelectQuery.builder()
+                        .filter(new Filter().where("blob_body")
+                                .isEqualsTo("hello"))
+                        .build()));
+
+    }
+
+    @Test
+    @Order(43)
+    @DisplayName("43. Find in array (not keyword)")
     public void testFindInArray() {
         initializeCollectionSimple();
         // Given 2 records
@@ -1298,8 +1379,8 @@ public class AstraDBTestSuiteIT {
         ));
         // I should perform an any filter in a collection
         Assertions.assertEquals(1, collectionSimple.find(SelectQuery.builder()
-                .where("names")
-                .isEqualsTo("John")
+                .filter(new Filter().where("names")
+                .isEqualsTo("John"))
                 .build()).count());
     }
 

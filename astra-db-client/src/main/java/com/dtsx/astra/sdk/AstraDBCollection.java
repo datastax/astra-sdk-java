@@ -12,6 +12,7 @@ import io.stargate.sdk.data.domain.odm.Document;
 import io.stargate.sdk.data.domain.odm.DocumentResult;
 import io.stargate.sdk.data.domain.odm.DocumentResultMapper;
 import io.stargate.sdk.data.domain.query.DeleteQuery;
+import io.stargate.sdk.data.domain.query.DeleteResult;
 import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import io.stargate.sdk.data.domain.query.SelectQueryBuilder;
@@ -874,7 +875,7 @@ public class AstraDBCollection {
      * @return
      *      number of deleted records
      */
-    public int deleteOne(DeleteQuery deleteQuery) {
+    public DeleteResult deleteOne(DeleteQuery deleteQuery) {
         return collectionClient.deleteOne(deleteQuery);
     }
 
@@ -886,7 +887,7 @@ public class AstraDBCollection {
      * @return
      *      number of deleted records
      */
-    public int deleteById(String id) {
+    public DeleteResult deleteById(String id) {
         return deleteOne(DeleteQuery.deleteById(id));
     }
 
@@ -898,7 +899,7 @@ public class AstraDBCollection {
      * @return
      *      number of deleted records
      */
-    public int deleteByVector(float[] vector) {
+    public DeleteResult deleteByVector(float[] vector) {
         return deleteOne(DeleteQuery.deleteByVector(vector));
     }
 
@@ -914,8 +915,34 @@ public class AstraDBCollection {
      * @return
      *      number of deleted records
      */
-    public int deleteMany(DeleteQuery deleteQuery) {
+    public DeleteResult deleteMany(DeleteQuery deleteQuery) {
         return collectionClient.deleteMany(deleteQuery);
+    }
+
+    /**
+     * Delete multiple records from a request.
+     *
+     * @param deleteQuery
+     *      delete query
+     * @return
+     *      number of deleted records
+     */
+    public DeleteResult deleteManyPaged(DeleteQuery deleteQuery) {
+        return collectionClient.deleteManyPaged(deleteQuery);
+    }
+
+    /**
+     * Delete multiple records from a request.
+     *
+     * @param deleteQuery
+     *      delete query
+     * @param concurrency
+     *      how many threads in parallel
+     * @return
+     *      number of deleted records
+     */
+    public DeleteResult deleteManyChunked(DeleteQuery deleteQuery, int concurrency) {
+        return collectionClient.deleteManyChunked(deleteQuery, concurrency);
     }
 
     /**
@@ -924,7 +951,7 @@ public class AstraDBCollection {
      * @return
      *      number of items deleted
      */
-    public int deleteAll() {
+    public DeleteResult deleteAll() {
         return deleteMany(null);
     }
 
@@ -1032,7 +1059,7 @@ public class AstraDBCollection {
      */
     public Stream<JsonDocumentResult> findVector(float[] vector, Filter filter, Integer limit) {
         return find(SelectQuery.builder()
-                .withFilter(filter)
+                .filter(filter)
                 .orderByAnn(vector)
                 .withLimit(limit)
                 .includeSimilarity()
@@ -1068,7 +1095,7 @@ public class AstraDBCollection {
      */
     public Page<JsonDocumentResult> findVectorPage(float[] vector, Filter filter, Integer limit, String pagingState) {
         return findVectorPage(SelectQuery.builder()
-                .withFilter(filter)
+                .filter(filter)
                 .orderByAnn(vector)
                 .withLimit(limit)
                 .withPagingState(pagingState)
@@ -1147,7 +1174,7 @@ public class AstraDBCollection {
     public Stream<JsonDocumentResult> findVector(float[] vector, Filter filter, int recordCount) {
         return findVector(SelectQuery.builder()
                 .includeSimilarity()
-                .withFilter(filter)
+                .filter(filter)
                 .withLimit(recordCount)
                 .orderByAnn(vector)
                 .build());
@@ -1250,7 +1277,7 @@ public class AstraDBCollection {
     public Stream<JsonDocumentResult> findVector(float[] vector, Filter filter, Integer limit, boolean includeSimilarity) {
         SelectQueryBuilder builder = SelectQuery
                 .builder()
-                .withFilter(filter)
+                .filter(filter)
                 .withLimit(limit)
                 .orderByAnn(vector);
         if (includeSimilarity) builder.includeSimilarity();

@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
+import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,18 +15,22 @@ public class ObjectMappingFind {
     AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
     // Retrieve the first document with a product_price
+    Filter filter = new Filter()
+            .where("product_price")
+            .exists();
     collection.find(
         SelectQuery.builder()
-            .where("product_price")
-            .exists()
+            .filter(filter)
             .build())
         .forEach(System.out::println);
 
     // Retrieve the first document where product_price is 12.99
+    Filter filter2 = new Filter()
+            .where("product_price")
+            .isEqualsTo(12.99);
     collection.find(
         SelectQuery.builder()
-            .where("product_price")
-            .isEqualsTo(12.99)
+            .filter(filter2)
             .build())
         .forEach(System.out::println);
 
@@ -33,16 +38,14 @@ public class ObjectMappingFind {
     collection.find(
         SelectQuery.builder()
             .select("product_name", "product_price")
-            .where("product_price")
-            .isEqualsTo(9.99)
+            .filter(filter2)
             .build())
         .forEach(System.out::println);
 
     // Order the results by similarity
     collection.find(
         SelectQuery.builder()
-            .where("product_price")
-            .isEqualsTo(9.99)
+            .filter(filter2)
             .orderByAnn(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
             .build())
         .forEach(System.out::println);
@@ -50,8 +53,7 @@ public class ObjectMappingFind {
     // Order the results by a specific field
     collection.find(
         SelectQuery.builder()
-            .where("product_name")
-            .isEqualsTo("HealthyFresh - Chicken raw dog food")
+            .filter(filter2)
             .orderBy("product_price", 1)
             .build())
         .forEach(System.out::println);

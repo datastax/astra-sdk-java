@@ -18,7 +18,7 @@ public class FindVector {
 
     // Retrieve all document with product price based on the ann search
     collection.findVector(SelectQuery.builder()
-       .withFilter(metadataFilter)
+       .filter(metadataFilter)
        .orderByAnn(embeddings)
        .withLimit(maxRecord)
        .build())
