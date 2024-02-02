@@ -4,6 +4,7 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.data.domain.query.DeleteQuery;
+import io.stargate.sdk.data.domain.query.DeleteResult;
 
 import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
 
@@ -21,9 +22,9 @@ public class ObjectMappingDeleteMany {
         db.createCollection("collection_simple", Product.class);
 
     // Delete rows based on a query
-    int deletedCount = collection1.deleteAll(
-        DeleteQuery.builder()
+    DeleteQuery q = DeleteQuery.builder()
             .where("product_price", EQUALS_TO, 9.99)
-            .build());
+            .build();
+    DeleteResult res = collection1.deleteAll(q);
   }
 }
