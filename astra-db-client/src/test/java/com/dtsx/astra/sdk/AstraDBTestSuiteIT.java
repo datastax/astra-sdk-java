@@ -1069,6 +1069,7 @@ public class AstraDBTestSuiteIT {
         Filter f4 = new Filter("{\"$not\":{\"product_price\":{\"$eq\":10.99}}}");
         Assertions.assertEquals(5, collectionVector.find(new SelectQuery(f4)).count());
         */
+
         Filter yaFilter = new Filter()
             .and()
              .or()
@@ -1084,6 +1085,7 @@ public class AstraDBTestSuiteIT {
              .end();
 
         collectionVector.find(new SelectQuery(yaFilter));
+
     }
 
     @Test
