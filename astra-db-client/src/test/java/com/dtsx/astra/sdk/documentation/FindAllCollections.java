@@ -5,7 +5,7 @@ import io.stargate.sdk.data.domain.CollectionDefinition;
 
 public class FindAllCollections {
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
 
     // Iterate over all collections and print each vector definition
     db.findAllCollections().forEach(col -> {

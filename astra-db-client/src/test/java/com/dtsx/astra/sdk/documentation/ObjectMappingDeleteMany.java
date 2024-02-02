@@ -15,7 +15,7 @@ public class ObjectMappingDeleteMany {
   }
 
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
 
     // Create a vector collection
     AstraDBRepository<Product> collection1 =
