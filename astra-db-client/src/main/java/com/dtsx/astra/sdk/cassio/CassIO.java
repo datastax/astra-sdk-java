@@ -159,4 +159,14 @@ public class CassIO {
                         new IllegalArgumentException("CqlSession does not select any keyspace")).asInternal(),
                 tableName, vectorDimension);
     }
+
+    public static ClusteredMetadataVectorTable clusteredMetadataVectorTable(String tableName, int vectorDimension) {
+        if (tableName == null || tableName.isEmpty()) throw new IllegalArgumentException("Table name must be provided");
+        if (vectorDimension < 1) throw new IllegalArgumentException("Vector dimension must be greater than 0");
+        return new ClusteredMetadataVectorTable(
+                getCqlSession(),
+                cqlSession.getKeyspace().orElseThrow(() ->
+                        new IllegalArgumentException("CqlSession does not select any keyspace")).asInternal(),
+                tableName, vectorDimension);
+    }
 }

@@ -73,9 +73,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.theokanning.openai-gpt3-java</groupId>
-            <artifactId>service</artifactId>
-            <version>${openai-java.version}</version>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -84,7 +84,12 @@
             <version>${langchain4j.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-document-parser-apache-pdfbox</artifactId>
+            <version>${langchain4j.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
