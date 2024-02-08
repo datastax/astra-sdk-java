@@ -162,7 +162,7 @@ public class AstraDBTestSuiteIT {
 
         //astraDbAdmin.deleteKeyspace(databaseId.toString(), "test");
 
-        astraDbAdmin.createKeyspace(databaseId.toString(), "test2");
+        astraDb = astraDbAdmin.database(databaseId);
 
     }
 

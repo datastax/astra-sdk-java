@@ -36,26 +36,16 @@ public class InsertOne {
                 "\"product_price\": 9.99" +
                 "}"));
 
-    // Insert rows defined as a Map
-    collection.insertOne(
+    // Insert rows defined as a Map Asynchronously
+    collection.insertOneASync(
         new JsonDocument()
             .id("doc3")
             .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
             .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food")));
 
-    // Insert rows defined as a combination of key/value, JSON, and Map
-    collection.insertOne(
-        new JsonDocument()
-            .id("doc4")
-            .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
-            .data("{" +
-                  "\"product_name\": \"HealthyFresh - Chicken raw dog food\", " +
-                  "\"product_price\": 9.99" +
-                  "}"));
-
     // If you do not provide an ID, they are generated automatically
-   JsonDocumentMutationResult result = collection.insertOne(
+    JsonDocumentMutationResult result = collection.insertOne(
         new JsonDocument().put("demo", 1));
-   String generatedId = result.getDocument().getId();
+    String generatedId = result.getDocument().getId();
   }
 }
