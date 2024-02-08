@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ public class AstraDB {
     /**
      * Namespace client
      */
-    private final NamespaceClient nsClient;
+    private NamespaceClient nsClient;
 
     /**
      * Url to access the API
@@ -176,6 +177,52 @@ public class AstraDB {
         if (keyspace == null) {
             keyspace = db.getInfo().getKeyspace();
         }
+        this.nsClient = apiClient.namespace(keyspace);
+    }
+
+    // --------------------------
+    // ---    Keyspace      ----
+    // --------------------------
+
+    /**
+     * Validate a keyspace exists.
+     *
+     * @param keyspace
+     *      current keyspace
+     * @return
+     *      true if the keyspace exists
+     */
+    public boolean isKeyspaceExists(String keyspace) {
+        return apiClient.isNamespaceExists(keyspace);
+    }
+
+    /**
+     * List all keyspace for this environment.
+     *
+     * @return
+     *      list of keyspace names
+     */
+    public Stream<String> findAllKeyspaceNames() {
+        return apiClient.findAllNamespaces();
+    }
+
+    /**
+     * get current keyspace name
+     *
+     * @return
+     *      list of keyspace names
+     */
+    public String getCurrentKeyspace() {
+        return this.nsClient.getNamespace();
+    }
+
+    /**
+     * Change the current keyspace.
+     *
+     * @param keyspace
+     *      new keyspace
+     */
+    public void changeKeyspace(String keyspace) {
         this.nsClient = apiClient.namespace(keyspace);
     }
 

@@ -20,6 +20,7 @@ import io.stargate.sdk.data.domain.query.UpdateQuery;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -245,6 +246,8 @@ public class AstraDBCollection {
     public final List<JsonDocumentMutationResult> insertManyJsonDocuments(List<JsonDocument> documents) {
         return collectionClient.insertManyJsonDocuments(documents);
     }
+
+
 
     /**
      * Insert multiple documents (up to 20) as <code>JsonDocument</code> List , for more document check <code>insertManyChunked</code>, asynchronously.

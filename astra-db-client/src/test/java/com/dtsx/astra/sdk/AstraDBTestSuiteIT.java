@@ -156,6 +156,19 @@ public class AstraDBTestSuiteIT {
     @Test
     @Order(2)
     @DisplayName("02. Connect to a database")
+    public void shouldConnectToDatabas2e() {
+        if (databaseId == null) shouldCreateDatabase();
+
+        // ---- Connect From Admin ----
+
+        // Given
+        //Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
+        Assertions.assertNotNull(astraDbAdmin.getDataApiClient(databaseId));
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("02. Connect to a database")
     public void shouldConnectToDatabase() {
         if (databaseId == null) shouldCreateDatabase();
 
