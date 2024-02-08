@@ -116,6 +116,62 @@ public class AstraDBAdmin {
                 .build();
     }
 
+    // --------------------
+    // -- Keyspace      ---
+    // --------------------
+
+    /**
+     * Create a keyspace.
+     *
+     * @param databaseName
+     *      database name
+     * @param keyspaceName
+     *      keyspace name
+     */
+    public void createKeyspace(String databaseName, String keyspaceName) {
+        devopsDbClient.databaseByName(databaseName).keyspaces().create(keyspaceName);
+    }
+
+    /**
+     * Create a keyspace.
+     *
+     * @param databaseId
+     *      database unique identifier
+     * @param keyspaceName
+     *      keyspace name
+     */
+    public void createKeyspace(UUID databaseId, String keyspaceName) {
+        devopsDbClient.database(databaseId.toString()).keyspaces().create(keyspaceName);
+    }
+
+    /**
+     * Delete a keyspace.
+     *
+     * @param databaseName
+     *      database name
+     * @param keyspaceName
+     *      keyspace name
+     */
+    public void deleteKeyspace(String databaseName, String keyspaceName) {
+        devopsDbClient.databaseByName(databaseName).keyspaces().delete(keyspaceName);
+    }
+
+    /**
+     * Delete a keyspace.
+     *
+     * @param databaseId
+     *      database unique identifier
+     * @param keyspaceName
+     *      keyspace name
+     */
+    public void deleteKeyspace(UUID databaseId, String keyspaceName) {
+        devopsDbClient.database(databaseId.toString()).keyspaces().delete(keyspaceName);
+    }
+
+    // --------------------
+    // -- Databases     ---
+    // --------------------
+
     /**
      * List active databases with vector enabled in current organization.
      *
@@ -220,9 +276,6 @@ public class AstraDBAdmin {
         }
         return false;
     }
-
-
-
 
     /**
      * Retrieve list of all Databases of the account and filter on name

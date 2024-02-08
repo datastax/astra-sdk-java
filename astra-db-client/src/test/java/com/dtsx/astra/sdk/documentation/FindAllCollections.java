@@ -7,6 +7,9 @@ public class FindAllCollections {
   public static void main(String[] args) {
     AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
 
+    // Get Collection Names
+    db.findAllCollectionsNames().forEach(System.out::println);
+
     // Iterate over all collections and print each vector definition
     db.findAllCollections().forEach(col -> {
       System.out.print("\nname=" + col.getName());

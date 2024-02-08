@@ -357,6 +357,7 @@ public class HttpClientWrapper {
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Error in HTTP Request: " + e.getMessage(), e);
         }
     }

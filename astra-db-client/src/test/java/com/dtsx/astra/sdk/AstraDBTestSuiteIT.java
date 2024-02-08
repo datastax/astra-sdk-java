@@ -156,14 +156,14 @@ public class AstraDBTestSuiteIT {
     @Test
     @Order(2)
     @DisplayName("02. Connect to a database")
-    public void shouldConnectToDatabas2e() {
+    public void shouldConnectToDatabase2() {
         if (databaseId == null) shouldCreateDatabase();
+        astraDbAdmin.database(databaseId);
 
-        // ---- Connect From Admin ----
+        //astraDbAdmin.deleteKeyspace(databaseId.toString(), "test");
 
-        // Given
-        //Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
-        Assertions.assertNotNull(astraDbAdmin.getDataApiClient(databaseId));
+        astraDbAdmin.createKeyspace(databaseId.toString(), "test2");
+
     }
 
     @Test
@@ -343,17 +343,17 @@ public class AstraDBTestSuiteIT {
 
         // Find a collection (1)
         Assertions.assertTrue(astraDb.isCollectionExists(TEST_COLLECTION_VECTOR));
-        Optional<CollectionDefinition> def = astraDb.findCollection(TEST_COLLECTION_VECTOR);
+        Optional<CollectionDefinition> def = astraDb.findCollectionByName(TEST_COLLECTION_VECTOR);
         Assertions.assertTrue(def.isPresent());
         Assertions.assertEquals(14, def.get().getOptions().getVector().getDimension());
 
         // Find a collection (2)
         Assertions.assertTrue(astraDb.isCollectionExists(TEST_COLLECTION_NAME));
-        Assertions.assertTrue(astraDb.findCollection(TEST_COLLECTION_NAME).isPresent());
+        Assertions.assertTrue(astraDb.findCollectionByName(TEST_COLLECTION_NAME).isPresent());
 
         // Find a collection (3)
         Assertions.assertFalse(astraDb.isCollectionExists("invalid"));
-        Assertions.assertFalse(astraDb.findCollection("invalid").isPresent());
+        Assertions.assertFalse(astraDb.findCollectionByName("invalid").isPresent());
     }
 
     @Test

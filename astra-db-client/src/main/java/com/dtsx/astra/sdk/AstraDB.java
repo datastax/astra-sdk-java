@@ -17,7 +17,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -180,67 +179,11 @@ public class AstraDB {
         this.nsClient = apiClient.namespace(keyspace);
     }
 
-    // --------------------------
-    // ---    Keyspace      ----
-    // --------------------------
 
-    /**
-     * Validate a keyspace exists.
-     *
-     * @param keyspace
-     *      current keyspace
-     * @return
-     *      true if the keyspace exists
-     */
-    public boolean isKeyspaceExists(String keyspace) {
-        return apiClient.isNamespaceExists(keyspace);
-    }
-
-    /**
-     * List all keyspace for this environment.
-     *
-     * @return
-     *      list of keyspace names
-     */
-    public Stream<String> findAllKeyspaceNames() {
-        return apiClient.findAllNamespaces();
-    }
-
-    /**
-     * get current keyspace name
-     *
-     * @return
-     *      list of keyspace names
-     */
-    public String getCurrentKeyspace() {
-        return this.nsClient.getNamespace();
-    }
-
-    /**
-     * Change the current keyspace.
-     *
-     * @param keyspace
-     *      new keyspace
-     */
-    public void changeKeyspace(String keyspace) {
-        this.nsClient = apiClient.namespace(keyspace);
-    }
 
     // --------------------------
     // ---  Find, FindAll    ----
     // --------------------------
-
-    /**
-     * Check if a store exists.
-     *
-     * @param store
-     *      collection name
-     * @return
-     *      of the store already exist
-     */
-    public boolean isCollectionExists(@NonNull  String store) {
-        return nsClient.isCollectionExists(store);
-    }
 
     /**
      * List all vector Stores for this environment.
@@ -253,6 +196,16 @@ public class AstraDB {
     }
 
     /**
+     * List all vector Stores for this environment.
+     *
+     * @return
+     *      name of all vector store.
+     */
+    public Stream<String> findAllCollectionsNames() {
+        return nsClient.findCollections().map(CollectionDefinition::getName);
+    }
+
+    /**
      * Return the collection definition if its exists.
      *
      * @param name
@@ -260,8 +213,20 @@ public class AstraDB {
      * @return
      *      collection definition
      */
-    public Optional<CollectionDefinition> findCollection(String name) {
+    public Optional<CollectionDefinition> findCollectionByName(String name) {
         return nsClient.findCollectionByName(name);
+    }
+
+    /**
+     * Check if a store exists.
+     *
+     * @param store
+     *      collection name
+     * @return
+     *      of the store already exist
+     */
+    public boolean isCollectionExists(@NonNull  String store) {
+        return nsClient.isCollectionExists(store);
     }
 
     // --------------------------
@@ -394,8 +359,54 @@ public class AstraDB {
         return new AstraDBRepository<>(nsClient.createCollection(def, clazz));
     }
 
+    // --------------------------
+    // ---    Keyspace      ----
+    // --------------------------
+
+    /**
+     * Validate a keyspace exists.
+     *
+     * @param keyspace
+     *      current keyspace
+     * @return
+     *      true if the keyspace exists
+     */
+    public boolean isKeyspaceExists(String keyspace) {
+        return apiClient.isNamespaceExists(keyspace);
+    }
+
+    /**
+     * List all keyspace for this environment.
+     *
+     * @return
+     *      list of keyspace names
+     */
+    public Stream<String> findAllKeyspaceNames() {
+        return apiClient.findAllNamespaces();
+    }
+
+    /**
+     * get current keyspace name
+     *
+     * @return
+     *      list of keyspace names
+     */
+    public String getCurrentKeyspace() {
+        return this.nsClient.getNamespace();
+    }
+
+    /**
+     * Change the current keyspace.
+     *
+     * @param keyspace
+     *      new keyspace
+     */
+    public void changeKeyspace(String keyspace) {
+        this.nsClient = apiClient.namespace(keyspace);
+    }
+
     // --------------------
-    // == Sub resources  ==
+    // -- Sub resources  --
     // --------------------
 
     /**
