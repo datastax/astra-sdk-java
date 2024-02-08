@@ -9,7 +9,7 @@ import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
 
 public class UpdateOne {
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
     AstraDBCollection collection = db.collection("collection_vector1");
 
     // You must delete any existing rows with the same IDs as the

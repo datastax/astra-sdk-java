@@ -11,7 +11,7 @@ public class ObjectMappingClearCollection {
   }
 
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
     AstraDBRepository<Product> collection1 =
         db.createCollection("collection_simple", Product.class);
 

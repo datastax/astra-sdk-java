@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class CreateDatabase {
   public static void main(String[] args) {
-    AstraDBAdmin client = new AstraDBAdmin("<token>");
+    AstraDBAdmin client = new AstraDBAdmin("TOKEN");
 
     // Choose a cloud provider (GCP, AZURE, AWS) and a region
     CloudProviderType cloudProvider = CloudProviderType.GCP;

@@ -7,7 +7,7 @@ import io.stargate.sdk.data.domain.query.DeleteResult;
 
 public class DeleteOne {
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
     AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
     // Delete items from an existing collection with a query

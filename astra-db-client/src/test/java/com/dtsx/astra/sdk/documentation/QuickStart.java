@@ -13,7 +13,7 @@ public class QuickStart {
   public static void main(String[] args) {
 
     // Initialize the client
-    AstraDB myDb = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB myDb = new AstraDB("TOKEN", "API_ENDPOINT");
 
     // Create a collection
     AstraDBCollection demoCollection = myDb.createCollection("demo",14);

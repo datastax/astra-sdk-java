@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 public class InsertMany {
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
     AstraDBCollection collection = db.createCollection("collection_vector1",14);
 
     // Insert documents into the collection (IDs are generated automatically)

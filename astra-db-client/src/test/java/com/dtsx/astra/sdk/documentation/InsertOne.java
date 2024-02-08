@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class InsertOne {
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
 
     // Assumes a collection with a vector field of dimension 14
     AstraDBCollection collection = db.collection("collection_vector1");

@@ -11,7 +11,7 @@ import io.stargate.sdk.data.domain.query.SelectQuery;
 
 public class FindPage {
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
     AstraDBCollection collection = db.createCollection("collection_vector1", 14);
 
     // Retrieve page 1 of a search (up to 20 results)

@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 public class FindDatabase {
   public static void main(String[] args) {
-    AstraDBAdmin client = new AstraDBAdmin("<token>");
+    AstraDBAdmin client = new AstraDBAdmin("TOKEN");
 
     // Check if a database exists
     boolean exists = client.isDatabaseExists("<database_name>");

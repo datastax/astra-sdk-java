@@ -18,7 +18,7 @@ public class ObjectMappingInsertMany {
   }
 
   public static void main(String[] args) {
-    AstraDB db = new AstraDB("<token>", "<api_endpoint>");
+    AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
     AstraDBRepository<Product> productRepository =
         db.createCollection("collection_vector1", 14, Product.class);
 
