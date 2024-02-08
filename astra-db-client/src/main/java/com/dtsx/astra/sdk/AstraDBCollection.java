@@ -247,7 +247,17 @@ public class AstraDBCollection {
         return collectionClient.insertManyJsonDocuments(documents);
     }
 
-
+    /**
+     * Insert multiple documents (up to 20) as <code>JsonDocument</code> List , for more document check <code>insertManyChunked</code>.
+     *
+     * @param documents
+     *      list of documents
+     * @return
+     *      for each document its id and insertion status
+     */
+    public final List<JsonDocumentMutationResult> insertMany(JsonDocument... documents) {
+        return collectionClient.insertMany(documents);
+    }
 
     /**
      * Insert multiple documents (up to 20) as <code>JsonDocument</code> List , for more document check <code>insertManyChunked</code>, asynchronously.

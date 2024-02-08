@@ -70,6 +70,7 @@ public class RagPdfVectorTest {
 
         // Initializing table
         cassandraTable = CassIO.clusteredMetadataVectorTable("vector_store", LLM_MODEL_DIMENSION);
+        CassIO.metadataVectorTable("", 1536);
         cassandraTable.create();
         log.info("Destination Table is created");
 

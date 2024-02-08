@@ -4,6 +4,7 @@ import com.datastax.oss.driver.api.core.uuid.Uuids;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.internal.ValidationUtils;
 import dev.langchain4j.store.embedding.CosineSimilarity;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingStore;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static dev.langchain4j.internal.ValidationUtils.ensureBetween;
-import static dev.langchain4j.internal.ValidationUtils.ensureGreaterThanZero;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -173,8 +172,8 @@ public class ClusteredMetadataVectorStore implements EmbeddingStore<TextSegment>
         AnnQuery.AnnQueryBuilder builder = AnnQuery.builder()
                 .embeddings(embedding.vectorAsList())
                 .metric(CassandraSimilarityMetric.COSINE)
-                .recordCount(ensureGreaterThanZero(maxResults, "maxResults"))
-                .threshold(CosineSimilarity.fromRelevanceScore(ensureBetween(minScore, 0, 1, "minScore")));
+                .recordCount(ValidationUtils.ensureGreaterThanZero(maxResults, "maxResults"))
+                .threshold(CosineSimilarity.fromRelevanceScore(ValidationUtils.ensureBetween(minScore, 0, 1, "minScore")));
         if (metadata != null) {
             builder.metaData(metadata.asMap());
         }
