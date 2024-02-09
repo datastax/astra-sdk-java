@@ -145,25 +145,12 @@ public class AstraDBTestSuiteIT {
         Assertions.assertNotNull(targetCloud);
         Assertions.assertNotNull(targetRegion);
         Assertions.assertNotNull(astraDbAdmin.getDevopsApiClient());
-
+c
         // When
         databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
         // Then
         Assertions.assertNotNull(databaseId);
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
-    }
-
-    @Test
-    @Order(2)
-    @DisplayName("02. Connect to a database")
-    public void shouldConnectToDatabase2() {
-        if (databaseId == null) shouldCreateDatabase();
-        astraDbAdmin.database(databaseId);
-
-        //astraDbAdmin.deleteKeyspace(databaseId.toString(), "test");
-
-        astraDb = astraDbAdmin.database(databaseId);
-
     }
 
     @Test

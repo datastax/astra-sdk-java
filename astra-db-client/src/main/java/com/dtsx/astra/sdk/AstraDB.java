@@ -11,7 +11,9 @@ import io.stargate.sdk.data.DataApiClient;
 import io.stargate.sdk.data.NamespaceClient;
 import io.stargate.sdk.data.domain.CollectionDefinition;
 import io.stargate.sdk.data.domain.SimilarityMetric;
+import io.stargate.sdk.http.RetryHttpClient;
 import io.stargate.sdk.http.ServiceHttp;
+import io.stargate.sdk.http.domain.UserAgentChunk;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -179,7 +181,21 @@ public class AstraDB {
         this.nsClient = apiClient.namespace(keyspace);
     }
 
+    // --------------------------
+    // ---  User Agent      ----
+    // --------------------------
 
+    /**
+     * Allow user to set the client name
+     *
+     * @param clientName
+     *      client name
+     * @param version
+     *      client version
+     */
+    public void setClientName(String clientName, String version) {
+        RetryHttpClient.getInstance().pushUserAgent(new UserAgentChunk(clientName, version));
+    }
 
     // --------------------------
     // ---  Find, FindAll    ----
