@@ -9,6 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
+import static io.stargate.sdk.http.domain.FilterOperator.EXISTS;
+import static io.stargate.sdk.http.domain.FilterOperator.GREATER_THAN;
+import static io.stargate.sdk.http.domain.FilterOperator.GREATER_THAN_OR_EQUALS_TO;
+import static io.stargate.sdk.http.domain.FilterOperator.LESS_THAN;
+
 public class FindOne {
   public static void main(String[] args) {
     AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
@@ -54,37 +60,16 @@ public class FindOne {
 
     // Perform a complex query with AND and OR
     SelectQuery sq2 = new SelectQuery();
-    sq2.setFilter(new HashMap<>());
-    Map<String, List<Map<String, Object>>> or1Criteria = new HashMap<>();
-    or1Criteria.put("$or", new ArrayList<Map<String, Object>>());
-    or1Criteria.get("$or").add(Map.of("product_price", 9.99));
-    or1Criteria.get("$or").add(Map.of("product_name", "HealthyFresh - Beef raw dog food"));
-    Map<String, List<Map<String, Object>>> or2Criteria = new HashMap<>();
-    or2Criteria.put("$or", new ArrayList<Map<String, Object>>());
-    or2Criteria.get("$or").add(Map.of("product_price", 12.99));
-    or2Criteria.get("$or").add(Map.of("product_name", "HealthyFresh - Beef raw dog food"));
-    List<Map<String, List<Map<String, Object>>>> andCriteria = new ArrayList<>();
-    andCriteria.add(or1Criteria);
-    andCriteria.add(or2Criteria);
-    sq2.getFilter().put("$and", andCriteria);
+    Filter yaFilter = new Filter()
+            .and()
+              .or()
+                .where("product_price", EQUALS_TO, 9.99)
+                .where("product_name", EQUALS_TO, "HealthyFresh - Beef raw dog food")
+              .end()
+              .or()
+                .where("product_price", EQUALS_TO, 9.99)
+                .where("product_name", EQUALS_TO, "HealthyFresh - Beef raw dog food")
+              .end();
     collection.findOne(sq2).ifPresent(System.out::println);
-
-    // Perform a complex query with AND and OR as String
-    collection.findOne(
-        "{\"filter\":{" +
-        "\"$and\":[" +
-        "{\"$or\":[" +
-        "  {\"product_price\":9.99}," +
-        "  {\"product_name\":\"HealthyFresh - Beef raw dog food\"}" +
-        "]" +
-        "}," +
-        "{\"$or\":[" +
-        "  {\"product_price\":12.99}," +
-        "  {\"product_name\":\"HealthyFresh - Beef raw dog food\"}" +
-        "]" +
-        "}" +
-        "]" +
-        "}}")
-    .ifPresent(System.out::println);
   }
 }
