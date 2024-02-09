@@ -145,7 +145,7 @@ public class AstraDBTestSuiteIT {
         Assertions.assertNotNull(targetCloud);
         Assertions.assertNotNull(targetRegion);
         Assertions.assertNotNull(astraDbAdmin.getDevopsApiClient());
-c
+
         // When
         databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
         // Then
