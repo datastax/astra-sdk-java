@@ -14,11 +14,11 @@ public class FindDatabase {
     boolean exists = client.isDatabaseExists("<database_name>");
 
     // Find a database by name (names may not be unique)
-    Stream<Database> dbStream = client.findDatabaseByName("<database_name>");
+    Stream<Database> dbStream = client.getDatabaseInformations("<database_name>");
     Optional<Database> dbByName = dbStream.findFirst();
 
     // Find a database by ID
     Optional<Database> dbById = client
-        .findDatabaseById(UUID.fromString("<replace_with_db_uuid>"));
+        .getDatabaseInformations(UUID.fromString("<replace_with_db_uuid>"));
   }
 }

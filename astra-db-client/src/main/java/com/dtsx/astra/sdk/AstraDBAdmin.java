@@ -12,6 +12,7 @@ import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import io.stargate.sdk.data.DataApiClient;
+import io.stargate.sdk.http.RetryHttpClient;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,8 @@ import static io.stargate.sdk.utils.Utils.readEnvVariable;
  */
 @Slf4j
 public class AstraDBAdmin {
+
+    public static final String USER_AGENT = "astra-db-java";
 
     /** Default timeout for initiating connection. */
     public static final int CONNECT_TIMEOUT_SECONDS = 20;
@@ -114,6 +117,32 @@ public class AstraDBAdmin {
                 .version(Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS))
                 .build();
+        String version = AstraDBAdmin.class.getPackage().getImplementationVersion();
+        AstraDBAdmin.setCallerName(AstraDBAdmin.USER_AGENT, (null != version) ? version :  "dev");
+    }
+
+    // --------------------------
+    // ---  User Agent      ----
+    // --------------------------
+
+    /**
+     * Allow user to set the client name
+     *
+     * @param callerName
+     *      client name
+     * @param callerVersion
+     *      client version
+     */
+    public static void setCallerName(String callerName, String callerVersion) {
+        RetryHttpClient.getInstance().pushUserAgent(callerName, callerVersion);
+    }
+
+    // --------------------
+    // --   Watch       ---
+    // --------------------
+
+    public void watch() {
+        throw new UnsupportedOperationException("As we connect to a HTTP apis without hooks, no watch is possible.");
     }
 
     // --------------------
@@ -173,12 +202,22 @@ public class AstraDBAdmin {
     // --------------------
 
     /**
+     * List available database names.
+     *
+     * @return
+     *      list of database names
+     */
+    public List<String> listDatabaseNames() {
+        return listDatabases().map(db -> db.getInfo().getName()).collect(Collectors.toList());
+    }
+
+    /**
      * List active databases with vector enabled in current organization.
      *
      * @return
      *      active databases list
      */
-    public Stream<Database> findAllDatabases() {
+    public Stream<Database> listDatabases() {
         return devopsDbClient
                 .findAllNonTerminated()
                 .filter(db -> db.getInfo().getDbType() != null);
@@ -211,7 +250,7 @@ public class AstraDBAdmin {
      *      database identifier
      */
     public UUID createDatabase(@NonNull String name, @NonNull CloudProviderType cloud, @NonNull String cloudRegion) {
-        Optional<Database> optDb = findDatabaseByName(name).findFirst();
+        Optional<Database> optDb = getDatabaseInformations(name).findFirst();
         // Handling all cases for the user
         if (optDb.isPresent()) {
             Database db = optDb.get();
@@ -255,8 +294,8 @@ public class AstraDBAdmin {
      * @return
      *      if the db has been deleted
      */
-    public boolean deleteDatabaseByName(@NonNull String name) {
-        Optional<Database> opDb = findDatabaseByName(name).findFirst();
+    public boolean dropDatabase(@NonNull String name) {
+        Optional<Database> opDb = getDatabaseInformations(name).findFirst();
         opDb.ifPresent(db -> devopsDbClient.database(db.getId()).delete());
         return opDb.isPresent();
     }
@@ -269,8 +308,8 @@ public class AstraDBAdmin {
      * @return
      *      if the db has been deleted
      */
-    public boolean deleteDatabaseById(@NonNull UUID databaseId) {
-        if (findDatabaseById(databaseId).isPresent()) {
+    public boolean dropDatabase(@NonNull UUID databaseId) {
+        if (getDatabaseInformations(databaseId).isPresent()) {
             devopsDbClient.database(databaseId.toString()).delete();
             return true;
         }
@@ -285,9 +324,9 @@ public class AstraDBAdmin {
      * @return
      *          list of db matching the criteria
      */
-    public Stream<Database> findDatabaseByName(String name) {
+    public Stream<Database> getDatabaseInformations(String name) {
         Assert.hasLength(name, "Database name");
-        return findAllDatabases().filter(db->name.equals(db.getInfo().getName()));
+        return listDatabases().filter(db->name.equals(db.getInfo().getName()));
     }
 
     /**
@@ -299,7 +338,7 @@ public class AstraDBAdmin {
      *     if the database exists
      */
     public boolean isDatabaseExists(String name) {
-        return findDatabaseByName(name).findFirst().isPresent();
+        return getDatabaseInformations(name).findFirst().isPresent();
     }
 
     /**
@@ -310,7 +349,7 @@ public class AstraDBAdmin {
      * @return
      *          list of db matching the criteria
      */
-    public Optional<Database> findDatabaseById(@NonNull UUID id) {
+    public Optional<Database> getDatabaseInformations(@NonNull UUID id) {
         Assert.notNull(id, "Database identifier should not be null");
         return devopsDbClient.findById(id.toString());
     }
@@ -323,15 +362,15 @@ public class AstraDBAdmin {
      * @return
      *      database client
      */
-    public AstraDB database(@NonNull String databaseName) {
-        List<Database> dbs = findDatabaseByName(databaseName).collect(Collectors.toList());
+    public AstraDB getDatabase(@NonNull String databaseName) {
+        List<Database> dbs = getDatabaseInformations(databaseName).collect(Collectors.toList());
         if (dbs.isEmpty()) {
             throw new DatabaseNotFoundException(databaseName);
         }
         if (dbs.size() > 1) {
             throw new IllegalStateException("More than one database exists with the same name, use id.");
         }
-        return database(UUID.fromString(dbs.get(0).getId()));
+        return getDatabase(UUID.fromString(dbs.get(0).getId()));
     }
 
     // --------------------
@@ -346,7 +385,7 @@ public class AstraDBAdmin {
      * @return
      *      database client
      */
-    public AstraDB database(UUID databaseId) {
+    public AstraDB getDatabase(UUID databaseId) {
         return new AstraDB(token, databaseId, null, env, AstraDBAdmin.DEFAULT_KEYSPACE);
     }
 
@@ -423,7 +462,7 @@ public class AstraDBAdmin {
      *      database client
      */
     public DataApiClient getDataApiClient(@NonNull String databaseName) {
-        return database(databaseName).getApiClient();
+        return getDatabase(databaseName).getApiClient();
     }
 
     /**
@@ -435,7 +474,7 @@ public class AstraDBAdmin {
      *      database client
      */
     public DataApiClient getDataApiClient(@NonNull UUID databaseId) {
-        return database(databaseId).getApiClient();
+        return getDatabase(databaseId).getApiClient();
     }
 
     /**

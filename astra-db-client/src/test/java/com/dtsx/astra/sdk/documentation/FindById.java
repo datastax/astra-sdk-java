@@ -10,7 +10,7 @@ import java.util.Optional;
 public class FindById {
   public static void main(String[] args) {
     AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
-    AstraDBCollection collection = db.collection("collection_vector1");
+    AstraDBCollection collection = db.getCollection("collection_vector1");
 
     // Fetch a document by ID and return it as JSON
     Optional<JsonDocumentResult> res = collection.findById("doc1");

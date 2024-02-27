@@ -11,7 +11,7 @@ public class InsertOne {
     AstraDB db = new AstraDB("TOKEN", "API_ENDPOINT");
 
     // Assumes a collection with a vector field of dimension 14
-    AstraDBCollection collection = db.collection("collection_vector1");
+    AstraDBCollection collection = db.getCollection("collection_vector1");
 
     // You must delete any existing rows with the same IDs as the
     // rows you want to insert

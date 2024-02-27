@@ -1,6 +1,7 @@
 package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
+
 import java.util.UUID;
 
 public class Connecting {

@@ -3,7 +3,6 @@ package com.dtsx.astra.sdk.documentation;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.cassio.AnnQuery;
-import com.dtsx.astra.sdk.cassio.AnnResult;
 import com.dtsx.astra.sdk.cassio.CassIO;
 import com.dtsx.astra.sdk.cassio.ClusteredMetadataVectorRecord;
 import com.dtsx.astra.sdk.cassio.ClusteredMetadataVectorTable;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.dtsx.astra.sdk.cassio.AbstractCassandraTable.PARTITION_ID;
-import static com.dtsx.astra.sdk.utils.TestUtils.getAstraToken;
 
 public class CassIOClusteredMetadataVectorTable {
     public static void main(String[] args) {

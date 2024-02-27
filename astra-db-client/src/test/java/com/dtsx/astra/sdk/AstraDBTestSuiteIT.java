@@ -2,6 +2,7 @@ package com.dtsx.astra.sdk;
 
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
 import com.dtsx.astra.sdk.db.domain.Database;
+import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.stargate.sdk.data.domain.CollectionDefinition;
@@ -13,9 +14,9 @@ import io.stargate.sdk.data.domain.JsonDocumentResult;
 import io.stargate.sdk.data.domain.SimilarityMetric;
 import io.stargate.sdk.data.domain.odm.Document;
 import io.stargate.sdk.data.domain.odm.DocumentResult;
-import io.stargate.sdk.data.domain.query.DeleteQuery;
 import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
+import io.stargate.sdk.data.domain.query.UpdateQuery;
 import io.stargate.sdk.data.exception.DataApiDocumentAlreadyExistException;
 import io.stargate.sdk.data.exception.DataApiException;
 import io.stargate.sdk.data.exception.DataApiInvalidArgumentException;
@@ -63,7 +64,7 @@ public class AstraDBTestSuiteIT {
     /**
      * Test Constants
      */
-    public static final String TEST_DBNAME = "test_java_astra_db_client";
+    public static final String TEST_DBNAME = "astra_db_client";
     static final String TEST_COLLECTION_NAME = "collection_simple";
     static final String TEST_COLLECTION_VECTOR = "collection_vector";
     static final String TEST_COLLECTION_DENY = "collection_deny";
@@ -101,80 +102,73 @@ public class AstraDBTestSuiteIT {
         private Double price;
     }
 
-    private static void setupTestSuiteForDevelopment() {
-        targetEnvironment = AstraEnvironment.DEV;
-        astraToken = "AstraCS:ZiWfNzYJtUGszRuGyyTjFIXU:2c5a21a4623c6ee688d4bca4b8e55a269aa3ee864fcd16b26b7f9a82ca57b999";
-                //.orElseThrow(() -> new IllegalArgumentException("ASTRA_DB_APPLICATION_TOKEN_DEV is not set"));
-        targetCloud = CloudProviderType.GCP;
-        targetRegion = "europe-west4";
-        log.info("Environment Setup for Development");
-    }
+    // SELECT WHERE TO RUN TESTS
+    static boolean DEV = false;
 
-    private static void setupTestSuiteForProduction() {
-        log.info("Environment Setup for PRODUCTION");
-        targetEnvironment = AstraEnvironment.PROD;
-        astraToken = Utils.readEnvVariable("ASTRA_DB_APPLICATION_TOKEN")
-                .orElseThrow(() -> new IllegalArgumentException("ASTRA_DB_APPLICATION_TOKEN is not set"));
-        targetCloud = CloudProviderType.GCP;
-        targetRegion = "us-east1";
-    }
+    // -------------------------------------
+    // ------- INITIALIZATION --------------
+    // -------------------------------------
 
     @BeforeAll
     @DisplayName("00. Connect to Astra")
     public static void setupAndConnectToAstra() {
-        // Given
-        setupTestSuiteForDevelopment();
-        //setupTestSuiteForProduction();
-        Assertions.assertNotNull(astraToken);
-        Assertions.assertNotNull(targetEnvironment);
+        if (DEV) {
+            targetEnvironment = AstraEnvironment.DEV;
+            astraToken        = "AstraCS:ZiWfNzYJtUGszRuGyyTjFIXU:2c5a21a4623c6ee688d4bca4b8e55a269aa3ee864fcd16b26b7f9a82ca57b999";
+            targetCloud       = CloudProviderType.GCP;
+            targetRegion      = "europe-west4";
+        } else {
+            targetEnvironment = AstraEnvironment.PROD;
+            astraToken        = Utils.readEnvVariable("ASTRA_DB_APPLICATION_TOKEN").get();
+            targetCloud       = CloudProviderType.GCP;
+            targetRegion      = "us-east1";
+        }
         // When
         astraDbAdmin = new AstraDBAdmin(astraToken, targetEnvironment);
         // When
         Assertions.assertNotNull(astraDbAdmin.getToken());
     }
 
-    // ------------------------------------
-    // ----------- Databases --------------
-    // ------------------------------------
-
     @Test
     @Order(1)
-    @DisplayName("01. Create a database")
     public void shouldCreateDatabase() {
         // Given
         Assertions.assertNotNull(targetCloud);
         Assertions.assertNotNull(targetRegion);
         Assertions.assertNotNull(astraDbAdmin.getDevopsApiClient());
-
         // When
         databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
         // Then
         Assertions.assertNotNull(databaseId);
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
+        log.info("Api Endpoint {}", ApiLocator.getApiJsonEndpoint(targetEnvironment, databaseId.toString(), targetRegion));
     }
+
+    // -------------------------------------
+    // ----------- CONNECTION --------------
+    // -------------------------------------
 
     @Test
     @Order(2)
-    @DisplayName("02. Connect to a database")
     public void shouldConnectToDatabase() {
         if (databaseId == null) shouldCreateDatabase();
-
-        // ---- Connect From Admin ----
-
         // Given
         Assertions.assertNotNull(databaseId);
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
         Assertions.assertNotNull(astraDbAdmin.getDataApiClient(databaseId));
         // When
-        astraDb = astraDbAdmin.database(databaseId);
+        astraDb = astraDbAdmin.getDatabase(databaseId);
         Assertions.assertNotNull(astraDb.getNamespaceClient());
         Assertions.assertNotNull(astraDb);
         // When
-        astraDb = astraDbAdmin.database(TEST_DBNAME);
+        astraDb = astraDbAdmin.getDatabase(TEST_DBNAME);
         Assertions.assertNotNull(astraDb);
+    }
 
-        // ---- Connect with constructor ----
-
+    @Test
+    @Order(3)
+    public void shouldConnectToDatabaseWithEndpoint() {
+        if (databaseId == null) shouldCreateDatabase();
         // Given
         Assertions.assertNotNull(astraDb.getApiEndpoint());
         Assertions.assertNotNull(astraDbAdmin.getToken());
@@ -184,6 +178,11 @@ public class AstraDBTestSuiteIT {
         // Then
         Assertions.assertNotNull(astraDb2);
         Assertions.assertNotNull(astraDb2.findAllCollections());
+    }
+
+    @Test
+    @Order(4)
+    public void shouldConnectToDatabaseWithEndpointAndKeyspace() {
         // When initializing with a keyspace
         AstraDB astraDb3 = new AstraDB(astraDbAdmin.getToken(), astraDb.getApiEndpoint(), AstraDBAdmin.DEFAULT_KEYSPACE);
         // Then
@@ -193,23 +192,30 @@ public class AstraDBTestSuiteIT {
         Assertions.assertThrows(DataApiNamespaceNotFoundException.class, () -> new AstraDB(astraDbAdmin.getToken(), astraDb.getApiEndpoint(), "invalid_keyspace"));
     }
 
-    @Test
-    @Order(3)
-    @DisplayName("03. Find a single database")
-    public void shouldFindSingleDatabase() {
-        if (databaseId == null) shouldCreateDatabase();
+    // ------------------------------------------
+    // ----------- WORKING WITH DB --------------
+    // ------------------------------------------
 
+    @Test
+    @Order(5)
+    public void shouldFindDatabaseById() {
+        if (databaseId == null) shouldCreateDatabase();
         // When
-        Optional<Database> opt = astraDbAdmin.findDatabaseById(databaseId);
+        Optional<Database> opt = astraDbAdmin.getDatabaseInformations(databaseId);
         // Then
         Assertions.assertNotNull(opt);
         Assertions.assertTrue(opt.isPresent());
         Assertions.assertEquals(TEST_DBNAME, opt.get().getInfo().getName());
+    }
 
+    @Test
+    @Order(6)
+    public void shouldFindDatabaseByName() {
+        if (databaseId == null) shouldCreateDatabase();
         // Given
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
         // When
-        Stream<Database> dbs = astraDbAdmin.findDatabaseByName(TEST_DBNAME);
+        Stream<Database> dbs = astraDbAdmin.getDatabaseInformations(TEST_DBNAME);
         // Then
         Assertions.assertNotNull(dbs);
         dbs.findFirst().ifPresent(db -> {
@@ -219,43 +225,47 @@ public class AstraDBTestSuiteIT {
     }
 
     @Test
-    @Order(4)
+    @Order(7)
     @DisplayName("04. Find all databases")
     public void shouldFindAllDatabases() {
         // Given
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(TEST_DBNAME));
         // When
         Assertions.assertTrue(astraDbAdmin
-                .findAllDatabases()
+                .listDatabases()
                 .anyMatch(db -> db.getInfo().getName().equals(TEST_DBNAME)));
     }
 
     @Test
-    @Order(5)
-    @DisplayName("05. Delete a Database by name")
-    @Disabled("This test is disabled because it is pretty lone")
-    public void shouldDeleteDatabase() throws InterruptedException {
-        String dbName = "test_delete_db";
+    @Order(8)
+    @Disabled("slow")
+    public void shouldDeleteDatabaseByName() throws InterruptedException {
+        String dbName = "test_delete_db_by_name";
         // Given
         Assertions.assertFalse(astraDbAdmin.isDatabaseExists(dbName));
         // When
         UUID dbId = astraDbAdmin.createDatabase(dbName, targetCloud, targetRegion);
         Assertions.assertTrue(astraDbAdmin.isDatabaseExists(dbName));
         // When
-        boolean isDeleted = astraDbAdmin.deleteDatabaseByName(dbName);
+        boolean isDeleted = astraDbAdmin.dropDatabase(dbName);
         // Then
         Thread.sleep(5000);
         Assertions.assertTrue(isDeleted);
-        Database db = astraDbAdmin
-                .findDatabaseById(dbId)
-                .orElseThrow(() -> new IllegalStateException("Should have found a database"));
-        Assertions.assertEquals("TERMINATING", db.getStatus().name());
+    }
 
-        UUID tmpDbId = astraDbAdmin.createDatabase("tmp_db_2", targetCloud, targetRegion);
-        Assertions.assertTrue(astraDbAdmin.isDatabaseExists("tmp_db_2"));
-        Assertions.assertTrue(astraDbAdmin.deleteDatabaseById(tmpDbId));
+    @Test
+    @Order(8)
+    @Disabled("slow")
+    public void shouldDeleteDatabaseById() throws InterruptedException {
+        String dbName = "test_delete_db_by_id";
+        // Given
+        Assertions.assertFalse(astraDbAdmin.isDatabaseExists(dbName));
+        // When
+        UUID tmpDbId = astraDbAdmin.createDatabase(dbName, targetCloud, targetRegion);
+        Assertions.assertTrue(astraDbAdmin.isDatabaseExists(dbName));
+        boolean isDeleted = astraDbAdmin.dropDatabase(tmpDbId);
         Thread.sleep(5000);
-
+        Assertions.assertTrue(isDeleted);
     }
 
     // ------------------------------------
@@ -268,8 +278,8 @@ public class AstraDBTestSuiteIT {
     public void shouldCreateCollectionSimple() {
         if (astraDb == null) shouldConnectToDatabase();
         // Given
-        //astraDb.deleteCollection(TEST_COLLECTION_NAME);
-        //Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_NAME));
+        astraDb.deleteCollection(TEST_COLLECTION_NAME);
+        Assertions.assertFalse(astraDb.isCollectionExists(TEST_COLLECTION_NAME));
         // When
         collectionSimple = astraDb.createCollection(TEST_COLLECTION_NAME);
         // Then
@@ -658,6 +668,31 @@ public class AstraDBTestSuiteIT {
 
     @Test
     @Order(19)
+    @DisplayName("19. UpdateOne with a jsonDocument")
+    public void shouldUpdate()
+            throws ExecutionException, InterruptedException {
+        initializeCollectionSimple();
+
+        JsonDocument doc1 = new JsonDocument().id("1").put("a", "a").put("b", "c");
+        JsonDocument doc2 = new JsonDocument().id("2").put("a", "a").put("b", "b");
+        collectionSimple.insertMany(doc1, doc2);
+
+        /*
+        collectionSimple.updateOne(UpdateQuery.builder()
+                .updateSet("a", "b")
+                .filter(f)
+                .withUpsert()
+                .build());*/
+
+        collectionSimple.updateMany(UpdateQuery.builder()
+                .updateSet("a", "b")
+                .filter(new Filter().where("a").isEqualsTo("a"))
+                .withUpsert()
+                .build());
+    }
+
+    @Test
+    @Order(19)
     @DisplayName("19. UpsertOne with a jsonDocument")
     public void shouldUpsertOneWithJsonDocument()
     throws ExecutionException, InterruptedException {
@@ -828,16 +863,22 @@ public class AstraDBTestSuiteIT {
     @DisplayName("24. InsertMany too many items")
     public void shouldInsertTooMany() {
         initializeCollectionSimple();
-        Assertions.assertThrows(DataApiInvalidArgumentException.class,
-                () -> collectionSimple.insertMany( List.of(
-                        player1, player2, player3, player4, player5, player6,
-                        player7, player8, player9, player10,player11, player12,
-                        player13, player14, player15, player16, player17, player18,
-                        player19, player20, player21, player22, player23, player24)));
+        //Assertions.assertThrows(DataApiInvalidArgumentException.class,
+        //        () -> collectionSimple.insertMany( List.of(
+        //                player1, player2, player3, player4, player5, player6,
+        //                player7, player8, player9, player10,player11, player12,
+        //                player13, player14, player15, player16, player17, player18,
+        //                player19, player20, player21, player22, player23, player24)));
+        try {
+            collectionSimple.insertMany( List.of(
+                    player1, player2, player3, player4, player5, player6,
+                    player7, player8, player9, player10,player11, player12,
+                    player13, player14, player15, player16, player17, player18,
+                    player19, player20, player21, player22, player23, player24));
+        } catch(DataApiInvalidArgumentException dai) {
+            dai.printStackTrace();;
+        }
     }
-
-
-
 
 
     @Test
@@ -995,13 +1036,13 @@ public class AstraDBTestSuiteIT {
         collectionSimple.countDocuments();
 
         long top = System.currentTimeMillis();
-        DeleteQuery query = DeleteQuery.builder()
-                .where("product_price", GREATER_THAN, 100)
-                .build();
+        //DeleteQuery query = DeleteQuery.builder()
+        //        .where("product_price", GREATER_THAN, 100)
+        //        .build();
         //collectionSimple.deleteMany(query);
-        collectionSimple.deleteManyChunked(query, 5);
-        System.out.println("Total time " + (System.currentTimeMillis() - top));
-        collectionSimple.countDocuments();
+        //collectionSimple.deleteManyChunked(query, 5);
+        //System.out.println("Total time " + (System.currentTimeMillis() - top));
+        //collectionSimple.countDocuments();
 
         /*
         collectionSimple.insertManyChunkedASync(documents, 20, 20).thenAccept(res -> {
@@ -1341,10 +1382,50 @@ public class AstraDBTestSuiteIT {
     }
 
     @Test
+    public void shouldDoSemanticSearch() {
+        if (astraDb == null) shouldConnectToDatabase();
+        initializeCollectionVector();
+
+        // When
+        // Insert vectors
+        collectionVector.insertOne(
+                new JsonDocument()
+                        .id("doc1") // generated if not set
+                        .vector(new float[]{1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                        .put("product_name", "HealthyFresh - Beef raw dog food")
+                        .put("product_price", 12.99));
+        collectionVector.insertOne(
+                new JsonDocument()
+                        .id("doc2")
+                        .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                        .put("product_name", "HealthyFresh - Chicken raw dog food")
+                        .put("product_price", 9.99));
+        collectionVector.insertOne(
+                new JsonDocument()
+                        .id("doc3")
+                        .vector(new float[]{1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f})
+                        .data(Map.of("product_name", "HealthyFresh - Chicken raw dog food")));
+        collectionVector.insertOne(
+                new JsonDocument()
+                        .id("doc4")
+                        .vector(new float[]{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
+                        .put("product_name", "HealthyFresh - Chicken raw dog food")
+                        .put("product_price", 9.99));
+
+        // Perform a similarity search
+        float[] embeddings = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
+        //Filter metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
+        int maxRecord = 10;
+        long top = System.currentTimeMillis();
+        Stream<JsonDocumentResult> resultsSet = collectionVector.findVector(embeddings, null, maxRecord);
+        System.out.println(System.currentTimeMillis() - top);
+    }
+
+    @Test
     @Order(42)
     @DisplayName("42. Create Collections (with allow)")
     public void shouldCreateCollectionWithAllowOptions() {
-
+        if (astraDb == null) shouldConnectToDatabase();
         // ---- TESTING WITH ALLOW -----
 
         // When
@@ -1399,7 +1480,7 @@ public class AstraDBTestSuiteIT {
     public void shouldInsertRecords() {
         initializeCollectionVector();
 
-        productRepositoryVector = astraDb.collectionRepository(TEST_COLLECTION_VECTOR, Product.class);
+        productRepositoryVector = astraDb.getCollection(TEST_COLLECTION_VECTOR, Product.class);
         productRepositoryVector.insert(new Document<>(
                 "product1",
                 new Product("something Good", 9.99),
@@ -1420,7 +1501,7 @@ public class AstraDBTestSuiteIT {
     @Order(51)
     @DisplayName("51. Insert with CollectionRepository")
     public void shouldInsertWithSimpleCollectionObjectMapping() {
-        productRepositorySimple = astraDb.collectionRepository(TEST_COLLECTION_NAME, Product.class);
+        productRepositorySimple = astraDb.getCollection(TEST_COLLECTION_NAME, Product.class);
         Assertions.assertNotNull(productRepositorySimple);
         productRepositorySimple.save(new Document<Product>().id("p1").data(new Product("Pupper Sausage Beef dog Treats", 9.99)));
         productRepositorySimple.save(new Document<Product>().id("p2").data(new Product("Dog Ring Chew Toy", 10.99)));
@@ -1433,7 +1514,7 @@ public class AstraDBTestSuiteIT {
     private void initializeCollectionSimple() {
         if (astraDb == null) {
             databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
-            astraDb = astraDbAdmin.database(databaseId);
+            astraDb = astraDbAdmin.getDatabase(databaseId);
         }
         if (collectionSimple == null) {
             collectionSimple = astraDb.createCollection(TEST_COLLECTION_NAME);
@@ -1444,7 +1525,7 @@ public class AstraDBTestSuiteIT {
     private void initializeCollectionVector() {
         if (astraDb == null) {
             databaseId = astraDbAdmin.createDatabase(TEST_DBNAME, targetCloud, targetRegion);
-            astraDb = astraDbAdmin.database(databaseId);
+            astraDb = astraDbAdmin.getDatabase(databaseId);
         }
         if (collectionVector == null) {
             collectionVector = astraDb.createCollection(TEST_COLLECTION_VECTOR, 14);

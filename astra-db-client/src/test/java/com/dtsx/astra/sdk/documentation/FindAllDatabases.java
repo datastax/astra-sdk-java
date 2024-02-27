@@ -10,6 +10,6 @@ public class FindAllDatabases {
     boolean exists = client.isDatabaseExists("<database_name>");
 
     // List all available databases
-    Stream<Database> dbStream = client.findAllDatabases();
+    Stream<Database> dbStream = client.listDatabases();
   }
 }

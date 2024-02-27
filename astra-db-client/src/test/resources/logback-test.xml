@@ -16,11 +16,11 @@
        <appender-ref ref="STDOUT" />
    </logger>
 
-    <logger name="io.stargate.sdk.data" level="DEBUG" additivity="false">
+
+    <logger name="io.stargate.sdk" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 
-    
     <logger name="org.springframework" level="ERROR" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>

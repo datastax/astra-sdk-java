@@ -34,7 +34,7 @@ public class AstraDBQuickStart {
         }
 
         // 2. Create a  store (delete if exist)
-        AstraDB astraDB = astraDBAdmin.database(databaseName);
+        AstraDB astraDB = astraDBAdmin.getDatabase(databaseName);
         // 3. Insert data in the store
         astraDB.deleteCollection(collectionName);
         AstraDBCollection collection = astraDB.createCollection(collectionName, 14);
@@ -73,7 +73,7 @@ public class AstraDBQuickStart {
 
         // With ODM
         AstraDBRepository<Product> productRepository =
-                astraDB.collectionRepository(collectionName, Product.class);
+                astraDB.getCollection(collectionName, Product.class);
 
         // 3 fields: id, payload, vector
         productRepository.insert(new Document<>("doc5",

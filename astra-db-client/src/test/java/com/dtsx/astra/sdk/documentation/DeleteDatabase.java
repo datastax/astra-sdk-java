@@ -9,10 +9,10 @@ public class DeleteDatabase {
     AstraDBAdmin client = new AstraDBAdmin("TOKEN");
 
     // Delete an existing database
-    client.deleteDatabaseByName("<database_name>");
+    client.dropDatabase("<database_name>");
 
     // Delete an existing database by ID
-    client.deleteDatabaseById(
+    client.dropDatabase(
             UUID.fromString("<replace_with_db_uuid>"));
   }
 }

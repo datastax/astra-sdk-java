@@ -472,7 +472,7 @@ public class AstraClient implements Closeable {
         if (null == astraClientConfig.getDatabaseId()) {
             throw new IllegalStateException("No databaseId provided.");
         }
-        return getAstraDBAdmin().database(UUID.fromString(astraClientConfig.getDatabaseId()));
+        return getAstraDBAdmin().getDatabase(UUID.fromString(astraClientConfig.getDatabaseId()));
     }
 
 }

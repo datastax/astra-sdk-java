@@ -9,7 +9,6 @@ import io.stargate.sdk.data.domain.JsonDocumentResult;
 import io.stargate.sdk.data.domain.query.Filter;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 public class QuickStartAA {
@@ -23,7 +22,7 @@ public class QuickStartAA {
    astraDBAdmin.createDatabase("quickstart", CloudProviderType.GCP, "us-east-1");
 
    // Accessing the database
-   AstraDB myDb = astraDBAdmin.database("quickstart");
+   AstraDB myDb = astraDBAdmin.getDatabase("quickstart");
 
    // Create a collection
    AstraDBCollection demoCollection = myDb.createCollection("demo",14);

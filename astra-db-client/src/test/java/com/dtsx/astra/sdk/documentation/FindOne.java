@@ -4,16 +4,8 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.data.domain.query.Filter;
 import io.stargate.sdk.data.domain.query.SelectQuery;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
-import static io.stargate.sdk.http.domain.FilterOperator.EXISTS;
-import static io.stargate.sdk.http.domain.FilterOperator.GREATER_THAN;
-import static io.stargate.sdk.http.domain.FilterOperator.GREATER_THAN_OR_EQUALS_TO;
-import static io.stargate.sdk.http.domain.FilterOperator.LESS_THAN;
 
 public class FindOne {
   public static void main(String[] args) {

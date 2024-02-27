@@ -4,8 +4,6 @@ import com.dtsx.astra.sdk.AstraDB;
 import com.dtsx.astra.sdk.AstraDBCollection;
 import io.stargate.sdk.data.domain.query.DeleteQuery;
 import io.stargate.sdk.data.domain.query.DeleteResult;
-import io.stargate.sdk.data.domain.query.Filter;
-import io.stargate.sdk.http.domain.FilterOperator;
 
 import static io.stargate.sdk.http.domain.FilterOperator.EQUALS_TO;
 

@@ -73,7 +73,7 @@ class VectorClientPhilosopherTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldIngestCsv() {
         // Init the Store
-        AstraDB dbClient = new AstraDBAdmin().database(DBNAME_VECTOR_CLIENT);
+        AstraDB dbClient = new AstraDBAdmin().getDatabase(DBNAME_VECTOR_CLIENT);
         dbClient.deleteCollection(VECTOR_STORE_NAME);
         quoteRepository = dbClient.createCollection(VECTOR_STORE_NAME, 1536, Quote.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
@@ -97,8 +97,8 @@ class VectorClientPhilosopherTest {
     public void shouldSimilaritySearch() {
 
         quoteRepository = new AstraDBAdmin()
-                .database(DBNAME_VECTOR_CLIENT)
-                .collectionRepository(VECTOR_STORE_NAME, Quote.class);
+                .getDatabase(DBNAME_VECTOR_CLIENT)
+                .getCollection(VECTOR_STORE_NAME, Quote.class);
 
         float[] embeddings = vectorize("We struggle all our life for nothing");
         quoteRepository.findVector(embeddings,3)

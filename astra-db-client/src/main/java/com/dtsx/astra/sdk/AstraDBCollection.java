@@ -47,6 +47,16 @@ public class AstraDBCollection {
         this.collectionClient = collectionClient;
     }
 
+    /**
+     * Access the name of the collection.
+     *
+     * @return
+     *      collection name
+     */
+    public String getName() {
+        return collectionClient.getCollection();
+    }
+
     // --------------------------
     // ---   Insert One      ----
     // --------------------------

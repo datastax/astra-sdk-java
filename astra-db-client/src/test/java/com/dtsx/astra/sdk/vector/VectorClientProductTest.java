@@ -65,7 +65,7 @@ class VectorClientProductTest {
     @EnabledIfEnvironmentVariable(named = "ASTRA_DB_APPLICATION_TOKEN", matches = "Astra.*")
     public void shouldInsertStaticDocument() {
         // Recreating the store
-        AstraDB astraDB = new AstraDBAdmin().database(DBNAME_VECTOR_CLIENT);
+        AstraDB astraDB = new AstraDBAdmin().getDatabase(DBNAME_VECTOR_CLIENT);
         astraDB.deleteCollection(VECTOR_STORE_NAME);
         productRepository = astraDB.createCollection(VECTOR_STORE_NAME, 14, Product.class);
         log.info("store {} is created ", VECTOR_STORE_NAME);
@@ -109,8 +109,8 @@ class VectorClientProductTest {
     public void shouldSimilaritySearch() {
 
         productRepository = new AstraDBAdmin()
-                .database(DBNAME_VECTOR_CLIENT)
-                .collectionRepository(VECTOR_STORE_NAME, Product.class);
+                .getDatabase(DBNAME_VECTOR_CLIENT)
+                .getCollection(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings =  new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
         for(DocumentResult<Product> result : productRepository.findVector(embeddings,null, 2)) {
@@ -125,8 +125,8 @@ class VectorClientProductTest {
     @DisplayName("03. Search with Meta Data")
     public void shouldSimilaritySearchWithMetaData() {
         productRepository = new AstraDBAdmin()
-                .database(DBNAME_VECTOR_CLIENT)
-                .collectionRepository(VECTOR_STORE_NAME, Product.class);
+                .getDatabase(DBNAME_VECTOR_CLIENT)
+                .getCollection(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
         Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
@@ -145,8 +145,8 @@ class VectorClientProductTest {
     @DisplayName("04. Search with Meta Data")
     public void shouldSimilaritySearcAndNotReturnVector() {
         productRepository = new AstraDBAdmin()
-                .database(DBNAME_VECTOR_CLIENT)
-                .collectionRepository(VECTOR_STORE_NAME, Product.class);
+                .getDatabase(DBNAME_VECTOR_CLIENT)
+                .getCollection(VECTOR_STORE_NAME, Product.class);
 
         float[] embeddings     = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
         Filter  metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);

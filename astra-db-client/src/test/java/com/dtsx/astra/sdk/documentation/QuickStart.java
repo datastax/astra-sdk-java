@@ -47,6 +47,9 @@ public class QuickStart {
     float[] embeddings = new float[] {1f, 1f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
     Filter metadataFilter = new Filter().where("product_price").isEqualsTo(9.99);
     int maxRecord = 10;
+      long top = System.currentTimeMillis();
     Stream<JsonDocumentResult> resultsSet = demoCollection.findVector(embeddings, metadataFilter, maxRecord);
+      System.out.println(System.currentTimeMillis() - top);
+
   }
 }

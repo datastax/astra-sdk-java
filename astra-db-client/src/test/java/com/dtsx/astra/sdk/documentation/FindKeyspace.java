@@ -1,7 +1,6 @@
 package com.dtsx.astra.sdk.documentation;
 
 import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBAdmin;
 
 public class FindKeyspace {
 

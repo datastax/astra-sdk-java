@@ -11,9 +11,7 @@ import io.stargate.sdk.data.DataApiClient;
 import io.stargate.sdk.data.NamespaceClient;
 import io.stargate.sdk.data.domain.CollectionDefinition;
 import io.stargate.sdk.data.domain.SimilarityMetric;
-import io.stargate.sdk.http.RetryHttpClient;
 import io.stargate.sdk.http.ServiceHttp;
-import io.stargate.sdk.http.domain.UserAgentChunk;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -94,6 +92,8 @@ public class AstraDB {
         jsonDeploy.addDatacenterServices("default", new ServiceHttp("json", apiEndpoint, apiEndpoint));
         this.apiClient = new DataApiClient(jsonDeploy);
         this.nsClient = apiClient.namespace(keyspace);
+        String version =  AstraDB.class.getPackage().getImplementationVersion();
+        AstraDBAdmin.setCallerName(AstraDBAdmin.USER_AGENT, (null != version) ? version :  "dev");
     }
 
     /**
@@ -158,6 +158,7 @@ public class AstraDB {
                 .findById(databaseId.toString())
                 .orElseThrow(() -> new DatabaseNotFoundException(databaseId.toString()));
 
+        // If no region is provided, we use the default region of the DB
         if (region == null) region = db.getInfo().getRegion();
 
         ServiceDeployment<ServiceHttp> jsonDeploy = new ServiceDeployment<>();
@@ -181,21 +182,8 @@ public class AstraDB {
         this.nsClient = apiClient.namespace(keyspace);
     }
 
-    // --------------------------
-    // ---  User Agent      ----
-    // --------------------------
 
-    /**
-     * Allow user to set the client name
-     *
-     * @param clientName
-     *      client name
-     * @param version
-     *      client version
-     */
-    public void setClientName(String clientName, String version) {
-        RetryHttpClient.getInstance().pushUserAgent(new UserAgentChunk(clientName, version));
-    }
+
 
     // --------------------------
     // ---  Find, FindAll    ----
@@ -433,7 +421,7 @@ public class AstraDB {
      * @return
      *      storeName client
      */
-    public AstraDBCollection collection(@NonNull  String storeName) {
+    public AstraDBCollection getCollection(@NonNull  String storeName) {
         return new AstraDBCollection(nsClient.collection(storeName));
     }
 
@@ -449,7 +437,7 @@ public class AstraDB {
      * @param <T>
      *      type of the bean in use
      */
-    public <T> AstraDBRepository<T> collectionRepository(@NonNull  String storeName, Class<T> clazz) {
+    public <T> AstraDBRepository<T> getCollection(@NonNull  String storeName, Class<T> clazz) {
         return new AstraDBRepository<>(nsClient.collectionRepository(storeName, clazz));
     }
 
