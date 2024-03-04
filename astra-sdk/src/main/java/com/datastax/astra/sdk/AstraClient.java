@@ -17,9 +17,9 @@
 package com.datastax.astra.sdk;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
+import com.datastax.astradb.client.AstraDBAdmin;
+import com.datastax.astradb.client.AstraDB;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraOpsClient;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;

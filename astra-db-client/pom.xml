@@ -46,6 +46,10 @@
             <groupId>com.datastax.stargate</groupId>
             <artifactId>stargate-sdk-data</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.datastax.stargate</groupId>
+            <artifactId>stargate-dataapi-client</artifactId>
+        </dependency>
 
         <!-- CQL API (CassioIO) -->
         <dependency>

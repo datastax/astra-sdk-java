@@ -39,7 +39,7 @@
         <lombok.version>1.18.30</lombok.version>
 
         <!-- Stargate -->
-        <stargate-sdk.version>2.3.7</stargate-sdk.version>
+        <stargate-sdk.version>2.3.8-SNAPSHOT</stargate-sdk.version>
         <stargate-grpc.version>2.1.0-BETA-9</stargate-grpc.version>
         <grpc-netty.version>1.62.2</grpc-netty.version>
 
@@ -158,6 +158,11 @@
             <dependency>
                 <groupId>com.datastax.stargate</groupId>
                 <artifactId>stargate-sdk-data</artifactId>
+                <version>${stargate-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.datastax.stargate</groupId>
+                <artifactId>stargate-dataapi-client</artifactId>
                 <version>${stargate-sdk.version}</version>
             </dependency>
             <dependency>
