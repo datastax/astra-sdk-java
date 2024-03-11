@@ -5,14 +5,13 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
 import com.datastax.oss.driver.api.core.config.TypedDriverOption;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
-import com.dtsx.astra.sdk.utils.ApiLocator;
-import com.dtsx.astra.sdk.utils.AstraEnvironment;
+import com.datastax.astra.devops.utils.AstraEnvironment;
 import io.stargate.sdk.audit.ServiceCallObserver;
 import io.stargate.sdk.StargateClientBuilder;
 import io.stargate.sdk.utils.AnsiUtils;
 import com.evanlennick.retry4j.config.RetryConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
-import com.dtsx.astra.sdk.utils.AstraRc;
+import com.datastax.astra.devops.utils.AstraRc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,60 +242,6 @@ public class AstraClientConfig implements Serializable {
         return stargateConfig;
     }
     
-    // ------------------------------------------------
-    // ------------- HTTP Client ----------------------
-    // ------------------------------------------------
-    
-    /**
-     * Enable fine Grained configuration of the HTTP Client.
-     *
-     * @param reqConfig
-     *            request configuration
-     * @return self reference
-     */
-    public AstraClientConfig withHttpRequestConfig(RequestConfig reqConfig) {
-        stargateConfig.withHttpRequestConfig(reqConfig);
-        return this;
-    }
-    
-    /**
-     * Enable fine Grained configuration of the HTTP Retries.
-     *
-     * @param retryConfig
-     *            retry configuration
-     * @return self reference
-     */
-    public AstraClientConfig withHttpRetryConfig(RetryConfig retryConfig) {
-        stargateConfig.withHttpRetryConfig(retryConfig);
-        return this;
-    }
-    
-    /**
-     * Api Invocations trigger some events processed in observer.
-     * 
-     * @param name
-     *            unique identifier
-     * @param observer
-     *            instance of your Observer
-     * @return self reference
-     */
-    public AstraClientConfig addHttpObserver(String name, ServiceCallObserver observer) {
-        stargateConfig.addHttpObserver(name, observer);
-        return this;
-    }
-    
-    /**
-     * Api Invocations trigger some events processed in observer.
-     * 
-     * @param observers
-     *           observers lists
-     * @return self reference
-     */
-    public AstraClientConfig withHttpObservers(Map<String, ServiceCallObserver> observers) {
-        stargateConfig.withHttpObservers(observers);
-        return this;
-    }
-   
     // ------------------------------------------------
     // ----------------- Grpc -------------------------
     // ------------------------------------------------

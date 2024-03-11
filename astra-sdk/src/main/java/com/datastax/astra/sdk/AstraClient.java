@@ -16,17 +16,17 @@
 
 package com.datastax.astra.sdk;
 
+import com.datastax.astra.db.AstraDBClient;
+import com.datastax.astra.db.AstraDBDatabase;
+import com.datastax.astra.devops.AstraDevopsClient;
+import com.datastax.astra.devops.db.AstraDBDevopsClient;
+import com.datastax.astra.devops.db.domain.Database;
+import com.datastax.astra.devops.streaming.AstraStreamingClient;
+import com.datastax.astra.devops.utils.ApiLocator;
 import com.datastax.astra.sdk.config.AstraClientConfig;
-import com.datastax.astradb.client.AstraDBAdmin;
-import com.datastax.astradb.client.AstraDB;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dtsx.astra.sdk.AstraOpsClient;
-import com.dtsx.astra.sdk.db.AstraDBOpsClient;
-import com.dtsx.astra.sdk.db.domain.Database;
-import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
-import com.dtsx.astra.sdk.utils.ApiLocator;
 import io.stargate.sdk.StargateClient;
-import io.stargate.sdk.api.SimpleTokenProvider;
+import io.stargate.sdk.auth.FixedTokenAuthenticationService;
 import io.stargate.sdk.doc.StargateDocumentApiClient;
 import io.stargate.sdk.gql.StargateGraphQLApiClient;
 import io.stargate.sdk.grpc.ServiceGrpc;
@@ -62,10 +62,10 @@ public class AstraClient implements Closeable {
     // -----------------------------------------------------
 
     /** Hold a reference for the Api Devops. */
-    private AstraOpsClient apiDevops;
+    private AstraDevopsClient apiDevops;
 
     /** Hold a reference for the Api Devops. */
-    private AstraDBOpsClient apiDevopsDatabases;
+    private AstraDBDevopsClient apiDevopsDatabases;
 
     /** Hold a reference for the Api Devops. */
     private AstraStreamingClient apiDevopsStreaming;
@@ -124,7 +124,7 @@ public class AstraClient implements Closeable {
         //  Devops APIS
         // ---------------------------------------------------
         if (Utils.hasLength(config.getToken())) {
-            apiDevops           = new AstraOpsClient(config.getToken(), config.getEnvironmnt());
+            apiDevops           = new AstraDevopsClient(config.getToken(), config.getEnvironmnt());
             apiDevopsDatabases  = apiDevops.db();
             apiDevopsStreaming  = apiDevops.streaming();
             LOGGER.info("+ API Devops    [" + AnsiUtils.green("ENABLED")+ "] on [" + config.getEnvironmnt() + "]");
@@ -146,8 +146,8 @@ public class AstraClient implements Closeable {
             this.currentDatabaseRegion = config.getDatabaseRegion();
             
             // Set default region (not in the cql as SCB is there)
-            config.getStargateConfig().setLocalDatacenter(config.getDatabaseRegion());
-            
+            config.getStargateConfig().withLocalDatacenter(config.getDatabaseRegion());
+
             // CqlSession should be initialized only if the flag is on.
             if (config.getStargateConfig().isEnabledCql()) {
             
@@ -213,7 +213,7 @@ public class AstraClient implements Closeable {
                     }
 
                     config.getStargateConfig().withApiTokenProviderDC(dc.getRegion(),
-                            new SimpleTokenProvider(config.getToken()));
+                            new FixedTokenAuthenticationService(config.getToken()));
 
                 });
                 
@@ -222,7 +222,7 @@ public class AstraClient implements Closeable {
                 LOGGER.info("+ Cross-region fallback is disabled.");
                 // Authentication for the DB
                 config.getStargateConfig().withApiTokenProviderDC(currentDatabaseRegion,
-                        new SimpleTokenProvider(config.getToken()));
+                        new FixedTokenAuthenticationService(config.getToken()));
                 // Rest Api
                 config.getStargateConfig().addServiceRest(currentDatabaseRegion,
                         new ServiceHttp(currentDatabaseRegion+ "-rest",
@@ -353,7 +353,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public AstraOpsClient apiDevops() {
+    public AstraDevopsClient apiDevops() {
         if (apiDevops == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide a astra Token (AstraCS:...) at initialization.");
@@ -366,7 +366,7 @@ public class AstraClient implements Closeable {
      * 
      * @return ApiDevopsClient
      */
-    public AstraDBOpsClient apiDevopsDatabases() {
+    public AstraDBDevopsClient apiDevopsDatabases() {
         if (apiDevopsDatabases == null) {
             throw new IllegalStateException("Api Devops is not available "
                     + "you need to provide clientId/clientName/clientSecret at initialization.");
@@ -458,8 +458,8 @@ public class AstraClient implements Closeable {
      * @return
      *      astra DbAdmin
      */
-    public AstraDBAdmin getAstraDBAdmin() {
-       return new AstraDBAdmin(getToken().orElseThrow(() -> new IllegalStateException("No token provided.")));
+    public AstraDBClient getAstraDBAdmin() {
+       return new AstraDBClient(getToken().orElseThrow(() -> new IllegalStateException("No token provided.")));
     }
 
     /**
@@ -468,7 +468,7 @@ public class AstraClient implements Closeable {
      * @return
      *      astraDB instance
      */
-    public AstraDB getAstraDB() {
+    public AstraDBDatabase getAstraDB() {
         if (null == astraClientConfig.getDatabaseId()) {
             throw new IllegalStateException("No databaseId provided.");
         }

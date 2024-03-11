@@ -6,8 +6,8 @@ import io.stargate.sdk.test.doc.TestDocClientConstants;
 import io.stargate.sdk.test.gql.AbstractGraphClientTest;
 import org.junit.jupiter.api.BeforeAll;
 
-import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
-import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
+import static com.datastax.astra.devops.utils.TestUtils.TEST_REGION;
+import static com.datastax.astra.devops.utils.TestUtils.setupDatabase;
 
 public class ApiGraphQLAstraTest extends AbstractGraphClientTest implements AstraSdkTest {
 

@@ -5,8 +5,8 @@ import com.datastax.astra.sdk.AstraSdkTest;
 import io.stargate.sdk.test.doc.AbstractDocClientDocumentsTest;
 import org.junit.jupiter.api.BeforeAll;
 
-import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
-import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
+import static com.datastax.astra.devops.utils.TestUtils.TEST_REGION;
+import static com.datastax.astra.devops.utils.TestUtils.setupDatabase;
 
 /**
  * Execute some unit tests against collections.

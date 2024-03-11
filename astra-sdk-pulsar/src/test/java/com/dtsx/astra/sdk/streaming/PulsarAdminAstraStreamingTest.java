@@ -1,14 +1,14 @@
 package com.dtsx.astra.sdk.streaming;
 
-import com.dtsx.astra.sdk.streaming.domain.CreateTenant;
-import com.dtsx.astra.sdk.streaming.domain.Tenant;
-import com.dtsx.astra.sdk.utils.AstraRc;
-import com.dtsx.astra.sdk.utils.Utils;
+import com.datastax.astra.devops.streaming.AstraStreamingClient;
+import com.datastax.astra.devops.streaming.domain.CreateTenant;
+import com.datastax.astra.devops.streaming.domain.Tenant;
+import com.datastax.astra.devops.utils.AstraRc;
+import com.datastax.astra.devops.utils.Utils;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
-import org.apache.pulsar.common.policies.data.PersistentTopicInternalStats;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;

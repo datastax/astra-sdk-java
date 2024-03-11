@@ -16,8 +16,7 @@
 
 package com.datastax.astra.sdk;
 
-import com.dtsx.astra.sdk.utils.AstraEnvironment;
-import com.dtsx.astra.sdk.utils.AstraRc;
+import com.datastax.astra.devops.utils.AstraRc;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.File;

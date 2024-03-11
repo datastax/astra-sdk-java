@@ -4,12 +4,9 @@ import com.datastax.astra.sdk.AstraClient;
 import com.datastax.astra.sdk.AstraSdkTest;
 import io.stargate.sdk.test.doc.AbstractDocClientCollectionsTest;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 
-import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
-import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
+import static com.datastax.astra.devops.utils.TestUtils.TEST_REGION;
+import static com.datastax.astra.devops.utils.TestUtils.setupDatabase;
 
 /**
  * Execute some unit tests against collections.

@@ -1,7 +1,8 @@
 package com.dtsx.astra.sdk.streaming;
 
-import com.dtsx.astra.sdk.streaming.domain.Tenant;
-import com.dtsx.astra.sdk.utils.AstraEnvironment;
+import com.datastax.astra.devops.streaming.TenantClient;
+import com.datastax.astra.devops.streaming.domain.Tenant;
+import com.datastax.astra.devops.utils.AstraEnvironment;
 import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;

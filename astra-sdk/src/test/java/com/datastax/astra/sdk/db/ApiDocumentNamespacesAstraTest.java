@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.dtsx.astra.sdk.utils.TestUtils.TEST_REGION;
-import static com.dtsx.astra.sdk.utils.TestUtils.setupDatabase;
+import static com.datastax.astra.devops.utils.TestUtils.TEST_REGION;
+import static com.datastax.astra.devops.utils.TestUtils.setupDatabase;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

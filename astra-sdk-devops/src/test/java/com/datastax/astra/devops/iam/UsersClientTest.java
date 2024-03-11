@@ -1,0 +1,61 @@
+package com.datastax.astra.devops.iam;
+
+import com.datastax.astra.devops.AbstractDevopsApiTest;
+import com.datastax.astra.devops.org.UsersClient;
+import com.datastax.astra.devops.org.domain.DefaultRoles;
+import com.datastax.astra.devops.org.domain.User;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class UsersClientTest extends AbstractDevopsApiTest {
+
+    /**
+     * User idenii
+     */
+    private static String tmpUserid;
+    private static String tmpUserEmail;
+
+    @Test
+    @Order(1)
+    public void should_list_users() {
+        // Given
+        UsersClient usersClient = getApiDevopsClient().users();
+        // When
+        List<User> users = usersClient.findAll().collect(Collectors.toList());
+        Assertions.assertTrue(users.size() >0);
+
+        tmpUserid    = users.get(0).getUserId();
+        tmpUserEmail = users.get(0).getEmail();
+    }
+
+    @Test
+    @Order(2)
+    public void should_find_user() {
+        // Given
+        UsersClient usersClient = getApiDevopsClient().users();
+        // When
+        Assertions.assertTrue(usersClient.exist(tmpUserid));
+        // Then
+        Assertions.assertTrue(usersClient.findByEmail(tmpUserEmail).isPresent());
+    }
+
+    @Test
+    @Order(3)
+    public void should_addRoles() {
+        // Given
+        UsersClient usersClient = getApiDevopsClient().users();
+        Assertions.assertTrue(usersClient.exist(tmpUserid));
+        // When
+        usersClient.updateRoles(tmpUserid,
+                DefaultRoles.DATABASE_ADMINISTRATOR.getName(),
+                DefaultRoles.ORGANIZATION_ADMINISTRATOR.getName());
+    }
+
+}

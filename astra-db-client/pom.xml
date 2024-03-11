@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>astra-db-client</artifactId>
-    <name>Java Client for Astra DB</name>
+    <name>+ astra-db-client</name>
 
     <parent>
         <groupId>com.datastax.astra</groupId>
@@ -11,44 +11,25 @@
     </parent>
 
     <properties>
-        <openai-java.version>0.18.2</openai-java.version>
-        <langchain4j.version>0.27.0</langchain4j.version>
-        <okhttp.version>4.12.0</okhttp.version>
-        <okio-jvm.version>3.7.0</okio-jvm.version>
+        <java.version>11</java.version>
     </properties>
 
     <dependencies>
 
+        <!-- Core -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.squareup.okio</groupId>
-            <artifactId>okio-jvm</artifactId>
-            <version>${okio-jvm.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- DATA API -->
+        <!-- DATA API (core) -->
         <dependency>
             <groupId>com.datastax.stargate</groupId>
             <artifactId>stargate-sdk-data</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.datastax.stargate</groupId>
-            <artifactId>stargate-dataapi-client</artifactId>
         </dependency>
 
         <!-- CQL API (CassioIO) -->
@@ -57,7 +38,7 @@
             <artifactId>java-driver-core</artifactId>
         </dependency>
 
-        <!-- DEVOPS AI -->
+        <!-- DEVOPS AI (admin) -->
         <dependency>
             <groupId>com.datastax.astra</groupId>
             <artifactId>astra-sdk-devops</artifactId>
@@ -75,40 +56,37 @@
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.stargate</groupId>
+            <artifactId>stargate-sdk-data</artifactId>
+            <version>${stargate-sdk.version}</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j</artifactId>
-            <version>${langchain4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-open-ai</artifactId>
-            <version>${langchain4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-document-parser-apache-pdfbox</artifactId>
-            <version>${langchain4j.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
+    <!-- Client is JDK11+ -->
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+    <!-- Release the client with Apache License -->
     <licenses>
         <license>
             <name>Apache-2.0</name>
