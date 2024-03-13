@@ -3,12 +3,12 @@ package com.datastax.astra.db;
 import com.datastax.astra.devops.db.AstraDBDevopsClient;
 import io.stargate.sdk.data.client.DataApiClient;
 import io.stargate.sdk.data.client.DataApiClients;
-import io.stargate.sdk.data.client.DataApiCollection;
 import io.stargate.sdk.data.client.DataApiNamespace;
-import io.stargate.sdk.data.client.model.CreateCollectionOptions;
-import io.stargate.sdk.data.client.model.CreateNamespaceOptions;
+import io.stargate.sdk.data.client.model.Document;
+import io.stargate.sdk.data.client.model.collections.CreateCollectionOptions;
+import io.stargate.sdk.data.client.model.namespaces.CreateNamespaceOptions;
 import io.stargate.sdk.data.internal.model.ApiResponse;
-import io.stargate.sdk.data.internal.model.CollectionInformation;
+import io.stargate.sdk.data.internal.model.CollectionDefinition;
 import io.stargate.sdk.data.internal.model.NamespaceInformation;
 import io.stargate.sdk.http.LoadBalancedHttpClient;
 import io.stargate.sdk.http.ServiceHttp;
@@ -83,7 +83,7 @@ public class AstraDBDatabase implements DataApiNamespace, DataApiClient {
      *      keyspace
      */
     public AstraDBDatabase(String apiEndpoint, String token, String keyspace) {
-        this(apiEndpoint, token, keyspace, new AstraDBOptions());
+        this(apiEndpoint, token, keyspace, AstraDBClient.DEFAULT_OPTIONS);
     }
 
     /**
@@ -136,10 +136,9 @@ public class AstraDBDatabase implements DataApiNamespace, DataApiClient {
         this.astraDbEndpoint  = apiEndpoint;
         this.astraDbOptions   = astraDbOptions;
         this.namespaceName    = namespaceName;
-        this.dataApiClient    = DataApiClients.create(astraDbEndpoint.getApiEndPoint(), token, astraDbOptions.getHttpClientOptions());
+        this.dataApiClient    = DataApiClients.create(astraDbEndpoint.getApiEndPoint(), token, astraDbOptions.asHttpClientOptions());
         this.dataApiNamespace = dataApiClient.getNamespace(namespaceName);
         this.devopsApi        = new AstraDBDevopsClient(token);
-        String version        = AstraDBDatabase.class.getPackage().getImplementationVersion();
     }
 
     // ------------------------------------------
@@ -148,8 +147,8 @@ public class AstraDBDatabase implements DataApiNamespace, DataApiClient {
 
     /** {@inheritDoc} */
     @Override
-    public DataApiNamespace getNamespace(String namespaceName) {
-        return dataApiClient.getNamespace(namespaceName);
+    public AstraDBDatabase getNamespace(String namespaceName) {
+        return new AstraDBDatabase(getAstraDbEndpoint().getApiEndPoint(), getToken(), namespaceName);
     }
 
     /** {@inheritDoc} */
@@ -172,23 +171,32 @@ public class AstraDBDatabase implements DataApiNamespace, DataApiClient {
 
     /** {@inheritDoc} */
     @Override
-    public DataApiNamespace createNamespace(String namespace) {
+    public AstraDBDatabase createNamespace(String namespace) {
         // We will NOT use the Data API methods in the Astra context but some devops API
         devopsApi.database(astraDbEndpoint.getDatabaseId().toString()).keyspaces().create(namespace);
         return new AstraDBDatabase(astraDbEndpoint, token, namespace, astraDbOptions);
     }
 
-    /** {@inheritDoc} */
+    @Override
+    public AstraDBDatabase createNamespace(String namespace, CreateNamespaceOptions options) {
+        throw new UnsupportedOperationException("Cannot provide replication factor with Astra");
+    }
+
+    /**
+     * Delete a namespace from current database. If the namespace does not exist not errors will be thrown.
+     *
+     * <pre>{@code
+     *  // Initialize a db
+     *  AstraDBDatabase db = new AstraDBDatabase("API_ENDPOINT", "TOKEN");
+     *  // Drop a Namespace
+     *  db.dropNamespace("<namespace_name>");
+     * }</pre>
+     * @param namespace
+     *      current namespace
+     */
     @Override
     public void dropNamespace(String namespace) {
         devopsApi.database(astraDbEndpoint.getDatabaseId().toString()).keyspaces().delete(namespace);
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DataApiNamespace createNamespace(String namespace, CreateNamespaceOptions options) {
-        throw new UnsupportedOperationException("Astra enforce the replication factor for you.");
     }
 
     // --------------------------------------------
@@ -219,14 +227,20 @@ public class AstraDBDatabase implements DataApiNamespace, DataApiClient {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<CollectionInformation> listCollections() {
+    public Stream<CollectionDefinition> listCollections() {
         return dataApiNamespace.listCollections();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <DOC> DataApiCollection<DOC> getCollection(String collectionName, Class<DOC> documentClass) {
-        return dataApiNamespace.getCollection(collectionName, documentClass);
+    public AstraDBCollection<Document> getCollection(String collectionName) {
+        return getCollection(collectionName, Document.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <DOC> AstraDBCollection<DOC> getCollection(String collectionName, Class<DOC> documentClass) {
+        return new AstraDBCollection<>(this, collectionName, documentClass);
     }
 
     /** {@inheritDoc} */
@@ -237,9 +251,29 @@ public class AstraDBDatabase implements DataApiNamespace, DataApiClient {
 
     /** {@inheritDoc} */
     @Override
-    public <DOC> DataApiCollection<DOC> createCollection(String collectionName, CreateCollectionOptions createCollectionOptions, Class<DOC> documentClass) {
-        return dataApiNamespace.createCollection(collectionName, createCollectionOptions, documentClass);
+    public AstraDBCollection<Document> createCollection(String collectionName) {
+        return createCollection(collectionName, null, Document.class);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public <DOC> AstraDBCollection<DOC> createCollection(String collectionName, Class<DOC> documentClass) {
+        return createCollection(collectionName, null, documentClass);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AstraDBCollection<Document> createCollection(String collectionName, CreateCollectionOptions createCollectionOptions) {
+        return createCollection(collectionName, createCollectionOptions, Document.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <DOC> AstraDBCollection<DOC> createCollection(String collectionName, CreateCollectionOptions createCollectionOptions, Class<DOC> documentClass) {
+        dataApiNamespace.createCollection(collectionName, createCollectionOptions, documentClass);
+        return new AstraDBCollection<>(this, collectionName, documentClass);
+    }
+
 
     /** {@inheritDoc} */
     @Override

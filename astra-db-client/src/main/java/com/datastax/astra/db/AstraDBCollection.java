@@ -11,17 +11,16 @@ import io.stargate.sdk.data.internal.DataApiCollectionImpl;
 public class AstraDBCollection<DOC> extends DataApiCollectionImpl<DOC> {
 
     /**
-     * Constructor for a collection.
+     * Full constructor.
      *
      * @param db
-     *      database in use
+     *      client namespace http
      * @param collectionName
      *      collection identifier
      * @param clazz
-     *      document class to use
+     *      working pojo with this collection.
      */
     protected AstraDBCollection(AstraDBDatabase db, String collectionName, Class<DOC> clazz) {
         super(db, collectionName, clazz);
     }
-
 }

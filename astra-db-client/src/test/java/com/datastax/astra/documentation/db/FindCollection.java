@@ -1,9 +1,9 @@
-package com.datastax.astra.documentation;
+package com.datastax.astra.documentation.db;
 
 import com.datastax.astra.db.AstraDBDatabase;
 import io.stargate.sdk.data.client.DataApiCollection;
-import io.stargate.sdk.data.client.model.CreateCollectionOptions;
 import io.stargate.sdk.data.client.model.Document;
+import io.stargate.sdk.data.client.model.collections.CreateCollectionOptions;
 
 public class FindCollection {
   public static void main(String[] args) {
@@ -16,6 +16,6 @@ public class FindCollection {
     CreateCollectionOptions options = collection.getOptions();
 
     // Check if a collection exists
-    boolean collectionExists = db.isCollectionExists("collection_vector2");
+    boolean collectionExists = db.getCollection("collection_vector2").exists();
   }
 }

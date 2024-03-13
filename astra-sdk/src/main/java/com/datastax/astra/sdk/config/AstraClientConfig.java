@@ -241,7 +241,7 @@ public class AstraClientConfig implements Serializable {
     public StargateClientBuilder getStargateConfig() {
         return stargateConfig;
     }
-    
+
     // ------------------------------------------------
     // ----------------- Grpc -------------------------
     // ------------------------------------------------

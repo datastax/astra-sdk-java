@@ -53,6 +53,9 @@ public class AstraDBClient {
     /** Default keyspace (same created by the ui). */
     public static final String DEFAULT_KEYSPACE = "default_keyspace";
 
+    /** Default options. */
+    public static final AstraDBOptions DEFAULT_OPTIONS = AstraDBOptions.builder().build();
+
     /** Client for Astra Devops Api. */
     final AstraDBDevopsClient devopsDbClient;
 
@@ -98,7 +101,19 @@ public class AstraDBClient {
      *      authentication token
      */
     public AstraDBClient(String token) {
-        this(token, AstraEnvironment.PROD, new AstraDBOptions());
+        this(token, DEFAULT_OPTIONS);
+    }
+
+    /**
+     * Constructor with an authentification token, defaulting to production environment, and default http options.
+     *
+     * @param token
+     *      authentication token
+     * @param astraDbOptions
+     *      options for AstraDb.
+     */
+    public AstraDBClient(String token, AstraDBOptions astraDbOptions) {
+        this(token, astraDbOptions, AstraEnvironment.PROD);
     }
 
     /**
@@ -111,7 +126,7 @@ public class AstraDBClient {
      * @param astraDbOptions
      *      options for AstraDb.
      */
-    public AstraDBClient(String token, AstraEnvironment env, AstraDBOptions astraDbOptions) {
+    public AstraDBClient(String token, AstraDBOptions astraDbOptions, AstraEnvironment env) {
         this.env = env;
         this.token = token;
         this.devopsDbClient = new AstraDBDevopsClient(token, env);
@@ -119,61 +134,9 @@ public class AstraDBClient {
 
         // Local Agent for Resume
         HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
-        httpClientBuilder.version(astraDbOptions.getHttpClientOptions().getHttpVersion());
-        httpClientBuilder.connectTimeout(Duration.ofSeconds(astraDbOptions.getHttpClientOptions().getConnectionRequestTimeoutInSeconds()));
+        httpClientBuilder.version(astraDbOptions.asHttpClientOptions().getHttpVersion());
+        httpClientBuilder.connectTimeout(Duration.ofSeconds(astraDbOptions.asHttpClientOptions().getConnectionRequestTimeoutInSeconds()));
         this.httpClient = httpClientBuilder.build();
-    }
-
-    // -------------------------------
-    // -- Working with Namespaces  ---
-    // -------------------------------
-
-    /**
-     * Create a keyspace.
-     *
-     * @param databaseName
-     *      database name
-     * @param keyspaceName
-     *      keyspace name
-     */
-    public void createKeyspace(String databaseName, String keyspaceName) {
-        devopsDbClient.databaseByName(databaseName).keyspaces().create(keyspaceName);
-    }
-
-    /**
-     * Create a keyspace.
-     *
-     * @param databaseId
-     *      database unique identifier
-     * @param keyspaceName
-     *      keyspace name
-     */
-    public void createKeyspace(UUID databaseId, String keyspaceName) {
-        devopsDbClient.database(databaseId.toString()).keyspaces().create(keyspaceName);
-    }
-
-    /**
-     * Delete a keyspace.
-     *
-     * @param databaseName
-     *      database name
-     * @param keyspaceName
-     *      keyspace name
-     */
-    public void deleteKeyspace(String databaseName, String keyspaceName) {
-        devopsDbClient.databaseByName(databaseName).keyspaces().delete(keyspaceName);
-    }
-
-    /**
-     * Delete a keyspace.
-     *
-     * @param databaseId
-     *      database unique identifier
-     * @param keyspaceName
-     *      keyspace name
-     */
-    public void deleteKeyspace(UUID databaseId, String keyspaceName) {
-        devopsDbClient.database(databaseId.toString()).keyspaces().delete(keyspaceName);
     }
 
     // --------------------
@@ -316,7 +279,7 @@ public class AstraDBClient {
      * @return
      *     if the database exists
      */
-    public boolean isDatabaseExists(String name) {
+    public boolean databaseExists(String name) {
         return getDatabaseInformations(name).findFirst().isPresent();
     }
 

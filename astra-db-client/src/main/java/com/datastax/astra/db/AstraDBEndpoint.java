@@ -60,16 +60,6 @@ public class AstraDBEndpoint {
     }
 
     /**
-     * Constructor from an URL.
-     */
-    public AstraDBEndpoint(String apiEndpoint) {
-        AstraDBEndpoint a = parse(apiEndpoint);
-        this.env = a.env;
-        this.databaseId = a.databaseId;
-        this.databaseRegion = a.databaseRegion;
-    }
-
-    /**
      * Constructor with chunk of the URL.
      *
      * @param databaseId
