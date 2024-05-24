@@ -346,18 +346,21 @@ public class HttpClientWrapper {
                 return res;
             }
             if (res.getCode() >= 300) {
+              String entity = "n/a";
+              if (req.getEntity() != null) {
+                  entity = EntityUtils.toString(req.getEntity());
+              }
               LOGGER.error("Error for request, url={}, method={}, body={}",
-                      req.getUri().toString(), req.getMethod(),
-                      EntityUtils.toString(req.getEntity()));
+                      req.getUri().toString(), req.getMethod(), entity);
               LOGGER.error("Response  code={}, body={}", res.getCode(), res.getBody());
               processErrors(res, mandatory);
               LOGGER.error("An HTTP Error occurred. The HTTP CODE Return is {}", res.getCode());
             }
             return res;
-        } catch (IllegalArgumentException e) {
+            // do not swallow the exception
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw e;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch(Exception e) {
             throw new RuntimeException("Error in HTTP Request: " + e.getMessage(), e);
         }
     }
@@ -406,44 +409,41 @@ public class HttpClientWrapper {
      * @param res HttpResponse
      */
     private void processErrors(ApiResponseHttp res, boolean mandatory) {
+        String body = res.getBody();
         switch(res.getCode()) {
                 // 400
                 case HttpURLConnection.HTTP_BAD_REQUEST:
-                    throw new IllegalArgumentException("Error Code=" + res.getCode() + 
-                            " (HTTP_BAD_REQUEST) Invalid Parameters: " 
-                            + res.getBody());
+                    throw new IllegalArgumentException("HTTP_BAD_REQUEST (code=" + res.getCode() +
+                            "): Invalid Parameters " + body);
                 // 401
                 case HttpURLConnection.HTTP_UNAUTHORIZED:
-                    throw new AuthenticationException("Error Code=" + res.getCode() +
-                            ", (HTTP_UNAUTHORIZED) Invalid Credentials Check your token: " + 
-                            res.getBody());
+                    throw new AuthenticationException("HTTP_UNAUTHORIZED (code=" + res.getCode() +
+                            "): Invalid Credentials. Your token is invalid for target environment.");
                 // 403
                 case HttpURLConnection.HTTP_FORBIDDEN:
-                    throw new AuthenticationException("Error Code=" + res.getCode() + 
-                            ", (HTTP_FORBIDDEN) Invalid permissions, check your token: " + 
-                            res.getBody());
+                    throw new AuthenticationException("HTTP_FORBIDDEN (code=" + res.getCode() +
+                            "): Invalid permissions. Your token may not have expected permissions to perform this actions.");
                 // 404    
                 case HttpURLConnection.HTTP_NOT_FOUND:
                     if (mandatory) {
-                        throw new IllegalArgumentException("Error Code=" + res.getCode() + 
-                                "(HTTP_NOT_FOUND) Object not found:  " 
-                                + res.getBody());
+                        throw new IllegalArgumentException("HTTP_NOT_FOUND (code=" + res.getCode() +
+                                ") Object not found:  " + body);
                     }
                 break;
                 // 409
                 case HttpURLConnection.HTTP_CONFLICT:
-                    throw new AuthenticationException("Error Code=" + res.getCode() +
-                            ", (HTTP_CONFLICT) Object may already exist with same identifiers: " +
-                            res.getBody());                
+                    throw new AuthenticationException("HTTP_CONFLICT (code=" + res.getCode() +
+                            "): Object may already exist with same name or id " +
+                            body);
                 case 422:
                     throw new IllegalArgumentException("Error Code=" + res.getCode() + 
                             "(422) Invalid information provided to create DB: " 
-                            + res.getBody());
+                            + body);
                 default:
                     if (res.getCode() == HttpURLConnection.HTTP_UNAVAILABLE) {
-                        throw new IllegalStateException(res.getBody() + " (http:" + res.getCode() + ")");
+                        throw new IllegalStateException("(code=" + res.getCode() + ")" + body);
                     }
-                    throw new RuntimeException(res.getBody() + " (http:" + res.getCode() + ")");
+                    throw new RuntimeException(" (code=" + res.getCode() + ")" + body);
             }
     }
 
