@@ -70,7 +70,6 @@
         <module>astra-sdk</module>
         <module>astra-sdk-devops</module>
         <module>astra-sdk-pulsar</module>
-        <module>astra-db-client</module>
         <module>astra-sdk-archetypes</module>
         <module>astra-spring-boot-autoconfigure</module>
         <module>astra-spring-boot-starter</module>

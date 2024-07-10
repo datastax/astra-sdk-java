@@ -60,5 +60,7 @@ public enum DatabaseStatusType {
     /** status. */
     UNKNOWN,
     /** status. */
-    UNPARKING;
+    UNPARKING,
+    /** status. */
+    SYNCHRONIZING;
 }

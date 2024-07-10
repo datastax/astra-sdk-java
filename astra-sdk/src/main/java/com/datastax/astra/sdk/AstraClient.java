@@ -18,8 +18,6 @@ package com.datastax.astra.sdk;
 
 import com.datastax.astra.sdk.config.AstraClientConfig;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.dtsx.astra.sdk.AstraDB;
-import com.dtsx.astra.sdk.AstraDBAdmin;
 import com.dtsx.astra.sdk.AstraOpsClient;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.Database;
@@ -42,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.File;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Public interface to interact with ASTRA APIs.
@@ -451,28 +448,4 @@ public class AstraClient implements Closeable {
            stargateClient.close();
        }
     }
-
-    /**
-     * Access AstraDBAdmin from the Astra Client.
-     *
-     * @return
-     *      astra DbAdmin
-     */
-    public AstraDBAdmin getAstraDBAdmin() {
-       return new AstraDBAdmin(getToken().orElseThrow(() -> new IllegalStateException("No token provided.")));
-    }
-
-    /**
-     * Retrieve and AstraDB instance for the db Id.
-     *
-     * @return
-     *      astraDB instance
-     */
-    public AstraDB getAstraDB() {
-        if (null == astraClientConfig.getDatabaseId()) {
-            throw new IllegalStateException("No databaseId provided.");
-        }
-        return getAstraDBAdmin().getDatabase(UUID.fromString(astraClientConfig.getDatabaseId()));
-    }
-
 }
