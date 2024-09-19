@@ -55,6 +55,12 @@ public class DbRegionsClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.regions";
+    }
+
     /**
      * Returns supported regions and availability for a given user and organization
      *
@@ -63,9 +69,7 @@ public class DbRegionsClient extends AbstractApiClient {
      */
     public Stream<DatabaseRegion> findAll() {
         // Invoke endpoint
-        ApiResponseHttp res = HttpClientWrapper
-                .getInstance()
-                .GET(ApiLocator.getApiDevopsEndpoint(environment) + PATH_REGIONS, token);
+        ApiResponseHttp res = GET(ApiLocator.getApiDevopsEndpoint(environment) + PATH_REGIONS, getOperationName("find"));
         // Marshall response
         return JsonUtils.unmarshallType(res.getBody(), TYPE_LIST_REGION).stream();
     }
@@ -92,7 +96,7 @@ public class DbRegionsClient extends AbstractApiClient {
                 break;
         }
         // Invoke endpoint
-        ApiResponseHttp res = HttpClientWrapper.getInstance().GET(url, token);
+        ApiResponseHttp res = GET(url, getOperationName("findServerless"));
         // Marshall response
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<DatabaseRegionServerless>>(){}).stream();
     }

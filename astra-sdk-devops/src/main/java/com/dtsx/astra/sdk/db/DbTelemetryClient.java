@@ -12,7 +12,6 @@ import com.dtsx.astra.sdk.utils.ApiLocator;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
-import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 
 /**
  * Setup Database Telemetry.
@@ -52,6 +51,12 @@ public class DbTelemetryClient extends AbstractApiClient {
         this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.telemetry";
+    }
+
     /**
      * Retrieve Remote Telemetry configuration.
      * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
@@ -60,7 +65,7 @@ public class DbTelemetryClient extends AbstractApiClient {
      *      http response
      */
     public ApiResponseHttp find() {
-        return HttpClientWrapper.getInstance().GET(getEndpointTelemetry(), token);
+        return GET(getEndpointTelemetry(), getOperationName("find"));
     }
 
     /**

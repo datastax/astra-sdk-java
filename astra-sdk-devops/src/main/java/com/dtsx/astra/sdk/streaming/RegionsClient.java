@@ -49,6 +49,12 @@ public class RegionsClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.regions";
+    }
+
     /**
      * Get available serverless for Streaming.
      *
@@ -58,7 +64,7 @@ public class RegionsClient extends AbstractApiClient {
     public Stream<StreamingRegion> findAllServerless() {
         // Invoke api
         Map<String, Map<String, List<StreamingRegion>>> res = JsonUtils
-                .unmarshallType(GET(getApiDevopsEndpointRegionsServerless())
+                .unmarshallType(GET(getApiDevopsEndpointRegionsServerless(), getOperationName("findServerless"))
                 .getBody(), TYPE_LIST_REGIONS).getData();
         if (null != res &&
                 null != res.get(JSON_ORGANIZATION) &&

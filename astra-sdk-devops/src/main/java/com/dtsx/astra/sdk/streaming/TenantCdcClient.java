@@ -59,6 +59,13 @@ public class TenantCdcClient extends AbstractApiClient {
         this.tenant = new AstraStreamingClient(token, environment).get(tenantId);
     }
 
+
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.cdc";
+    }
+
     /**
      * Create a Cdc.
      *
@@ -86,7 +93,7 @@ public class TenantCdcClient extends AbstractApiClient {
         createCdc.setKeyspace(keyspace);
         createCdc.setTableName(table);
         createCdc.setTopicPartitions(topicPartition);
-        HttpClientWrapper.getInstance().POST_PULSAR(getEndpointTenantCdc(),
+        HttpClientWrapper.getInstance(getOperationName("create")).POST_PULSAR(getEndpointTenantCdc(),
                 tenant.getPulsarToken(),
                 JsonUtils.marshall(createCdc),
                 tenant.getClusterName(),
@@ -112,7 +119,7 @@ public class TenantCdcClient extends AbstractApiClient {
         deleteCdc.setDatabaseId(db.getId());
         deleteCdc.setKeyspace(keyspace);
         deleteCdc.setTableName(table);
-        HttpClientWrapper.getInstance().DELETE_PULSAR(getEndpointTenantCdc(),
+        HttpClientWrapper.getInstance(getOperationName("delete")).DELETE_PULSAR(getEndpointTenantCdc(),
                 tenant.getPulsarToken(),
                 JsonUtils.marshall(deleteCdc),
                 tenant.getClusterName(),
@@ -126,7 +133,7 @@ public class TenantCdcClient extends AbstractApiClient {
      *      list of cdc.
      */
     public Stream<CdcDefinition> list() {
-        ApiResponseHttp res =  HttpClientWrapper.getInstance().GET_PULSAR(getEndpointTenantCdc(),
+        ApiResponseHttp res =  HttpClientWrapper.getInstance(getOperationName("list")).GET_PULSAR(getEndpointTenantCdc(),
                 tenant.getPulsarToken(),
                 tenant.getClusterName(),
                 tenant.getOrganizationId().toString());

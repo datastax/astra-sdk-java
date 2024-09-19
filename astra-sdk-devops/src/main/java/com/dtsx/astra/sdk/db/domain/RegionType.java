@@ -19,4 +19,13 @@ package com.dtsx.astra.sdk.db.domain;
 /**
  * Encoded all values for 'region-type'
  */
-public enum RegionType { ALL, SERVERLESS, VECTOR }
+public enum RegionType {
+    /** all regions. */
+    ALL,
+
+    /** SERVERLESS regions. */
+    SERVERLESS,
+
+    /** VECTOR regions. */
+    VECTOR
+}

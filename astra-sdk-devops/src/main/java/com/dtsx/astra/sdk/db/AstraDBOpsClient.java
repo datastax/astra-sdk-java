@@ -9,13 +9,17 @@ import com.dtsx.astra.sdk.utils.ApiResponseError;
 import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
+import com.dtsx.astra.sdk.utils.HttpClientWrapper;
 import com.dtsx.astra.sdk.utils.JsonUtils;
+import com.dtsx.astra.sdk.utils.observability.ApiRequestObserver;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.dtsx.astra.sdk.db.domain.DatabaseFilter.Include;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import java.net.HttpURLConnection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,6 +59,26 @@ public class AstraDBOpsClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /**
+     * As immutable object use builder to initiate the object.
+     *
+     * @param env
+     *      define target environment to be used
+     * @param token
+     *      authenticated token
+     * @param observers
+     *     list of observers
+     */
+    public AstraDBOpsClient(String token, AstraEnvironment env, Map<String, ApiRequestObserver> observers) {
+        super(token, env, observers);
+        HttpClientWrapper.registerObservers(observers);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db";
+    }
 
     // ---------------------------------
     // ----        REGIONS          ----
@@ -81,7 +105,8 @@ public class AstraDBOpsClient extends AbstractApiClient {
      *      access list
      */
     public Stream<AccessList> findAllAccessLists() {
-        return JsonUtils.unmarshallType(GET(getEndpointAccessLists()).getBody(), RESPONSE_ACCESS_LIST).stream();
+        return JsonUtils.unmarshallType(GET(getEndpointAccessLists(), getOperationName("findAllAccessLists"))
+                .getBody(), RESPONSE_ACCESS_LIST).stream();
     }
 
     // ---------------------------------
@@ -161,7 +186,7 @@ public class AstraDBOpsClient extends AbstractApiClient {
      */
     public Stream<Database> search(DatabaseFilter filter) {
         Assert.notNull(filter, "filter");
-        ApiResponseHttp res = GET(getEndpointDatabases() + filter.urlParams());
+        ApiResponseHttp res = GET(getEndpointDatabases() + filter.urlParams(), getOperationName("search"));
         try {
             return JsonUtils.unmarshallType(res.getBody(), RESPONSE_DATABASES).stream();
         } catch(Exception e) {
@@ -191,7 +216,7 @@ public class AstraDBOpsClient extends AbstractApiClient {
      */
     public String create(DatabaseCreationRequest dbCreationRequest) {
         Assert.notNull(dbCreationRequest, "Database creation request");
-        ApiResponseHttp res = POST(getEndpointDatabases(), JsonUtils.marshall(dbCreationRequest));
+        ApiResponseHttp res = POST(getEndpointDatabases(), JsonUtils.marshall(dbCreationRequest), getOperationName("create"));
         if (HttpURLConnection.HTTP_CREATED != res.getCode()) {
             throw new IllegalStateException("Expected code 201 to create db but got " 
                         + res.getCode() + "body=" + res.getBody());

@@ -4,7 +4,11 @@ import com.dtsx.astra.sdk.utils.ApiResponseHttp;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.HttpClientWrapper;
+import com.dtsx.astra.sdk.utils.observability.ApiRequestObserver;
 import lombok.Getter;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
 
@@ -25,6 +29,11 @@ public abstract class AbstractApiClient {
     protected final AstraEnvironment environment;
 
     /**
+     * Observers to notify.
+     */
+    protected final Map<String, ApiRequestObserver> observers = new LinkedHashMap<>();
+
+    /**
      * Default constructor.
      *
      * @param env
@@ -39,13 +48,52 @@ public abstract class AbstractApiClient {
     }
 
     /**
+     * Default constructor.
+     *
+     * @param env
+     *      astra environment
+     * @param token
+     *     token value
+     * @param observers
+     *      list of observers
+     */
+    public AbstractApiClient(String token, AstraEnvironment env, Map<String, ApiRequestObserver> observers) {
+        Assert.hasLength(token, "token");
+        this.token = token;
+        this.environment = env;
+        this.observers.putAll(observers);
+    }
+
+    /**
      * Access Http Client.
      *
+     * @param operation
+     *      operation name (tracking)
      * @return
      *      Http client
      */
-    public HttpClientWrapper getHttpClient() {
-        return HttpClientWrapper.getInstance();
+    public HttpClientWrapper getHttpClient(String operation) {
+        return HttpClientWrapper.getInstance(operation);
+    }
+
+    /**
+     * Provide a service Name.
+     *
+     * @return
+     *      service name
+     */
+    public abstract String getServiceName();
+
+    /**
+     * Get the full name for the operation.
+     *
+     * @param operation
+     *      operation name
+     * @return
+     *      full operation name
+     */
+    protected String getOperationName(String operation) {
+        return getServiceName() + "." + operation;
     }
 
     /**
@@ -53,11 +101,13 @@ public abstract class AbstractApiClient {
      *
      * @param url
      *      url
+     * @param operation
+     *      operation name (tracking)
      * @return
      *      response
      */
-    public ApiResponseHttp GET(String url) {
-        return getHttpClient().GET(url, getToken());
+    public ApiResponseHttp GET(String url, String operation) {
+        return getHttpClient(operation).GET(url, getToken());
     }
 
     /**
@@ -65,12 +115,13 @@ public abstract class AbstractApiClient {
      *
      * @param url
      *      url
+     * @param operation
+     *      operation name (tracking)
      * @return
      *      response
      */
-    public ApiResponseHttp HEAD(String url) {
-        System.out.println(url);
-        return getHttpClient().HEAD(url, getToken());
+    public ApiResponseHttp HEAD(String url, String operation) {
+        return getHttpClient(operation).HEAD(url, getToken());
     }
 
     /**
@@ -78,11 +129,13 @@ public abstract class AbstractApiClient {
      *
      * @param url
      *      url
+     * @param operation
+     *      operation name (tracking)
      * @return
      *      response
      */
-    public ApiResponseHttp POST(String url) {
-        return getHttpClient().POST(url, getToken());
+    public ApiResponseHttp POST(String url, String operation) {
+        return getHttpClient(operation).POST(url, getToken());
     }
 
     /**
@@ -92,11 +145,13 @@ public abstract class AbstractApiClient {
      *      body
      * @param url
      *      url
+     * @param operation
+     *      operation name (tracking)
      * @return
      *      response
      */
-    public ApiResponseHttp POST(String url, String body) {
-        return getHttpClient().POST(url, getToken(), body);
+    public ApiResponseHttp POST(String url, String body, String operation) {
+        return getHttpClient(operation).POST(url, getToken(), body);
     }
 
     /**
@@ -106,9 +161,11 @@ public abstract class AbstractApiClient {
      *      url
      * @param body
      *      body
+     * @param operation
+     *      operation name (tracking)
      */
-    public void PUT(String url, String body) {
-        getHttpClient().PUT(url, getToken(), body);
+    public void PUT(String url, String body, String operation) {
+        getHttpClient(operation).PUT(url, getToken(), body);
     }
 
     /**
@@ -118,9 +175,11 @@ public abstract class AbstractApiClient {
      *      url
      * @param body
      *      body
+     * @param operation
+     *      operation name (tracking)
      */
-    public void PATCH(String url, String body) {
-        getHttpClient().PATCH(url, getToken(), body);
+    public void PATCH(String url, String body, String operation) {
+        getHttpClient(operation).PATCH(url, getToken(), body);
     }
 
     /**
@@ -128,9 +187,11 @@ public abstract class AbstractApiClient {
      *
      * @param url
      *      url
+     * @param operation
+     *      operation name (tracking)
      */
-    public void DELETE(String url) {
-        getHttpClient().DELETE(url, getToken());
+    public void DELETE(String url, String operation) {
+        getHttpClient(operation).DELETE(url, getToken());
     }
 
     /**

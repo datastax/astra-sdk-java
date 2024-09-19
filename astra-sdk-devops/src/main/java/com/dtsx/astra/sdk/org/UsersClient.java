@@ -40,6 +40,12 @@ public class UsersClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "users";
+    }
+
     /**
      * List users in organization.
      *
@@ -48,7 +54,7 @@ public class UsersClient extends AbstractApiClient {
      */
     public Stream<User> findAll() {
         // Invoke endpoint
-        ApiResponseHttp res = GET(getEndpointUsers());
+        ApiResponseHttp res = GET(getEndpointUsers(), getOperationName("findAll"));
         // Marshall response
         return JsonUtils.unmarshallBean(res.getBody(), ResponseAllUsers.class).getUsers().stream();
     }
@@ -62,7 +68,7 @@ public class UsersClient extends AbstractApiClient {
      *      user information
      */
     public Optional<User> find(String userId) {
-        ApiResponseHttp res = GET(getEndpointUser(userId));
+        ApiResponseHttp res = GET(getEndpointUser(userId), getOperationName("find"));
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -117,7 +123,7 @@ public class UsersClient extends AbstractApiClient {
         if (!exist(userId)) {
             throw new UserNotFoundException(userId);
         }
-        DELETE(getEndpointUser(userId));
+        DELETE(getEndpointUser(userId), getOperationName("delete"));
     }
 
     /**
@@ -163,7 +169,7 @@ public class UsersClient extends AbstractApiClient {
         });
 
         // Invoke HTTP
-        PUT(getEndpointUsers(), JsonUtils.marshall(inviteRequest));
+        PUT(getEndpointUsers(), JsonUtils.marshall(inviteRequest), getOperationName("invite"));
     }
 
     /**
@@ -198,7 +204,9 @@ public class UsersClient extends AbstractApiClient {
                 }
             }
         });
-        PUT(getEndpointUser(userId) + "/roles", JsonUtils.marshall(mapRoles));
+        PUT(getEndpointUser(userId) + "/roles",
+                JsonUtils.marshall(mapRoles),
+                getOperationName("updateRoles"));
     }
 
     /**

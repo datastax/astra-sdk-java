@@ -51,6 +51,12 @@ public class DbAccessListsClient extends AbstractApiClient {
         this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.access-list";
+    }
+
     /**
      * Retrieve the access list for a DB.
      *
@@ -59,7 +65,9 @@ public class DbAccessListsClient extends AbstractApiClient {
      */
     public AccessList get() {
         try {
-            return JsonUtils.unmarshallBean(GET(getApiDevopsEndpointAccessListsDb()).getBody(), AccessList.class);
+            return JsonUtils.unmarshallBean(GET(
+                    getApiDevopsEndpointAccessListsDb(),
+                    getOperationName("get")).getBody(), AccessList.class);
         } catch(RuntimeException mex) {
             AccessList ac = new AccessList();
             ac.setDatabaseId(db.getId());
@@ -80,7 +88,9 @@ public class DbAccessListsClient extends AbstractApiClient {
     public void addAddress(AccessListAddressRequest... newAddressed) {
         Assert.notNull(newAddressed, "New addresses should not be null");
         Assert.isTrue(newAddressed.length > 0, "New address should not be empty");
-        POST(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(newAddressed));
+        POST(getApiDevopsEndpointAccessListsDb(),
+                JsonUtils.marshall(newAddressed),
+                getOperationName("addAddress"));
     }
 
     /**
@@ -89,7 +99,7 @@ public class DbAccessListsClient extends AbstractApiClient {
      * @see <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteAddressesOrAccessListForDatabase">Reference Documentation</a>
      */
     public void delete() {
-        DELETE(getApiDevopsEndpointAccessListsDb());
+        DELETE(getApiDevopsEndpointAccessListsDb(),  getOperationName("delete"));
     }
 
     /**
@@ -103,7 +113,9 @@ public class DbAccessListsClient extends AbstractApiClient {
     public void replaceAddresses(AccessListAddressRequest... addresses) {
         Assert.notNull(addresses, "Addresses should not be null");
         Assert.isTrue(addresses.length > 0, "Address should not be empty");
-        PUT(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(addresses));
+        PUT(getApiDevopsEndpointAccessListsDb(),
+           JsonUtils.marshall(addresses),
+           getOperationName("replaceAddresses"));
     }
 
     /**
@@ -120,7 +132,7 @@ public class DbAccessListsClient extends AbstractApiClient {
         AccessListRequest alr = new AccessListRequest();
         alr.setAddresses(Arrays.asList(addresses));
         alr.setConfigurations(new AccessListRequest.Configurations(true));
-        PATCH(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(alr));
+        PATCH(getApiDevopsEndpointAccessListsDb(), JsonUtils.marshall(alr), getOperationName("update"));
     }
 
     /**

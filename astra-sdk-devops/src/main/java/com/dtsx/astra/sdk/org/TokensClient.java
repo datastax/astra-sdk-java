@@ -46,6 +46,12 @@ public class TokensClient extends AbstractApiClient {
         rolesClient = new RolesClient(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "tokens";
+    }
+
     /**
      * List tokens
      *
@@ -54,7 +60,7 @@ public class TokensClient extends AbstractApiClient {
      */
     public Stream<IamToken> findAll() {
         // Invoke endpoint
-        ApiResponseHttp res = GET(getEndpointTokens());
+        ApiResponseHttp res = GET(getEndpointTokens(), getOperationName("find"));
         // Marshall
         return JsonUtils.unmarshallBean(res.getBody(), ResponseAllIamTokens.class).getClients().stream();
     }
@@ -95,7 +101,7 @@ public class TokensClient extends AbstractApiClient {
         if (!exist(tokenId)) {
             throw new RuntimeException("Token '"+ tokenId + "' has not been found");
         }
-        DELETE(getEndpointToken(tokenId));
+        DELETE(getEndpointToken(tokenId), getOperationName("delete"));
     }
 
     /**
@@ -119,7 +125,7 @@ public class TokensClient extends AbstractApiClient {
         // Building request
         String body = "{ \"roles\": [ \"" + JsonUtils.escapeJson(roleId) + "\"]}";
         // Invoke endpoint
-        ApiResponseHttp res = POST(getEndpointTokens(), body);
+        ApiResponseHttp res = POST(getEndpointTokens(), body, getOperationName("create"));
         // Marshall response
         return JsonUtils.unmarshallBean(res.getBody(), CreateTokenResponse.class);
     }

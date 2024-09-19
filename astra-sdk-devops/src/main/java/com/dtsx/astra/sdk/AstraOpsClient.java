@@ -43,6 +43,12 @@ public class AstraOpsClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "ops";
+    }
+
     // ------------------------------------------------------
     //                 CORE FEATURES
     // ------------------------------------------------------
@@ -55,7 +61,7 @@ public class AstraOpsClient extends AbstractApiClient {
      */
     public String getOrganizationId() {
         // Invoke endpoint
-        ApiResponseHttp res = getHttpClient().GET(ApiLocator.getApiDevopsEndpoint(environment) + "/currentOrg", token);
+        ApiResponseHttp res = GET(ApiLocator.getApiDevopsEndpoint(environment) + "/currentOrg", getOperationName("orgId"));
         // Parse response
         return (String) JsonUtils.unmarshallBean(res.getBody(),  Map.class).get("id");
     }
@@ -68,7 +74,7 @@ public class AstraOpsClient extends AbstractApiClient {
      */
     public Organization getOrganization() {
         // Invoke endpoint
-        ApiResponseHttp res = getHttpClient().GET(users().getEndpointUsers(), token);
+        ApiResponseHttp res = GET(users().getEndpointUsers(), getOperationName("org"));
         // Marshalling the users response to get org infos
         ResponseAllUsers body = JsonUtils.unmarshallBean(res.getBody(), ResponseAllUsers.class);
         // Build a proper result

@@ -55,6 +55,12 @@ public class RolesClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "roles";
+    }
+
     /**
      * List roles in a Organizations.
      *
@@ -63,7 +69,7 @@ public class RolesClient extends AbstractApiClient {
      */
     public Stream<Role> findAll() {
         // Invoke endpoint
-        ApiResponseHttp res = GET(getApiEndpointRoles());
+        ApiResponseHttp res = GET(getApiEndpointRoles(), getOperationName("findAll"));
         // Mapping
         return JsonUtils.unmarshallType(res.getBody(), TYPE_LIST_ROLES).stream();
     }
@@ -77,7 +83,7 @@ public class RolesClient extends AbstractApiClient {
      *      role information
      */
     public Optional<Role> find(String roleId) {
-        ApiResponseHttp res = GET(getEndpointRole(roleId));
+        ApiResponseHttp res = GET(getEndpointRole(roleId), getOperationName("find"));
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -156,7 +162,7 @@ public class RolesClient extends AbstractApiClient {
      */
     public CreateRoleResponse create(RoleDefinition cr) {
         Assert.notNull(cr, "CreateRole request");
-        ApiResponseHttp res = POST(getApiEndpointRoles(), JsonUtils.marshall(cr));
+        ApiResponseHttp res = POST(getApiEndpointRoles(), JsonUtils.marshall(cr), getOperationName("create"));
         return JsonUtils.unmarshallBean(res.getBody(), CreateRoleResponse.class);
     }
 
@@ -182,7 +188,7 @@ public class RolesClient extends AbstractApiClient {
         // Ensure role exist
         get(roleId);
         // Http Request
-        DELETE(getEndpointRole(roleId));
+        DELETE(getEndpointRole(roleId), getOperationName("delete"));
     }
 
     /**
@@ -194,7 +200,7 @@ public class RolesClient extends AbstractApiClient {
      *      role definition
      */
     public void update(String roleId, RoleDefinition cr) {
-        PUT(getEndpointRole(roleId), JsonUtils.marshall(cr));
+        PUT(getEndpointRole(roleId), JsonUtils.marshall(cr), getOperationName("update"));
     }
 
     /**

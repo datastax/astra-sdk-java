@@ -56,16 +56,22 @@ public class TenantStatsClient extends AbstractApiClient {
         this.tenant = new AstraStreamingClient(token, env).get(tenantId);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.stats";
+    }
+
     /**
      * Retrieve Statistics for all namespaces.
      *
      * @return
      *      statistics
      */
-    public Stream<Statistics> namespaces() {
+    public Stream<Statistics> keyspaces() {
         return JsonUtils
                 .unmarshallType(
-                        HttpClientWrapper.getInstance().GET_PULSAR(getEndpointStatisticsNamespaces(),
+                        HttpClientWrapper.getInstance(getOperationName("keyspaces")).GET_PULSAR(getEndpointStatisticsNamespaces(),
                         tenant.getPulsarToken(), tenant.getClusterName(),
                         tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS)
                 .values()
@@ -80,11 +86,11 @@ public class TenantStatsClient extends AbstractApiClient {
      * @return
      *      statistics
      */
-    public Optional<Statistics> namespace(String namespace) {
+    public Optional<Statistics> keyspace(String namespace) {
         Map<String, Statistics> map = JsonUtils
                 .unmarshallType(
                         HttpClientWrapper
-                                .getInstance()
+                                .getInstance(getOperationName("keyspace"))
                                 .GET_PULSAR(
                                     getEndpointStatisticsNamespaces() + "/" + namespace,
                                     tenant.getPulsarToken(), tenant.getClusterName(),
@@ -102,7 +108,7 @@ public class TenantStatsClient extends AbstractApiClient {
     public Stream<Statistics> topics() {
         return JsonUtils
                 .unmarshallType(
-                        HttpClientWrapper.getInstance().GET_PULSAR(getEndpointStatisticsTopics(),
+                        HttpClientWrapper.getInstance(getOperationName("topics")).GET_PULSAR(getEndpointStatisticsTopics(),
                                 tenant.getPulsarToken(), tenant.getClusterName(),
                                 tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS)
                 .values()
@@ -110,17 +116,17 @@ public class TenantStatsClient extends AbstractApiClient {
     }
 
     /**
-     * Retrieve Statistics for topics of a namespace
+     * Retrieve Statistics for topics of a keyspace
      *
-     * @param namespace
-     *      current pulsar namespace
+     * @param keyspace
+     *      current pulsar keyspace
      * @return
      *      statistics
      */
-    public Stream<Statistics> topics(String namespace) {
+    public Stream<Statistics> topics(String keyspace) {
         return JsonUtils
                 .unmarshallType(
-                        HttpClientWrapper.getInstance().GET_PULSAR(getEndpointStatisticsTopics() + "/" + namespace,
+                        HttpClientWrapper.getInstance(getOperationName("topics")).GET_PULSAR(getEndpointStatisticsTopics() + "/" + keyspace,
                                 tenant.getPulsarToken(), tenant.getClusterName(),
                                 tenant.getOrganizationId().toString()).getBody(), TYPE_LIST_STATISTICS)
                 .values()

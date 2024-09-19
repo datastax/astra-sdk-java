@@ -44,7 +44,7 @@ public class TenantStatsClientTest extends AbstractDevopsApiTest {
         AstraStreamingClient cli = new AstraStreamingClient(getToken());
         TenantStatsClient statsClient = cli.tenant(tmpTenant).stats();
         // When
-        List<String> statsName = statsClient.namespaces()
+        List<String> statsName = statsClient.keyspaces()
                 .map(Statistics::getName)
                 .collect(Collectors.toList());
         // Then
@@ -58,7 +58,7 @@ public class TenantStatsClientTest extends AbstractDevopsApiTest {
         AstraStreamingClient cli = new AstraStreamingClient(getToken());
         TenantStatsClient statsClient = cli.tenant(tmpTenant).stats();
         // When
-        assertFalse(statsClient.namespace("default").isPresent());
+        assertFalse(statsClient.keyspace("default").isPresent());
     }
 
     @Test

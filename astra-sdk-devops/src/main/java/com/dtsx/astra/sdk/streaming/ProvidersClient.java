@@ -35,6 +35,13 @@ public class ProvidersClient extends AbstractApiClient {
         super(token, env);
     }
 
+
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.providers";
+    }
+
     /**
      * Operations on providers.
      *
@@ -44,7 +51,7 @@ public class ProvidersClient extends AbstractApiClient {
     @SuppressWarnings("unchecked")
     public Map<String, List<String>> findAll() {
         return JsonUtils.unmarshallBean(
-                GET(getApiDevopsEndpointProviders())
+                GET(getApiDevopsEndpointProviders(), getOperationName("find"))
                 .getBody(), Map.class);
     }
 

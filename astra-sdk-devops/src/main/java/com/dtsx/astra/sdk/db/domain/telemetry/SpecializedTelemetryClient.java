@@ -65,17 +65,17 @@ public class SpecializedTelemetryClient<T> {
     public ApiResponseHttp setup(T ktr) {
         Map<String, T> bodyMap = new HashMap<>();
         bodyMap.put(key, ktr);
-        return HttpClientWrapper.getInstance().POST(telemetryEndpoint, token, JsonUtils.mapAsJson(bodyMap));
+        return HttpClientWrapper.getInstance("db.telemetry.setup").POST(telemetryEndpoint, token, JsonUtils.mapAsJson(bodyMap));
     }
 
     /**
      * Retrieve Remote Telemetry configuration
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/getTelemetryConfig">...</a>
      * @return
      *      telemetry request
      */
     public Optional<T> find() {
-        ApiResponseHttp res =  HttpClientWrapper.getInstance().GET(telemetryEndpoint, token);
+        ApiResponseHttp res =  HttpClientWrapper.getInstance("db.telemetry.find").GET(telemetryEndpoint, token);
         try{
             if (res.getCode() == HttpURLConnection.HTTP_OK) {
                 return Optional.ofNullable(JsonUtils

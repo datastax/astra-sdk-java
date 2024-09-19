@@ -51,6 +51,12 @@ public class TenantLimitsClient extends AbstractApiClient {
         this.tenant = new AstraStreamingClient(token, env).get(tenantId);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.limits";
+    }
+
     /**
      * List limits for a tenants.
      *
@@ -58,7 +64,7 @@ public class TenantLimitsClient extends AbstractApiClient {
      *      the list of limits
      */
     public Stream<TenantLimit> limits() {
-        ApiResponseHttp res = GET(getEndpointTenantLimits());
+        ApiResponseHttp res = GET(getEndpointTenantLimits(), getOperationName("findAll"));
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<TenantLimit>>(){}).stream();
     }
 

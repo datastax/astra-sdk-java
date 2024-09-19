@@ -40,6 +40,12 @@ public class ClustersClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.clusters";
+    }
+
     /**
      * Operations on clusters.
      *
@@ -48,7 +54,7 @@ public class ClustersClient extends AbstractApiClient {
      */
     public Stream<Cluster> findAll() {
         return JsonUtils
-                .unmarshallType(GET(getApiDevopsEndpointClusters()).getBody(), new TypeReference<List<Cluster>>(){})
+                .unmarshallType(GET(getApiDevopsEndpointClusters(), getOperationName("find")).getBody(), new TypeReference<List<Cluster>>(){})
                 .stream();
     }
     

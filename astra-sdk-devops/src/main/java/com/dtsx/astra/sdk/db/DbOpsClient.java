@@ -35,6 +35,12 @@ public class DbOpsClient extends AbstractApiClient {
      */
     private final String databaseId;
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db";
+    }
+
     /**
      * As immutable object use builder to initiate the object.
      *
@@ -73,7 +79,7 @@ public class DbOpsClient extends AbstractApiClient {
      * @return the database if present,
      */
     public Optional<Database> find() {
-        ApiResponseHttp res = GET(getEndpointDatabase());
+        ApiResponseHttp res = GET(getEndpointDatabase(), getOperationName("find"));
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {
@@ -144,7 +150,7 @@ public class DbOpsClient extends AbstractApiClient {
         if (!isActive())
             throw new IllegalStateException("Database '" + databaseId + "' is not available.");
         // Get list of urls
-        ApiResponseHttp res = POST(getEndpointDatabase() + "/secureBundleURL");
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/secureBundleURL", getOperationName("downloadSecureBundle"));
         // Mapping
         return (String) JsonUtils.unmarshallBean(res.getBody(), Map.class).get("downloadURL");
     }
@@ -253,7 +259,7 @@ public class DbOpsClient extends AbstractApiClient {
      */
     public void park() {
         // Invoke Http endpoint
-        ApiResponseHttp res = POST(getEndpointDatabase() + "/park");
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/park", getOperationName("park"));
         // Check response code
         assertHttpCodeAccepted(res, "park", databaseId);
     }
@@ -261,11 +267,11 @@ public class DbOpsClient extends AbstractApiClient {
     /**
      * unpark a database.
      * <p>
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/unparkDatabase">...</a>
      */
     public void unpark() {
         // Invoke Http endpoint
-        ApiResponseHttp res = POST(getEndpointDatabase() + "/unpark");
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/unpark", getOperationName("unpark"));
         // Check response code
         assertHttpCodeAccepted(res, "unpark", databaseId);
     }
@@ -273,11 +279,11 @@ public class DbOpsClient extends AbstractApiClient {
     /**
      * Terminates a database.
      * <p>
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/terminateDatabase">...</a>
      */
     public void delete() {
         // Invoke Http endpoint
-        ApiResponseHttp res = POST(getEndpointDatabase() + "/terminate");
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/terminate", getOperationName("delete"));
         // Check response code
         assertHttpCodeAccepted(res, "terminate", databaseId);
     }
@@ -288,7 +294,7 @@ public class DbOpsClient extends AbstractApiClient {
      * @param capacityUnits
      *         sizing of a 'classic' db in Astra
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase
+     *         <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resizeDatabase">...</a>
      */
     public void resize(int capacityUnits) {
         // Parameter validations
@@ -296,7 +302,7 @@ public class DbOpsClient extends AbstractApiClient {
         // Build request
         String body = "{ \"capacityUnits\":" + capacityUnits + "}";
         // Invoke Http endpoint
-        ApiResponseHttp res = POST(getEndpointDatabase() + "/resize", body);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/resize", body, getOperationName("resize"));
         // Check response code
         assertHttpCodeAccepted(res, "resize", databaseId);
     }
@@ -309,7 +315,7 @@ public class DbOpsClient extends AbstractApiClient {
      * @param password
      *         password
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword
+     *         <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv1.html#operation/resetPassword">...</a>
      */
     public void resetPassword(String username, String password) {
         // Parameter validations
@@ -318,7 +324,7 @@ public class DbOpsClient extends AbstractApiClient {
         // Build body
         String body = "{" + "\"username\": \"" + username + "\", " + "\"password\": \"" + password + "\"  }";
         // Invoke
-        ApiResponseHttp res = POST(getEndpointDatabase() + "/resetPassword", body);
+        ApiResponseHttp res = POST(getEndpointDatabase() + "/resetPassword", body, getOperationName("resetPassword"));
         // Check response code
         assertHttpCodeAccepted(res, "resetPassword", databaseId);
     }
@@ -435,5 +441,6 @@ public class DbOpsClient extends AbstractApiClient {
     public String getEndpointDatabase(String dbId) {
         return ApiLocator.getApiDevopsEndpoint(environment) + "/databases/" + dbId;
     }
+
 
 }

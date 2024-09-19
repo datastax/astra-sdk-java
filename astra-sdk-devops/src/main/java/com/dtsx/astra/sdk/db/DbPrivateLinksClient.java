@@ -1,10 +1,9 @@
 package com.dtsx.astra.sdk.db;
 
 import com.dtsx.astra.sdk.AbstractApiClient;
+import com.dtsx.astra.sdk.db.domain.Database;
 import com.dtsx.astra.sdk.utils.Assert;
 import com.dtsx.astra.sdk.utils.AstraEnvironment;
-import com.dtsx.astra.sdk.utils.HttpClientWrapper;
-import com.dtsx.astra.sdk.db.domain.Database;
 
 import java.util.Optional;
 
@@ -12,11 +11,6 @@ import java.util.Optional;
  * Delegate private link operations.
  */
 public class DbPrivateLinksClient extends AbstractApiClient  {
-
-    /**
-     * Wrapper handling header and error management as a singleton.
-     */
-    private final HttpClientWrapper http = HttpClientWrapper.getInstance();
 
     /**
      * unique db identifier.
@@ -51,12 +45,19 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
         this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.private-link";
+    }
+
     /**
      * TODO Get info about all private endpoint connections for a specific database
      * <p>
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ListPrivateLinksForOrg
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/ListPrivateLinksForOrg">...</a>
      */
     public void findAll() {
+        System.out.println(db);
         throw new RuntimeException("This function is not yet implemented");
     }
 
@@ -66,7 +67,7 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
      * @param region
      *         current region where add the private link
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinksForDatacenter
+     *         <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinksForDatacenter">...</a>
      */
     public void findAll(String region) {
         throw new RuntimeException("This function is not yet implemented");
@@ -89,7 +90,7 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
      * @param region
      *         region where add the private endpoint
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AcceptEndpointToService
+     *<a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/AcceptEndpointToService">...</a>
      */
     public void create(String region) {
         throw new RuntimeException("This function is not yet implemented");
@@ -98,7 +99,7 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
     /**
      * TODO Get a specific endpoint.
      * <p>
-     * https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinkEndpoint
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/GetPrivateLinkEndpoint">...</a>
      *
      * @param region
      *         current region
@@ -120,7 +121,7 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
      * @param endpoint
      *         new value for the endpoint
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpdateEndpoint
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/UpdateEndpoint">...</a>
      */
     public void update(String region, String endpointId, Object endpoint) {
         throw new RuntimeException("This function is not yet implemented");
@@ -134,7 +135,7 @@ public class DbPrivateLinksClient extends AbstractApiClient  {
      * @param endpointId
      *         endpoint id fo the region
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteEndpoint
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/DeleteEndpoint">...</a>
      */
     public void delete(String region, String endpointId) {
         throw new RuntimeException("This function is not yet implemented");

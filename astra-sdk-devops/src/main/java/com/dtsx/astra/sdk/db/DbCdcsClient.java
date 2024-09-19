@@ -47,6 +47,12 @@ public class DbCdcsClient extends AbstractApiClient {
         this(token, AstraEnvironment.PROD, databaseId);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.cdc";
+    }
+
     /**
      * As immutable object use builder to initiate the object.
      *
@@ -69,7 +75,7 @@ public class DbCdcsClient extends AbstractApiClient {
      * @return list of cdc
      */
     public Stream<CdcDefinition> findAll() {
-        ApiResponseHttp res = GET(getEndpointDatabaseCdc());
+        ApiResponseHttp res = GET(getEndpointDatabaseCdc(), getOperationName("find"));
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Stream.of();
         } else {
@@ -124,7 +130,9 @@ public class DbCdcsClient extends AbstractApiClient {
         if (!db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceNotFoundException(db.getId(), keyspace);
         }
-        new AstraStreamingClient(token, environment).tenant(tenant).cdc().create(db.getId(), keyspace, table, topicPartition);
+        new AstraStreamingClient(token, environment)
+                .tenant(tenant).cdc()
+                .create(db.getId(), keyspace, table, topicPartition);
     }
 
     /**
@@ -172,5 +180,6 @@ public class DbCdcsClient extends AbstractApiClient {
     private String getEndpointDatabaseCdc() {
         return ApiLocator.getApiDevopsEndpoint(environment) + "/streaming" + "/astra-cdc/databases/" + db.getId();
     }
+
 
 }

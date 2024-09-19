@@ -1,8 +1,18 @@
 package com.dtsx.astra.sdk.utils;
 
 import com.dtsx.astra.sdk.exception.AuthenticationException;
+import com.dtsx.astra.sdk.utils.observability.ApiExecutionInfos;
+import com.dtsx.astra.sdk.utils.observability.ApiRequestObserver;
+import com.dtsx.astra.sdk.utils.observability.CompletableFutures;
 import org.apache.hc.client5.http.auth.StandardAuthScheme;
-import org.apache.hc.client5.http.classic.methods.*;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpPatch;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpTrace;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -19,10 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Helper to forge Http Requests to interact with Devops API.
@@ -71,6 +85,12 @@ public class HttpClientWrapper {
     /** HttpComponent5. */
     protected CloseableHttpClient httpClient = null;
 
+    /** Observers. */
+    protected static Map<String, ApiRequestObserver> observers = new LinkedHashMap<>();
+
+    /** Observers. */
+    protected String operationName= "n/a";
+
     /** Default request configuration. */
     protected static RequestConfig requestConfig = RequestConfig.custom()
             .setCookieSpec(StandardCookieSpec.STRICT)
@@ -95,7 +115,7 @@ public class HttpClientWrapper {
      * @return
      *      singleton for the class
      */
-    public static synchronized HttpClientWrapper getInstance() {
+    private static synchronized HttpClientWrapper getInstance() {
         if (_instance == null) {
             _instance = new HttpClientWrapper();
             final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
@@ -104,6 +124,27 @@ public class HttpClientWrapper {
             connManager.setDefaultMaxPerRoute(10);
             _instance.httpClient = HttpClients.custom().setConnectionManager(connManager).build();
         }
+        return _instance;
+    }
+
+    /**
+     * Singleton Pattern.
+     *
+     * @param operation
+     *      name of the operation
+     * @return
+     *      singleton for the class
+     */
+    public static synchronized HttpClientWrapper getInstance(String operation) {
+        if (_instance == null) {
+            _instance = new HttpClientWrapper();
+            final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+            connManager.setValidateAfterInactivity(TimeValue.ofSeconds(10));
+            connManager.setMaxTotal(100);
+            connManager.setDefaultMaxPerRoute(10);
+            _instance.httpClient = HttpClients.custom().setConnectionManager(connManager).build();
+        }
+        _instance.operationName = operation;
         return _instance;
     }
     
@@ -324,7 +365,14 @@ public class HttpClientWrapper {
      *      api response
      */
     public ApiResponseHttp executeHttp(HttpUriRequestBase req, boolean mandatory) {
+
+        // Execution Infos
+        ApiExecutionInfos.ApiExecutionInfoBuilder executionInfo = ApiExecutionInfos.builder()
+                .withOperationName(operationName)
+                .withHttpRequest(req);
+
         try(CloseableHttpResponse response = httpClient.execute(req)) {
+
             ApiResponseHttp res;
             if (response == null) {
                 res = new ApiResponseHttp("Response is empty, please check url",
@@ -356,12 +404,17 @@ public class HttpClientWrapper {
               processErrors(res, mandatory);
               LOGGER.error("An HTTP Error occurred. The HTTP CODE Return is {}", res.getCode());
             }
+
+            executionInfo.withHttpResponse(res);
             return res;
             // do not swallow the exception
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw e;
         } catch(Exception e) {
             throw new RuntimeException("Error in HTTP Request: " + e.getMessage(), e);
+        } finally {
+            // Notify the observers
+            CompletableFuture.runAsync(()-> notifyASync(l -> l.onRequest(executionInfo.build()), observers.values()));
         }
     }
 
@@ -445,6 +498,76 @@ public class HttpClientWrapper {
                     }
                     throw new RuntimeException(" (code=" + res.getCode() + ")" + body);
             }
+    }
+
+    /**
+     * Allow to register a listener for the command.
+     * @param name
+     *      name of the observer
+     * @param observer
+     *     observer to register
+     */
+    public static void registerObserver(String name, ApiRequestObserver observer) {
+        observers.put(name, observer);
+    }
+
+    /**
+     * Allow to register a listener for the command.
+     *
+     * @param observers
+     *     observer sto register
+     */
+    public static void registerObservers(Map<String, ApiRequestObserver> observers) {
+        if (observers != null) {
+            observers.forEach(HttpClientWrapper::registerObserver);
+        }
+    }
+
+    /**
+     * Register an observer with its className.
+     *
+     * @param observer
+     *      command observer
+     */
+    public static void registerObserver(ApiRequestObserver observer) {
+        registerObserver(observer.getClass().getSimpleName(), observer);
+    }
+
+    /**
+     * Remove a listener from the command.
+     *
+     * @param name
+     *      name of the observer
+     */
+    public static void unregisterObserver(String name) {
+        observers.remove(name);
+    }
+
+    /**
+     * Remove an observer by its class.
+     *
+     * @param observer
+     *      observer to remove
+     */
+    public static void unregisterObserver(Class<ApiRequestObserver> observer) {
+        unregisterObserver(observer.getSimpleName());
+    }
+
+    /**
+     * Asynchronously send calls to listener for tracing.
+     *
+     * @param lambda
+     *      operations to execute
+     * @param observers
+     *      list of observers to check
+     *
+     */
+    private void notifyASync(Consumer<ApiRequestObserver> lambda, Collection<ApiRequestObserver> observers) {
+        if (observers != null) {
+            CompletableFutures.allDone(observers.stream()
+                    .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
+                    .collect(Collectors.toList()));
+        }
     }
 
 }

@@ -64,13 +64,19 @@ public class DbDatacentersClient extends AbstractApiClient {
         this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.regions";
+    }
+
     /**
      * Get Datacenters details for a region
      *
      * @return list of datacenters.
      */
     public Stream<Datacenter> findAll() {
-        ApiResponseHttp res = GET(getEndpointRegions());
+        ApiResponseHttp res = GET(getEndpointRegions(), getOperationName("find"));
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Stream.of();
         } else {
@@ -124,7 +130,7 @@ public class DbDatacentersClient extends AbstractApiClient {
         }
         DatabaseRegionCreationRequest req = new DatabaseRegionCreationRequest(tier, cloudProvider.getCode(), regionName);
         String body = JsonUtils.marshall(Collections.singletonList(req));
-        ApiResponseHttp res = POST(getEndpointRegions(), body);
+        ApiResponseHttp res = POST(getEndpointRegions(), body, getOperationName("create"));
         if (res.getCode() != HttpURLConnection.HTTP_CREATED) {
             throw new IllegalStateException("Cannot Add Region: " + res.getBody());
         }
@@ -136,7 +142,7 @@ public class DbDatacentersClient extends AbstractApiClient {
      * @param regionName
      *         name of the region
      *         <p>
-     *         https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/terminateDatacenter
+     * <a href="https://docs.datastax.com/en/astra/docs/_attachments/devopsv2.html#operation/terminateDatacenter">...</a>
      */
     public void delete(String regionName) {
         Optional<Datacenter> optDc = findByRegionName(regionName);
@@ -144,7 +150,8 @@ public class DbDatacentersClient extends AbstractApiClient {
             throw new RegionNotFoundException(db.getId(), regionName);
         }
         // Invoke Http endpoint
-        ApiResponseHttp res = POST(getEndpointRegions() + "/" + optDc.get().getId() + "/terminate");
+        ApiResponseHttp res = POST(getEndpointRegions() + "/" + optDc.get().getId() + "/terminate",
+                getOperationName("delete"));
         // Check response code
         assertHttpCodeAccepted(res, "deleteRegion", db.getId());
     }

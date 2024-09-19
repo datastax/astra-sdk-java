@@ -57,6 +57,12 @@ public class TenantClient extends AbstractApiClient {
         this.organizationId = new AstraOpsClient(token,env).getOrganizationId();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming.tenants";
+    }
+
     // ---------------------------------
     // ----       READ              ----
     // ---------------------------------
@@ -68,7 +74,7 @@ public class TenantClient extends AbstractApiClient {
      */
     public Optional<Tenant> find() {
         System.out.println("getEndpointTenant() = " + getEndpointTenant());
-        ApiResponseHttp res = GET(getEndpointTenantWithOrganizationId());
+        ApiResponseHttp res = GET(getEndpointTenantWithOrganizationId(), getOperationName("find"));
         if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode()) {
             return Optional.empty();
         } else {

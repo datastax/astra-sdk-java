@@ -48,6 +48,12 @@ public class DbKeyspacesClient extends AbstractApiClient  {
         this.db = new DbOpsClient(token, env, databaseId).get();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "db.keyspaces";
+    }
+
     /**
      * Find all keyspace in current DB.
      *
@@ -81,7 +87,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
         if (db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceAlreadyExistException(keyspace, db.getInfo().getName());
         }
-        getHttpClient().POST(getEndpointKeyspace(keyspace), getToken());
+        POST(getEndpointKeyspace(keyspace), getOperationName("create"));
     }
 
     /**
@@ -95,7 +101,7 @@ public class DbKeyspacesClient extends AbstractApiClient  {
         if (!db.getInfo().getKeyspaces().contains(keyspace)) {
             throw new KeyspaceNotFoundException(db.getInfo().getName(), keyspace);
         }
-        getHttpClient().DELETE(getEndpointKeyspace(keyspace), getToken());
+        DELETE(getEndpointKeyspace(keyspace),getOperationName("delete"));
     }
 
     /**

@@ -40,6 +40,12 @@ public class KeysClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "keys";
+    }
+
     /**
      * List keys in a Organizations.
      *
@@ -48,7 +54,9 @@ public class KeysClient extends AbstractApiClient {
      */
     public Stream<Key> findAll() {
         // Invoke endpoint
-        ApiResponseHttp res = GET(ApiLocator.getApiDevopsEndpoint(environment) + "/kms");
+        ApiResponseHttp res = GET(
+                ApiLocator.getApiDevopsEndpoint(environment) + "/kms",
+                getOperationName("find"));
         // Mapping
         return JsonUtils.unmarshallType(res.getBody(), new TypeReference<List<Key>>(){}).stream();
     }

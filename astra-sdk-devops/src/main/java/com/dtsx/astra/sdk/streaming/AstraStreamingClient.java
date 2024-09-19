@@ -44,6 +44,12 @@ public class AstraStreamingClient extends AbstractApiClient {
         super(token, env);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getServiceName() {
+        return "streaming";
+    }
+
     /**
      * List tenants in the current instance.
      * 
@@ -53,7 +59,7 @@ public class AstraStreamingClient extends AbstractApiClient {
     public Stream<Tenant> findAll() {
         return JsonUtils
                 .unmarshallType(
-                        GET(getApiDevopsEndpointTenants()).getBody(),
+                        GET(getApiDevopsEndpointTenants(), getOperationName("findAll")).getBody(),
                         new TypeReference<List<Tenant>>(){})
                 .stream();
     }
@@ -92,7 +98,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      */
     public void create(CreateTenant ct) {
         Assert.notNull(ct, "Create Tenant request");
-        POST(getApiDevopsEndpointTenants(), JsonUtils.marshall(ct));
+        POST(getApiDevopsEndpointTenants(), JsonUtils.marshall(ct), getOperationName("create"));
     }
 
     /**
@@ -103,7 +109,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      */
     public void delete(String tenantName) {
         Tenant tenant = get(tenantName);
-        DELETE(getEndpointCluster(tenant.getTenantName(), tenant.getClusterName()));
+        DELETE(getEndpointCluster(tenant.getTenantName(), tenant.getClusterName()), getOperationName("delete"));
     }
 
     /**
@@ -115,7 +121,7 @@ public class AstraStreamingClient extends AbstractApiClient {
      *      if the tenant exist
      */
     public boolean exist(String tenantName) {
-        return HEAD(getEndpointTenant(tenantName)).getCode() == HttpURLConnection.HTTP_OK;
+        return HEAD(getEndpointTenant(tenantName), getOperationName("exist")).getCode() == HttpURLConnection.HTTP_OK;
     }
 
     // ---------------------------------
