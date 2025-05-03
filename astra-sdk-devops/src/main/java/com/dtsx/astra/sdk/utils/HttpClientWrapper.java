@@ -55,6 +55,15 @@ public class HttpClientWrapper {
     /** Default settings in Request and Retry */
     private static final int DEFAULT_TIMEOUT_CONNECT   = 20;
 
+    /** Default retry settings */
+    private static final int DEFAULT_MAX_RETRIES = 3;
+
+    /** Default retry settings */
+    private static final int DEFAULT_RETRY_INITIAL_DELAY_MS = 1000;
+
+    /** Default retry settings */
+    private static final double DEFAULT_RETRY_BACKOFF_MULTIPLIER = 2.0;
+
     /** Headers, Api is using JSON */
     private static final String CONTENT_TYPE_JSON        = "application/json";
 
@@ -99,6 +108,15 @@ public class HttpClientWrapper {
             .setConnectTimeout(Timeout.ofSeconds(DEFAULT_TIMEOUT_CONNECT))
             .setTargetPreferredAuthSchemes(Arrays.asList(StandardAuthScheme.NTLM, StandardAuthScheme.DIGEST))
             .build();
+
+    /** Retry configuration. */
+    protected static int maxRetries = DEFAULT_MAX_RETRIES;
+
+    /** Retry configuration. */
+    protected static int retryInitialDelayMs = DEFAULT_RETRY_INITIAL_DELAY_MS;
+
+    /** Retry configuration. */
+    protected static double retryBackoffMultiplier = DEFAULT_RETRY_BACKOFF_MULTIPLIER;
 
     // -------------------------------------------
     // ----------------- Singleton ---------------
@@ -355,8 +373,8 @@ public class HttpClientWrapper {
     }
     
     /**
-     * Execute a request coming from elsewhere.
-     * 
+     * Execute a request coming from elsewhere with retry logic.
+     *
      * @param req
      *      current request
      * @param mandatory
@@ -365,56 +383,105 @@ public class HttpClientWrapper {
      *      api response
      */
     public ApiResponseHttp executeHttp(HttpUriRequestBase req, boolean mandatory) {
+        return executeHttpWithRetry(req, mandatory, maxRetries, retryInitialDelayMs, retryBackoffMultiplier);
+    }
 
+    /**
+     * Execute a request with configurable retry logic.
+     * 
+     * @param req
+     *      current request
+     * @param mandatory
+     *      mandatory
+     * @param maxRetries
+     *      maximum number of retries
+     * @param initialDelayMs
+     *      initial delay between retries in milliseconds
+     * @param backoffMultiplier
+     *      multiplier for exponential backoff
+     * @return
+     *      api response
+     */
+    public ApiResponseHttp executeHttpWithRetry(HttpUriRequestBase req, boolean mandatory, int maxRetries, int initialDelayMs, double backoffMultiplier) {
         // Execution Infos
         ApiExecutionInfos.ApiExecutionInfoBuilder executionInfo = ApiExecutionInfos.builder()
                 .withOperationName(operationName)
                 .withHttpRequest(req);
 
-        try(CloseableHttpResponse response = httpClient.execute(req)) {
+        int retryCount = 0;
+        long delayMs = initialDelayMs;
 
-            ApiResponseHttp res;
-            if (response == null) {
-                res = new ApiResponseHttp("Response is empty, please check url",
-                        HttpURLConnection.HTTP_UNAVAILABLE, null);
-            } else {
-                // Mapping response
-                String body = null;
-                if (null != response.getEntity()) {
-                    body = EntityUtils.toString(response.getEntity());
-                    EntityUtils.consume(response.getEntity());
+        while (true) {
+            try (CloseableHttpResponse response = httpClient.execute(req)) {
+                ApiResponseHttp res;
+                if (response == null) {
+                    res = new ApiResponseHttp("Response is empty, please check url",
+                            HttpURLConnection.HTTP_UNAVAILABLE, null);
+                } else {
+                    // Mapping response
+                    String body = null;
+                    if (null != response.getEntity()) {
+                        body = EntityUtils.toString(response.getEntity());
+                        EntityUtils.consume(response.getEntity());
+                    }
+                    Map<String, String> headers = new HashMap<>();
+                    Arrays.stream(response.getHeaders()).forEach(h -> headers.put(h.getName(), h.getValue()));
+                    res = new ApiResponseHttp(body, response.getCode(), headers);
                 }
-                Map<String, String > headers = new HashMap<>();
-                Arrays.stream(response.getHeaders()).forEach(h -> headers.put(h.getName(), h.getValue()));
-                res = new ApiResponseHttp(body, response.getCode(), headers);
-            }
 
-            // Error management
-            if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode() && !mandatory) {
+                // Error management
+                if (HttpURLConnection.HTTP_NOT_FOUND == res.getCode() && !mandatory) {
+                    return res;
+                }
+
+                // Check if we should retry
+                if (res.getCode() >= 500 && retryCount < maxRetries) {
+                    LOGGER.warn("Received HTTP {} error, retrying in {} ms (attempt {}/{})", 
+                            res.getCode(), delayMs, retryCount + 1, maxRetries);
+                    Thread.sleep(delayMs);
+                    delayMs = (long) (delayMs * backoffMultiplier);
+                    retryCount++;
+                    continue;
+                }
+
+                if (res.getCode() >= 300) {
+                    String entity = "n/a";
+                    if (req.getEntity() != null) {
+                        entity = EntityUtils.toString(req.getEntity());
+                    }
+                    LOGGER.error("Error for request, url={}, method={}, body={}",
+                            req.getUri().toString(), req.getMethod(), entity);
+                    LOGGER.error("Response code={}, body={}", res.getCode(), res.getBody());
+                    processErrors(res, mandatory);
+                    LOGGER.error("An HTTP Error occurred. The HTTP CODE Return is {}", res.getCode());
+                }
+
+                executionInfo.withHttpResponse(res);
                 return res;
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                throw e;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Request interrupted", e);
+            } catch (Exception e) {
+                if (retryCount < maxRetries) {
+                    LOGGER.warn("Request failed with exception, retrying in {} ms (attempt {}/{})", 
+                            delayMs, retryCount + 1, maxRetries, e);
+                    try {
+                        Thread.sleep(delayMs);
+                        delayMs = (long) (delayMs * backoffMultiplier);
+                        retryCount++;
+                        continue;
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Request interrupted", ie);
+                    }
+                }
+                throw new RuntimeException("Error in HTTP Request: " + e.getMessage(), e);
+            } finally {
+                // Notify the observers
+                CompletableFuture.runAsync(() -> notifyASync(l -> l.onRequest(executionInfo.build()), observers.values()));
             }
-            if (res.getCode() >= 300) {
-              String entity = "n/a";
-              if (req.getEntity() != null) {
-                  entity = EntityUtils.toString(req.getEntity());
-              }
-              LOGGER.error("Error for request, url={}, method={}, body={}",
-                      req.getUri().toString(), req.getMethod(), entity);
-              LOGGER.error("Response  code={}, body={}", res.getCode(), res.getBody());
-              processErrors(res, mandatory);
-              LOGGER.error("An HTTP Error occurred. The HTTP CODE Return is {}", res.getCode());
-            }
-
-            executionInfo.withHttpResponse(res);
-            return res;
-            // do not swallow the exception
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            throw e;
-        } catch(Exception e) {
-            throw new RuntimeException("Error in HTTP Request: " + e.getMessage(), e);
-        } finally {
-            // Notify the observers
-            CompletableFuture.runAsync(()-> notifyASync(l -> l.onRequest(executionInfo.build()), observers.values()));
         }
     }
 
@@ -568,6 +635,53 @@ public class HttpClientWrapper {
                     .map(l -> CompletableFuture.runAsync(() -> lambda.accept(l)))
                     .collect(Collectors.toList()));
         }
+    }
+
+    /**
+     * Configure retry settings.
+     *
+     * @param maxRetries
+     *      maximum number of retries
+     * @param initialDelayMs
+     *      initial delay between retries in milliseconds
+     * @param backoffMultiplier
+     *      multiplier for exponential backoff
+     */
+    public static void configureRetry(int maxRetries, int initialDelayMs, double backoffMultiplier) {
+        HttpClientWrapper.maxRetries = maxRetries;
+        HttpClientWrapper.retryInitialDelayMs = initialDelayMs;
+        HttpClientWrapper.retryBackoffMultiplier = backoffMultiplier;
+    }
+
+    /**
+     * Configure retry settings.
+     *
+     * @param maxRetries
+     *      maximum number of retries
+     */
+    public static void configureRetry(int maxRetries) {
+        configureRetry(maxRetries, DEFAULT_RETRY_INITIAL_DELAY_MS, DEFAULT_RETRY_BACKOFF_MULTIPLIER);
+    }
+
+    /**
+     * Configure retry settings.
+     *
+     * @param maxRetries
+     *      maximum number of retries
+     * @param initialDelayMs
+     *      initial delay between retries in milliseconds
+     */
+    public static void configureRetry(int maxRetries, int initialDelayMs) {
+        configureRetry(maxRetries, initialDelayMs, DEFAULT_RETRY_BACKOFF_MULTIPLIER);
+    }
+
+    /**
+     * Reset retry settings to defaults.
+     */
+    public static void resetRetryConfiguration() {
+        maxRetries = DEFAULT_MAX_RETRIES;
+        retryInitialDelayMs = DEFAULT_RETRY_INITIAL_DELAY_MS;
+        retryBackoffMultiplier = DEFAULT_RETRY_BACKOFF_MULTIPLIER;
     }
 
 }
