@@ -61,7 +61,7 @@ public class Utils {
     }
 
     /**
-     * Download File Content.
+     * Download File Content with retry logic.
      *
      * @param fileUrl
      *      current file URL
@@ -69,53 +69,137 @@ public class Utils {
      *      the file content
      */
     public static byte[] downloadFile(String fileUrl) {
-        try {
-            URL url = new URL(fileUrl);
-            try (InputStream in = new BufferedInputStream(url.openStream());
-                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
-                    out.write(buffer, 0, bytesRead);
+        int maxRetries = 3;
+        int retryDelayMs = 1000; // 1 second initial delay
+        double backoffMultiplier = 2.0;
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                URL url = new URL(fileUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setConnectTimeout(5000); // 5 second connection timeout
+                connection.setReadTimeout(30000);   // 30 second read timeout
+                try (InputStream in = new BufferedInputStream(connection.getInputStream());
+                     ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                    return out.toByteArray();
                 }
-                return out.toByteArray();
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException("Invalid URL format: " + fileUrl, e);
+            } catch (java.net.SocketTimeoutException e) {
+                if (attempt == maxRetries) {
+                    throw new IllegalArgumentException("Connection timeout while downloading file from " + fileUrl, e);
+                }
+                try {
+                    Thread.sleep(retryDelayMs * (long) Math.pow(backoffMultiplier, attempt - 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalArgumentException("Download interrupted", ie);
+                }
+            } catch (java.net.UnknownHostException e) {
+                throw new IllegalArgumentException("Cannot resolve host for URL: " + fileUrl, e);
+            } catch (java.net.ConnectException e) {
+                if (attempt == maxRetries) {
+                    throw new IllegalArgumentException("Cannot connect to server at " + fileUrl, e);
+                }
+                try {
+                    Thread.sleep(retryDelayMs * (long) Math.pow(backoffMultiplier, attempt - 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalArgumentException("Download interrupted", ie);
+                }
+            } catch (IOException e) {
+                if (attempt == maxRetries) {
+                    throw new IllegalArgumentException("Failed to download file from " + fileUrl + 
+                            " after " + maxRetries + " attempts. Last error: " + e.getMessage(), e);
+                }
+                try {
+                    Thread.sleep(retryDelayMs * (long) Math.pow(backoffMultiplier, attempt - 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalArgumentException("Download interrupted", ie);
+                }
             }
-        } catch(IOException ioe) {
-            throw new IllegalArgumentException("Cannot download file",ioe);
         }
+        throw new IllegalArgumentException("Failed to download file from " + fileUrl + " after " + maxRetries + " attempts");
     }
 
     /**
-     * downloadFile
-     * 
+     * Download file to specified location with retry logic.
+     *
      * @param urlStr String
      * @param file String
      */
     public static void downloadFile(String urlStr, String file) {
-        URL url;
-        FileOutputStream    fis = null;
-        BufferedInputStream bis = null;
-        try {
-            url = new URL(urlStr);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestProperty("Accept", "bytes");
-            bis = new BufferedInputStream(urlConnection.getInputStream());
-            fis = new FileOutputStream(file);
-            byte[] buffer = new byte[1024];
-            int count=0;
-            while((count = bis.read(buffer,0,1024)) != -1) {
-                fis.write(buffer, 0, count);
-            }
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Cannot read URL, invalid syntax",e);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot download file",e);
-        } finally {
+        int maxRetries = 3;
+        int retryDelayMs = 1000; // 1 second initial delay
+        double backoffMultiplier = 2.0;
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            URL url;
+            FileOutputStream fis = null;
+            BufferedInputStream bis = null;
             try {
-                if (null != fis) fis.close();
-                if (null!= bis)  bis.close();
-            } catch (IOException e) {}
+                url = new URL(urlStr);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setConnectTimeout(5000); // 5 second connection timeout
+                urlConnection.setReadTimeout(30000);   // 30 second read timeout
+                urlConnection.setRequestProperty("Accept", "bytes");
+                bis = new BufferedInputStream(urlConnection.getInputStream());
+                fis = new FileOutputStream(file);
+                byte[] buffer = new byte[1024];
+                int count = 0;
+                while ((count = bis.read(buffer, 0, 1024)) != -1) {
+                    fis.write(buffer, 0, count);
+                }
+                return; // Success - exit the method
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException("Invalid URL format: " + urlStr, e);
+            } catch (java.net.SocketTimeoutException e) {
+                if (attempt == maxRetries) {
+                    throw new IllegalArgumentException("Connection timeout while downloading file from " + urlStr, e);
+                }
+                try {
+                    Thread.sleep(retryDelayMs * (long) Math.pow(backoffMultiplier, attempt - 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalArgumentException("Download interrupted", ie);
+                }
+            } catch (java.net.UnknownHostException e) {
+                throw new IllegalArgumentException("Cannot resolve host for URL: " + urlStr, e);
+            } catch (java.net.ConnectException e) {
+                if (attempt == maxRetries) {
+                    throw new IllegalArgumentException("Cannot connect to server at " + urlStr, e);
+                }
+                try {
+                    Thread.sleep(retryDelayMs * (long) Math.pow(backoffMultiplier, attempt - 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalArgumentException("Download interrupted", ie);
+                }
+            } catch (IOException e) {
+                if (attempt == maxRetries) {
+                    throw new IllegalArgumentException("Failed to download file from " + urlStr + 
+                            " after " + maxRetries + " attempts. Last error: " + e.getMessage(), e);
+                }
+                try {
+                    Thread.sleep(retryDelayMs * (long) Math.pow(backoffMultiplier, attempt - 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalArgumentException("Download interrupted", ie);
+                }
+            } finally {
+                try {
+                    if (fis != null) fis.close();
+                    if (bis != null) bis.close();
+                } catch (IOException e) {
+                    System.err.println("Warning: Error closing streams: " + e.getMessage());
+                }
+            }
         }
+        throw new IllegalArgumentException("Failed to download file from " + urlStr + " after " + maxRetries + " attempts");
     }
     
     /**
