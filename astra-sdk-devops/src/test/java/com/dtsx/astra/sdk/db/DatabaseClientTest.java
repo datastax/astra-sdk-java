@@ -273,4 +273,16 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         //Assert.assertEquals(0, getDatabasesClient().findByName(SDK_TEST_DB_NAME).count());
     }
 
+    @Test
+    @Order(21)
+    @DisplayName("21. Should list snapshots")
+    public void shouldListSnapshotsTest() {
+        // TODO refine the various query patterns and overloads as they come
+        int filteredSnapshotCount = (getSdkTestDatabaseClient().snapshots().find("2000-01-01T01:23:45.000Z", "2040-01-01T01:23:45.000Z", SDK_TEST_DB_REGION)).toList().size();
+        int fullSnapshotCount = (getSdkTestDatabaseClient().snapshots().findAll()).toList().size();
+        Assertions.assertTrue(filteredSnapshotCount <= fullSnapshotCount);
+        // TEMP: to ensure something is actually parsed back. The DB must be created more than ~1 h ago!
+        Assertions.assertTrue(fullSnapshotCount > 0);
+    }
+
 }

@@ -408,6 +408,18 @@ public class DbOpsClient extends AbstractApiClient {
     public DbPrivateLinksClient privateLink() {
         return new DbPrivateLinksClient(token, environment, databaseId);
     }
+    // ---------------------------------
+    // ----       Snapshots         ----
+    // ---------------------------------
+
+    /**
+     * Delegate snapshots operation in a dedicated class
+     *
+     * @return snapshots client
+     */
+    public DbSnapshotsClient snapshots() {
+        return new DbSnapshotsClient(token, environment, databaseId);
+    }
 
     // ---------------------------------
     // ----       Utilities         ----
