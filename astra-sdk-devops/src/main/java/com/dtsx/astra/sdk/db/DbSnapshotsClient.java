@@ -20,10 +20,10 @@ import java.util.stream.Stream;
  */
 public class DbSnapshotsClient extends AbstractApiClient {
 
-    /** Get Available Regions. */
+    /** Path for listing snapshots, part I. */
     public static final String PATH_SNAPSHOTS_1 = "/databases/";
 
-    /** Get Available Regions. */
+    /** Path for listing snapshots, part II. */
     public static final String PATH_SNAPSHOTS_2 = "/snapshots";
 
     /**

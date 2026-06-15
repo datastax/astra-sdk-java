@@ -3,6 +3,7 @@ package com.dtsx.astra.sdk.db;
 import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.db.domain.AccessListAddressRequest;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
+import com.dtsx.astra.sdk.db.domain.DatabaseCloneStatus;
 import com.dtsx.astra.sdk.db.domain.DatabaseSnapshot;
 import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.db.domain.Datacenter;
@@ -298,6 +299,28 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
         Assertions.assertNotNull(theSnapshot);
         Assertions.assertNotNull(theSnapshot.getId());
         Assertions.assertNotNull(theSnapshot.getTime());
+    }
+
+    @Test
+    @Order(22)
+    @DisplayName("22. Should initiate a DB clone")
+    public void shouldInitiateCloneTest() {
+        /*
+        TODOS:
+        // actually ... I do not know where to start. This is probably not to be a test at all...
+        */
+        final String CLONE_DEV_REGION = "northamerica-northeast2";
+        final String CLONE_DEV_SOURCE_DB_NAME = "forcl";
+        final String CLONE_DEV_TARGET_DB_NAME = "destcl";
+        DbOpsClient dbSourceClient = getApiDevopsClient().db().databaseByName(CLONE_DEV_SOURCE_DB_NAME);
+        DbOpsClient dbTargetClient = getApiDevopsClient().db().databaseByName(CLONE_DEV_TARGET_DB_NAME);
+
+        DatabaseSnapshot theSnapshot = dbSourceClient.snapshots().findAll().findFirst().get();
+
+        DatabaseCloneStatus cloneStatus = dbTargetClient.clone().cloneFrom(dbSourceClient.getDatabaseId(), theSnapshot.getId());
+
+        // More articulated assertions here
+        Assertions.assertNotNull(cloneStatus);
     }
 
 }

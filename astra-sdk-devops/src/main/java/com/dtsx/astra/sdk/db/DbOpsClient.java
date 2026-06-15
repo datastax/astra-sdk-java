@@ -408,6 +408,20 @@ public class DbOpsClient extends AbstractApiClient {
     public DbPrivateLinksClient privateLink() {
         return new DbPrivateLinksClient(token, environment, databaseId);
     }
+
+    // ---------------------------------
+    // ----         Clone           ----
+    // ---------------------------------
+
+    /**
+     * Delegate clone operation in a dedicated class
+     *
+     * @return clone client
+     */
+    public DbCloneClient clone() {
+        return new DbCloneClient(token, environment, databaseId);
+    }
+
     // ---------------------------------
     // ----       Snapshots         ----
     // ---------------------------------
