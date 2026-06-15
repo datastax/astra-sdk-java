@@ -3,6 +3,7 @@ package com.dtsx.astra.sdk.db;
 import com.dtsx.astra.sdk.AbstractDevopsApiTest;
 import com.dtsx.astra.sdk.db.domain.AccessListAddressRequest;
 import com.dtsx.astra.sdk.db.domain.CloudProviderType;
+import com.dtsx.astra.sdk.db.domain.DatabaseSnapshot;
 import com.dtsx.astra.sdk.db.domain.DatabaseStatusType;
 import com.dtsx.astra.sdk.db.domain.Datacenter;
 import com.dtsx.astra.sdk.db.exception.KeyspaceAlreadyExistException;
@@ -277,12 +278,26 @@ public class DatabaseClientTest extends AbstractDevopsApiTest {
     @Order(21)
     @DisplayName("21. Should list snapshots")
     public void shouldListSnapshotsTest() {
+        /*
+        TODOS:
+        // Create the "dbClient" environment-aware in the AbstractDevopsApiTest (and clean this mess)
+        // extract the region from the endpoint ?
+        // automate environment selection for tests? (clone is still in dev probably?)
+        */
+        final String CLONE_DEV_REGION = "northamerica-northeast2";
+        final String CLONE_DEV_DB_NAME = "forcl";
+        DbOpsClient dbClient = getApiDevopsClient().db().databaseByName(CLONE_DEV_DB_NAME);
+
         // TODO refine the various query patterns and overloads as they come
-        int filteredSnapshotCount = (getSdkTestDatabaseClient().snapshots().find("2000-01-01T01:23:45.000Z", "2040-01-01T01:23:45.000Z", SDK_TEST_DB_REGION)).toList().size();
-        int fullSnapshotCount = (getSdkTestDatabaseClient().snapshots().findAll()).toList().size();
+        int filteredSnapshotCount = (dbClient.snapshots().find("2000-01-01T01:23:45.000Z", "2040-01-01T01:23:45.000Z", CLONE_DEV_REGION)).toList().size();
+        int fullSnapshotCount = (dbClient.snapshots().findAll()).toList().size();
         Assertions.assertTrue(filteredSnapshotCount <= fullSnapshotCount);
         // TEMP: to ensure something is actually parsed back. The DB must be created more than ~1 h ago!
         Assertions.assertTrue(fullSnapshotCount > 0);
+        DatabaseSnapshot theSnapshot = dbClient.snapshots().findAll().findFirst().get();
+        Assertions.assertNotNull(theSnapshot);
+        Assertions.assertNotNull(theSnapshot.getId());
+        Assertions.assertNotNull(theSnapshot.getTime());
     }
 
 }

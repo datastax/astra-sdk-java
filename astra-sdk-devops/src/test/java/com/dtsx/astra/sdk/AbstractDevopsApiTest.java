@@ -4,6 +4,7 @@ import com.dtsx.astra.sdk.db.DbOpsClient;
 import com.dtsx.astra.sdk.db.AstraDBOpsClient;
 import com.dtsx.astra.sdk.db.domain.DatabaseCreationRequest;
 import com.dtsx.astra.sdk.streaming.AstraStreamingClient;
+import com.dtsx.astra.sdk.utils.AstraEnvironment;
 import com.dtsx.astra.sdk.utils.AstraRc;
 import com.dtsx.astra.sdk.utils.Utils;
 import org.junit.jupiter.api.Assertions;
@@ -54,6 +55,26 @@ public abstract class AbstractDevopsApiTest {
     private static AstraStreamingClient streamingClient;
 
     /**
+     * Get the target Astra environment from ASTRA_ENV environment variable.
+     * Defaults to PROD if not set or invalid.
+     *
+     * @return
+     *      target environment
+     */
+    protected AstraEnvironment getEnvironment() {
+        return Utils.readEnvVariable(AstraRc.ASTRA_ENV)
+                .map(env -> {
+                    try {
+                        return AstraEnvironment.valueOf(env.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Invalid ASTRA_ENV value: " + env + ". Using PROD.");
+                        return AstraEnvironment.PROD;
+                    }
+                })
+                .orElse(AstraEnvironment.PROD);
+    }
+
+    /**
      * Access DB client.
      *
      * @return
@@ -61,7 +82,7 @@ public abstract class AbstractDevopsApiTest {
      */
     protected AstraOpsClient getApiDevopsClient() {
         if (apiDevopsClient == null) {
-            apiDevopsClient = new AstraOpsClient(getToken());
+            apiDevopsClient = new AstraOpsClient(getToken(), getEnvironment());
         }
         return apiDevopsClient;
     }
@@ -74,7 +95,7 @@ public abstract class AbstractDevopsApiTest {
      */
     protected AstraDBOpsClient getDatabasesClient() {
         if (databasesClient == null) {
-            databasesClient = new AstraDBOpsClient(getToken());
+            databasesClient = new AstraDBOpsClient(getToken(), getEnvironment());
         }
         return databasesClient;
     }
@@ -87,7 +108,7 @@ public abstract class AbstractDevopsApiTest {
      */
     protected AstraStreamingClient getStreamingClient() {
         if (streamingClient == null) {
-            streamingClient = new AstraStreamingClient(getToken());
+            streamingClient = new AstraStreamingClient(getToken(), getEnvironment());
         }
         return streamingClient;
     }
