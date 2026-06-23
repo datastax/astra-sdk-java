@@ -410,6 +410,32 @@ public class DbOpsClient extends AbstractApiClient {
     }
 
     // ---------------------------------
+    // ----         Clone           ----
+    // ---------------------------------
+
+    /**
+     * Delegate clone operation in a dedicated class
+     *
+     * @return clone client
+     */
+    public DbCloneClient clone() {
+        return new DbCloneClient(token, environment, databaseId);
+    }
+
+    // ---------------------------------
+    // ----       Snapshots         ----
+    // ---------------------------------
+
+    /**
+     * Delegate snapshots operation in a dedicated class
+     *
+     * @return snapshots client
+     */
+    public DbSnapshotsClient snapshots() {
+        return new DbSnapshotsClient(token, environment, databaseId);
+    }
+
+    // ---------------------------------
     // ----       Utilities         ----
     // ---------------------------------
 
