@@ -25,27 +25,39 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseCloneStatus implements Serializable {
-    
+
     /** Serial. */
     private static final long serialVersionUID = 8242671294103939313L;
 
     /** unique identifier for the operation. */
     private String operationId;
-    
+
     /** source database identifier. */
     private String sourceDbId;
-    
+
     /** target database identifier. */
     private String targetDbId;
-    
+
     /** current phase of the clone operation. */
     private String phase;
-    
+
     /** status of the clone operation. */
     private String status;
-    
+
     /** message with additional details. */
     private String message;
+
+    /** snapshot identifier. */
+    private String snapshotId;
+
+    /** timestamp when the clone was created. */
+    private String createdAt;
+
+    /** source region for the clone operation. */
+    private String sourceRegion;
+
+    /** target region for the clone operation. */
+    private String targetRegion;
 
     /**
      * Default constructor.
@@ -164,6 +176,82 @@ public class DatabaseCloneStatus implements Serializable {
      */
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    /**
+     * Getter accessor for attribute 'snapshotId'.
+     *
+     * @return
+     *       current value of 'snapshotId'
+     */
+    public String getSnapshotId() {
+        return snapshotId;
+    }
+
+    /**
+     * Setter accessor for attribute 'snapshotId'.
+     * @param snapshotId
+     * 		new value for 'snapshotId '
+     */
+    public void setSnapshotId(String snapshotId) {
+        this.snapshotId = snapshotId;
+    }
+
+    /**
+     * Getter accessor for attribute 'createdAt'.
+     *
+     * @return
+     *       current value of 'createdAt'
+     */
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    /**
+     * Setter accessor for attribute 'createdAt'.
+     * @param createdAt
+     * 		new value for 'createdAt '
+     */
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    /**
+     * Getter accessor for attribute 'sourceRegion'.
+     *
+     * @return
+     *       current value of 'sourceRegion'
+     */
+    public String getSourceRegion() {
+        return sourceRegion;
+    }
+
+    /**
+     * Setter accessor for attribute 'sourceRegion'.
+     * @param sourceRegion
+     * 		new value for 'sourceRegion '
+     */
+    public void setSourceRegion(String sourceRegion) {
+        this.sourceRegion = sourceRegion;
+    }
+
+    /**
+     * Getter accessor for attribute 'targetRegion'.
+     *
+     * @return
+     *       current value of 'targetRegion'
+     */
+    public String getTargetRegion() {
+        return targetRegion;
+    }
+
+    /**
+     * Setter accessor for attribute 'targetRegion'.
+     * @param targetRegion
+     * 		new value for 'targetRegion '
+     */
+    public void setTargetRegion(String targetRegion) {
+        this.targetRegion = targetRegion;
     }
 
 }

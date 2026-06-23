@@ -25,6 +25,12 @@ public class DbCloneClient extends AbstractApiClient {
     /** Clone path component, part II. */
     public static final String PATH_CLONE_2 = "/cloneFrom/";
 
+    /** Get-clone-status path component, part I. */
+    public static final String PATH_GETSTATUS_1 = "/databases/";
+
+    /** Get-clone-status path component, part II. */
+    public static final String PATH_GETSTATUS_2 = "/cloneStatus/";
+
     /**
      * unique db identifier.
      */
@@ -108,15 +114,45 @@ public class DbCloneClient extends AbstractApiClient {
     }
 
     /**
+     * Get the status of a clone operation.
+     *
+     * @param operationId
+     *         ID of the clone operation
+     * @return clone status
+     */
+    public DatabaseCloneStatus getCloneStatus(String operationId) {
+        Assert.hasLength(operationId, "operationId");
+
+        // Build URL
+        String url = getEndpointGetCloneStatus(operationId);
+
+        // Fire GET request
+        ApiResponseHttp res = GET(url, getOperationName("getCloneStatus"));
+
+        // Parse and return response
+        return JsonUtils.unmarshallBean(res.getBody(), DatabaseCloneStatus.class);
+    }
+
+    /**
      * Endpoint to initiate DB clone
      *
      * @param sourceDbId
      *         ID of the source database
-     * @return database endpoint
+     * @return request endpoint
      */
     private String getEndpointCloneFrom(String sourceDbId) {
         return ApiLocator.getApiDevopsEndpoint(environment) + PATH_CLONE_1 + db.getId() + PATH_CLONE_2 + sourceDbId;
     }
 
+    /**
+     * Endpoint to retrieve a DB-clone status (by operation ID)
+     *
+     * @param operationId
+     *         ID of the clone operation (as obtained e.g. with a cloneFrom previous invocation)
+     * @return request endpoint
+     */
+    private String getEndpointGetCloneStatus(String operationId) {
+        return ApiLocator.getApiDevopsEndpoint(environment) + PATH_GETSTATUS_1 + db.getId() + PATH_GETSTATUS_2 + operationId;
+    }
 
 }

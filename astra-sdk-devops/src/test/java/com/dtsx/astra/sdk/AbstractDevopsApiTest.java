@@ -35,44 +35,29 @@ public abstract class AbstractDevopsApiTest {
     private static String token;
 
     /**
+     * Hold reference to environment
+     */
+    private static AstraEnvironment env;
+
+    /**
      * Reference to Databases Client.
      */
-    private static AstraDBOpsClient databasesClient;
+    protected static AstraDBOpsClient databasesClient;
 
     /**
      * Reference to organization client.
      */
-    private static AstraOpsClient apiDevopsClient;
+    protected static AstraOpsClient apiDevopsClient;
 
     /**
      * Working db.
      */
-    private static DbOpsClient dbClient;
+    protected static DbOpsClient dbClient;
 
     /**
      * Reference to Databases Client.
      */
-    private static AstraStreamingClient streamingClient;
-
-    /**
-     * Get the target Astra environment from ASTRA_ENV environment variable.
-     * Defaults to PROD if not set or invalid.
-     *
-     * @return
-     *      target environment
-     */
-    protected AstraEnvironment getEnvironment() {
-        return Utils.readEnvVariable(AstraRc.ASTRA_ENV)
-                .map(env -> {
-                    try {
-                        return AstraEnvironment.valueOf(env.toUpperCase());
-                    } catch (IllegalArgumentException e) {
-                        System.err.println("Invalid ASTRA_ENV value: " + env + ". Using PROD.");
-                        return AstraEnvironment.PROD;
-                    }
-                })
-                .orElse(AstraEnvironment.PROD);
-    }
+    protected static AstraStreamingClient streamingClient;
 
     /**
      * Access DB client.
@@ -91,7 +76,7 @@ public abstract class AbstractDevopsApiTest {
      * Access DB client.
      *
      * @return
-     *      client fot databases
+     *      client for databases
      */
     protected AstraDBOpsClient getDatabasesClient() {
         if (databasesClient == null) {
@@ -129,6 +114,31 @@ public abstract class AbstractDevopsApiTest {
             token = Utils.readEnvVariable(AstraRc.ASTRA_DB_APPLICATION_TOKEN).orElse(token);
         }
         return token;
+    }
+
+    /**
+     * Get the target Astra environment from ASTRA_ENV environment variable.
+     * Defaults to PROD if not set or invalid.
+     *
+     * @return
+     *      target environment
+     */
+    protected AstraEnvironment getEnvironment() {
+        String envStr = null;
+        if (env == null) {
+            if (AstraRc.isDefaultConfigFileExists()) {
+                envStr = new AstraRc()
+                    .getSectionKey(AstraRc.ASTRARC_DEFAULT, AstraRc.ASTRA_ENV)
+                    .orElse(null);
+            }
+            envStr = Utils.readEnvVariable(AstraRc.ASTRA_ENV).orElse(envStr);
+            if (envStr == null) {
+                env = AstraEnvironment.PROD;
+            } else {
+                env = AstraEnvironment.valueOf(envStr);
+            }
+        }
+        return env;
     }
 
     /**
